@@ -136,6 +136,9 @@ static int ptcl_idx_to_box_idx(struct node *ptr_node, int ptcl_idx)
             //** >> The particle moves towards its parent node or towards some sibling node  **/
             if (ptr_node->ptr_box_old[box_idx_node] < -3)
             {
+                //** The local mass is reduced **/
+                ptr_node->local_mass -= GL_ptcl_mass[ptcl_idx];
+
                 ptr_node_pt = ptr_node->ptr_pt;
                 //** >> Box index in the parent node **/
                 box_idx_pt = ptcl_idx_to_box_idx(ptr_node_pt, ptcl_idx);
@@ -160,6 +163,8 @@ static int ptcl_idx_to_box_idx(struct node *ptr_node, int ptcl_idx)
                     //** >> Adding the mass of the mass box array of the sibling node in the new cell position**/
                     box_idx_sib = ptcl_idx_to_box_idx(ptr_node_sib, ptcl_idx);
                     ptr_node_sib->ptr_box_mass[box_idx_sib] += GL_ptcl_mass[ptcl_idx];
+                    //** The local mass is increased **/
+                    ptr_node_sib->local_mass += GL_ptcl_mass[ptcl_idx];
                 }
                 //** If the particle is only in the parent node **/
                 else
@@ -252,10 +257,15 @@ static int ptcl_idx_to_box_idx(struct node *ptr_node, int ptcl_idx)
                     //** >> Adding the mass of the mass box array of the chile node in the new cell position**/
                     box_idx_ch = ptcl_idx_to_box_idx(ptr_node_ch, ptcl_idx);
                     ptr_node_ch->ptr_box_mass[box_idx_ch] += GL_ptcl_mass[ptcl_idx];
+                    //** The local mass is increased **/
+                    ptr_node_ch->local_mass += GL_ptcl_mass[ptcl_idx];
                 }
                 //** >> The particle moves towards its parent node or towards some sibling node  **/
                 else if (ptr_node->ptr_box_old[box_idx_node] < -3)
                 {
+                    //** The local mass is reduced **/
+                    ptr_node->local_mass -= GL_ptcl_mass[ptcl_idx];
+
                     ptr_node_pt = ptr_node->ptr_pt;
                     //** >> Box index in the parent node **/
                     box_idx_pt = ptcl_idx_to_box_idx(ptr_node_pt, ptcl_idx);
@@ -281,8 +291,10 @@ static int ptcl_idx_to_box_idx(struct node *ptr_node, int ptcl_idx)
                         //** >> Adding the mass of the mass box array of the sibling node in the new cell position**/
                         box_idx_sib = ptcl_idx_to_box_idx(ptr_node_sib, ptcl_idx);
                         ptr_node_sib->ptr_box_mass[box_idx_sib] += GL_ptcl_mass[ptcl_idx];
+                        //** The local mass is increased **/
+                        ptr_node_sib->local_mass += GL_ptcl_mass[ptcl_idx];
                     }
-                    //** >> The particle stay in the node **/
+                    //** >> The particle stay in the parent node node **/
                     else
                     {
                         //** >> Adding the mass of the mass box array of the parent node in the new cell position**/
