@@ -26,19 +26,10 @@
 
 #include "particle_updating_A.h"
 
-static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool status)
+static int ptcl_idx_to_box_idx(struct node *ptr_node, int ptcl_idx)
 {
 
-    int no_ptcl; // Total number of particles in the node
     int lv;      // Level of refinement
-
-    struct node *ptr_node_ch; // Child node of the node ptr_node
-    struct node *ptr_node_pt; // parent node of the node ptr_node
-    struct node *ptr_node_sib; // sibling node of the node ptr_node
-
-    int ptcl_idx; // Particle grid_idx in the node
-
-    int zone_idx; // Index of the refinement zone
 
     vtype pos_x; // Particle position in the grid level
     vtype pos_y;
@@ -53,18 +44,62 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
     int box_idx_z; // Box index in Z direcction
     int box_idx;   // Box index
 
-    no_ptcl = ptr_node->ptcl_size;
     lv = ptr_node->l;
 
-    
+    //** >> Position of the particles in the grid level of the current node before updating**/
+    pos_x = GL_ptcl_x[ptcl_idx] * (1 << lv);
+    pos_y = GL_ptcl_y[ptcl_idx] * (1 << lv);
+    pos_z = GL_ptcl_z[ptcl_idx] * (1 << lv);
 
+    //** >> Floor of the particles positions in the grid level of the current node before updating**/
+    pos_x_floor = (int)pos_x;
+    pos_y_floor = (int)pos_y;
+    pos_z_floor = (int)pos_z;
+
+    //** >> Box index in the current node before updating **/
+    box_idx_x = pos_x_floor - ptr_node->box_ts_x;
+    box_idx_y = pos_y_floor - ptr_node->box_ts_y;
+    box_idx_z = pos_z_floor - ptr_node->box_ts_z;
+    box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+
+    return box_idx;
+}
+
+    static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool status)
+{
+
+    int no_ptcl; // Total number of particles in the node
+
+    struct node *ptr_node_ch; // Child node of the node ptr_node
+    struct node *ptr_node_pt; // parent node of the node ptr_node
+    struct node *ptr_node_sib; // sibling node of the node ptr_node
+
+    int ptcl_idx; // Particle grid_idx in the node
+
+    int zone_idx; // Index of the refinement zone
+
+    int box_idx_node;   // Box index of the current node
+    int box_idx_pt;   // Box index of the parent node
+    int box_idx_sib;   // Box index of the sibling node
+    int box_idx_ch;   // Box index of the child node
+
+    no_ptcl = ptr_node->ptcl_size;
+
+    
     if (ptr_node->chn_size == 0) 
     {
         
         for (int i = 0; i < no_ptcl; i++)
         {
             
-            ptcl_idx = ptr_node->ptr_ptcl[i];
+            ptcl_idx = ptr_node->ptr_ptcl[i];   //Particle index
+
+            //** >> First we remove the mass of the box_mass array of the node **/
+            box_idx_node = ptcl_idx_to_box_idx(ptr_node, ptcl_idx);
+
+            //** >> Removing the mass of the mass box array of the node**/
+            ptr_node->ptr_box_mass[box_idx_node] -= GL_ptcl_mass[ptcl_idx];
+
             //** >> Updating the new position of the particle **/
             //** >> Velocities **/
             GL_ptcl_vx[ptcl_idx] += GL_ptcl_ax[ptcl_idx] * dt / 2;
@@ -95,52 +130,20 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
             }
 
             //** >> Moving the particle to the new node if it is necessary **/
+            box_idx_node = ptcl_idx_to_box_idx(ptr_node, ptcl_idx);
 
-            //** >> Firstly we ask if the particle stays on the node **/
-
-            //** >> Position of the particles in the grid level of the current node **/
-            pos_x = GL_ptcl_x[ptcl_idx] * (1 << lv);
-            pos_y = GL_ptcl_y[ptcl_idx] * (1 << lv);
-            pos_z = GL_ptcl_z[ptcl_idx] * (1 << lv);
-
-            //** >> Floor of the particles positions in the grid level of the current node **/
-            pos_x_floor = (int)pos_x;
-            pos_y_floor = (int)pos_y;
-            pos_z_floor = (int)pos_z;
-
-            //** >> Box index in the current node **/
-            box_idx_x = pos_x_floor - ptr_node->box_ts_x;
-            box_idx_y = pos_y_floor - ptr_node->box_ts_y;
-            box_idx_z = pos_z_floor - ptr_node->box_ts_z;
-            box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
-
-
-            //** Secondly we ask if the particle leaves the node
+            //** We ask if the particle leaves the node
             //** >> The particle moves towards its parent node or towards some sibling node  **/
-            if (ptr_node->ptr_box_old[box_idx] < -3)
+            if (ptr_node->ptr_box_old[box_idx_node] < -3)
             {
                 ptr_node_pt = ptr_node->ptr_pt;
-
-                //** >> Position of the particles in the grid level of the parent node **/
-                pos_x = GL_ptcl_x[ptcl_idx] * (1 << (lv - 1));
-                pos_y = GL_ptcl_y[ptcl_idx] * (1 << (lv - 1));
-                pos_z = GL_ptcl_z[ptcl_idx] * (1 << (lv - 1));
-
-                //** >> Floor of the particles positions in the grid level of the parent node **/
-                pos_x_floor = (int)pos_x;
-                pos_y_floor = (int)pos_y;
-                pos_z_floor = (int)pos_z;
-
                 //** >> Box index in the parent node **/
-                box_idx_x = pos_x_floor - ptr_node_pt->box_ts_x;
-                box_idx_y = pos_y_floor - ptr_node_pt->box_ts_y;
-                box_idx_z = pos_z_floor - ptr_node_pt->box_ts_z;
-                box_idx = box_idx_x + box_idx_y * ptr_node_pt->box_real_dim_x + box_idx_z * ptr_node_pt->box_real_dim_x * ptr_node_pt->box_real_dim_y;
+                box_idx_pt = ptcl_idx_to_box_idx(ptr_node_pt, ptcl_idx);
 
                 //** >> If the particle moves towards a sibling node **/
-                if (ptr_node_pt->ptr_box_old[box_idx] >= 0)
+                if (ptr_node_pt->ptr_box_old[box_idx_pt] >= 0)
                 {
-                    zone_idx = ptr_node_pt->ptr_box_old[box_idx];
+                    zone_idx = ptr_node_pt->ptr_box_old[box_idx_pt];
                     ptr_node_sib = ptr_node_pt->pptr_chn[zone_idx];
 
                     //** >> Space checking of the particle capacity in the sibling node **/
@@ -153,6 +156,16 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
                     //** >> Adding the particle in the sibling node **/
                     ptr_node_sib->ptr_ptcl[ptr_node_sib->ptcl_size] = ptcl_idx;
                     ptr_node_sib->ptcl_size += 1; // +1 to the total particles in the sibling node
+
+                    //** >> Adding the mass of the mass box array of the sibling node in the new cell position**/
+                    box_idx_sib = ptcl_idx_to_box_idx(ptr_node_sib, ptcl_idx);
+                    ptr_node_sib->ptr_box_mass[box_idx_sib] += GL_ptcl_mass[ptcl_idx];
+                }
+                //** If the particle is only in the parent node **/
+                else
+                {
+                    //** >> Adding the mass of the mass box array of the parent node in the new cell position**/
+                    ptr_node_pt->ptr_box_mass[box_idx_pt] += GL_ptcl_mass[ptcl_idx];
                 }
 
                 // Whether the particle stays at the parent node or moves to a sibling node, it must be removed from the current node
@@ -161,6 +174,12 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
                 ptr_node->ptr_ptcl[i] = ptr_node->ptr_ptcl[no_ptcl - 1];
                 no_ptcl--; // The total number of particle decrease
                 i--;       // The last element that was just moved to the current position should also must be analized
+            }
+            //** >> The particle stay in the node **/
+            else
+            {
+                //** >> Adding the mass of the mass box array of the node in the new cell position**/
+                ptr_node->ptr_box_mass[box_idx_node] += GL_ptcl_mass[ptcl_idx];
             }
 
             //** >> The status of the particle is changed from not updated to updated **/
@@ -175,6 +194,10 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
             //** >> Particle has not been updated yet
             if (GL_ptcl_updating_flag[ptcl_idx] != status)
             {
+                //** >> Removing the mass of the mass box array of the node**/
+                box_idx_node = ptcl_idx_to_box_idx(ptr_node, ptcl_idx);
+                ptr_node->ptr_box_mass[box_idx_node] -= GL_ptcl_mass[ptcl_idx];
+
                 //** >> Updating the new position of the particle **/
                 //** >> Velocities **/
                 GL_ptcl_vx[ptcl_idx] += GL_ptcl_ax[ptcl_idx] * dt / 2;
@@ -206,28 +229,13 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
 
                 //** >> Moving the particle to the new node if it is necessary **/
 
-                //** >> Firstly we ask if the particle stays on the node **/
-
-                //** >> Position of the particles in the grid level of the current node **/
-                pos_x = GL_ptcl_x[ptcl_idx] * (1 << lv);
-                pos_y = GL_ptcl_y[ptcl_idx] * (1 << lv);
-                pos_z = GL_ptcl_z[ptcl_idx] * (1 << lv);
-
-                //** >> Floor of the particles positions in the grid level of the current node **/
-                pos_x_floor = (int)pos_x;
-                pos_y_floor = (int)pos_y;
-                pos_z_floor = (int)pos_z;
-
-                //** >> Box index in the current node **/
-                box_idx_x = pos_x_floor - ptr_node->box_ts_x;
-                box_idx_y = pos_y_floor - ptr_node->box_ts_y;
-                box_idx_z = pos_z_floor - ptr_node->box_ts_z;
-                box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+                //** >> We ask if the particle stays on the node **/
+                box_idx_node = ptcl_idx_to_box_idx(ptr_node, ptcl_idx);
 
                 //** >> The particle moves towards one of its child nodes **/
-                if (ptr_node->ptr_box_old[box_idx] >= 0)
+                if (ptr_node->ptr_box_old[box_idx_node] >= 0)
                 {
-                    zone_idx = ptr_node->ptr_box_old[box_idx];
+                    zone_idx = ptr_node->ptr_box_old[box_idx_node];
                     ptr_node_ch = ptr_node->pptr_chn[zone_idx];
 
                     //** >> Space checking of the particle capacity in the child node **/
@@ -240,37 +248,23 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
                     //** >> Adding the particle in the sibling node **/
                     ptr_node_ch->ptr_ptcl[ptr_node_ch->ptcl_size] = ptcl_idx;
                     ptr_node_ch->ptcl_size += 1; // +1 to the total particles in the child node
-                }
 
-                //** Secondly we ask if the particle leaves the node
+                    //** >> Adding the mass of the mass box array of the chile node in the new cell position**/
+                    box_idx_ch = ptcl_idx_to_box_idx(ptr_node_ch, ptcl_idx);
+                    ptr_node_ch->ptr_box_mass[box_idx_ch] += GL_ptcl_mass[ptcl_idx];
+                }
                 //** >> The particle moves towards its parent node or towards some sibling node  **/
-                if (ptr_node->ptr_box_old[box_idx] < -3)
+                else if (ptr_node->ptr_box_old[box_idx_node] < -3)
                 {
                     ptr_node_pt = ptr_node->ptr_pt;
-
-                    //** >> Position of the particles in the grid level of the parent node **/
-                    pos_x = GL_ptcl_x[ptcl_idx] * (1 << (lv - 1));
-                    pos_y = GL_ptcl_y[ptcl_idx] * (1 << (lv - 1));
-                    pos_z = GL_ptcl_z[ptcl_idx] * (1 << (lv - 1));
-
-                    //** >> Floor of the particles positions in the grid level of the parent node **/
-                    pos_x_floor = (int)pos_x;
-                    pos_y_floor = (int)pos_y;
-                    pos_z_floor = (int)pos_z;
-
                     //** >> Box index in the parent node **/
-                    box_idx_x = pos_x_floor - ptr_node_pt->box_ts_x;
-                    box_idx_y = pos_y_floor - ptr_node_pt->box_ts_y;
-                    box_idx_z = pos_z_floor - ptr_node_pt->box_ts_z;
-                    box_idx = box_idx_x + box_idx_y * ptr_node_pt->box_real_dim_x + box_idx_z * ptr_node_pt->box_real_dim_x * ptr_node_pt->box_real_dim_y;
-
-                    
+                    box_idx_pt = ptcl_idx_to_box_idx(ptr_node_pt, ptcl_idx);
 
                     //** >> If the particle moves towards a sibling node **/
-                    if (ptr_node_pt->ptr_box_old[box_idx] >= 0)
+                    if (ptr_node_pt->ptr_box_old[box_idx_pt] >= 0)
                     {
                         printf("\n\nSe entra en un heramno\n\n");
-                        zone_idx = ptr_node_pt->ptr_box_old[box_idx];
+                        zone_idx = ptr_node_pt->ptr_box_old[box_idx_pt];
                         ptr_node_sib = ptr_node_pt->pptr_chn[zone_idx];
 
                         //** >> Space checking of the particle capacity in the sibling node **/
@@ -283,6 +277,16 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
                         //** >> Adding the particle in the sibling node **/
                         ptr_node_sib->ptr_ptcl[ptr_node_sib->ptcl_size] = ptcl_idx;
                         ptr_node_sib->ptcl_size += 1; // +1 to the total particles in the sibling node
+
+                        //** >> Adding the mass of the mass box array of the sibling node in the new cell position**/
+                        box_idx_sib = ptcl_idx_to_box_idx(ptr_node_sib, ptcl_idx);
+                        ptr_node_sib->ptr_box_mass[box_idx_sib] += GL_ptcl_mass[ptcl_idx];
+                    }
+                    //** >> The particle stay in the node **/
+                    else
+                    {
+                        //** >> Adding the mass of the mass box array of the parent node in the new cell position**/
+                        ptr_node_pt->ptr_box_mass[box_idx_pt] += GL_ptcl_mass[ptcl_idx];
                     }
 
                     // Whether the particle stays at the parent node or moves to a sibling node, it must be removed from the current node
@@ -291,6 +295,12 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
                     ptr_node->ptr_ptcl[i] = ptr_node->ptr_ptcl[no_ptcl - 1];
                     no_ptcl--; // The total number of particle decrease
                     i--;       // The last element that was just moved to the current position should also must be analized
+                }
+                //** >> The particle stay in the node but not inside of a child **/
+                else
+                {
+                    //** >> Adding the mass of the mass box array of the node in the new cell position**/
+                    ptr_node->ptr_box_mass[box_idx_node] += GL_ptcl_mass[ptcl_idx];
                 }
 
                 //** >> The status of the particle is changed from not updated to updated **/

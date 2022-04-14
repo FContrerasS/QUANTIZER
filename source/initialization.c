@@ -109,12 +109,12 @@ static void initializing_head_node()
 		}
 	}
 
+	ptr_head->box_dim_x = no_lmin_cell;
+	ptr_head->box_dim_y = no_lmin_cell;
+	ptr_head->box_dim_z = no_lmin_cell;
 	ptr_head->box_real_dim_x = box_side_lmin;
 	ptr_head->box_real_dim_y = box_side_lmin;
 	ptr_head->box_real_dim_z = box_side_lmin;
-	ptr_head->box_dim_x = no_lmin_cell_pow3;
-	ptr_head->box_dim_y = no_lmin_cell_pow3;
-	ptr_head->box_dim_z = no_lmin_cell_pow3;
 	ptr_head->box_ts_x = -bder_os_sim;
 	ptr_head->box_ts_y = -bder_os_sim;
 	ptr_head->box_ts_z = -bder_os_sim;
