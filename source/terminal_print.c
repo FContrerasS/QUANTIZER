@@ -83,6 +83,7 @@ void terminal_print()
         "Particle acceleration",
         "Time-step computing",
         "Particle Updating A",
+        "Tree Adaptation",
         "Reset",
         "Particle Updating B",
         "Observables",
@@ -160,7 +161,7 @@ void terminal_print()
     //** >> Particle acceleration time **/
     //** >> Time-step time **/
     //** >> Particle Updating time **/
-    for (int i = 5; i < 13; i++)
+    for (int i = 5; i < 14; i++)
     {
         if (i == MAX_TIME_SECCTION)
         {

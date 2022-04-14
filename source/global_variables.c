@@ -161,7 +161,7 @@ static void init_global_user_params()
     meanmass = 100;
     total_mass = GL_no_ptcl * meanmass;
     fr_output = 5;
-    MaxIterations = 100000;
+    MaxIterations = 10000000;
     no_grid_pow2 = no_grid * no_grid;
     no_grid_pow3 = no_grid * no_grid * no_grid;
 
@@ -169,7 +169,7 @@ static void init_global_user_params()
 
 static void init_global_ref_crit()
 {
-    ref_criterion_mass = meanmass * 7;
+    ref_criterion_mass = meanmass * 2;
     n_exp = 1;
     _CFL_ = 0.5; // CFL criteria 0.5
     _MAX_dt_ = 6.7e-6;

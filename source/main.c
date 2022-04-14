@@ -138,7 +138,7 @@ int main(int argc, char **argv) {
 	//** >> OBSERVABLES **/
 	GL_clock_begin = clock();
 	observables(energies);
-	GL_times[12] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
+	GL_times[13] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 
 	//** >> OUPUT SNAPSHOTS **/
 	GL_clock_begin = clock();
@@ -180,16 +180,16 @@ int main(int argc, char **argv) {
 			printf("\n\n Error running initialization() function\n\n");
 			return _FAILURE_;
 		}
-		GL_times[10] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
+		GL_times[11] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 
 		//** >> BUILDING INITIAL TREE **/
 		GL_clock_begin = clock();
-		if (tree_construction() == _FAILURE_)
+		if (tree_adaptation() == _FAILURE_)
 		{
 			printf("\n\n Error running tree_construction() function\n\n");
 			return _FAILURE_;
 		}
-		GL_times[3] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
+		GL_times[10] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 
 		//** >> DENSITY COMPUTATION **/
 		GL_clock_begin = clock();
@@ -231,7 +231,7 @@ int main(int argc, char **argv) {
 			printf("\n\n Error running particle_updating_B() function\n\n");
 			return _FAILURE_;
 		}
-		GL_times[11] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
+		GL_times[12] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 
 		//** >> OUPUT SNAPSHOTS **/
 
@@ -242,7 +242,7 @@ int main(int argc, char **argv) {
 			//** >> OBSERVABLES **/
 			GL_clock_begin = clock();
 			observables(energies);
-			GL_times[12] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
+			GL_times[13] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 
 			//** >> OUPUT SNAPSHOTS **/
 			GL_clock_begin = clock();

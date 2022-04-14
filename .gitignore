@@ -12,7 +12,7 @@ Future_implementations.txt
 
 # Others
 
-
+*.o
 plummer_testing.py
 *.c~
 *.exe
