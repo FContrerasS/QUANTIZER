@@ -1,7 +1,7 @@
 # New_Code
 A new code for N-body/Hydrodynamics simulations in astrophysics
 
-#################################################################################################################
+#############################################################################################
 
 Author: Felipe Contreras (felipe.contrerass@postgrado.uv.cl).
 
@@ -9,7 +9,7 @@ Date: 2022-04-13.
 
 Code version: beta-v0.0.3.
 
-#################################################################################################################
+#############################################################################################
 
 This new code use a novel design for the adaptative mesh refinement method. 
 
@@ -19,7 +19,7 @@ Right now the code is functional with a novel design in the AMR part, but it onl
 
 The future updating will include the paralelization in both, CPU and GPU. Moreover, we will include the variable time-step for the different level of refinements.
 
-#################################################################################################################
+#############################################################################################
 
 The code is written in c, and compiled and linked with gcc. 
 
