@@ -26,13 +26,63 @@
 
 #include "tree_adaptation.h"
 
+static int updating_box_mass(struct node *ptr_node)
+{
+
+    int no_chn; // Number of child nodes 
+
+    no_chn = ptr_node->chn_size;
+
+    if (no_chn > 0)
+    {
+
+    }
+
+
+    return _SUCCESS_;
+}
+
+static int node_adaptation(struct node *ptr_node)
+{
+
+    return _SUCCESS_;
+}
+
 int tree_adaptation()
 {
 
     //** >> Working in the refinement zones **/
     if (lmin < lmax)
     {
-        
+        struct node *ptr_node;
+        int no_pts; // Number of parents in the cycle
+        int no_lvs; // Number of level of refinement to adapt
+
+        no_lvs = GL_tentacles_level_max < lmax - lmin ? GL_tentacles_level_max : GL_tentacles_level_max - 1;
+
+        for (int lv = no_lvs; lv > -1; lv--)
+        {
+            no_pts = GL_tentacles_size[lv];
+
+            //** >> For cycle over parent nodes **/
+            for (int i = 0; i < no_pts; i++)
+            {
+                ptr_node = GL_tentacles_old[lv][i];
+
+                //** Updating the box mass information **/
+                if (updating_box_mass(ptr_node) == _FAILURE_)
+                {
+                    printf("Error at function node_adaptation()\n");
+                    return _FAILURE_;
+                }
+
+                if (node_adaptation(ptr_node) == _FAILURE_)
+                {
+                    printf("Error at function node_adaptation()\n");
+                    return _FAILURE_;
+                }
+            }
+        }
     }
 
         return _SUCCESS_;

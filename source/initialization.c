@@ -204,14 +204,6 @@ static void initializing_tentacles()
 int initialization()
 {
 
-	TOTAL_MEMORY_NODES = 0;
-	TOTAL_MEMORY_CELDAS = 0;
-	TOTAL_MEMORY_PARTICULAS = 0;
-	TOTAL_MEMORY_CAJAS = 0;
-	TOTAL_MEMORY_OTROS = 0;
-	TOTAL_MEMORY_TENTACLES = 0;
-	TOTAL_MEMORY_AUX = 0;
-
 	//** >> Particle updating flag initialization **/
 	initializing_particle_flag_updating();
 
