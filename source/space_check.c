@@ -153,6 +153,52 @@ int space_check(int *ptr_cap, int size, const char *format, ...)
                     }
                 }
             }
+            else if (format_aux == 'n' && *format == '1')
+            {
+                struct node **pptr_node;
+                pptr_node = va_arg(args, struct node **);
+                if (*pptr_node == NULL)
+                {
+                    *pptr_node = (struct node *)malloc((*ptr_cap) * sizeof(struct node));
+                }
+                else
+                {
+                    struct node *ptr_aux = NULL;
+                    ptr_aux = (struct node *)realloc(*pptr_node, (*ptr_cap) * sizeof(struct node));
+                    if (ptr_aux == NULL)
+                    {
+                        printf("Error in the realocation of ptr_node");
+                        return _FAILURE_;
+                    }
+                    else
+                    {
+                        *pptr_node = ptr_aux;
+                    }
+                }
+            }
+            else if (format_aux == 'n' && *format == '2')
+            {
+                struct node ***ppptr_node;
+                ppptr_node = va_arg(args, struct node ***);
+                if (*ppptr_node == NULL)
+                {
+                    *ppptr_node = (struct node **)malloc((*ptr_cap) * sizeof(struct node *));
+                }
+                else
+                {
+                    struct node **pptr_aux = NULL;
+                    pptr_aux = (struct node **)realloc(*ppptr_node, (*ptr_cap) * sizeof(struct node *));
+                    if (pptr_aux == NULL)
+                    {
+                        printf("Error in the realocation of pptr_node");
+                        return _FAILURE_;
+                    }
+                    else
+                    {
+                        *ppptr_node = pptr_aux;
+                    }
+                }
+            }
             else
             {
                 printf("Error in the realocation of the pointer\n");

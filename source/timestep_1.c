@@ -42,7 +42,7 @@ static vtype timestep_computation_1(const struct node *ptr_node, bool status)
     vtype myvmax;   // Maximum velocity of all particles
 
     no_ptcl = ptr_node->ptcl_size;
-    lv = ptr_node->l;
+    lv = ptr_node->lv;
     H = 1.0L / (1 << lv);
 
     myvmax = 0; // Minium velocity designated by the user

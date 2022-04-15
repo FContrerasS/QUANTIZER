@@ -291,6 +291,5 @@ int main(int argc, char **argv) {
 
 	printf("\n\n ******** FINALIZED N-BODY CODE ********** \n\n");
 
-
 	return _SUCCESS_;
 }

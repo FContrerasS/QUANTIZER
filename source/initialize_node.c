@@ -30,7 +30,7 @@ void initialize_node(struct node *ptr_node)
 {
 	//** >> Global node properties **/
 	ptr_node->ID = -1; // Node ID
-	ptr_node->l = -1;  // Level of refinement
+	ptr_node->lv = -1;  // Level of refinement
 
 	//** >> Cells in the node **/
 	ptr_node->ptr_cell_idx_x = NULL; // X index of the cells in the node

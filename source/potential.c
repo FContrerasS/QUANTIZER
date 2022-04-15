@@ -46,7 +46,7 @@ static int potential_branch_node(int **pptr_red_black, const int *ptr_red_black_
     int box_grid_idxNbr_z_plus; // Box grid index in the neigborhood up
     int box_grid_idxNbr_z_minus; // Box grid index in the neigborhood down
 
-    H = 1.0L / (1 << ptr_node->l);
+    H = 1.0L / (1 << ptr_node->lv);
     H_pow2 = H * H;
 
     //** >> Cycle over the Successive over-relaxation **/

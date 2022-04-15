@@ -40,7 +40,7 @@ static int particle_distribution_in_cell(int **pptr_cell_ptcl, int *ptr_cell_ptc
 
     int size;
 
-    lv = ptr_node->l; 
+    lv = ptr_node->lv; 
     size = ptr_node->box_real_dim_x * ptr_node->box_real_dim_y * ptr_node->box_real_dim_z;
 
     //** >> Initializing pointers of cell particles **/
@@ -439,7 +439,7 @@ static int fill_child_nodes(int **pptr_cell_ptcl, const int *ptr_cell_ptcl_size,
 
         //** >> Global prperties **/
         ptr_node_ch->ID = i;
-        ptr_node_ch->l = ptr_node_pt->l + 1;
+        ptr_node_ch->lv = ptr_node_pt->lv + 1;
 
         //** >> Cells in the node **/
         cap = 2 * 8 * pt_cells_no; // Capacity is the double of total child cells
@@ -773,7 +773,7 @@ static int fill_tentacles(const struct node *ptr_node_pt)
 
     struct node **pptr_node_aux; // Auxiliary pointer in realloc
 
-    lv = ptr_node_pt->l - lmin + 1; // Children level
+    lv = ptr_node_pt->lv - lmin + 1; // Children level
 
     cap = GL_tentacles_cap[lv];
     size = GL_tentacles_size[lv];
@@ -939,10 +939,13 @@ int tree_construction()
                     }
 
                     //** >> Creating child nodes **/
-                    if (fill_child_nodes(pptr_cell_ptcl, ptr_cell_ptcl_size, ptr_node) == _FAILURE_)
+                    if(ptr_node->zones_size > 0)
                     {
-                        printf("Error at function create_child_nodes()\n");
-                        return _FAILURE_;
+                        if (fill_child_nodes(pptr_cell_ptcl, ptr_cell_ptcl_size, ptr_node) == _FAILURE_)
+                        {
+                            printf("Error at function create_child_nodes()\n");
+                            return _FAILURE_;
+                        }
                     }
 
                     //** >> Filling Tentacles for the next cycle at level of refinement

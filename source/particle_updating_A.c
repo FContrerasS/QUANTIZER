@@ -44,7 +44,7 @@ static int ptcl_idx_to_box_idx(struct node *ptr_node, int ptcl_idx)
     int box_idx_z; // Box index in Z direcction
     int box_idx;   // Box index
 
-    lv = ptr_node->l;
+    lv = ptr_node->lv;
 
     //** >> Position of the particles in the grid level of the current node before updating**/
     pos_x = GL_ptcl_x[ptcl_idx] * (1 << lv);

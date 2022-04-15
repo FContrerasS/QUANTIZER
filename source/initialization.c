@@ -46,7 +46,7 @@ static void initializing_head_node()
 
 	//** >> Global node properties **/
 	ptr_head->ID = 0;
-	ptr_head->l = lmin;
+	ptr_head->lv = lmin;
 
 	//** >> Cells in the node **/
 	ptr_head->ptr_cell_idx_x = (int *)malloc(no_lmin_cell_pow3 * sizeof(int));

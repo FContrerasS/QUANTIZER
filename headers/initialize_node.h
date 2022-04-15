@@ -33,7 +33,7 @@
 {
     //** >> Global node properties **/
     int ID; // Node ID
-    int l;  // Level of refinement
+    int lv;  // Level of refinement
 
     //** >> Cells in the node **/
     int *ptr_cell_idx_x; // X index position of the cells in the node at level l

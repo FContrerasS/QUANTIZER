@@ -40,7 +40,7 @@ static vtype timestep_computation_2(const struct node *ptr_node, bool status)
     vtype mydt; // The time-step of the node
 
     no_ptcl = ptr_node->ptcl_size;
-    lv = ptr_node->l;
+    lv = ptr_node->lv;
     H = 1.0L / (1 << lv);
 
     mydt = _MAX_dt_;

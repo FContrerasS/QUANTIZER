@@ -56,7 +56,7 @@ static void computing_grid_density(struct node *ptr_node)
     vtype w[8]; // Weight of the CIC method
 
     no_ptcl = ptr_node->ptcl_size;
-    lv = ptr_node->l;
+    lv = ptr_node->lv;
     H = 1.0L / (1 << lv);
     poisson_coeff = 4 * _G_ * _PI_ / (H * H * H);
 

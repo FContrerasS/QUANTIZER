@@ -53,7 +53,7 @@ static void computing_grid_acceleration(struct node *ptr_node)
     int pt_box_grid_idx_2; // Parent box grid index 2
 
 
-    lv = ptr_node->l;
+    lv = ptr_node->lv;
 
     H = 1.0L / (1 << lv);
     one_over_2H = 1.0L/(2*H);

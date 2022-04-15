@@ -54,7 +54,7 @@ static void computing_particle_acceleration(const struct node *ptr_node, bool st
     vtype w[8]; // Weight of the CIC method
 
     no_ptcl = ptr_node->ptcl_size;
-    lv = ptr_node->l;
+    lv = ptr_node->lv;
 
     //** >> Case no more child, the node is a leaf **/
     if (ptr_node->chn_size == 0)

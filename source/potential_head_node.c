@@ -313,7 +313,7 @@ static int compute_potential_head_node(struct node *ptr_node_pt)
 {
 	int lv;
 
-	lv = ptr_node_pt->l;
+	lv = ptr_node_pt->lv;
 
 	if(lv == lmin)
 	{

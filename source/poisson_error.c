@@ -89,7 +89,7 @@ static bool poisson_error_mehod_0(const struct node *ptr_node)
 
 	vtype rhomean_times_4piG;
 
-	H = 1.0L / (1 << ptr_node->l);
+	H = 1.0L / (1 << ptr_node->lv);
 	one_over_H_pow_2 = 1.0L / (H * H);
 	size = ptr_node->cell_size;
 
@@ -174,7 +174,7 @@ static bool poisson_error_mehod_1(const struct node *ptr_node)
 
 	vtype rhomean_times_4piG;
 
-	H = 1.0L / (1 << ptr_node->l);
+	H = 1.0L / (1 << ptr_node->lv);
 	one_over_H_pow_2 = 1.0L / (H * H);
 	size = ptr_node->cell_size;
 
@@ -251,7 +251,7 @@ static bool poisson_error_mehod_2(const struct node *ptr_node)
 
 	vtype rhomean_times_4piG;
 
-	H = 1.0L / (1 << ptr_node->l);
+	H = 1.0L / (1 << ptr_node->lv);
 	one_over_H_pow_2 = 1.0L / (H * H);
 	size = ptr_node->cell_size;
 
