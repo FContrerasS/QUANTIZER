@@ -46,8 +46,8 @@
 // 			free(ptr_node->ptr_cell_idx_y);
 // 			free(ptr_node->ptr_cell_idx_z);
 // 			free(ptr_node->ptr_ptcl);
-// 			free(ptr_node->ptr_box_old);
-// 			free(ptr_node->ptr_box_new);
+// 			free(ptr_node->ptr_box);
+// 			free(ptr_node->ptr_box_aux);
 // 			free(ptr_node->ptr_grid_intr);
 // 			free(ptr_node->ptr_grid_bder);
 // 			free(ptr_node->ptr_box_mass);
@@ -145,8 +145,8 @@ int reset()
 	// 		box_idx_z = ptr_head->ptr_cell_idx_z[cell_idx] - ptr_head->box_ts_z;
 	// 		box_idx = box_idx_x + box_idx_y * ptr_head->box_real_dim_x + box_idx_z * ptr_head->box_real_dim_x * ptr_head->box_real_dim_y;
 	// 		//** >> Restarting the box values
-	// 		ptr_head->ptr_box_old[box_idx] = -3;
-	// 		ptr_head->ptr_box_new[box_idx] = -3;
+	// 		ptr_head->ptr_box[box_idx] = -3;
+	// 		ptr_head->ptr_box_aux[box_idx] = -3;
 	// 	}
 
 	// 	// //** Reset of the mass box **/

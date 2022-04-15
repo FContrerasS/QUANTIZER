@@ -90,7 +90,7 @@ static void filling_mass_box(int **pptr_cell_ptcl, const int *ptr_cell_ptcl_size
     for (int i = 0; i < size; i++)
     {
         //** >> Analizing BORDER cells (-2) and EXIST cells (-3) **/
-        if (ptr_node->ptr_box_old[i] > -4)
+        if (ptr_node->ptr_box[i] > -4)
         {
             for (int j = 0; j < ptr_cell_ptcl_size[i]; j++)
             {
@@ -105,7 +105,7 @@ static void filling_mass_box(int **pptr_cell_ptcl, const int *ptr_cell_ptcl_size
 
 static int fill_cell_ref(struct node *ptr_node)
 {
-    //** >> Adding cells which satisfy the refinement criteria to the array ptr_cell_ref and chaning the box_old the status of refinement -1 **/
+    //** >> Adding cells which satisfy the refinement criteria to the array ptr_cell_ref and chaning the box the status of refinement -1 **/
        
     int size;                         // Size of the refinement cells array
 
@@ -129,13 +129,13 @@ static int fill_cell_ref(struct node *ptr_node)
         box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
 
         // Refinement criterion in the box_mass in no border box points
-        if (ptr_node->ptr_box_old[box_idx] != -2 && ptr_node->ptr_box_mass[box_idx] >= ref_criterion_mass) // No border (-2)
+        if (ptr_node->ptr_box[box_idx] != -2 && ptr_node->ptr_box_mass[box_idx] >= ref_criterion_mass) // No border (-2)
         {
-            if (ptr_node->ptr_box_old[box_idx] == -3) // Cell has not been added yet
+            if (ptr_node->ptr_box[box_idx] == -3) // Cell has not been added yet
             {
                 size++;
                 //** >> Chaning the cell box status from EXIST (-3) to REFINEMENT REQUIRED (-1) **/
-                ptr_node->ptr_box_old[box_idx] = -1;
+                ptr_node->ptr_box[box_idx] = -1;
             }
 
             //** >> Changing the neighboring cell status **/
@@ -148,11 +148,11 @@ static int fill_cell_ref(struct node *ptr_node)
                         box_idxNbr = box_idx + ii + jj * ptr_node->box_real_dim_x + kk * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
                         //** >> Asking if the neighboring cell has not been changed yet **/
                         // The border (-2) of the simulation can be added
-                        if (ptr_node->ptr_box_old[box_idxNbr] == -3 || ptr_node->ptr_box_old[box_idxNbr] == -2) // Cell has not been added yet
+                        if (ptr_node->ptr_box[box_idxNbr] == -3 || ptr_node->ptr_box[box_idxNbr] == -2) // Cell has not been added yet
                         {
                             size++;
                             //** >> Chaning the cell box status from EXIST (-3) to REFINEMENT REQUIRED (-1) **/
-                            ptr_node->ptr_box_old[box_idxNbr] = -1;
+                            ptr_node->ptr_box[box_idxNbr] = -1;
                         }
                     }
                 }
@@ -179,7 +179,7 @@ static int fill_cell_ref(struct node *ptr_node)
         box_idx_z = ptr_node->ptr_cell_idx_z[i] - ptr_node->box_ts_z;
         box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
 
-        if (ptr_node->ptr_box_old[box_idx] == -1) // Cell require refinement
+        if (ptr_node->ptr_box[box_idx] == -1) // Cell require refinement
         {
             ptr_node->ptr_cell_ref[cntr] = i;
             cntr++;
@@ -241,7 +241,7 @@ static int fill_zones_ref(struct node *ptr_node)
         box_idx_z = ptr_node->ptr_cell_idx_z[cell_idx] - ptr_node->box_ts_z;
         box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
 
-        if (ptr_node->ptr_box_old[box_idx] == -1) // A cell without zone has been founded
+        if (ptr_node->ptr_box[box_idx] == -1) // A cell without zone has been founded
         {
             zone_size = 0; // Initial number of element in the zone
 
@@ -249,7 +249,7 @@ static int fill_zones_ref(struct node *ptr_node)
             ptr_node->ptr_aux_idx[0] = box_idx;
 
             //** >>  Changing the box status from REFINEMENT REQUIRED (-1) to the refinement zone ID (>= 0) **/
-            ptr_node->ptr_box_old[box_idx] = zone_idx;
+            ptr_node->ptr_box[box_idx] = zone_idx;
 
             zone_size++; // +1 to the number of cells in the zone
             cntr++;      // +1 to the number of cells added in total
@@ -272,45 +272,45 @@ static int fill_zones_ref(struct node *ptr_node)
 
                 //** Checking the nearest 6 neighbors of face
                 // First neighbor
-                if (ptr_node->ptr_box_old[box_idxNbr_x_plus] == -1)
+                if (ptr_node->ptr_box[box_idxNbr_x_plus] == -1)
                 {
                     ptr_node->ptr_aux_idx[zone_size + cntr2] = box_idxNbr_x_plus; // Including the neighboring element of the box to the auxiliary array
-                    ptr_node->ptr_box_old[box_idxNbr_x_plus] = zone_idx;          // Changing the box status from REFINEMENT REQUIRED (-1) to the refinement zone ID (>= 0)
+                    ptr_node->ptr_box[box_idxNbr_x_plus] = zone_idx;          // Changing the box status from REFINEMENT REQUIRED (-1) to the refinement zone ID (>= 0)
                     cntr2++;                                       // +1 to the number of cells added in the current inspection
                 }
                 // Second neighbor
-                if (ptr_node->ptr_box_old[box_idxNbr_x_minus] == -1)
+                if (ptr_node->ptr_box[box_idxNbr_x_minus] == -1)
                 {
                     ptr_node->ptr_aux_idx[zone_size + cntr2] = box_idxNbr_x_minus; // Including the neighboring element of the box to the auxiliary array
-                    ptr_node->ptr_box_old[box_idxNbr_x_minus] = zone_idx;          // Changing the box status from REFINEMENT REQUIRED (-1) to the refinement zone ID (>= 0)
+                    ptr_node->ptr_box[box_idxNbr_x_minus] = zone_idx;          // Changing the box status from REFINEMENT REQUIRED (-1) to the refinement zone ID (>= 0)
                     cntr2++;                                       // +1 to the number of cells added in the current inspection
                 }
                 // Third neighbor
-                if (ptr_node->ptr_box_old[box_idxNbr_y_plus] == -1)
+                if (ptr_node->ptr_box[box_idxNbr_y_plus] == -1)
                 {
                     ptr_node->ptr_aux_idx[zone_size + cntr2] = box_idxNbr_y_plus; // Including the neighboring element of the box to the auxiliary array
-                    ptr_node->ptr_box_old[box_idxNbr_y_plus] = zone_idx;          // Changing the box status from REFINEMENT REQUIRED (-1) to the refinement zone ID (>= 0)
+                    ptr_node->ptr_box[box_idxNbr_y_plus] = zone_idx;          // Changing the box status from REFINEMENT REQUIRED (-1) to the refinement zone ID (>= 0)
                     cntr2++;                                       // +1 to the number of cells added in the current inspection
                 }
                 // Fourth neighbor
-                if (ptr_node->ptr_box_old[box_idxNbr_y_minus] == -1)
+                if (ptr_node->ptr_box[box_idxNbr_y_minus] == -1)
                 {
                     ptr_node->ptr_aux_idx[zone_size + cntr2] = box_idxNbr_y_minus; // Including the neighboring element of the box to the auxiliary array
-                    ptr_node->ptr_box_old[box_idxNbr_y_minus] = zone_idx;          // Changing the box status from REFINEMENT REQUIRED (-1) to the refinement zone ID (>= 0)
+                    ptr_node->ptr_box[box_idxNbr_y_minus] = zone_idx;          // Changing the box status from REFINEMENT REQUIRED (-1) to the refinement zone ID (>= 0)
                     cntr2++;                                       // +1 to the number of cells added in the current inspection
                 }
                 // Fifth neighbor
-                if (ptr_node->ptr_box_old[box_idxNbr_z_plus] == -1)
+                if (ptr_node->ptr_box[box_idxNbr_z_plus] == -1)
                 {
                     ptr_node->ptr_aux_idx[zone_size + cntr2] = box_idxNbr_z_plus; // Including the neighboring element of the box to the auxiliary array
-                    ptr_node->ptr_box_old[box_idxNbr_z_plus] = zone_idx;          // Changing the box status from REFINEMENT REQUIRED (-1) to the refinement zone ID (>= 0)
+                    ptr_node->ptr_box[box_idxNbr_z_plus] = zone_idx;          // Changing the box status from REFINEMENT REQUIRED (-1) to the refinement zone ID (>= 0)
                     cntr2++;                                       // +1 to the number of cells added in the current inspection
                 }
                 // Sixth neighbor
-                if (ptr_node->ptr_box_old[box_idxNbr_z_minus] == -1)
+                if (ptr_node->ptr_box[box_idxNbr_z_minus] == -1)
                 {
                     ptr_node->ptr_aux_idx[zone_size + cntr2] = box_idxNbr_z_minus; // Including the neighboring element of the box to the auxiliary array
-                    ptr_node->ptr_box_old[box_idxNbr_z_minus] = zone_idx;          // Changing the box status from REFINEMENT REQUIRED (-1) to the refinement zone ID (>= 0)
+                    ptr_node->ptr_box[box_idxNbr_z_minus] = zone_idx;          // Changing the box status from REFINEMENT REQUIRED (-1) to the refinement zone ID (>= 0)
                     cntr2++;                                       // +1 to the number of cells added in the current inspection
                 }
                 zone_size += cntr2; // Increasing the number of cells in the zone
@@ -369,7 +369,7 @@ static int fill_zones_ref(struct node *ptr_node)
         box_idx_y = ptr_node->ptr_cell_idx_y[cell_idx] - ptr_node->box_ts_y;
         box_idx_z = ptr_node->ptr_cell_idx_z[cell_idx] - ptr_node->box_ts_z;
         box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
-        zone_idx = ptr_node->ptr_box_old[box_idx];
+        zone_idx = ptr_node->ptr_box[box_idx];
         cntr = ptr_node->ptr_aux_idx[zone_idx];          // Counter the element in the zone "zone_idx"
         ptr_node->pptr_zones[zone_idx][cntr] = cell_idx; // Adding the index of the cell array in the block to the zone
         ptr_node->ptr_aux_idx[zone_idx] += 1;            // Counter the number of elements added in the zone "zone_idx"
@@ -563,16 +563,15 @@ static int fill_child_nodes(int **pptr_cell_ptcl, const int *ptr_cell_ptcl_size,
         pos_z = (ptr_node_ch->box_real_dim_z - ptr_node_ch->box_dim_z) / 2;
         ptr_node_ch->box_ts_z = ptr_node_ch->box_min_z - pos_z;
 
-        // Filling the boxes old and new
+        // Filling the box status
         cap = ptr_node_ch->box_real_dim_x * ptr_node_ch->box_real_dim_y * ptr_node_ch->box_real_dim_z; // In general, the size of each side must be 3 times bigger than the same side of the "minimal box"
         size = ptr_node_ch->cell_size;                                                                 // Number of cells in the block
-        ptr_node_ch->ptr_box_old = (int *)malloc(cap * sizeof(int));
-        ptr_node_ch->ptr_box_new = (int *)malloc(cap * sizeof(int));
+        ptr_node_ch->ptr_box = (int *)malloc(cap * sizeof(int));
+        ptr_node_ch->ptr_box_aux = (int *)malloc(cap * sizeof(int));
         // Putting the value of NO-EXIST (-4) in every box index
         for (int j = 0; j < cap; j++)
         {
-            ptr_node_ch->ptr_box_old[j] = -4;
-            ptr_node_ch->ptr_box_new[j] = -4;
+            ptr_node_ch->ptr_box[j] = -4;
         }
         // Changing from NO-EXIST (-4) to EXIST (-3) to all cells in the block of the child node
         for (int j = 0; j < size; j++)
@@ -581,10 +580,8 @@ static int fill_child_nodes(int **pptr_cell_ptcl, const int *ptr_cell_ptcl_size,
             box_idx_y = ptr_node_ch->ptr_cell_idx_y[j] - ptr_node_ch->box_ts_y;
             box_idx_z = ptr_node_ch->ptr_cell_idx_z[j] - ptr_node_ch->box_ts_z;
             box_idx = box_idx_x + box_idx_y * ptr_node_ch->box_real_dim_x + box_idx_z * ptr_node_ch->box_real_dim_x * ptr_node_ch->box_real_dim_y;
-            ptr_node_ch->ptr_box_old[box_idx] = -3;
-            ptr_node_ch->ptr_box_new[box_idx] = -3;
+            ptr_node_ch->ptr_box[box_idx] = -3;
         }
-        cntr = 0;
         // Changing the EXIST (-3) TO BORDER (-2) to all border cells in the block
         for (int j = 0; j < size; j++)
         {
@@ -600,14 +597,12 @@ static int fill_child_nodes(int **pptr_cell_ptcl, const int *ptr_cell_ptcl_size,
                     for (int ii = -1; ii < 2; ii++)
                     {
                         box_idxNbr = box_idx + ii + jj * ptr_node_ch->box_real_dim_x + kk * ptr_node_ch->box_real_dim_x * ptr_node_ch->box_real_dim_y;
-                        if (ptr_node_ch->ptr_box_old[box_idxNbr] == -4) // Border cells are those such that at least on of their first neighbors are NO-EXIST cells.
+                        if (ptr_node_ch->ptr_box[box_idxNbr] == -4) // Border cells are those such that at least on of their first neighbors are NO-EXIST cells.
                         {
-                            ptr_node_ch->ptr_box_old[box_idx] = -2;
-                            ptr_node_ch->ptr_box_new[box_idx] = -2;
+                            ptr_node_ch->ptr_box[box_idx] = -2;
                             ii = 2;
                             jj = 2;
                             kk = 2;
-                            cntr++;
                         }
                     }
                 }
@@ -634,62 +629,62 @@ static int fill_child_nodes(int **pptr_cell_ptcl, const int *ptr_cell_ptcl_size,
                     box_idxNbr_im1_jm1_km1 = box_idx - 1 - ptr_node_ch->box_real_dim_x - ptr_node_ch->box_real_dim_x * ptr_node_ch->box_real_dim_y;
 
                     //** >> The grid point exist **/
-                    if (ptr_node_ch->ptr_box_old[box_idxNbr_i0_j0_k0] > -4 ||
-                        ptr_node_ch->ptr_box_old[box_idxNbr_im1_j0_k0] > -4 ||
-                        ptr_node_ch->ptr_box_old[box_idxNbr_i0_jm1_k0] > -4 ||
-                        ptr_node_ch->ptr_box_old[box_idxNbr_im1_jm1_k0] > -4 ||
-                        ptr_node_ch->ptr_box_old[box_idxNbr_i0_j0_km1] > -4 ||
-                        ptr_node_ch->ptr_box_old[box_idxNbr_im1_j0_km1] > -4 ||
-                        ptr_node_ch->ptr_box_old[box_idxNbr_i0_jm1_km1] > -4 ||
-                        ptr_node_ch->ptr_box_old[box_idxNbr_im1_jm1_km1] > -4)
+                    if (ptr_node_ch->ptr_box[box_idxNbr_i0_j0_k0] > -4 ||
+                        ptr_node_ch->ptr_box[box_idxNbr_im1_j0_k0] > -4 ||
+                        ptr_node_ch->ptr_box[box_idxNbr_i0_jm1_k0] > -4 ||
+                        ptr_node_ch->ptr_box[box_idxNbr_im1_jm1_k0] > -4 ||
+                        ptr_node_ch->ptr_box[box_idxNbr_i0_j0_km1] > -4 ||
+                        ptr_node_ch->ptr_box[box_idxNbr_im1_j0_km1] > -4 ||
+                        ptr_node_ch->ptr_box[box_idxNbr_i0_jm1_km1] > -4 ||
+                        ptr_node_ch->ptr_box[box_idxNbr_im1_jm1_km1] > -4)
                     {
                         
                         is_bder_grid_point = false;
                         //** Connection to the right  **/
-                        if (ptr_node_ch->ptr_box_old[box_idxNbr_i0_j0_k0] < -3 &&
-                            ptr_node_ch->ptr_box_old[box_idxNbr_i0_jm1_k0] < -3 &&
-                            ptr_node_ch->ptr_box_old[box_idxNbr_i0_j0_km1] < -3 &&
-                            ptr_node_ch->ptr_box_old[box_idxNbr_i0_jm1_km1] < -3)
+                        if (ptr_node_ch->ptr_box[box_idxNbr_i0_j0_k0] < -3 &&
+                            ptr_node_ch->ptr_box[box_idxNbr_i0_jm1_k0] < -3 &&
+                            ptr_node_ch->ptr_box[box_idxNbr_i0_j0_km1] < -3 &&
+                            ptr_node_ch->ptr_box[box_idxNbr_i0_jm1_km1] < -3)
                         {
                             is_bder_grid_point = true;
                         }
                         //** Connection to the left  **/
-                        else if (ptr_node_ch->ptr_box_old[box_idxNbr_im1_j0_k0] < -3 &&
-                                 ptr_node_ch->ptr_box_old[box_idxNbr_im1_jm1_k0] < -3 &&
-                                 ptr_node_ch->ptr_box_old[box_idxNbr_im1_j0_km1] < -3 &&
-                                 ptr_node_ch->ptr_box_old[box_idxNbr_im1_jm1_km1] < -3)
+                        else if (ptr_node_ch->ptr_box[box_idxNbr_im1_j0_k0] < -3 &&
+                                 ptr_node_ch->ptr_box[box_idxNbr_im1_jm1_k0] < -3 &&
+                                 ptr_node_ch->ptr_box[box_idxNbr_im1_j0_km1] < -3 &&
+                                 ptr_node_ch->ptr_box[box_idxNbr_im1_jm1_km1] < -3)
                         {
                             is_bder_grid_point = true;
                         }
                         //** Backward connection   **/
-                        else if (ptr_node_ch->ptr_box_old[box_idxNbr_i0_j0_k0] < -3 &&
-                                ptr_node_ch->ptr_box_old[box_idxNbr_im1_j0_k0] < -3 &&
-                                ptr_node_ch->ptr_box_old[box_idxNbr_i0_j0_km1] < -3 &&
-                                ptr_node_ch->ptr_box_old[box_idxNbr_im1_j0_km1] < -3)
+                        else if (ptr_node_ch->ptr_box[box_idxNbr_i0_j0_k0] < -3 &&
+                                ptr_node_ch->ptr_box[box_idxNbr_im1_j0_k0] < -3 &&
+                                ptr_node_ch->ptr_box[box_idxNbr_i0_j0_km1] < -3 &&
+                                ptr_node_ch->ptr_box[box_idxNbr_im1_j0_km1] < -3)
                         {
                             is_bder_grid_point = true;
                         }
                         //** Forward connection   **/
-                        else if (ptr_node_ch->ptr_box_old[box_idxNbr_i0_jm1_k0] < -3 &&
-                                ptr_node_ch->ptr_box_old[box_idxNbr_im1_jm1_k0] < -3 &&
-                                ptr_node_ch->ptr_box_old[box_idxNbr_i0_jm1_km1] < -3 &&
-                                ptr_node_ch->ptr_box_old[box_idxNbr_im1_jm1_km1] < -3)
+                        else if (ptr_node_ch->ptr_box[box_idxNbr_i0_jm1_k0] < -3 &&
+                                ptr_node_ch->ptr_box[box_idxNbr_im1_jm1_k0] < -3 &&
+                                ptr_node_ch->ptr_box[box_idxNbr_i0_jm1_km1] < -3 &&
+                                ptr_node_ch->ptr_box[box_idxNbr_im1_jm1_km1] < -3)
                         {
                             is_bder_grid_point = true;
                         }
                         //** Upward connection **/
-                        else if (ptr_node_ch->ptr_box_old[box_idxNbr_i0_j0_k0] < -3 &&
-                                 ptr_node_ch->ptr_box_old[box_idxNbr_im1_j0_k0] < -3 &&
-                                 ptr_node_ch->ptr_box_old[box_idxNbr_i0_jm1_k0] < -3 &&
-                                 ptr_node_ch->ptr_box_old[box_idxNbr_im1_jm1_k0] < -3)
+                        else if (ptr_node_ch->ptr_box[box_idxNbr_i0_j0_k0] < -3 &&
+                                 ptr_node_ch->ptr_box[box_idxNbr_im1_j0_k0] < -3 &&
+                                 ptr_node_ch->ptr_box[box_idxNbr_i0_jm1_k0] < -3 &&
+                                 ptr_node_ch->ptr_box[box_idxNbr_im1_jm1_k0] < -3)
                         {
                             is_bder_grid_point = true;
                         }
                         //** Down connection **/
-                        else if (ptr_node_ch->ptr_box_old[box_idxNbr_i0_j0_km1] < -3 &&
-                                 ptr_node_ch->ptr_box_old[box_idxNbr_im1_j0_km1] < -3 &&
-                                 ptr_node_ch->ptr_box_old[box_idxNbr_i0_jm1_km1] < -3 &&
-                                 ptr_node_ch->ptr_box_old[box_idxNbr_im1_jm1_km1] < -3)
+                        else if (ptr_node_ch->ptr_box[box_idxNbr_i0_j0_km1] < -3 &&
+                                 ptr_node_ch->ptr_box[box_idxNbr_im1_j0_km1] < -3 &&
+                                 ptr_node_ch->ptr_box[box_idxNbr_i0_jm1_km1] < -3 &&
+                                 ptr_node_ch->ptr_box[box_idxNbr_im1_jm1_km1] < -3)
                         {
                             is_bder_grid_point = true;
                         }

@@ -45,8 +45,8 @@ void initialize_node(struct node *ptr_node)
 	ptr_node->ptcl_size = 0;	   // Number of existing particles in the node
 
 	//** >> Boxes **/
-	ptr_node->ptr_box_old = NULL;  // Old box contaning the already cells status of the minimal box cells and more
-	ptr_node->ptr_box_new = NULL;  // New box contaning the already cells status of the minimal box cells and more
+	ptr_node->ptr_box = NULL;	   // Box contaning the cells status of the minimal box cells and more
+	ptr_node->ptr_box_aux = NULL;  // Auxiliary box contaning used to adatp the box to a new time-step
 	ptr_node->box_real_dim_x = 0;  // Real dimension X of the box
 	ptr_node->box_real_dim_y = 0;  // Real dimension Y of the box
 	ptr_node->box_real_dim_z = 0;  // Real dimension Z of the box

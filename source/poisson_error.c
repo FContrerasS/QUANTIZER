@@ -43,15 +43,15 @@ static bool interior_grid_point(const struct node *ptr_node, int i)
 	box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
 
 	//** Checking the nearest 3 neighbors of face
-	if (ptr_node->ptr_box_old[box_idx - 1] < -3)
+	if (ptr_node->ptr_box[box_idx - 1] < -3)
 	{
 		check = false;
 	}
-	else if (ptr_node->ptr_box_old[box_idx - ptr_node->box_real_dim_x] < -3)
+	else if (ptr_node->ptr_box[box_idx - ptr_node->box_real_dim_x] < -3)
 	{
 		check = false;
 	}
-	else if (ptr_node->ptr_box_old[box_idx - ptr_node->box_real_dim_x * ptr_node->box_real_dim_y] < -3)
+	else if (ptr_node->ptr_box[box_idx - ptr_node->box_real_dim_x * ptr_node->box_real_dim_y] < -3)
 	{
 		check = false;
 	}

@@ -136,7 +136,7 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
 
                 //** We ask if the particle leaves the node
                 //** >> The particle moves towards its parent node or towards some sibling node  **/
-                if (ptr_node->ptr_box_old[box_idx_node] < -3)
+                if (ptr_node->ptr_box[box_idx_node] < -3)
                 {
                     //** The local mass is reduced **/
                     ptr_node->local_mass -= GL_ptcl_mass[ptcl_idx];
@@ -146,9 +146,9 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
                     box_idx_pt = ptcl_idx_to_box_idx(ptr_node_pt, ptcl_idx);
 
                     //** >> If the particle moves towards a sibling node **/
-                    if (ptr_node_pt->ptr_box_old[box_idx_pt] >= 0)
+                    if (ptr_node_pt->ptr_box[box_idx_pt] >= 0)
                     {
-                        zone_idx = ptr_node_pt->ptr_box_old[box_idx_pt];
+                        zone_idx = ptr_node_pt->ptr_box[box_idx_pt];
                         ptr_node_sib = ptr_node_pt->pptr_chn[zone_idx];
 
                         //** >> Space checking of the particle capacity in the sibling node **/
@@ -240,9 +240,9 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
                     box_idx_node = ptcl_idx_to_box_idx(ptr_node, ptcl_idx);
 
                     //** >> The particle moves towards one of its child nodes **/
-                    if (ptr_node->ptr_box_old[box_idx_node] >= 0)
+                    if (ptr_node->ptr_box[box_idx_node] >= 0)
                     {
-                        zone_idx = ptr_node->ptr_box_old[box_idx_node];
+                        zone_idx = ptr_node->ptr_box[box_idx_node];
                         ptr_node_ch = ptr_node->pptr_chn[zone_idx];
 
                         //** >> Space checking of the particle capacity in the child node **/
@@ -263,7 +263,7 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
                         ptr_node_ch->local_mass += GL_ptcl_mass[ptcl_idx];
                     }
                     //** >> The particle moves towards its parent node or towards some sibling node  **/
-                    else if (ptr_node->ptr_box_old[box_idx_node] < -3)
+                    else if (ptr_node->ptr_box[box_idx_node] < -3)
                     {
                         //** The local mass is reduced **/
                         ptr_node->local_mass -= GL_ptcl_mass[ptcl_idx];
@@ -273,10 +273,10 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
                         box_idx_pt = ptcl_idx_to_box_idx(ptr_node_pt, ptcl_idx);
 
                         //** >> If the particle moves towards a sibling node **/
-                        if (ptr_node_pt->ptr_box_old[box_idx_pt] >= 0)
+                        if (ptr_node_pt->ptr_box[box_idx_pt] >= 0)
                         {
                             printf("\n\nSe entra en un heramno\n\n");
-                            zone_idx = ptr_node_pt->ptr_box_old[box_idx_pt];
+                            zone_idx = ptr_node_pt->ptr_box[box_idx_pt];
                             ptr_node_sib = ptr_node_pt->pptr_chn[zone_idx];
 
                             //** >> Space checking of the particle capacity in the sibling node **/

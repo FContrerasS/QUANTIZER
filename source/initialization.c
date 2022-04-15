@@ -80,8 +80,8 @@ static void initializing_head_node()
 
 	//** >> Boxes **/
 	// Including border when particles goes out of the simulation and also because the n_exp parameter checking
-	ptr_head->ptr_box_old = (int *)malloc(box_side_lmin_pow3 * sizeof(int));
-	ptr_head->ptr_box_new = (int *)malloc(box_side_lmin_pow3 * sizeof(int));
+	ptr_head->ptr_box = (int *)malloc(box_side_lmin_pow3 * sizeof(int));
+	ptr_head->ptr_box_aux = (int *)malloc(box_side_lmin_pow3 * sizeof(int));
 	int box_idx; // Index in the box
 	for (int k = 0; k < box_side_lmin; k++)
 	{
@@ -92,18 +92,15 @@ static void initializing_head_node()
 				box_idx = i + j * box_side_lmin + k * box_side_lmin_pow2;
 				if (i <= bder_os_sim - 1 || i >= box_side_lmin - bder_os_sim || j <= bder_os_sim - 1 || j >= box_side_lmin - bder_os_sim || k <= bder_os_sim - 1 || k >= box_side_lmin - bder_os_sim)
 				{
-					ptr_head->ptr_box_old[box_idx] = -5; //-5 corresponds to cell out of the box simulation
-					ptr_head->ptr_box_new[box_idx] = -5;
+					ptr_head->ptr_box[box_idx] = -5; //-5 corresponds to cell out of the box simulation
 				}
 				else if (i == bder_os_sim || i == box_side_lmin - bder_os_sim - 1 || j == bder_os_sim || j == box_side_lmin - bder_os_sim - 1 || k == bder_os_sim || k == box_side_lmin - bder_os_sim - 1)
 				{
-					ptr_head->ptr_box_old[box_idx] = -2; //-2 corresponds to cell in the border of the block
-					ptr_head->ptr_box_new[box_idx] = -2;
+					ptr_head->ptr_box[box_idx] = -2; //-2 corresponds to cell in the border of the block
 				}
 				else
 				{
-					ptr_head->ptr_box_old[box_idx] = -3; //-3 corresponds to cell belonging to the block
-					ptr_head->ptr_box_new[box_idx] = -3;
+					ptr_head->ptr_box[box_idx] = -3; //-3 corresponds to cell belonging to the block
 				}
 			}
 		}
