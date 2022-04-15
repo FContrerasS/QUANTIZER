@@ -84,6 +84,8 @@ static void filling_mass_box(int **pptr_cell_ptcl, const int *ptr_cell_ptcl_size
 
     int size = ptr_node->box_real_dim_x * ptr_node->box_real_dim_y * ptr_node->box_real_dim_z;
 
+    vtype total_mass = 0;
+
     //** >> Check all elements in the box **/
     for (int i = 0; i < size; i++)
     {
@@ -93,11 +95,11 @@ static void filling_mass_box(int **pptr_cell_ptcl, const int *ptr_cell_ptcl_size
             for (int j = 0; j < ptr_cell_ptcl_size[i]; j++)
             {
                 ptcl_idx = pptr_cell_ptcl[i][j];
+                total_mass += GL_ptcl_mass[ptcl_idx];
                 ptr_node->ptr_box_mass[i] += GL_ptcl_mass[ptcl_idx]; // The mass was initialized to zero
             }
         }
     }
-
 
 } // end function filling_density_box_main_node
 

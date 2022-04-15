@@ -182,7 +182,7 @@ int main(int argc, char **argv) {
 		}
 		GL_times[11] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 
-		//** >> BUILDING INITIAL TREE **/
+		//** >> TREE ADAPTATION **/
 		GL_clock_begin = clock();
 		if (tree_adaptation() == _FAILURE_)
 		{
