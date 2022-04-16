@@ -334,7 +334,6 @@ static int fill_zones_ref(struct node *ptr_node)
                     ptr_node->ptr_zone_cap[zone_idx_max - i - 1] = 0;
                 }
             }
-
             ptr_node->ptr_zone_size[zone_idx] = zone_size;
             zone_idx++; // Increasing the zone number
         }               // Zone defined in the box
@@ -977,5 +976,5 @@ int tree_construction()
         free(pptr_cell_ptcl);
     } // Finalized tree structure
 
-        return _SUCCESS_;
+    return _SUCCESS_;
 }

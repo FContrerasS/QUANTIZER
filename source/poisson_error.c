@@ -93,8 +93,7 @@ static bool poisson_error_mehod_0(const struct node *ptr_node)
 	one_over_H_pow_2 = 1.0L / (H * H);
 	size = ptr_node->cell_size;
 
-
-
+	//printf("local_mass = %1.3e\n", ptr_node->local_mass);
 	rhomean_times_4piG = 4 * _G_ * _PI_ * ptr_node->local_mass / (size * H * H * H);
 
 	error = 0;
@@ -127,9 +126,12 @@ static bool poisson_error_mehod_0(const struct node *ptr_node)
 			
 		}
 	}
+	//printf("cntr = %d, rhomean_times_4piG = %1.3e,\n", cntr, rhomean_times_4piG);
 	error = error / cntr;
 	error = sqrt(error);
 	error = error / rhomean_times_4piG;
+
+	//printf("error = %.12f\n", error);
 
 	//** >> If the precision condition satisfied **/
 	if (error < _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_)

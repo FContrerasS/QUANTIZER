@@ -141,7 +141,7 @@ static void initialization_ref_aux(struct node *ptr_node)
     //ptr_node->cell_ref_size = 0;    //Number of cell to refine is equal to 0
     for (int i = 0; i < ptr_node->zones_size; i++)
     {
-        ptr_node->ptr_zone_size = 0;    //The zone i contains 0 elements
+        ptr_node->ptr_zone_size[i] = 0;    //The zone i contains 0 elements
     }
 
     //ptr_node->zones_size = 0;   //The total number of zones of refinement is 0
@@ -422,7 +422,6 @@ static int fill_zones_ref(struct node *ptr_node)
                     ptr_node->ptr_zone_cap[zone_idx_max - i - 1] = 0;
                 }
             }
-
             ptr_node->ptr_zone_size[zone_idx] = zone_size;
             zone_idx++; // Increasing the zone number
         }               // Zone defined in the box
@@ -441,14 +440,12 @@ static int fill_zones_ref(struct node *ptr_node)
             return _FAILURE_;
         }
     }
-
     //** >> Initializing the ptr_aux_idx array to be used as a counter of elemnents in each zone**/
     // Notes that the number of refined cells is always bigger or equal than the number of refined zones, so that the capacity of ptr_aux_idx is always enough to counter the number of refined zones
     for (int i = 0; i < ptr_node->zones_size; i++)
     {
         ptr_node->ptr_aux_idx[i] = 0;
     }
-
     //** >> Adding the cells to the zone array pptr_zones **/
     for (int i = 0; i < ptr_node->cell_ref_size; i++)
     {
@@ -462,7 +459,6 @@ static int fill_zones_ref(struct node *ptr_node)
         ptr_node->pptr_zones[zone_idx][cntr] = cell_idx; // Adding the index of the cell array in the block to the zone
         ptr_node->ptr_aux_idx[zone_idx] += 1;            // Counter the number of elements added in the zone "zone_idx"
     }
-
     return _SUCCESS_;
 } // End function fill_zones_ref
 
@@ -474,7 +470,10 @@ static int adapt_new_ref_zones(struct node *ptr_node)
     //int cntr_old_ref_cells; // Counter the total number of old cell refined in the node
     int cntr_cell_ch; //Counter the cells of the child node
     int cntr_old_ref_zones;             // total number of zones refined in the old box
-    int links_old[ptr_node->zones_size];    //Storing the old zone of refinement id
+    int cntr_old_links_plus;      // Counte links old
+    int cntr_link_elements;         // Counter linked elements
+    bool check_link; //Check if the element is linked
+    int links_old[ptr_node->zones_size];    // Storing the old zone of refinement id
     int links_new[ptr_node->zones_size];    // Storing the new zone of refinement id
     //int cell_idx_ch; // Index of the child cell
     int box_value_new; // Value in the new box
@@ -491,7 +490,7 @@ static int adapt_new_ref_zones(struct node *ptr_node)
     cntr_links = 0;
     cntr_old_ref_zones = 0;
 
-    for (int i = 0; i < ptr_node->zones_size;i++)
+    for (int i = 0; i < ptr_node->zones_size; i++)
     {
         links_new[i] = -1;
         links_old[i] = -1;
@@ -536,8 +535,14 @@ static int adapt_new_ref_zones(struct node *ptr_node)
         cntr_old_ref_zones++;
     } // End while cycle over all old refinement zones
 
+    // printf("\nlv = %d, parent = %d\n", ptr_node->lv,ptr_node->ID);
+    // printf("zones new = %d, zones old = %d\n", ptr_node->zones_size, ptr_node->chn_size);
+    // printf("cntr_links = %d\n", cntr_links);
+
     if (cntr_links < ptr_node->zones_size)
     {
+        
+        //** >> Old links **/
         if (cntr_links == ptr_node->chn_size)
         {
             for (int i = cntr_links; i < ptr_node->zones_size; i++)
@@ -549,41 +554,90 @@ static int adapt_new_ref_zones(struct node *ptr_node)
         }
         else
         {
-            cntr = 0;
-            for (int i = 0; i < ptr_node->chn_size; i++)
+            cntr_link_elements = 0;  // Counter linked elements
+            cntr_old_links_plus = 0; // Counte links old
+
+            while (cntr_link_elements < cntr_links && cntr_links + cntr_old_links_plus < ptr_node->zones_size && cntr_links + cntr_old_links_plus < ptr_node->chn_size)
             {
-                if(links_old[i] != i - cntr)
+                if (cntr_link_elements + cntr_old_links_plus == links_old[cntr_link_elements])
                 {
-                    links_old[i + cntr_links] = i;
-                    cntr++;
+                    cntr_link_elements++;
+                }
+                else
+                {
+                    links_old[cntr_links + cntr_old_links_plus] = cntr_link_elements + cntr_old_links_plus;
+                    cntr_old_links_plus++;
+                }
+
+            }
+
+            if (cntr_links + cntr_old_links_plus < ptr_node->zones_size)
+            {
+                for (int i = cntr_links + cntr_old_links_plus; i < ptr_node->zones_size; i++)
+                {
+                    // ptr_node->ptr_aux_idx[i - cntr_links] = i;
+                    links_old[i] = i;
                 }
             }
         }
+
+        //** >> New links **/
+        cntr_link_elements = -1;
+        for (int i = cntr_links; i < ptr_node->zones_size; i++)
+        {
+            check_link = true;
+            while(check_link == true)
+            {
+                check_link = false;
+                cntr_link_elements++;
+                for (int j = 0; j < cntr_links; j++)
+                {
+                    if (links_new[j] == cntr_link_elements)
+                    {
+                        check_link = true;
+                        j = cntr_links;
+                    }
+                }
+            }
+            links_new[i] = cntr_link_elements;
+        }
     }
 
+    // printf("Links_old = [   ");
+    // for (int i = 0; i< ptr_node->zones_size; i++)
+    // {
+    //     printf("%d  ", links_old[i]);
+    // }
+    // printf("]\n");
+    // printf("Links_new = [   ");
+    // for (int i = 0; i< ptr_node->zones_size; i++)
+    // {
+    //     printf("%d  ", links_new[i]);
+    // }
+    // printf("]\n");
 
 
 
-        //** >> Creating new children nodes for excess in refinement zones and and linking them to the parent node ptr_node **/
-        if (ptr_node->zones_size > ptr_node->chn_size)
+    //** >> Creating new children nodes for excess in refinement zones and and linking them to the parent node ptr_node **/
+    if (ptr_node->zones_size > ptr_node->chn_size)
+    {
+        //** >> Space checking in the number of child nodes of ptr_node
+        if (space_check(&(ptr_node->chn_cap), ptr_node->zones_size, "p1n2", &(ptr_node->pptr_chn)) == _FAILURE_)
         {
-            //** >> Space checking in the number of child nodes of ptr_node
-            if (space_check(&(ptr_node->chn_cap), ptr_node->zones_size, "p1n2", &(ptr_node->pptr_chn)) == _FAILURE_)
-            {
-                printf("Error, in space_check function\n");
-                return _FAILURE_;
-            }
-
-            for (int i = ptr_node->chn_size; i < ptr_node->zones_size; i++)
-            {
-                ptr_node_ch = (struct node *)malloc(sizeof(struct node));
-                initialize_node(ptr_node_ch);
-                ptr_node_ch->ID = i;
-                ptr_node_ch->lv = ptr_node->lv + 1;
-                ptr_node_ch->ptr_pt = ptr_node;
-                ptr_node->pptr_chn[i] = ptr_node_ch;
-            }
+            printf("Error, in space_check function\n");
+            return _FAILURE_;
         }
+
+        for (int i = ptr_node->chn_size; i < ptr_node->zones_size; i++)
+        {
+            ptr_node_ch = (struct node *)malloc(sizeof(struct node));
+            initialize_node(ptr_node_ch);
+            ptr_node_ch->ID = i;
+            ptr_node_ch->lv = ptr_node->lv + 1;
+            ptr_node_ch->ptr_pt = ptr_node;
+            ptr_node->pptr_chn[i] = ptr_node_ch;
+        }
+    }
 
     //** >> Initializing the ptr_aux_idx array to be used as a counter of cells in each current child node**/
     // Notes that the number of refined cells is always bigger or equal than the number of refined zones, so that the capacity of ptr_aux_idx is always enough to counter the number of refined zones
@@ -614,7 +668,6 @@ int tree_adaptation()
             for (int i = 0; i < no_pts; i++)
             {
                 ptr_node = GL_tentacles_old[lv][i];
-
                 //** Updating the box mass information **/
                 updating_box_mass(ptr_node);
 

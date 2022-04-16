@@ -275,7 +275,6 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
                         //** >> If the particle moves towards a sibling node **/
                         if (ptr_node_pt->ptr_box[box_idx_pt] >= 0)
                         {
-                            printf("\n\nSe entra en un heramno\n\n");
                             zone_idx = ptr_node_pt->ptr_box[box_idx_pt];
                             ptr_node_sib = ptr_node_pt->pptr_chn[zone_idx];
 

@@ -149,8 +149,6 @@ int main(int argc, char **argv) {
 	}
 	GL_times[19] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 
-
-
 	while (actualtime < Maxdt && Number_timesteps < MaxIterations)
 	{
 		//** >> TIMESTEP **/
@@ -182,6 +180,7 @@ int main(int argc, char **argv) {
 		}
 		GL_times[11] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 
+		printf("tree adaptation\n");
 		//** >> TREE ADAPTATION **/
 		GL_clock_begin = clock();
 		if (tree_adaptation() == _FAILURE_)
@@ -191,20 +190,23 @@ int main(int argc, char **argv) {
 		}
 		GL_times[10] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 
+		printf("density \n");
 		//** >> DENSITY COMPUTATION **/
 		GL_clock_begin = clock();
 		grid_density();
 		GL_times[4] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 
-		//** >> POTENTIAL COMPUTATION **/
-		GL_clock_begin = clock();
-		if (potential() == _FAILURE_)
-		{
-			printf("\n\n Error running potential() function\n\n");
-			return _FAILURE_;
-		}
-		GL_times[5] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
+		// printf("Potential\n");
+		// //** >> POTENTIAL COMPUTATION **/
+		// GL_clock_begin = clock();
+		// if (potential() == _FAILURE_)
+		// {
+		// 	printf("\n\n Error running potential() function\n\n");
+		// 	return _FAILURE_;
+		// }
+		// GL_times[5] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 
+		printf("Grid acceleration\n");
 		//** >> GRID ACCELERATION **/
 		GL_clock_begin = clock();
 		if (grid_acceleration() == _FAILURE_)
