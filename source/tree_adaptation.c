@@ -30,7 +30,7 @@ static void updating_box_mass(struct node *ptr_node)
 {
 
     int no_chn; // Number of child nodes
-    struct node *ptr_node_ch; //child node
+    struct node *ptr_ch; //child node
     vtype aux_box_mass; //Total mass in the 8 child cells
 
     int box_idx_x_ch; // Box index in X direcction of the child cell 
@@ -47,13 +47,13 @@ static void updating_box_mass(struct node *ptr_node)
 
     for (int i = 0; i < no_chn; i++)    //Cycle over children
     {
-        ptr_node_ch = ptr_node->pptr_chn[i];
-        for (int j = 0; j < ptr_node_ch->cell_size; j += 8) // Cycle over packeges of 8 cells
+        ptr_ch = ptr_node->pptr_chn[i];
+        for (int j = 0; j < ptr_ch->cell_size; j += 8) // Cycle over packeges of 8 cells
         {
             //** >> Computing the mass of the 8 child cells **/
-            box_idx_x_ch = ptr_node_ch->ptr_cell_idx_x[j] - ptr_node_ch->box_ts_x;
-            box_idx_y_ch = ptr_node_ch->ptr_cell_idx_y[j] - ptr_node_ch->box_ts_y;
-            box_idx_z_ch = ptr_node_ch->ptr_cell_idx_z[j] - ptr_node_ch->box_ts_z;
+            box_idx_x_ch = ptr_ch->ptr_cell_idx_x[j] - ptr_ch->box_ts_x;
+            box_idx_y_ch = ptr_ch->ptr_cell_idx_y[j] - ptr_ch->box_ts_y;
+            box_idx_z_ch = ptr_ch->ptr_cell_idx_z[j] - ptr_ch->box_ts_z;
 
             aux_box_mass = 0;
 
@@ -63,15 +63,15 @@ static void updating_box_mass(struct node *ptr_node)
                 {
                     for (int ii = 0; ii < 2; ii++)
                     {
-                        box_idx_ch = (box_idx_x_ch + ii) + (box_idx_y_ch + jj) * ptr_node_ch->box_real_dim_x + (box_idx_z_ch + kk) * ptr_node_ch->box_real_dim_x * ptr_node_ch->box_real_dim_y;
-                        aux_box_mass += ptr_node_ch->ptr_box_mass[box_idx_ch];
+                        box_idx_ch = (box_idx_x_ch + ii) + (box_idx_y_ch + jj) * ptr_ch->box_real_dim_x + (box_idx_z_ch + kk) * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
+                        aux_box_mass += ptr_ch->ptr_box_mass[box_idx_ch];
                     }
                 }
             }
             //** Re-defining the mass of the node cell corresponding to those 8 child cells
-            box_idx_x_node = (ptr_node_ch->ptr_cell_idx_x[j] >> 1) - ptr_node->box_ts_x;
-            box_idx_y_node = (ptr_node_ch->ptr_cell_idx_y[j] >> 1) - ptr_node->box_ts_y;
-            box_idx_z_node = (ptr_node_ch->ptr_cell_idx_z[j] >> 1) - ptr_node->box_ts_z;
+            box_idx_x_node = (ptr_ch->ptr_cell_idx_x[j] >> 1) - ptr_node->box_ts_x;
+            box_idx_y_node = (ptr_ch->ptr_cell_idx_y[j] >> 1) - ptr_node->box_ts_y;
+            box_idx_z_node = (ptr_ch->ptr_cell_idx_z[j] >> 1) - ptr_node->box_ts_z;
             box_idx_node = box_idx_x_node + box_idx_y_node * ptr_node->box_real_dim_x + box_idx_z_node * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
             ptr_node->ptr_box_mass[box_idx_node] = aux_box_mass;
             total_mass += aux_box_mass;
@@ -462,28 +462,641 @@ static int fill_zones_ref(struct node *ptr_node)
     return _SUCCESS_;
 } // End function fill_zones_ref
 
+static int new_child_nodes(struct node *ptr_node, int links_old_ord_old[], int links_new_ord_old[])
+{
+
+    struct node *ptr_ch; // child node
+    int cell_idx;        // The cell index is simply i of the for loop
+
+    int pos_x;  // Distance between the real box and the minimal box when the last is localized in the middle of the real one
+    int pos_y;
+    int pos_z;
+
+    int cap;  // Capacity of arrays in child nodes
+    //int size; // Size or number of elements in some array in child nodes
+
+    //int box_idx_x; // Box index at X direction
+    //int box_idx_y; // Box index at Y direction
+    //int box_idx_z; // Box index at Z direction
+    //int box_idx;   // Box index
+    //int box_idxNbr; // Box index in the neigborhood
+
+    //** >> Space checking in the number of child nodes of ptr_node
+    if (space_check(&(ptr_node->chn_cap), ptr_node->zones_size, "p1n2", &(ptr_node->pptr_chn)) == _FAILURE_)
+    {
+        printf("Error, in space_check function\n");
+        return _FAILURE_;
+    }
+
+    for (int i = ptr_node->chn_size; i < ptr_node->zones_size; i++)
+    {
+        ptr_ch = (struct node *)malloc(sizeof(struct node));
+        initialize_node(ptr_ch);
+
+        //** >> Global node properties **/
+        ptr_ch->ID = i;
+        ptr_ch->lv = ptr_node->lv + 1;
+
+        //** >> Cells in the node **/
+        ptr_ch->cell_cap = 8 * ptr_node->ptr_zone_cap[links_new_ord_old[i]];
+        ptr_ch->ptr_cell_idx_x = (int *)malloc(ptr_ch->cell_cap * sizeof(int));
+        ptr_ch->ptr_cell_idx_y = (int *)malloc(ptr_ch->cell_cap * sizeof(int));
+        ptr_ch->ptr_cell_idx_z = (int *)malloc(ptr_ch->cell_cap * sizeof(int));
+
+        //** >> Particles in the node **/
+        ptr_node->ptcl_cap = 8;
+        ptr_node->ptr_ptcl = (int *)malloc(ptr_node->ptcl_cap * sizeof(int));
+
+        //** >> Boxes **/
+        // MIN and MAX cell indexes values of the node.
+        for (int j = 0; j < ptr_node->ptr_zone_size[links_new_ord_old[i]]; j++)
+        {
+            cell_idx = ptr_node->pptr_zones[links_new_ord_old[i]][j]; // Cell index in the zone
+            if (ptr_ch->box_min_x > ptr_node->ptr_cell_idx_x[cell_idx])
+            {
+                ptr_ch->box_min_x = ptr_node->ptr_cell_idx_x[cell_idx];
+            }
+            if (ptr_ch->box_min_y > ptr_node->ptr_cell_idx_y[cell_idx])
+            {
+                ptr_ch->box_min_y = ptr_node->ptr_cell_idx_y[cell_idx];
+            }
+            if (ptr_ch->box_min_z > ptr_node->ptr_cell_idx_z[cell_idx])
+            {
+                ptr_ch->box_min_z = ptr_node->ptr_cell_idx_z[cell_idx];
+            }
+            if (ptr_ch->box_max_x < ptr_node->ptr_cell_idx_x[cell_idx])
+            {
+                ptr_ch->box_max_x = ptr_node->ptr_cell_idx_x[cell_idx];
+            }
+            if (ptr_ch->box_max_y < ptr_node->ptr_cell_idx_y[cell_idx])
+            {
+                ptr_ch->box_max_y = ptr_node->ptr_cell_idx_y[cell_idx];
+            }
+            if (ptr_ch->box_max_z < ptr_node->ptr_cell_idx_z[cell_idx])
+            {
+                ptr_ch->box_max_z = ptr_node->ptr_cell_idx_z[cell_idx];
+            }
+        }
+
+        // Changing the min and max of the "minimal box" from parent units to child units
+        ptr_ch->box_min_x = 2 * ptr_ch->box_min_x;
+        ptr_ch->box_min_y = 2 * ptr_ch->box_min_y;
+        ptr_ch->box_min_z = 2 * ptr_ch->box_min_z;
+        ptr_ch->box_max_x = 2 * ptr_ch->box_max_x + 1;
+        ptr_ch->box_max_y = 2 * ptr_ch->box_max_y + 1;
+        ptr_ch->box_max_z = 2 * ptr_ch->box_max_z + 1;
+
+        // Size of the "minimal box"
+        ptr_ch->box_dim_x = ptr_ch->box_max_x - ptr_ch->box_min_x + 1;
+        ptr_ch->box_dim_y = ptr_ch->box_max_y - ptr_ch->box_min_y + 1;
+        ptr_ch->box_dim_z = ptr_ch->box_max_z - ptr_ch->box_min_z + 1;
+
+        // Real dimensions of the box, or real capacity
+        // ptr_ch->box_real_dim_x = fmax(ptr_ch->box_dim_x * 3, ptr_ch->box_dim_x + 2 * n_exp - 2);
+        // ptr_ch->box_real_dim_y = fmax(ptr_ch->box_dim_y * 3, ptr_ch->box_dim_y + 2 * n_exp - 2);
+        // ptr_ch->box_real_dim_z = fmax(ptr_ch->box_dim_z * 3, ptr_ch->box_dim_z + 2 * n_exp - 2);
+        // ptr_ch->box_real_dim_x = fmax(ptr_ch->box_dim_x + 10, ptr_ch->box_dim_x + 2 * n_exp - 2);
+        // ptr_ch->box_real_dim_y = fmax(ptr_ch->box_dim_y + 10, ptr_ch->box_dim_y + 2 * n_exp - 2);
+        // ptr_ch->box_real_dim_z = fmax(ptr_ch->box_dim_z + 10, ptr_ch->box_dim_z + 2 * n_exp - 2);
+        ptr_ch->box_real_dim_x = ptr_ch->box_dim_x + 10 > ptr_ch->box_dim_x + 2 * n_exp - 2 ? ptr_ch->box_dim_x + 10 : ptr_ch->box_dim_x + 2 * n_exp - 2;
+        ptr_ch->box_real_dim_y = ptr_ch->box_dim_y + 10 > ptr_ch->box_dim_y + 2 * n_exp - 2 ? ptr_ch->box_dim_y + 10 : ptr_ch->box_dim_y + 2 * n_exp - 2;
+        ptr_ch->box_real_dim_z = ptr_ch->box_dim_z + 10 > ptr_ch->box_dim_z + 2 * n_exp - 2 ? ptr_ch->box_dim_z + 10 : ptr_ch->box_dim_z + 2 * n_exp - 2;
+
+        // Translations between cell array and box
+        pos_x = (ptr_ch->box_real_dim_x - ptr_ch->box_dim_x) / 2; // Half of the distance of the box side less the "minimal box" side
+        ptr_ch->box_ts_x = ptr_ch->box_min_x - pos_x;             // Every cell in the level l in the box must be subtracted this value to obtain the box index
+        pos_y = (ptr_ch->box_real_dim_y - ptr_ch->box_dim_y) / 2;
+        ptr_ch->box_ts_y = ptr_ch->box_min_y - pos_y;
+        pos_z = (ptr_ch->box_real_dim_z - ptr_ch->box_dim_z) / 2;
+        ptr_ch->box_ts_z = ptr_ch->box_min_z - pos_z;
+
+        // Filling the box status
+        cap = ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y * ptr_ch->box_real_dim_z; // In general, the size of each side must be 3 times bigger than the same side of the "minimal box"
+        ptr_ch->box_cap = cap;
+        //size = 8 * ptr_node->ptr_zone_size[links_new_ord_old[i]]; // Number of cells in the block
+        ptr_ch->ptr_box = (int *)malloc(cap * sizeof(int));
+        ptr_ch->ptr_box_aux = (int *)malloc(cap * sizeof(int));
+
+        // Putting the value of NO-EXIST (-4) in every box index
+        for (int j = 0; j < cap; j++)
+        {
+            ptr_ch->ptr_box[j] = -4;
+        }
+        // // Changing from NO-EXIST (-4) to EXIST (-3) to all cells in the block of the child node
+        // for (int j = 0; j < size; j++)
+        // {
+        //     box_idx_x = ptr_ch->ptr_cell_idx_x[j] - ptr_ch->box_ts_x;
+        //     box_idx_y = ptr_ch->ptr_cell_idx_y[j] - ptr_ch->box_ts_y;
+        //     box_idx_z = ptr_ch->ptr_cell_idx_z[j] - ptr_ch->box_ts_z;
+        //     box_idx = box_idx_x + box_idx_y * ptr_ch->box_real_dim_x + box_idx_z * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
+        //     ptr_ch->ptr_box[box_idx] = -3;
+        // }
+        // // Changing the EXIST (-3) TO BORDER (-2) to all border cells in the block
+        // for (int j = 0; j < size; j++)
+        // {
+        //     box_idx_x = ptr_ch->ptr_cell_idx_x[j] - ptr_ch->box_ts_x;
+        //     box_idx_y = ptr_ch->ptr_cell_idx_y[j] - ptr_ch->box_ts_y;
+        //     box_idx_z = ptr_ch->ptr_cell_idx_z[j] - ptr_ch->box_ts_z;
+        //     box_idx = box_idx_x + box_idx_y * ptr_ch->box_real_dim_x + box_idx_z * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
+
+        //     for (int kk = -1; kk < 2; kk++)
+        //     {
+        //         for (int jj = -1; jj < 2; jj++)
+        //         {
+        //             for (int ii = -1; ii < 2; ii++)
+        //             {
+        //                 box_idxNbr = box_idx + ii + jj * ptr_ch->box_real_dim_x + kk * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
+        //                 if (ptr_ch->ptr_box[box_idxNbr] == -4) // Border cells are those such that at least on of their first neighbors are NO-EXIST cells.
+        //                 {
+        //                     ptr_ch->ptr_box[box_idx] = -2;
+        //                     ii = 2;
+        //                     jj = 2;
+        //                     kk = 2;
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+
+        //** >> Grid points **/
+        //They are defined after the box definition
+
+        //** >> Refinement Criterion **/
+        cap = ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y * ptr_ch->box_real_dim_z;
+        ptr_ch->ptr_box_mass = (vtype *)calloc(cap, sizeof(vtype));
+        ptr_ch->ptr_box_mass_aux = (vtype *)calloc(cap, sizeof(vtype));
+
+        //** >> Potential, acceleration and density of the grid **/
+        cap = (ptr_ch->box_real_dim_x + 1) * (ptr_ch->box_real_dim_y + 1) * (ptr_ch->box_real_dim_z + 1);
+        ptr_ch->ptr_pot = (vtype *)calloc(cap, sizeof(vtype));
+        ptr_ch->ptr_ax = (vtype *)calloc(cap, sizeof(vtype));
+        ptr_ch->ptr_ay = (vtype *)calloc(cap, sizeof(vtype));
+        ptr_ch->ptr_az = (vtype *)calloc(cap, sizeof(vtype));
+        ptr_ch->ptr_d = (vtype *)calloc(cap, sizeof(vtype));
+
+        //** >> Tree structure **/
+        ptr_ch->ptr_pt = ptr_node;
+        ptr_node->pptr_chn[i] = ptr_ch;
+    }
+
+    return _SUCCESS_;
+}
+
+static int adapt_child_box(struct node *ptr_node, int links_old_ord_old[], int links_new_ord_old[])
+{
+    struct node *ptr_ch;
+
+    vtype *ptr_aux;
+
+    int new_box_min_x;
+    int new_box_min_y;
+    int new_box_min_z;
+    int new_box_max_x;
+    int new_box_max_y;
+    int new_box_max_z;
+
+    int new_box_dim_x;
+    int new_box_dim_y;
+    int new_box_dim_z;
+
+    int new_box_real_dim_x;
+    int new_box_real_dim_y;
+    int new_box_real_dim_z;
+
+    int new_box_ts_x;
+    int new_box_ts_y;
+    int new_box_ts_z;
+
+    int box_old_idx_x;
+    int box_old_idx_y;
+    int box_old_idx_z;
+    int box_old_idx;
+    int box_new_idx_x;
+    int box_new_idx_y;
+    int box_new_idx_z;
+    int box_new_idx;
+
+    int cell_idx; // The cell index is simply i of the for loop
+
+    int new_zone_idx; // ID of the new zone of refinement
+
+    int cap;
+    int size;
+
+    bool check_fit;
+
+    int aux_int;
+
+    int pos_x; // Distance between the real box and the minimal box when the last is localized in the middle of the real one
+    int pos_y;
+    int pos_z;
+
+    int bder_box = 1 > n_exp ? 1 : n_exp;
+
+    // Cycle over new refinement zones
+    for (int zone_idx = 0; zone_idx < ptr_node->zones_size; zone_idx++)
+    {
+        if (links_old_ord_old[zone_idx] < ptr_node->chn_size)
+        {
+            new_zone_idx = links_new_ord_old[zone_idx];
+            ptr_ch = ptr_node->pptr_chn[links_old_ord_old[zone_idx]];
+            
+            //** CELLS **/
+            size = 8 * ptr_node->ptr_zone_size[links_old_ord_old[zone_idx]];
+            //** >> Space checking of cells indexes of the child node
+            if (space_check(&(ptr_ch->cell_cap), size, "p3i1i1i1", &(ptr_ch->ptr_cell_idx_x), &(ptr_ch->ptr_cell_idx_y), &(ptr_ch->ptr_cell_idx_z)) == _FAILURE_)
+            {
+                printf("Error, in space_check function\n");
+                return _FAILURE_;
+            }
+
+            //** BOXES **/
+            check_fit = true;
+
+            new_box_min_x = INT_MAX;
+            new_box_min_y = INT_MAX;
+            new_box_min_z = INT_MAX;
+            new_box_max_x = 0;
+            new_box_max_y = 0;
+            new_box_max_z = 0;
+            //** >> The MIN and MAX of the set containig only the new cells to be refined
+            for (int i = 0; i < ptr_node->ptr_zone_size[new_zone_idx]; i++)
+            {
+                cell_idx = ptr_node->pptr_zones[new_zone_idx][i];
+
+                if (new_box_min_x > ptr_node->ptr_cell_idx_x[cell_idx])
+                {
+                    new_box_min_x = ptr_node->ptr_cell_idx_x[cell_idx];
+                }
+                if (new_box_min_y > ptr_node->ptr_cell_idx_y[cell_idx])
+                {
+                    new_box_min_y = ptr_node->ptr_cell_idx_y[cell_idx];
+                }
+                if (new_box_min_z > ptr_node->ptr_cell_idx_z[cell_idx])
+                {
+                    new_box_min_z = ptr_node->ptr_cell_idx_z[cell_idx];
+                }
+                if (new_box_max_x < ptr_node->ptr_cell_idx_x[cell_idx])
+                {
+                    new_box_max_x = ptr_node->ptr_cell_idx_x[cell_idx];
+                }
+                if (new_box_max_y < ptr_node->ptr_cell_idx_y[cell_idx])
+                {
+                    new_box_max_y = ptr_node->ptr_cell_idx_y[cell_idx];
+                }
+                if (new_box_max_z < ptr_node->ptr_cell_idx_z[cell_idx])
+                {
+                    new_box_max_z = ptr_node->ptr_cell_idx_z[cell_idx];
+                }
+            }
+
+            // Changing the min and max of the "minimal box" from parent units to child units
+            new_box_min_x = 2 * new_box_min_x;
+            new_box_min_y = 2 * new_box_min_y;
+            new_box_min_z = 2 * new_box_min_z;
+            new_box_max_x = 2 * new_box_max_x + 1;
+            new_box_max_y = 2 * new_box_max_y + 1;
+            new_box_max_z = 2 * new_box_max_z + 1;
+
+            //** >> Updating the The MIN and MAX of the set containig only the new cells to be refined
+            ptr_ch->box_min_x = new_box_min_x;
+            ptr_ch->box_min_y = new_box_min_y;
+            ptr_ch->box_min_z = new_box_min_z;
+            ptr_ch->box_max_x = new_box_max_x;
+            ptr_ch->box_max_y = new_box_max_y;
+            ptr_ch->box_max_z = new_box_max_z;
+
+            //** >> Checking if the new dimensions fit in the old box **/
+            aux_int = new_box_min_x - ptr_ch->box_ts_x;
+            aux_int = aux_int < new_box_min_y - ptr_ch->box_ts_y ? aux_int : new_box_min_y - ptr_ch->box_ts_y;
+            aux_int = aux_int < new_box_min_z - ptr_ch->box_ts_z ? aux_int : new_box_min_z - ptr_ch->box_ts_z;
+            if (aux_int < bder_box)
+            {
+                check_fit = false;
+            }
+            aux_int = new_box_max_x - ptr_ch->box_ts_x;
+            if (aux_int > ptr_ch->box_real_dim_x - bder_box)
+            {
+                check_fit = false;
+            }
+            aux_int = new_box_max_y - ptr_ch->box_ts_y;
+            if (aux_int > ptr_ch->box_real_dim_y - bder_box)
+            {
+                check_fit = false;
+            }
+            aux_int = new_box_max_z - ptr_ch->box_ts_z;
+            if (aux_int > ptr_ch->box_real_dim_z - bder_box)
+            {
+                check_fit = false;
+            }
+            //** >> The new box does not fit in the old box **/
+            if (check_fit == false)
+            {
+
+                // Size of the "minimal new box"
+                new_box_dim_x = new_box_max_x - new_box_min_x + 1;;
+                new_box_dim_y = new_box_max_y - new_box_min_y + 1;;
+                new_box_dim_z = new_box_max_z - new_box_min_z + 1;;
+
+                // Real dimensions of the new box
+                new_box_real_dim_x = 10 > 2 * n_exp - 2 ? ptr_ch->box_dim_x + 10 : ptr_ch->box_dim_x + 2 * n_exp - 2;
+                new_box_real_dim_y = 10 > 2 * n_exp - 2 ? ptr_ch->box_dim_y + 10 : ptr_ch->box_dim_y + 2 * n_exp - 2;
+                new_box_real_dim_z = 10 > 2 * n_exp - 2 ? ptr_ch->box_dim_z + 10 : ptr_ch->box_dim_z + 2 * n_exp - 2;
+
+                // Translations between cell array and new box
+                pos_x = (new_box_real_dim_x - new_box_dim_x) / 2; // Half of the distance of the box side less the "minimal box" side
+                new_box_ts_x = new_box_min_x - pos_x;             // Every cell in the level l in the box must be subtracted this value to obtain the box index
+                pos_y = (new_box_real_dim_y - new_box_dim_y) / 2;
+                new_box_ts_y = new_box_min_y - pos_y;
+                pos_z = (new_box_real_dim_z - new_box_dim_z) / 2;
+                new_box_ts_z = new_box_min_z - pos_z;
+
+                cap = ptr_ch->box_cap;
+                size = new_box_real_dim_x * new_box_real_dim_y * new_box_real_dim_z;
+
+                //** >> Space checking of boxes: box, box_aux and box_mass_aux
+                if (space_check(&(cap), size, "p3i1i1v1", &(ptr_ch->ptr_box), &(ptr_ch->ptr_box_aux), &(ptr_ch->ptr_box_mass_aux)) == _FAILURE_)
+                {
+                    printf("Error, in space_check function\n");
+                    return _FAILURE_;
+                }
+
+                // Initializing box at NO-EXIST (-4), and mass box in 0
+                for (int j = 0; j < size; j++)
+                {
+                    ptr_ch->ptr_box[j] = -4;
+                    ptr_ch->ptr_box_mass_aux[j] = 0;
+                }
+
+                //** Adapting box mass **/
+                for (int j = 0; j < ptr_ch->cell_size; j++)
+                {
+                    //Old
+                    box_old_idx_x = ptr_ch->ptr_cell_idx_x[j] - ptr_ch->box_ts_x;
+                    box_old_idx_y = ptr_ch->ptr_cell_idx_y[j] - ptr_ch->box_ts_y;
+                    box_old_idx_z = ptr_ch->ptr_cell_idx_z[j] - ptr_ch->box_ts_z;
+                    box_old_idx = box_old_idx_x + box_old_idx_y * ptr_ch->box_real_dim_x + box_old_idx_z * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
+
+                    //New
+                    box_new_idx_x = ptr_ch->ptr_cell_idx_x[j] - new_box_ts_x;
+                    box_new_idx_y = ptr_ch->ptr_cell_idx_y[j] - new_box_ts_y;
+                    box_new_idx_z = ptr_ch->ptr_cell_idx_z[j] - new_box_ts_z;
+                    box_new_idx = box_new_idx_x + box_new_idx_y * new_box_real_dim_x + box_new_idx_z * new_box_real_dim_x * new_box_real_dim_y;
+                    
+                    //Transfer the mass cell from old to new auxiliary mass box cell
+                    ptr_ch->ptr_box_mass_aux[box_new_idx] = ptr_ch->ptr_box_mass[box_old_idx];
+                }
+
+                cap = ptr_ch->box_cap;
+                //** >> Reallocating the new box if it is necessary
+                if (space_check(&(cap), size, "p1v1", &(ptr_ch->ptr_box_mass)) == _FAILURE_)
+                {
+                    printf("Error, in space_check function\n");
+                    return _FAILURE_;
+                }
+
+                // Transfer auxiliary mass box to box mass
+                ptr_aux = ptr_ch->ptr_box_mass_aux;
+                ptr_ch->ptr_box_mass_aux = ptr_ch->ptr_box_mass;
+                ptr_ch->ptr_box_mass = ptr_aux;
+
+                //* Potential, Acceleration and density of the grid **/
+                cap = (ptr_ch->box_real_dim_x + 1) * (ptr_ch->box_real_dim_y + 1) * (ptr_ch->box_real_dim_z + 1);
+                size = (new_box_real_dim_x + 1) * (new_box_real_dim_y + 1) * (new_box_real_dim_z + 1);
+                //** >> Space checking
+                if (space_check(&(cap), size, "p5v1v1v1v1v1", &(ptr_ch->ptr_pot), &(ptr_ch->ptr_ax), &(ptr_ch->ptr_ay), &(ptr_ch->ptr_az), &(ptr_ch->ptr_d)) == _FAILURE_)
+                {
+                    printf("Error, in space_check function\n");
+                    return _FAILURE_;
+                }
+
+                //** Updating new box values
+
+                // Size of the "minimal box"
+                ptr_ch->box_dim_x = new_box_dim_x;
+                ptr_ch->box_dim_y = new_box_dim_y;
+                ptr_ch->box_dim_z = new_box_dim_z;
+
+                // Real dimensions of the new box
+                ptr_ch->box_real_dim_x = new_box_real_dim_x;
+                ptr_ch->box_real_dim_y = new_box_real_dim_y;
+                ptr_ch->box_real_dim_z = new_box_real_dim_z;
+
+                // Translations between cell array and box
+                ptr_ch->box_ts_x = new_box_ts_x; // Every cell in the level l in the box must be subtracted this value to obtain the box index
+                ptr_ch->box_ts_y = new_box_ts_y;
+                ptr_ch->box_ts_z = new_box_ts_z;
+
+                //New box capacity
+                ptr_ch->box_cap = cap;
+            }
+
+            //** >> Density initialization **/
+            size = (ptr_ch->box_real_dim_x + 1) * (ptr_ch->box_real_dim_y + 1) * (ptr_ch->box_real_dim_z + 1);
+            for (int j = 0; j < size; j++)
+            {
+                ptr_ch->ptr_d[j] = 0;
+            }
+        }
+    }
+
+    return _SUCCESS_;
+}
+
+void remov_cells_nolonger_require_refinement(struct node *ptr_node, int links_old_ord_old[], int links_new_ord_old[])
+{
+
+    struct node *ptr_ch;
+
+    int box_idx_x_ch; // Box index in X direcction of the child cell
+    int box_idx_y_ch; // Box index in Y direcction of the child cell
+    int box_idx_z_ch; // Box index in Z direcction of the child cell
+    int box_idx_ch;   // Box index of the child cell
+
+    int box_idx_x_node; // Box index in X direcction of the node cell
+    int box_idx_y_node; // Box index in Y direcction of the node cell
+    int box_idx_z_node; // Box index in Z direcction of the node cell
+    int box_idx_node;   // Box index of the node cell
+
+    int box_idx_x_ptcl; // Box index in X direcction of the particles
+    int box_idx_y_ptcl; // Box index in Y direcction of the particles
+    int box_idx_z_ptcl; // Box index in Z direcction of the particles
+    int box_idx_ptcl;   // Box index
+
+    int ptcl_idx;
+
+    int no_ptcl;      // Total number of particles in the node
+    int no_cells;      // Total number of cells in the node
+
+    
+
+    
+
+    int lv;
+
+    lv = ptr_node->lv;
+
+    // Cycle over new refinement zones
+    for (int zone_idx = 0; zone_idx < ptr_node->zones_size; zone_idx++)
+    {
+        if (links_old_ord_old[zone_idx] < ptr_node->chn_size)
+        {
+            ptr_ch = ptr_node->pptr_chn[links_old_ord_old[zone_idx]];
+
+            no_ptcl = ptr_ch->ptcl_size;
+            no_cells = ptr_ch->cell_size;
+            for (int cell_idx = 0; cell_idx < no_cells; cell_idx += 8)
+            {
+                box_idx_x_node = (ptr_ch->ptr_cell_idx_x[cell_idx] >> 1) - ptr_node->box_ts_x;
+                box_idx_y_node = (ptr_ch->ptr_cell_idx_y[cell_idx] >> 1) - ptr_node->box_ts_y;
+                box_idx_z_node = (ptr_ch->ptr_cell_idx_z[cell_idx] >> 1) - ptr_node->box_ts_z;
+                box_idx_node = box_idx_x_node + box_idx_y_node * ptr_node->box_real_dim_x + box_idx_z_node * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+                //** >> The child cell no longer requires refinement **/
+                if (ptr_node->ptr_box_aux[box_idx_node] < 0)
+                {
+                    
+                    //** >> Removing particles in the cell from the child node **/
+                    //Updating local mass and particles array
+                    for (int i = 0; i < no_ptcl; i++)
+                    {
+                        ptcl_idx = ptr_ch->ptr_ptcl[i];
+                        box_idx_x_ptcl = GL_ptcl_x[ptcl_idx] * (1 << lv) - ptr_node->box_ts_x; // Particle indexes in the level
+                        box_idx_y_ptcl = GL_ptcl_y[ptcl_idx] * (1 << lv) - ptr_node->box_ts_y;
+                        box_idx_z_ptcl = GL_ptcl_z[ptcl_idx] * (1 << lv) - ptr_node->box_ts_z;
+                        box_idx_ptcl = box_idx_x_ptcl + box_idx_y_ptcl * ptr_node->box_real_dim_x + box_idx_z_ptcl * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+                        if (box_idx_ptcl == box_idx_node)
+                        {
+                            ptr_ch->ptr_ptcl[i] = ptr_ch->ptr_ptcl[no_ptcl - 1];
+                            ptr_ch->local_mass -= GL_ptcl_mass[ptcl_idx];
+                            no_ptcl--; // The total number of particle decrease
+                            i--;       // The last element that was just moved to the current position should also must be analized
+                        }
+                    }
+
+                    box_idx_x_ch = ptr_ch->ptr_cell_idx_x[cell_idx] - ptr_ch->box_ts_x;
+                    box_idx_y_ch = ptr_ch->ptr_cell_idx_y[cell_idx] - ptr_ch->box_ts_y;
+                    box_idx_z_ch = ptr_ch->ptr_cell_idx_z[cell_idx] - ptr_ch->box_ts_z;
+                    
+                    //** >> Updating the mass box **/
+                    for (int kk = 0; kk < 1; kk++)
+                    {
+                        for (int jj = 0; jj < 1; jj++)
+                        {
+                            for(int ii = 0; ii < 1; ii++)
+                            {
+                                box_idx_ch = (box_idx_x_ch + ii) + (box_idx_y_ch + jj) * ptr_ch->box_real_dim_x + (box_idx_z_ch + kk) * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
+                                ptr_ch->ptr_box_mass[box_idx_ch] = 0;
+                            }
+                        }
+                    }
+
+                    
+                    //** >> Removing the cells **/
+                    for (int j = 0; j < 8; j++)
+                    {
+                        ptr_ch->ptr_cell_idx_x[cell_idx + j] = ptr_ch->ptr_cell_idx_x[no_cells - 8 + j];
+                        ptr_ch->ptr_cell_idx_y[cell_idx + j] = ptr_ch->ptr_cell_idx_y[no_cells - 8 + j];
+                        ptr_ch->ptr_cell_idx_z[cell_idx + j] = ptr_ch->ptr_cell_idx_z[no_cells - 8 + j];
+                    }
+                    no_cells -= 8;
+                    cell_idx -= 8;
+                }
+            }
+            ptr_node->ptcl_size = no_ptcl;
+            ptr_node->cell_size = no_cells;
+        }
+    }
+}
+
+int adapt_old_child_cells_to_new_child(struct node *ptr_node, int links_old_ord_old[], int links_new_ord_old[], int links_old_ord_new[], int links_new_ord_new[])
+{
+    struct node *ptr_ch_A;
+    struct node *ptr_ch_B;
+    int no_ptcl;  // Total number of particles in the node
+    int no_cells; // Total number of cells in the node
+    int cntr = 0;
+
+    int new_zone_idx; // ID of the new zone of refinement
+
+    int box_idx_x_node; // Box index in X direcction of the node cell
+    int box_idx_y_node; // Box index in Y direcction of the node cell
+    int box_idx_z_node; // Box index in Z direcction of the node cell
+    int box_idx_node;   // Box index of the node cell
+
+    // Cycle over new refinement zones,
+    // Case of old child nodes to be reused
+    for (int zone_idx = 0; zone_idx < ptr_node->zones_size; zone_idx++)
+    {
+        if (links_old_ord_old[zone_idx] < ptr_node->chn_size)
+        {
+            new_zone_idx = links_new_ord_old[zone_idx];
+            ptr_ch_A = ptr_node->pptr_chn[links_old_ord_old[zone_idx]];
+
+            no_ptcl = ptr_ch_A->ptcl_size;
+            no_cells = ptr_ch_A->cell_size;
+            for (int cell_idx = 0; cell_idx < no_cells; cell_idx += 8)
+            {
+                box_idx_x_node = (ptr_ch_A->ptr_cell_idx_x[cell_idx] >> 1) - ptr_node->box_ts_x;
+                box_idx_y_node = (ptr_ch_A->ptr_cell_idx_y[cell_idx] >> 1) - ptr_node->box_ts_y;
+                box_idx_z_node = (ptr_ch_A->ptr_cell_idx_z[cell_idx] >> 1) - ptr_node->box_ts_z;
+                box_idx_node = box_idx_x_node + box_idx_y_node * ptr_node->box_real_dim_x + box_idx_z_node * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+                if (ptr_node->ptr_box[box_idx_node] != new_zone_idx)
+                {
+                    ptr_ch_B = ptr_node->pptr_chn[links_old_ord_new[ptr_node->ptr_box[box_idx_node]]];
+                }
+            }
+        }
+    }
+
+    //Case of old child nodes that will not be used
+    for (int ch = 0; ch < ptr_node->chn_size - ptr_node->zones_size; ch++)
+    {
+        while (links_old_ord_old[cntr] == cntr)
+        {
+            cntr++;
+        }
+        //the cntr child is not in the new child nodes, So do the modifications, then..
+        cntr++;
+    }
+    return _SUCCESS_;
+}
+
 static int adapt_new_ref_zones(struct node *ptr_node)
 {
-    struct node *ptr_node_ch; // child node
+    struct node *ptr_ch; // child node
 
     int cntr_links; // Counter the number of links between the new and old zones of refinement
     //int cntr_old_ref_cells; // Counter the total number of old cell refined in the node
     int cntr_cell_ch; //Counter the cells of the child node
     int cntr_old_ref_zones;             // total number of zones refined in the old box
-    int cntr_old_links_plus;      // Counte links old
+    int cntr_links_plus;      // Counte links
     int cntr_link_elements;         // Counter linked elements
     bool check_link; //Check if the element is linked
-    int links_old[ptr_node->zones_size];    // Storing the old zone of refinement id
-    int links_new[ptr_node->zones_size];    // Storing the new zone of refinement id
-    //int cell_idx_ch; // Index of the child cell
+    int links_old_ord_old[ptr_node->zones_size];    // Storing the old zone of refinement id using old order
+    int links_new_ord_old[ptr_node->zones_size];    // Storing the new zone of refinement id using old order
+    int links_old_ord_new[ptr_node->zones_size];    // Storing the old zone of refinement id using new order
+    int links_new_ord_new[ptr_node->zones_size];    // Storing the new zone of refinement id using new order
+    // int cell_idx_ch; // Index of the child cell
     int box_value_new; // Value in the new box
 
     bool create_link; //Decide if the link need to be created
+    //int no_ptcl;      // Total number of particles in the node
+    //int lv;
 
     int box_idx_x; // Box index at X direction
     int box_idx_y; // Box index at Y direction 
     int box_idx_z; // Box index at Z direction 
-    int box_idx; // Box index 
+    int box_idx; // Box index
+
+    //int ptcl_idx;
+
+    //int box_idx_ptcl;   // Box index
+
+    int aux_min;
+    int element_idx;
+    int aux_int;
+
+    //lv = ptr_node->lv;
 
     //** >> Creating the links between old and new refinement zones IDs **/
 
@@ -492,19 +1105,19 @@ static int adapt_new_ref_zones(struct node *ptr_node)
 
     for (int i = 0; i < ptr_node->zones_size; i++)
     {
-        links_new[i] = -1;
-        links_old[i] = -1;
+        links_new_ord_old[i] = -1;
+        links_old_ord_old[i] = -1;
     }
 
     while (cntr_links < ptr_node->zones_size && cntr_old_ref_zones < ptr_node->chn_size)
     {
-        ptr_node_ch = ptr_node->pptr_chn[cntr_old_ref_zones];
+        ptr_ch = ptr_node->pptr_chn[cntr_old_ref_zones];
         cntr_cell_ch = 0;
-        while (cntr_cell_ch < ptr_node_ch->cell_size)
+        while (cntr_cell_ch < ptr_ch->cell_size)
         {
-            box_idx_x = (ptr_node_ch->ptr_cell_idx_x[cntr_cell_ch] >> 1) - ptr_node->box_ts_x;
-            box_idx_y = (ptr_node_ch->ptr_cell_idx_y[cntr_cell_ch] >> 1) - ptr_node->box_ts_y;
-            box_idx_z = (ptr_node_ch->ptr_cell_idx_z[cntr_cell_ch] >> 1) - ptr_node->box_ts_z;
+            box_idx_x = (ptr_ch->ptr_cell_idx_x[cntr_cell_ch] >> 1) - ptr_node->box_ts_x;
+            box_idx_y = (ptr_ch->ptr_cell_idx_y[cntr_cell_ch] >> 1) - ptr_node->box_ts_y;
+            box_idx_z = (ptr_ch->ptr_cell_idx_z[cntr_cell_ch] >> 1) - ptr_node->box_ts_z;
             box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
             box_value_new = ptr_node->ptr_box_aux[box_idx];
             if (box_value_new < 0) // The old cell no longer requires refinement
@@ -516,7 +1129,7 @@ static int adapt_new_ref_zones(struct node *ptr_node)
                 create_link = true;
                 for (int i = 0; i < cntr_links; i++)
                 {
-                    if (box_value_new == links_new[i]) // The link already exist
+                    if (box_value_new == links_new_ord_old[i]) // The link already exist
                     {
                         create_link = false;
                         i = cntr_links;
@@ -525,10 +1138,10 @@ static int adapt_new_ref_zones(struct node *ptr_node)
                 }
                 if (create_link == true)
                 {
-                    links_new[cntr_links] = box_value_new;
-                    links_old[cntr_links] = cntr_old_ref_zones;
+                    links_new_ord_old[cntr_links] = box_value_new;
+                    links_old_ord_old[cntr_links] = cntr_old_ref_zones;
                     cntr_links++;
-                    cntr_cell_ch = ptr_node_ch->cell_size; //Breiking the while cycle
+                    cntr_cell_ch = ptr_ch->cell_size; //Breiking the while cycle
                 }
             }
         }//End while cycle over the child node cells
@@ -548,35 +1161,35 @@ static int adapt_new_ref_zones(struct node *ptr_node)
             for (int i = cntr_links; i < ptr_node->zones_size; i++)
             {
                 //ptr_node->ptr_aux_idx[i - cntr_links] = i;
-                links_old[i] = i;
+                links_old_ord_old[i] = i;
             }
             //cntr_links = ptr_node->zones_size;
         }
         else
         {
             cntr_link_elements = 0;  // Counter linked elements
-            cntr_old_links_plus = 0; // Counte links old
+            cntr_links_plus = 0; // Counte links old
 
-            while (cntr_link_elements < cntr_links && cntr_links + cntr_old_links_plus < ptr_node->zones_size && cntr_links + cntr_old_links_plus < ptr_node->chn_size)
+            while (cntr_link_elements < cntr_links && cntr_links + cntr_links_plus < ptr_node->zones_size && cntr_links + cntr_links_plus < ptr_node->chn_size)
             {
-                if (cntr_link_elements + cntr_old_links_plus == links_old[cntr_link_elements])
+                if (cntr_link_elements + cntr_links_plus == links_old_ord_old[cntr_link_elements])
                 {
                     cntr_link_elements++;
                 }
                 else
                 {
-                    links_old[cntr_links + cntr_old_links_plus] = cntr_link_elements + cntr_old_links_plus;
-                    cntr_old_links_plus++;
+                    links_old_ord_old[cntr_links + cntr_links_plus] = cntr_link_elements + cntr_links_plus;
+                    cntr_links_plus++;
                 }
 
             }
 
-            if (cntr_links + cntr_old_links_plus < ptr_node->zones_size)
+            if (cntr_links + cntr_links_plus < ptr_node->zones_size)
             {
-                for (int i = cntr_links + cntr_old_links_plus; i < ptr_node->zones_size; i++)
+                for (int i = cntr_links + cntr_links_plus; i < ptr_node->zones_size; i++)
                 {
                     // ptr_node->ptr_aux_idx[i - cntr_links] = i;
-                    links_old[i] = i;
+                    links_old_ord_old[i] = i;
                 }
             }
         }
@@ -592,50 +1205,141 @@ static int adapt_new_ref_zones(struct node *ptr_node)
                 cntr_link_elements++;
                 for (int j = 0; j < cntr_links; j++)
                 {
-                    if (links_new[j] == cntr_link_elements)
+                    if (links_new_ord_old[j] == cntr_link_elements)
                     {
                         check_link = true;
                         j = cntr_links;
                     }
                 }
             }
-            links_new[i] = cntr_link_elements;
+            links_new_ord_old[i] = cntr_link_elements;
         }
     }
 
-    // printf("Links_old = [   ");
-    // for (int i = 0; i< ptr_node->zones_size; i++)
+    // printf("\n\n");
+    // printf("Links_old_ord_old = [   ");
+    // for (int i = 0; i < ptr_node->zones_size; i++)
     // {
-    //     printf("%d  ", links_old[i]);
+    //     printf("%d  ", links_old_ord_old[i]);
     // }
     // printf("]\n");
-    // printf("Links_new = [   ");
+    // printf("Links_new_ord_old = [   ");
+    // for (int i = 0; i < ptr_node->zones_size; i++)
+    // {
+    //     printf("%d  ", links_new_ord_old[i]);
+    // }
+    // printf("]\n");
+
+    //** >> Ordering links arrays **/
+    //** >> Old order **/
+    cntr_links_plus = 0;
+    for (int i = 0; i < ptr_node->zones_size - 1; i++)
+    {
+        aux_min = ptr_node->chn_size + ptr_node->zones_size;
+        element_idx = -1;
+        cntr_link_elements = i;
+        while (aux_min > cntr_links_plus && cntr_link_elements < ptr_node->zones_size)
+        {
+            if (aux_min > links_old_ord_old[cntr_link_elements])
+            {
+                aux_min = links_old_ord_old[cntr_link_elements];
+                element_idx = cntr_link_elements;
+            }
+            cntr_link_elements++;
+        }
+        
+        if (links_old_ord_old[i] != aux_min)
+        {
+            //** >> Old **/
+            aux_int = links_old_ord_old[i];
+            links_old_ord_old[i] = aux_min;
+            links_old_ord_old[element_idx] = aux_int;
+            //** >> New **/
+            aux_int = links_new_ord_old[i];
+            links_new_ord_old[i] = links_new_ord_old[element_idx];
+            links_new_ord_old[element_idx] = aux_int;
+        }
+        cntr_links_plus = aux_min + 1;
+    }
+
+    //** >> New order **/
+    for (int i = 0; i < ptr_node->zones_size; i++)
+    {
+        links_new_ord_new[i] = i;
+    }
+    for (int i = 0; i < ptr_node->zones_size; i++)
+    {
+        for (int j = 0; j < ptr_node->zones_size; j++)
+        {
+            if (links_new_ord_old[j] == i)
+            {
+                links_old_ord_new[i] = links_old_ord_old[j];
+                j = ptr_node->zones_size;
+            }
+        }
+    }
+    // printf("\n\n");
+    // printf("Links_old_ord_old = [   ");
     // for (int i = 0; i< ptr_node->zones_size; i++)
     // {
-    //     printf("%d  ", links_new[i]);
+    //     printf("%d  ", links_old_ord_old[i]);
+    // }
+    // printf("]\n");
+    // printf("Links_new_ord_old = [   ");
+    // for (int i = 0; i< ptr_node->zones_size; i++)
+    // {
+    //     printf("%d  ", links_new_ord_old[i]);
+    // }
+    // printf("]\n");
+    // printf("Links_old_ord_new = [   ");
+    // for (int i = 0; i < ptr_node->zones_size; i++)
+    // {
+    //     printf("%d  ", links_old_ord_new[i]);
+    // }
+    // printf("]\n");
+    // printf("Links_new_ord_new = [   ");
+    // for (int i = 0; i < ptr_node->zones_size; i++)
+    // {
+    //     printf("%d  ", links_new_ord_new[i]);
     // }
     // printf("]\n");
 
 
-
-    //** >> Creating new children nodes for excess in refinement zones and and linking them to the parent node ptr_node **/
+    //** >> Creating and defining new children nodes for excess in refinement zones and and linking them to the parent node ptr_node **/
     if (ptr_node->zones_size > ptr_node->chn_size)
     {
-        //** >> Space checking in the number of child nodes of ptr_node
-        if (space_check(&(ptr_node->chn_cap), ptr_node->zones_size, "p1n2", &(ptr_node->pptr_chn)) == _FAILURE_)
+
+        if (new_child_nodes(ptr_node, links_old_ord_old, links_new_ord_old) == _FAILURE_)
         {
-            printf("Error, in space_check function\n");
+            printf("Error, in new_child_nodes function\n");
             return _FAILURE_;
         }
+    }
 
-        for (int i = ptr_node->chn_size; i < ptr_node->zones_size; i++)
+    //** >> Adapting child boxes to the new space **/
+    //** >> Adapting to new refinement zones **/
+    if (0 < ptr_node->zones_size && 0 < ptr_node->chn_size)
+    {
+        if (adapt_child_box(ptr_node, links_old_ord_old, links_new_ord_old) == _FAILURE_)
         {
-            ptr_node_ch = (struct node *)malloc(sizeof(struct node));
-            initialize_node(ptr_node_ch);
-            ptr_node_ch->ID = i;
-            ptr_node_ch->lv = ptr_node->lv + 1;
-            ptr_node_ch->ptr_pt = ptr_node;
-            ptr_node->pptr_chn[i] = ptr_node_ch;
+            printf("Error at function adapt_child_box()\n");
+            return _FAILURE_;
+        }
+    }
+
+    //** >> Removing cells that no longer require refinement **/
+    if (0 < ptr_node->zones_size && 0 < ptr_node->chn_size)
+    {
+        remov_cells_nolonger_require_refinement(ptr_node, links_old_ord_old, links_new_ord_old);
+    }
+
+    //** >> Adapting cells from old child nodes to new child nodes **/
+    if (0 < ptr_node->zones_size && 0 < ptr_node->chn_size)
+    {
+        if (adapt_old_child_cells_to_new_child(ptr_node, links_old_ord_old, links_new_ord_old, links_old_ord_new, links_new_ord_new) == _FAILURE_)
+        {
+            printf("Error at function adapt_old_child_cells_to_new_child()\n");
+            return _FAILURE_;
         }
     }
 

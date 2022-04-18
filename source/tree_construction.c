@@ -530,7 +530,7 @@ static int fill_child_nodes(int **pptr_cell_ptcl, const int *ptr_cell_ptcl_size,
             }
         }
 
-        // Chaning the min and max of the "minimal box" from parent units to child units
+        // Changing the min and max of the "minimal box" from parent units to child units
         ptr_node_ch->box_min_x = 2 * ptr_node_ch->box_min_x;
         ptr_node_ch->box_min_y = 2 * ptr_node_ch->box_min_y;
         ptr_node_ch->box_min_z = 2 * ptr_node_ch->box_min_z;
@@ -543,7 +543,7 @@ static int fill_child_nodes(int **pptr_cell_ptcl, const int *ptr_cell_ptcl_size,
         ptr_node_ch->box_dim_y = ptr_node_ch->box_max_y - ptr_node_ch->box_min_y + 1;
         ptr_node_ch->box_dim_z = ptr_node_ch->box_max_z - ptr_node_ch->box_min_z + 1;
 
-        // Real dimensions of the box, or real capacity
+        // Real dimensions of the boxcap = ptr_ch->box_cap;
         // ptr_node_ch->box_real_dim_x = fmax(ptr_node_ch->box_dim_x * 3, ptr_node_ch->box_dim_x + 2 * n_exp - 2);
         // ptr_node_ch->box_real_dim_y = fmax(ptr_node_ch->box_dim_y * 3, ptr_node_ch->box_dim_y + 2 * n_exp - 2);
         // ptr_node_ch->box_real_dim_z = fmax(ptr_node_ch->box_dim_z * 3, ptr_node_ch->box_dim_z + 2 * n_exp - 2);
@@ -564,7 +564,8 @@ static int fill_child_nodes(int **pptr_cell_ptcl, const int *ptr_cell_ptcl_size,
 
         // Filling the box status
         cap = ptr_node_ch->box_real_dim_x * ptr_node_ch->box_real_dim_y * ptr_node_ch->box_real_dim_z; // In general, the size of each side must be 3 times bigger than the same side of the "minimal box"
-        size = ptr_node_ch->cell_size;                                                                 // Number of cells in the block
+        ptr_node_ch->box_cap = cap;
+        size = ptr_node_ch->cell_size; // Number of cells in the block
         ptr_node_ch->ptr_box = (int *)malloc(cap * sizeof(int));
         ptr_node_ch->ptr_box_aux = (int *)malloc(cap * sizeof(int));
         // Putting the value of NO-EXIST (-4) in every box index
@@ -726,6 +727,7 @@ static int fill_child_nodes(int **pptr_cell_ptcl, const int *ptr_cell_ptcl_size,
         //** >> Refinement Criterion **/
         cap = ptr_node_ch->box_real_dim_x * ptr_node_ch->box_real_dim_y * ptr_node_ch->box_real_dim_z;
         ptr_node_ch->ptr_box_mass = (vtype *)calloc(cap, sizeof(vtype));
+        ptr_node_ch->ptr_box_mass_aux = (vtype *)calloc(cap, sizeof(vtype));
         //** >> Local mass **/
         for (int j = 0; j < ptr_node_ch->ptcl_size; j++)
         {

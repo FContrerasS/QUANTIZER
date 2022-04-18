@@ -50,6 +50,7 @@
     //** >> Boxes **/
     int *ptr_box;   // Box contaning the cells status of the minimal box cells and more
     int *ptr_box_aux;   // Auxiliary box contaning used to adatp the box to a new time-step
+    int box_cap;        // Maximum capacity of the box
     int box_real_dim_x; // Real dimension X of the box
     int box_real_dim_y; // Real dimension Y of the box
     int box_real_dim_z; // Real dimension Z of the box
@@ -78,6 +79,7 @@
 
     //** >> Refinement Criterion **/
     vtype *ptr_box_mass; // Register of the mass in the cell to refinement criteria
+    vtype *ptr_box_mass_aux; // Auxiliary mass box used to adapt the box mass
     vtype local_mass;    // Total mass in the node
 
     //* Potential, Acceleration and density of the grid **/

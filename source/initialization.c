@@ -112,6 +112,7 @@ static void initializing_head_node()
 	ptr_head->box_real_dim_x = box_side_lmin;
 	ptr_head->box_real_dim_y = box_side_lmin;
 	ptr_head->box_real_dim_z = box_side_lmin;
+	ptr_head->box_cap = ptr_head->box_real_dim_x * ptr_head->box_real_dim_y * ptr_head->box_real_dim_z;
 	ptr_head->box_ts_x = -bder_os_sim;
 	ptr_head->box_ts_y = -bder_os_sim;
 	ptr_head->box_ts_z = -bder_os_sim;
