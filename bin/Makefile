@@ -10,7 +10,7 @@ CC = gcc
 CFLAGS  = -g -Wall
 
 #Optimization Flags
-OPTIMIZATION  =  -O3
+OPTIMIZATION  = -O3
 
 GPROF = -pg
 

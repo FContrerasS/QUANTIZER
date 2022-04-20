@@ -88,6 +88,7 @@
     vtype *ptr_ay;  // Same as potential but with the acceleration
     vtype *ptr_az;  // Same as potential but with the acceleration
     vtype *ptr_d;   // Array with the density grid of the node.
+    int grid_properties_cap;   // Maximum cap of the grid properties
 
     //** >> Tree structure **/
     struct node **pptr_chn; // Pointer to children pointers

@@ -159,6 +159,7 @@ static void initializing_head_node()
 
 	//** >> Potential, Acceleration and density of the grid **/
 	int cap = (ptr_head->box_real_dim_x + 1) * (ptr_head->box_real_dim_y + 1) * (ptr_head->box_real_dim_z + 1);
+	ptr_head->grid_properties_cap = cap;
 	ptr_head->ptr_pot = (vtype *)calloc(cap, sizeof(vtype)); // Potential
 	ptr_head->ptr_ax = (vtype *)calloc(cap, sizeof(vtype));	 // Acceleration
 	ptr_head->ptr_ay = (vtype *)calloc(cap, sizeof(vtype));

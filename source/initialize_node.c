@@ -85,6 +85,7 @@ void initialize_node(struct node *ptr_node)
 	ptr_node->ptr_ay = NULL;	  // Same as potential but with the acceleration
 	ptr_node->ptr_az = NULL;	  // Same as potential but with the acceleration
 	ptr_node->ptr_d = NULL;	  // Array with the density grid of the node.
+	ptr_node->grid_properties_cap = 0; // Maximum cap of the grid properties
 
 	//** >> Tree structure **/
 	ptr_node->pptr_chn = NULL; // Pointer to children pointers

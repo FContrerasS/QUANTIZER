@@ -736,7 +736,8 @@ static int fill_child_nodes(int **pptr_cell_ptcl, const int *ptr_cell_ptcl_size,
 
         //* Potential, Acceleration and density of the grid **/
         cap = (ptr_node_ch->box_real_dim_x + 1) * (ptr_node_ch->box_real_dim_y + 1) * (ptr_node_ch->box_real_dim_z + 1);
-        ptr_node_ch->ptr_pot = (vtype *)calloc(cap , sizeof(vtype));
+        ptr_node_ch->grid_properties_cap = cap;
+        ptr_node_ch->ptr_pot = (vtype *)calloc(cap, sizeof(vtype));
         ptr_node_ch->ptr_ax = (vtype *)calloc(cap , sizeof(vtype));
         ptr_node_ch->ptr_ay = (vtype *)calloc(cap, sizeof(vtype));
         ptr_node_ch->ptr_az = (vtype *)calloc(cap, sizeof(vtype));
