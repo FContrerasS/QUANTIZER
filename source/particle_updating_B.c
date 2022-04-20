@@ -80,7 +80,7 @@ int particle_updating_B(vtype dt)
 
     //** >> Particle updating A **/
 
-    struct node *ptr_node;
+    struct node *ptr_node = NULL;
     bool status;    // Boolean value for the updating particles
 
     int no_pts; // Number of parents in the cycle
@@ -101,6 +101,8 @@ int particle_updating_B(vtype dt)
             }
         }
     }
+
+    ptr_node = NULL;
 
     return _SUCCESS_;
 }

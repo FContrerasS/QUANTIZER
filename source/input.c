@@ -36,7 +36,8 @@ int input_plummer_model()
     char input_name[100] = "../source/initial_conditions//"
                            "Plummer_Np(10000)_BoxSize(0.1)_Mass(1000000).txt";
 
-    FILE *file = fopen(input_name, "r");
+    FILE *file = NULL;
+    file = fopen(input_name, "r");
     if (file == NULL)
     {
         printf("Error opening plummer file!\n");
@@ -82,6 +83,7 @@ int input_plummer_model()
         }
     }
     fclose(file);
+    file = NULL;
 
     return _SUCCESS_;
 }

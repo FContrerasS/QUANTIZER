@@ -178,7 +178,7 @@ static void computing_particle_acceleration(const struct node *ptr_node, bool st
 
     //** >> Particle acceleration **/
 
-    struct node *ptr_node;
+    struct node *ptr_node = NULL;
     bool status; // Boolean value for the updating particles
 
     int no_pts; // Number of parents in the cycle
@@ -195,6 +195,8 @@ static void computing_particle_acceleration(const struct node *ptr_node, bool st
             computing_particle_acceleration(ptr_node,status);
         }
     }
+
+    ptr_node = NULL;
 
     return _SUCCESS_;
 }

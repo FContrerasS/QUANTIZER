@@ -127,7 +127,7 @@ int timestep_1(vtype *ptr_dt)
 
     //** >> Time-step computing **/
 
-    struct node *ptr_node;
+    struct node *ptr_node = NULL;
     bool status; // Boolean value for the updating particles
 
     int no_pts; // Number of parents in the cycle
@@ -158,6 +158,8 @@ int timestep_1(vtype *ptr_dt)
     }
 
     *ptr_dt = dt_min;
+
+    ptr_node = NULL;
 
     return _SUCCESS_;
 }

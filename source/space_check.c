@@ -30,6 +30,9 @@ int space_check(int *ptr_cap, int size, const char *format, ...)
 {
     if(*ptr_cap < size)
     {
+        
+        int cap = *ptr_cap;
+
         if (*format != 'p')
         {
             printf("Error in the realocation of the pointer\n");
@@ -63,7 +66,7 @@ int space_check(int *ptr_cap, int size, const char *format, ...)
 
             if (format_aux == 'i' && *format == '1')
             {
-                int **pptr_int;
+                int **pptr_int = NULL;
                 pptr_int = va_arg(args, int **);
                 if (*pptr_int == NULL)
                 {
@@ -82,11 +85,16 @@ int space_check(int *ptr_cap, int size, const char *format, ...)
                     {
                         *pptr_int = ptr_aux;
                     }
+					ptr_aux = NULL;
+                }
+                for(int j = cap; j < *ptr_cap ; j++ )
+                {
+                    (*pptr_int)[j] = 0;
                 }
             }
             else if (format_aux == 'i' && *format == '2')
             {
-                int ***ppptr_int;
+                int ***ppptr_int = NULL;
                 ppptr_int = va_arg(args, int ***);
                 if (*ppptr_int == NULL)
                 {
@@ -105,11 +113,16 @@ int space_check(int *ptr_cap, int size, const char *format, ...)
                     {
                         *ppptr_int = pptr_aux;
                     }
+                    pptr_aux = NULL;
+                }
+                for(int j = cap; j < *ptr_cap ; j++ )
+                {
+                    (*ppptr_int)[j] = NULL;
                 }
             }
             else if (format_aux == 'v' && *format == '1')
             {
-                vtype **pptr_vtype;
+                vtype **pptr_vtype = NULL;
                 pptr_vtype = va_arg(args, vtype **);
                 if (*pptr_vtype == NULL)
                 {
@@ -128,11 +141,16 @@ int space_check(int *ptr_cap, int size, const char *format, ...)
                     {
                         *pptr_vtype = ptr_aux;
                     }
+					ptr_aux = NULL;
+                }
+                for(int j = cap; j < *ptr_cap ; j++ )
+                {
+                    (*pptr_vtype)[j] = 0;
                 }
             }
             else if (format_aux == 'v' && *format == '2')
             {
-                vtype ***ppptr_vtype;
+                vtype ***ppptr_vtype = NULL;
                 ppptr_vtype = va_arg(args, vtype ***);
                 if (*ppptr_vtype == NULL)
                 {
@@ -151,11 +169,17 @@ int space_check(int *ptr_cap, int size, const char *format, ...)
                     {
                         *ppptr_vtype = pptr_aux;
                     }
+					pptr_aux = NULL;
+
+                    for(int j = cap; j < *ptr_cap ; j++ )
+                    {
+                        (*ppptr_vtype)[j] = NULL;
+                    }
                 }
             }
             else if (format_aux == 'n' && *format == '1')
             {
-                struct node **pptr_node;
+                struct node **pptr_node = NULL;
                 pptr_node = va_arg(args, struct node **);
                 if (*pptr_node == NULL)
                 {
@@ -174,11 +198,12 @@ int space_check(int *ptr_cap, int size, const char *format, ...)
                     {
                         *pptr_node = ptr_aux;
                     }
+					ptr_aux = NULL;
                 }
             }
             else if (format_aux == 'n' && *format == '2')
             {
-                struct node ***ppptr_node;
+                struct node ***ppptr_node = NULL;
                 ppptr_node = va_arg(args, struct node ***);
                 if (*ppptr_node == NULL)
                 {
@@ -196,6 +221,12 @@ int space_check(int *ptr_cap, int size, const char *format, ...)
                     else
                     {
                         *ppptr_node = pptr_aux;
+                    }
+					pptr_aux = NULL;
+
+					for(int j = cap; j < *ptr_cap ; j++ )
+                    {
+                        (*ppptr_node)[j] = NULL;
                     }
                 }
             }

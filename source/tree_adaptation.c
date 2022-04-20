@@ -30,7 +30,7 @@ static void updating_box_mass(struct node *ptr_node)
 {
 
     int no_chn; // Number of child nodes
-    struct node *ptr_ch; //child node
+    struct node *ptr_ch = NULL; //child node
     vtype aux_box_mass; //Total mass in the 8 child cells
 
     int box_idx_x_ch; // Box index in X direcction of the child cell 
@@ -77,6 +77,7 @@ static void updating_box_mass(struct node *ptr_node)
             total_mass += aux_box_mass;
         }
     }
+    ptr_ch = NULL;
 }
 
 static void initialization_box_aux(struct node *ptr_node)
@@ -151,7 +152,7 @@ static int fill_cell_ref(struct node *ptr_node)
 {
     //** >> Adding cells which satisfy the refinement criteria or contains grandchild cells to the array ptr_cell_ref and chaning the box_aux the status of refinement -1 **/
 
-    struct node *ptr_ch; // Child node
+    struct node *ptr_ch = NULL; // Child node
 
     int size; // Size of the refinement cells array
     
@@ -273,6 +274,8 @@ static int fill_cell_ref(struct node *ptr_node)
             cntr++;
         }
     }
+
+    ptr_ch = NULL;
 
     return _SUCCESS_;
 } // end function fill_cell_ref
@@ -415,12 +418,12 @@ static int fill_zones_ref(struct node *ptr_node)
                     return _FAILURE_;
                 }
 
-                //** >> Initiazling the new allocated values **/
-                for (int i = 0; i < zone_idx_max - zone_idx; i++)
-                {
-                    ptr_node->pptr_zones[zone_idx_max - i - 1] = NULL;
-                    ptr_node->ptr_zone_cap[zone_idx_max - i - 1] = 0;
-                }
+                // //** >> Initiazling the new allocated values **/
+                // for (int i = 0; i < zone_idx_max - zone_idx; i++)
+                // {
+                //     ptr_node->pptr_zones[zone_idx_max - i - 1] = NULL;
+                //     ptr_node->ptr_zone_cap[zone_idx_max - i - 1] = 0;
+                // }
             }
             ptr_node->ptr_zone_size[zone_idx] = zone_size;
             zone_idx++; // Increasing the zone number
@@ -464,7 +467,7 @@ static int fill_zones_ref(struct node *ptr_node)
 
 static int create_links(struct node *ptr_node, int *links_old_ord_old, int *links_new_ord_old, int *links_old_ord_new, int *links_new_ord_new, int *ptr_links_cap)
 {
-    struct node *ptr_ch; // child node
+    struct node *ptr_ch = NULL; // child node
 
     int cntr_links; // Counter the number of links between the new and old zones of refinement
     // int cntr_old_ref_cells; // Counter the total number of old cell refined in the node
@@ -717,12 +720,14 @@ static int create_links(struct node *ptr_node, int *links_old_ord_old, int *link
     //     ptr_node->ptr_aux_idx[i] = 0;
     // }
 
+    ptr_ch = NULL;
+
     return _SUCCESS_;
 }
 
 static int adapt_child_box_and_cells(struct node *ptr_node, const int *links_old_ord_old, const int *links_new_ord_old)
 {
-    struct node *ptr_ch;
+    struct node *ptr_ch = NULL;
 
     vtype *ptr_aux;
 
@@ -968,13 +973,15 @@ static int adapt_child_box_and_cells(struct node *ptr_node, const int *links_old
         }
     }
 
+    ptr_ch = NULL;
+
     return _SUCCESS_;
 }
 
 static int create_new_child_nodes(struct node *ptr_node, const int *links_old_ord_old, const int *links_new_ord_old)
 {
 
-    struct node *ptr_ch; // child node
+    struct node *ptr_ch = NULL; // child node
     int cell_idx;        // The cell index is simply i of the for loop
 
     int pos_x;  // Distance between the real box and the minimal box when the last is localized in the middle of the real one
@@ -1149,13 +1156,15 @@ static int create_new_child_nodes(struct node *ptr_node, const int *links_old_or
         ptr_node->pptr_chn[i] = ptr_ch;
     }
 
+    ptr_ch = NULL;
+
     return _SUCCESS_;
 }
 
 static void remov_cells_nolonger_require_refinement(struct node *ptr_node, const int *links_old_ord_old, const int *links_new_ord_old)
 {
 
-    struct node *ptr_ch;
+    struct node *ptr_ch = NULL;
 
     int box_idx_x_ch; // Box index in X direcction of the child cell
     int box_idx_y_ch; // Box index in Y direcction of the child cell
@@ -1255,12 +1264,13 @@ static void remov_cells_nolonger_require_refinement(struct node *ptr_node, const
             ptr_ch->cell_size = no_cells;
         }
     }
+    ptr_ch = NULL;
 }
 
 static int moving_old_child_to_new_child(struct node *ptr_node, const int *links_old_ord_old, const int *links_new_ord_old, const int *links_old_ord_new, const int *links_new_ord_new)
 {
-    struct node *ptr_ch_A;
-    struct node *ptr_ch_B;
+    struct node *ptr_ch_A = NULL;
+    struct node *ptr_ch_B = NULL;
     int no_cells_ch_A; // Total number of cells in the child node A
     int no_cells_ch_B; // Total number of cells in the child node A
 
@@ -1563,12 +1573,16 @@ for (int i = 0; i < ptr_node->chn_size; i++)
         }
         cntr_ch++;
     }
+
+    ptr_ch_A = NULL;
+    ptr_ch_B = NULL;
+
     return _SUCCESS_;
 }
 
 static int moving_new_zones_to_new_child(struct node *ptr_node, int *links_old_ord_new)
 {
-    struct node *ptr_ch; // child node
+    struct node *ptr_ch = NULL; // child node
 
     int lv;
 
@@ -1688,6 +1702,8 @@ static int moving_new_zones_to_new_child(struct node *ptr_node, int *links_old_o
         ptr_ch->cell_size = no_cells_ch;
         ptr_ch->ptcl_size = no_ptcl_ch;
     }
+
+    ptr_ch = NULL;
 
     return _SUCCESS_;
 }
@@ -1817,13 +1833,14 @@ static void reorganization_child_node(struct node *ptr_node, const int *links_ol
 
     pptr_aux_free = ptr_node->pptr_chn;
     ptr_node->pptr_chn = pptr_aux;
-    pptr_aux = NULL;
 
+    pptr_aux = NULL;
     free(pptr_aux_free);
     pptr_aux_free = NULL;
+    ptr_ch = NULL;
 }
 
-static void reorganization_grandchild_node(struct node *ptr_node)
+static int reorganization_grandchild_node(struct node *ptr_node)
 {
      
 
@@ -1885,6 +1902,9 @@ static void reorganization_grandchild_node(struct node *ptr_node)
 
         
     }
+
+
+    return _SUCCESS_;
 }
 
     static int
@@ -2091,7 +2111,11 @@ int tree_adaptation()
                 printf("Reorganization grandchild nodes\n");
                 if (ptr_node->zones_size > 0 && ptr_node->chn_size > 0 && lv < no_lvs)
                 {
-                    reorganization_grandchild_node(ptr_node);
+                    if (reorganization_grandchild_node(ptr_node) == _FAILURE_)
+                    {
+                        printf("Error at function reorganization_grandchild_node()\n");
+                        return _FAILURE_;
+                    }
                 }
 
                 //** Tentacles updating **/

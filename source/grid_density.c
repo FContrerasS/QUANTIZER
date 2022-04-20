@@ -114,7 +114,7 @@ void grid_density()
     
     //** >> Density in the grid **/
 
-    struct node *ptr_node;
+    struct node *ptr_node = NULL;
 
     int no_pts;   // Number of parents in the cycle
 
@@ -132,4 +132,7 @@ void grid_density()
             lv = lmax - lmin + 1;
         }
     }
+
+    ptr_node = NULL;
+
 }

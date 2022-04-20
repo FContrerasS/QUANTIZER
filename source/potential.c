@@ -314,14 +314,14 @@ int potential()
     //** >> POTENTIAL BRANCH NODES **/
     if(lmin < lmax)
     {
-        struct node *ptr_node_pt;
-        struct node *ptr_node_ch;
+        struct node *ptr_node_pt = NULL;
+        struct node *ptr_node_ch = NULL;
 
         int no_pts;   // Number of parents in the cycle
 
-        int **pptr_red_black;
-        int *ptr_red_black_cap;
-        int *ptr_red_black_size;
+        int **pptr_red_black = NULL;
+        int *ptr_red_black_cap = NULL;
+        int *ptr_red_black_size = NULL;
 
         // Red and Black arrays contain the index element of the box grid of the potential
         pptr_red_black = (int **)malloc(2 * sizeof(int *));
@@ -400,10 +400,16 @@ int potential()
 
         //** >> Free pointers **/
         free(pptr_red_black[0]); // Free red 
+        pptr_red_black[0] = NULL;
         free(pptr_red_black[1]); // Free black
+        pptr_red_black[1] = NULL;
         free(pptr_red_black); // Free red and black
+        pptr_red_black = NULL;
         free(ptr_red_black_cap); // Free capacity of red and black
+        ptr_red_black_cap = NULL;
         free(ptr_red_black_size); // Free size of red and black
+        ptr_red_black_size = NULL;
+        
     }
 
         return _SUCCESS_;

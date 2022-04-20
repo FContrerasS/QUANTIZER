@@ -34,7 +34,7 @@ static vtype *multigrid_restriction(const vtype *phi, int cgridsize)
 	int cgridsize_pow_2 = cgridsize * cgridsize;
 	int Index_A, Index_B;
 
-	vtype *cphi;
+	vtype *cphi = NULL;
 	cphi = (vtype *)calloc(cgridsize * cgridsize * cgridsize, sizeof(vtype));
 
 	for (int lz = 1; lz < cgridsize - 1; lz++)
@@ -55,7 +55,7 @@ static vtype *multigrid_restriction(const vtype *phi, int cgridsize)
 static vtype *multigrid_projection(const vtype *dphic, int cgridsize)
 {
 
-	vtype *dphi;
+	vtype *dphi = NULL;
 	int Index_A, Index_B;
 
 	int gridsize = 2 * cgridsize - 1;
@@ -145,7 +145,7 @@ static void compute_jacobi(vtype *phi_old, vtype* phi_new, const vtype *rho,
 						  int gridsize, int iter_max)
 {
 
-	vtype *pointer_auxiliary;
+	vtype *pointer_auxiliary = NULL;
 	vtype C = -(1.0L / (gridsize - 1)) * (1.0L / (gridsize - 1));
 	int gridsize_pow_2 = gridsize * gridsize;
 	int C1 = (gridsize - 1);
@@ -170,12 +170,13 @@ static void compute_jacobi(vtype *phi_old, vtype* phi_new, const vtype *rho,
 		phi_old = phi_new;
 		phi_new = pointer_auxiliary;
 	}
+	pointer_auxiliary = NULL;
 }
 
 static void jacobi(vtype *phi, const vtype *rho, int gridsize, int iter_max)
 {
 
-	vtype *phi_copy;
+	vtype *phi_copy = NULL;
 	int gridsize_pow_3 = gridsize * gridsize * gridsize;
 
 	// Copy of phi
@@ -193,15 +194,16 @@ static void jacobi(vtype *phi, const vtype *rho, int gridsize, int iter_max)
 		compute_jacobi(phi_copy, phi, rho, gridsize, iter_max + 1);
 	}
 	free(phi_copy);
+	phi_copy = NULL;
 }
 
 static void multigrid_solver(vtype *phi, const vtype *rho, int gridsize, int type_multigrid)
 {
 	int grid_idx;
-	vtype *dphi;
-	vtype *dphic;
-	vtype *rest;
-	vtype *restcoarse;
+	vtype *dphi = NULL;
+	vtype *dphic = NULL;
+	vtype *rest = NULL;
+	vtype *restcoarse = NULL;
 
 	int gridsize_pow_2 = gridsize * gridsize;
 	int gridsize_pow_3 = gridsize_pow_2 * gridsize;
@@ -307,6 +309,10 @@ static void multigrid_solver(vtype *phi, const vtype *rho, int gridsize, int typ
 	free(rest);
 	free(restcoarse);
 	free(dphi);
+	dphic = NULL;
+	rest = NULL;
+	restcoarse = NULL;
+	dphi = NULL;
 }
 
 static int compute_potential_head_node(struct node *ptr_node_pt)
@@ -321,8 +327,8 @@ static int compute_potential_head_node(struct node *ptr_node_pt)
 		int grid_side_pow2;
 		int grid_limit; // Superior border in the internal grid box
 
-		vtype *aux_pot;
-		vtype *aux_d;
+		vtype *aux_pot = NULL;
+		vtype *aux_d = NULL;
 		int size;
 		int size_pow2;
 		int size_pow3;
@@ -377,6 +383,8 @@ static int compute_potential_head_node(struct node *ptr_node_pt)
 		}
 		free(aux_pot);
 		free(aux_d);
+		aux_pot = NULL;
+		aux_d = NULL;
 	}
 
 	return _SUCCESS_;
@@ -385,7 +393,7 @@ static int compute_potential_head_node(struct node *ptr_node_pt)
 int potential_head_node()
 {
 
-	struct node *ptr_node_pt;
+	struct node *ptr_node_pt = NULL;
 
 	ptr_node_pt = GL_ptr_tree;
 
@@ -395,6 +403,8 @@ int potential_head_node()
 		printf("Error at function potential\n");
 		return _FAILURE_;
 	}
+
+	ptr_node_pt = NULL;
 
 	return _SUCCESS_;
 }

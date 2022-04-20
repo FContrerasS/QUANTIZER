@@ -327,12 +327,13 @@ static int fill_zones_ref(struct node *ptr_node)
                     return _FAILURE_;
                 }
 
-                //** >> Initiazling the new allocated values **/
-                for (int i = 0; i < zone_idx_max - zone_idx; i++)
-                {
-                    ptr_node->pptr_zones[zone_idx_max - i - 1] = NULL;
-                    ptr_node->ptr_zone_cap[zone_idx_max - i - 1] = 0;
-                }
+                    //The initialization is done in the space_check function
+                // //** >> Initiazling the new allocated values **/
+                // for (int i = 0; i < zone_idx_max - zone_idx; i++)
+                // {
+                //     ptr_node->pptr_zones[zone_idx_max - i - 1] = NULL;
+                //     ptr_node->ptr_zone_cap[zone_idx_max - i - 1] = 0;
+                // }
             }
             ptr_node->ptr_zone_size[zone_idx] = zone_size;
             zone_idx++; // Increasing the zone number
@@ -764,78 +765,39 @@ static int fill_child_nodes(int **pptr_cell_ptcl, const int *ptr_cell_ptcl_size,
         }
     }
 
+    ptr_node_ch = NULL;
+    ptr_pt_cells = NULL;
+
     return _SUCCESS_;
 } // end function fill_child_nodes
 
 static int fill_tentacles(const struct node *ptr_node_pt)
 {
-    int lv;
-    int cap;
-    int size;
+    int lv = ptr_node_pt->lv - lmin + 1; // Children level
 
-    struct node **pptr_node_aux; // Auxiliary pointer in realloc
+    int size = GL_tentacles_size[lv] + ptr_node_pt->chn_size;
 
-    lv = ptr_node_pt->lv - lmin + 1; // Children level
-
-    cap = GL_tentacles_cap[lv];
-    size = GL_tentacles_size[lv];
-    // printf("lv = %d, ID pt = %d, size tenta = %d, cap tenta = %d\n", lv + lmin, ptr_node_pt->ID, size, cap);
-    if (size + ptr_node_pt->chn_size > cap)
+    if(size > GL_tentacles_cap[lv])
     {
-        //** >> Increase the capacity **/
-        cap = 2 * (size + ptr_node_pt->chn_size);
-
-        if (GL_tentacles_old[lv] == NULL)
-        {
-            GL_tentacles_old[lv] = (struct node **)malloc(cap * sizeof(struct node *));
-            GL_tentacles_new[lv] = (struct node **)malloc(cap * sizeof(struct node *));
-        }
-        else
-        {
-            //** >> Old tentacle **/
-            pptr_node_aux = NULL;
-            pptr_node_aux = (struct node **)realloc(GL_tentacles_old[lv], cap * sizeof(struct node *));
-            if (pptr_node_aux == NULL)
-            {
-                printf("Error in reallocate the GL_tentacles_old[%d] array\n", lv);
-                return _FAILURE_;
-            }
-            GL_tentacles_old[lv] = pptr_node_aux;
-
-            //** >> New tentacle **/
-            pptr_node_aux = NULL;
-            pptr_node_aux = (struct node **)realloc(GL_tentacles_new[lv], cap * sizeof(struct node *));
-            if (pptr_node_aux == NULL)
-            {
-                printf("Error in reallocate the GL_tentacles_new[%d] array\n", lv);
-                return _FAILURE_;
-            }
-            GL_tentacles_new[lv] = pptr_node_aux;
-        }
-
-        //** >> Initializing new allocations **/
-        for (int i = size; i < cap; i++)
-        {
-            GL_tentacles_old[lv][i] = NULL;
-            GL_tentacles_new[lv][i] = NULL;
-        }
-
-        //** >> Memory computing **/
-        TOTAL_MEMORY_TENTACLES += 2 * (2 * (size + ptr_node_pt->chn_size) - GL_tentacles_cap[lv]) * sizeof(struct node *);
-
-        //** >> New value for the capacity of the tentacles at level lv**/
-        GL_tentacles_cap[lv] = cap;
+        TOTAL_MEMORY_TENTACLES += 2 * (2 * size - GL_tentacles_cap[lv]) * sizeof(struct node *);
     }
 
-    //** >> Filling the new tentacles for the next level of refinement **/
+    if (space_check(&(GL_tentacles_cap[lv]), size, "p2n2n2", &(GL_tentacles_old[lv]), &(GL_tentacles_new[lv])) == _FAILURE_)
+    {
+        printf("Error, in space_check function\n");
+        return _FAILURE_;
+    }
+
     for (int i = 0; i < ptr_node_pt->chn_size; i++)
     {
         //** >> Putting elements in the new tentacles **/
-        GL_tentacles_old[lv][size + i] = ptr_node_pt->pptr_chn[i];
-        GL_tentacles_new[lv][size + i] = ptr_node_pt->pptr_chn[i];
+        GL_tentacles_old[lv][GL_tentacles_size[lv]  + i] = ptr_node_pt->pptr_chn[i];
+        GL_tentacles_new[lv][GL_tentacles_size[lv]  + i] = ptr_node_pt->pptr_chn[i];
     }
+
     //** Increasing the number of structs in the level lv **/
-    GL_tentacles_size[lv] += ptr_node_pt->chn_size;
+    GL_tentacles_size[lv] = size;
+    
     //** >> Increasing the deepth of levels of the tentacles **/
     if (GL_tentacles_level_max < lv)
     {
@@ -851,16 +813,16 @@ int tree_construction()
     //** >> Working in the refinement zones **/
     if (lmin < lmax)
     {
-        struct node *ptr_node; // Parent node
-        int **pptr_cell_ptcl;    // Particles indexes in each cell of the main node
-        int *ptr_cell_ptcl_cap;  // Maximum number (capacity) of particles in each cell of the box
-        int *ptr_cell_ptcl_size; // Number of particles in each cell of the box
+        struct node *ptr_node = NULL; // Parent node
+        int **pptr_cell_ptcl = NULL;    // Particles indexes in each cell of the main node
+        int *ptr_cell_ptcl_cap = NULL;  // Maximum number (capacity) of particles in each cell of the box
+        int *ptr_cell_ptcl_size = NULL; // Number of particles in each cell of the box
         int space_cell_ptcl;     // Total space of the pptr_cell_ptcl array
         int required_space_cell_ptcl; // New total space required to the array pptr_cell_ptcl
 
         int no_pts; // Number of parents in the cycle
 
-        int aux_cap; // Old capacity of the space cell particles array. Used in space checking
+        //int aux_cap; // Old capacity of the space cell particles array. Used in space checking
 
         int lv;
 
@@ -893,19 +855,20 @@ int tree_construction()
 
                 if (space_cell_ptcl < required_space_cell_ptcl)
                 {
-                    aux_cap = space_cell_ptcl;
+                    //aux_cap = space_cell_ptcl;
                     if (space_check(&(space_cell_ptcl), required_space_cell_ptcl, "p3i2i1i1", &(pptr_cell_ptcl), &(ptr_cell_ptcl_cap), &(ptr_cell_ptcl_size)) == _FAILURE_)
                     {
                         printf("Error, in space_check function\n");
                         return _FAILURE_;
                     }
 
-                    //** >> Initiazling the new allocated values **/
-                    for (int j = 0; j < space_cell_ptcl - aux_cap; j++)
-                    {
-                        pptr_cell_ptcl[space_cell_ptcl - j - 1] = NULL;
-                        ptr_cell_ptcl_cap[space_cell_ptcl - j - 1] = 0;
-                    }
+                    //The initialization is done in the space_check function
+                    // //** >> Initiazling the new allocated values **/
+                    // for (int j = 0; j < space_cell_ptcl - aux_cap; j++)
+                    // {
+                    //     pptr_cell_ptcl[space_cell_ptcl - j - 1] = NULL;
+                    //     ptr_cell_ptcl_cap[space_cell_ptcl - j - 1] = 0;
+                    // }
                 }
 
                 for (int j = 0; j < space_cell_ptcl; j++)
@@ -975,8 +938,13 @@ int tree_construction()
             }
         }
         free(ptr_cell_ptcl_size);
+        ptr_cell_ptcl_size = NULL;
         free(ptr_cell_ptcl_cap);
+        ptr_cell_ptcl_cap = NULL;
         free(pptr_cell_ptcl);
+        pptr_cell_ptcl = NULL; 
+
+        ptr_node = NULL; 
     } // Finalized tree structure
 
     return _SUCCESS_;

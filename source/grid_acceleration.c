@@ -143,7 +143,7 @@ static void computing_grid_acceleration(struct node *ptr_node)
 {
     //** >> Acceleration in the grid **/
 
-    struct node *ptr_node;
+    struct node *ptr_node = NULL;
 
     int no_pts;   // Number of parents in the cycle
 
@@ -163,6 +163,7 @@ static void computing_grid_acceleration(struct node *ptr_node)
         }
     }
 
+    ptr_node = NULL;
 
     return _SUCCESS_;
 }

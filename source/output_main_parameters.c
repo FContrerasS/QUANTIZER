@@ -31,7 +31,8 @@ void output_main_parameters(vtype final_time, int Number_timesteps, int Number_o
     char parameters_name[1100];
     sprintf(parameters_name, "%s/Parameters.dat", folder_name);
 
-    FILE *file = fopen(parameters_name, "w");
+    FILE *file = NULL;
+    file = fopen(parameters_name, "w");
     if (file == NULL)
     {
         printf("Error opening file!");
@@ -64,4 +65,5 @@ void output_main_parameters(vtype final_time, int Number_timesteps, int Number_o
     fprintf(file, "G %1.5e\n", (double)_G_);
 
     fclose(file);
+    file = NULL;
 }

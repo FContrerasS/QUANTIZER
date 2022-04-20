@@ -205,6 +205,18 @@ static void init_global_poisson_params()
 
 static void init_global_ptcl()
 {
+
+    GL_ptcl_mass = NULL;
+    GL_ptcl_x = NULL;
+    GL_ptcl_y = NULL;
+    GL_ptcl_z = NULL;
+    GL_ptcl_vx = NULL;
+    GL_ptcl_vy = NULL;
+    GL_ptcl_vz = NULL;
+    GL_ptcl_ax = NULL;
+    GL_ptcl_ay = NULL;
+    GL_ptcl_az = NULL;
+
     GL_ptcl_mass = (vtype *)calloc(GL_no_ptcl , sizeof(vtype));
     GL_ptcl_x = (vtype *)calloc(GL_no_ptcl , sizeof(vtype));
     GL_ptcl_y = (vtype *)calloc(GL_no_ptcl , sizeof(vtype));
@@ -216,6 +228,7 @@ static void init_global_ptcl()
     GL_ptcl_ay = (vtype *)calloc(GL_no_ptcl , sizeof(vtype));
     GL_ptcl_az = (vtype *)calloc(GL_no_ptcl , sizeof(vtype));
 
+    GL_ptcl = NULL;
     GL_ptcl = (vtype **)malloc(10 * sizeof(vtype *));
     GL_ptcl[0] = GL_ptcl_mass;
     GL_ptcl[1] = GL_ptcl_x;
@@ -231,6 +244,7 @@ static void init_global_ptcl()
 
 static void init_tree_head()
 {
+    GL_ptr_tree = NULL;
     GL_ptr_tree = (struct node *)malloc(sizeof(struct node));
 }
 
@@ -255,6 +269,7 @@ static void init_global_folder_params()
 
 static void init_global_timer()
 {
+    GL_times = NULL;
     GL_times = (double *)calloc(50 , sizeof(double));
 }
 

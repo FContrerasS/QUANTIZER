@@ -88,7 +88,7 @@ int reset()
 	TOTAL_MEMORY_OTROS += GL_no_ptcl * 10 * sizeof(vtype);	
 
 	//Head and brances nodes
-	struct node *ptr_node;
+	struct node *ptr_node = NULL;
 	int no_pts;
 	for (int lv = GL_tentacles_level_max; lv > -1; lv--)
 	{
@@ -125,7 +125,7 @@ int reset()
 	}
 
 	//** >> Head node **/
-	struct node *ptr_head;
+	struct node *ptr_head = NULL;
 	ptr_head = GL_ptr_tree;
 
 	// int box_idx_x; // Box index in X direcction
@@ -188,6 +188,9 @@ int reset()
 	// 	GL_tentacles_size[i] = 0;
 	// }
 	// GL_tentacles_level_max = 0;
+
+	ptr_node = NULL;
+	ptr_head = NULL;
 
 	return _SUCCESS_;
 }
