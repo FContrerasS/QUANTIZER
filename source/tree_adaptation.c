@@ -1864,8 +1864,6 @@ static int reorganization_grandchild_node(struct node *ptr_node)
 
         int size;
 
-        int lv = ptr_node->lv;
-
         struct node **pptr_aux = NULL;
         int cntr_ch = 0; //Counter the number of grandchildren
         pptr_aux = (struct node **)malloc(no_grandchildren * sizeof(struct node *));
@@ -1900,15 +1898,15 @@ static int reorganization_grandchild_node(struct node *ptr_node)
             ptr_node->pptr_chn[child_ID]->chn_size = size + 1;
         }
 
-        
+        free(pptr_aux);
+        pptr_aux = NULL;
     }
 
 
     return _SUCCESS_;
 }
 
-    static int
-    tentacles_updating(struct node *ptr_node, int tentacle_lv)
+static int tentacles_updating(struct node *ptr_node, int tentacle_lv)
 {
     int no_tentacles = GL_tentacles_size[tentacle_lv];
     int size = no_tentacles + ptr_node->zones_size;
