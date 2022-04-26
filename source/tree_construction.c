@@ -420,7 +420,12 @@ static int fill_child_nodes(int **pptr_cell_ptcl, const int *ptr_cell_ptcl_size,
     //** >> Creating child nodes in parent node **/
     ptr_node_pt->chn_cap = ptr_node_pt->zones_cap; // Same amount than refinement zones
     ptr_node_pt->chn_size = ptr_node_pt->zones_size;
-    ptr_node_pt->pptr_chn = (struct node **)malloc(ptr_node_pt->chn_cap * sizeof(struct node *)); // Allocating children pointers
+
+    if(ptr_node_pt->chn_cap > 0)
+    {
+        ptr_node_pt->pptr_chn = (struct node **)malloc(ptr_node_pt->chn_cap * sizeof(struct node *)); // Allocating children pointers
+    }
+
     for (int i = 0; i < ptr_node_pt->chn_cap; i++)
     {
         ptr_node_pt->pptr_chn[i] = NULL;
@@ -551,9 +556,9 @@ static int fill_child_nodes(int **pptr_cell_ptcl, const int *ptr_cell_ptcl_size,
         // ptr_node_ch->box_real_dim_x = fmax(ptr_node_ch->box_dim_x + 10, ptr_node_ch->box_dim_x + 2 * n_exp - 2);
         // ptr_node_ch->box_real_dim_y = fmax(ptr_node_ch->box_dim_y + 10, ptr_node_ch->box_dim_y + 2 * n_exp - 2);
         // ptr_node_ch->box_real_dim_z = fmax(ptr_node_ch->box_dim_z + 10, ptr_node_ch->box_dim_z + 2 * n_exp - 2);
-        ptr_node_ch->box_real_dim_x = ptr_node_ch->box_dim_x + 10 > ptr_node_ch->box_dim_x + 2 * n_exp - 2 ? ptr_node_ch->box_dim_x + 10 : ptr_node_ch->box_dim_x + 2 * n_exp - 2;
-        ptr_node_ch->box_real_dim_y = ptr_node_ch->box_dim_y + 10 > ptr_node_ch->box_dim_y + 2 * n_exp - 2 ? ptr_node_ch->box_dim_y + 10 : ptr_node_ch->box_dim_y + 2 * n_exp - 2;
-        ptr_node_ch->box_real_dim_z = ptr_node_ch->box_dim_z + 10 > ptr_node_ch->box_dim_z + 2 * n_exp - 2 ? ptr_node_ch->box_dim_z + 10 : ptr_node_ch->box_dim_z + 2 * n_exp - 2;
+        ptr_node_ch->box_real_dim_x = (ptr_node_ch->box_dim_x + 10) > (ptr_node_ch->box_dim_x + 2 * n_exp - 2) ? (ptr_node_ch->box_dim_x + 10) : (ptr_node_ch->box_dim_x + 2 * n_exp - 2);
+        ptr_node_ch->box_real_dim_y = (ptr_node_ch->box_dim_y + 10) > (ptr_node_ch->box_dim_y + 2 * n_exp - 2) ? (ptr_node_ch->box_dim_y + 10) : (ptr_node_ch->box_dim_y + 2 * n_exp - 2);
+        ptr_node_ch->box_real_dim_z = (ptr_node_ch->box_dim_z + 10) > (ptr_node_ch->box_dim_z + 2 * n_exp - 2) ? (ptr_node_ch->box_dim_z + 10) : (ptr_node_ch->box_dim_z + 2 * n_exp - 2);
 
         // Translations between cell array and box
         pos_x = (ptr_node_ch->box_real_dim_x - ptr_node_ch->box_dim_x) / 2; // Half of the distance of the box side less the "minimal box" side

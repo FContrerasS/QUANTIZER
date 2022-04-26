@@ -250,7 +250,7 @@ static void init_tree_head()
 
 static void init_global_border_sim_box()
 {
-    bder_os_sim = 1 > n_exp-1 ? 1 : n_exp-1; // Border outside the simulation box
+    bder_os_sim = 1 > (n_exp-1) ? 1 : (n_exp-1); // Border outside the simulation box
     box_side_lmin = no_lmin_cell + 2 * bder_os_sim; // Side of the coarsest box
     box_side_lmin_pow2 = box_side_lmin * box_side_lmin;
     box_side_lmin_pow3 = box_side_lmin * box_side_lmin * box_side_lmin;

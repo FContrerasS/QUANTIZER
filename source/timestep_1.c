@@ -117,7 +117,7 @@ static vtype timestep_computation_1(const struct node *ptr_node, bool status)
 
     myvmax = sqrt(myvmax);
 
-    mydt = myvmax < _CFL_ * H / _MAX_dt_ ? _MAX_dt_ : _CFL_ * H / myvmax;
+    mydt = myvmax < (_CFL_ * H / _MAX_dt_) ? _MAX_dt_ : (_CFL_ * H / myvmax);
 
     return mydt;
 }

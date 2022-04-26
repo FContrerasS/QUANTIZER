@@ -33,7 +33,6 @@ int space_check(int *ptr_cap, int size, const char *format, ...)
 
     if(*ptr_cap < size)
     {
-        printf("Space check, cap = %d\n", *ptr_cap);
         int cap = *ptr_cap;
 
         if (*format != 'p')
@@ -53,7 +52,9 @@ int space_check(int *ptr_cap, int size, const char *format, ...)
         }
         int cntr = *format - '0'; // Number of variables inserted in the space checking function
 
-        *ptr_cap = cntr > 0 ? 2 * size : *ptr_cap; // Duplicated capacity
+        *ptr_cap = cntr > 0 ? (80 + size) : *ptr_cap; // Duplicated capacity
+
+        printf("cap = %d, *ptr_cap = %d\n", cap, *ptr_cap);
 
         ++format; // Type of variable: i = int, v = vtype
 
@@ -184,12 +185,10 @@ int space_check(int *ptr_cap, int size, const char *format, ...)
                 pptr_node = va_arg(args, struct node **);
                 if (*pptr_node == NULL)
                 {
-                    printf("prueba typo * y if\n");
                     *pptr_node = (struct node *)malloc((*ptr_cap) * sizeof(struct node));
                 }
                 else
                 {
-                    printf("prueba typo * y else\n");
                     struct node *ptr_aux = NULL;
                     ptr_aux = (struct node *)realloc(*pptr_node, (*ptr_cap) * sizeof(struct node));
                     if (ptr_aux == NULL)
@@ -206,23 +205,16 @@ int space_check(int *ptr_cap, int size, const char *format, ...)
             }
             else if (format_aux == 'n' && *format == '2')
             {
-                printf("type node **\n");
-                printf("*ptr_cap = %d\n", (*ptr_cap) );
                 struct node ***ppptr_node = NULL;
                 ppptr_node = va_arg(args, struct node ***);
-                printf("space check 1\n");
                 if (*ppptr_node == NULL)
                 {
-                    printf("null en node type 2\n");
                     *ppptr_node = (struct node **)malloc((*ptr_cap) * sizeof(struct node *));
                 }
                 else
                 {
-                    printf("no null en node type 2\n");
                     struct node **pptr_aux = NULL;
-                    printf("no null A \n");
                     pptr_aux = (struct node **)realloc( (*ppptr_node), (*ptr_cap) * sizeof(struct node *));
-                    printf("no null B \n");
                     if (pptr_aux == NULL)
                     {
                         printf("Error in the realocation of pptr_node");
@@ -230,20 +222,14 @@ int space_check(int *ptr_cap, int size, const char *format, ...)
                     }
                     else
                     {
-                        printf("no null C\n");
                         *ppptr_node = pptr_aux;
-                        printf("no null D\n");
                     }
-                    printf("no null E\n");
                     pptr_aux = NULL;
-                    printf("no null F\n");
                 }
-                printf("no null G\n");
                 for (int j = cap; j < *ptr_cap; j++)
                 {
                     (*ppptr_node)[j] = NULL;
                 }
-                printf("no null H \n");
             }
             else
             {
