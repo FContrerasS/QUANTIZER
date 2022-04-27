@@ -69,8 +69,9 @@ void initialize_node(struct node *ptr_node)
 	ptr_node->box_max_x = 0;	   // Already maximum box value index in the real local space at the dimension X
 	ptr_node->box_max_y = 0;	   // Already maximum box value index in the real local space at the dimension Y
 	ptr_node->box_max_z = 0;	   // Already maximum box value index in the real local space at the dimension Z
+	ptr_node->box_check_fit = true; // Check if the new box will fit in the old one
 
-    //** >> Grid points **/
+	//** >> Grid points **/
     ptr_node->ptr_grid_intr = NULL;  // Indexes of the interior grid points of the block
     ptr_node->ptr_grid_bder = NULL;    // Indexes of the border grid points of the block
     ptr_node->grid_intr_cap = 0;   // Maximum cap of the grid interior points array of the block

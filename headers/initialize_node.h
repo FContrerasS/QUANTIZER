@@ -72,6 +72,7 @@
     int box_max_x;      // Already maximum box value index in the real local space at the dimension X
     int box_max_y;      // Already maximum box value index in the real local space at the dimension Y
     int box_max_z;      // Already maximum box value index in the real local space at the dimension Z
+    bool box_check_fit; // Check if the new box will fit in the old one
 
     //** >> Grid points **/
     int *ptr_grid_intr; // Indexes of the interior grid points of the block
