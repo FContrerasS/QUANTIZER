@@ -560,6 +560,10 @@ static int fill_child_nodes(int **pptr_cell_ptcl, const int *ptr_cell_ptcl_size,
         ptr_node_ch->box_real_dim_y = (ptr_node_ch->box_dim_y + 10) > (ptr_node_ch->box_dim_y + 2 * n_exp - 2) ? (ptr_node_ch->box_dim_y + 10) : (ptr_node_ch->box_dim_y + 2 * n_exp - 2);
         ptr_node_ch->box_real_dim_z = (ptr_node_ch->box_dim_z + 10) > (ptr_node_ch->box_dim_z + 2 * n_exp - 2) ? (ptr_node_ch->box_dim_z + 10) : (ptr_node_ch->box_dim_z + 2 * n_exp - 2);
 
+        ptr_node_ch->box_real_dim_x_aux = ptr_node_ch->box_real_dim_x;
+        ptr_node_ch->box_real_dim_y_aux = ptr_node_ch->box_real_dim_y;
+        ptr_node_ch->box_real_dim_z_aux = ptr_node_ch->box_real_dim_z;
+
         // Translations between cell array and box
         pos_x = (ptr_node_ch->box_real_dim_x - ptr_node_ch->box_dim_x) / 2; // Half of the distance of the box side less the "minimal box" side
         ptr_node_ch->box_ts_x = ptr_node_ch->box_min_x - pos_x;             // Every cell in the level l in the box must be subtracted this value to obtain the box index
@@ -567,6 +571,10 @@ static int fill_child_nodes(int **pptr_cell_ptcl, const int *ptr_cell_ptcl_size,
         ptr_node_ch->box_ts_y = ptr_node_ch->box_min_y - pos_y;
         pos_z = (ptr_node_ch->box_real_dim_z - ptr_node_ch->box_dim_z) / 2;
         ptr_node_ch->box_ts_z = ptr_node_ch->box_min_z - pos_z;
+
+        ptr_node_ch->box_ts_x_aux = ptr_node_ch->box_ts_x;
+        ptr_node_ch->box_ts_y_aux = ptr_node_ch->box_ts_y;
+        ptr_node_ch->box_ts_z_aux = ptr_node_ch->box_ts_z;
 
         // Filling the box status
         cap = ptr_node_ch->box_real_dim_x * ptr_node_ch->box_real_dim_y * ptr_node_ch->box_real_dim_z; // In general, the size of each side must be 3 times bigger than the same side of the "minimal box"

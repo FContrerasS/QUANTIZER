@@ -54,12 +54,18 @@
     int box_real_dim_x; // Real dimension X of the box
     int box_real_dim_y; // Real dimension Y of the box
     int box_real_dim_z; // Real dimension Z of the box
+    int box_real_dim_x_aux; // Auxiliary real dimension X of the box
+    int box_real_dim_y_aux; // Auxiliary real dimension X of the box
+    int box_real_dim_z_aux; // Auxiliary real dimension X of the box
     int box_dim_x;      // Dimension X of the box (new and old)
     int box_dim_y;      // Dimension Y of the box (new and old)
     int box_dim_z;      // Dimension Z of the box (new and old)
     int box_ts_x;       // Index translation from real local index cell to box index at dimension X
     int box_ts_y;       // Index translation from real local index cell to box index at dimension Y
     int box_ts_z;       // Index translation from real local index cell to box index at dimension Z
+    int box_ts_x_aux;       // Auxiliary index translation from real local index cell to box index at dimension X
+    int box_ts_y_aux;       // Auxiliary ndex translation from real local index cell to box index at dimension Y
+    int box_ts_z_aux;       // Auxiliary ndex translation from real local index cell to box index at dimension Z
     int box_min_x;      // Already minimal box value index in the real local space at the dimension X
     int box_min_y;      // Already minimal box value index in the real local space at the dimension Y
     int box_min_z;      // Already minimal box value index in the real local space at the dimension Z
