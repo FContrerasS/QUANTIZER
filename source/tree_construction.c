@@ -795,7 +795,7 @@ static int fill_tentacles(const struct node *ptr_node_pt)
         TOTAL_MEMORY_TENTACLES += 2 * (2 * size - GL_tentacles_cap[lv]) * sizeof(struct node *);
     }
 
-    if (space_check(&(GL_tentacles_cap[lv]), size, "p2n2n2", &(GL_tentacles_old[lv]), &(GL_tentacles_new[lv])) == _FAILURE_)
+    if (space_check(&(GL_tentacles_cap[lv]), size, "p1n2", &(GL_tentacles[lv])) == _FAILURE_)
     {
         printf("Error, in space_check function\n");
         return _FAILURE_;
@@ -804,8 +804,7 @@ static int fill_tentacles(const struct node *ptr_node_pt)
     for (int i = 0; i < ptr_node_pt->chn_size; i++)
     {
         //** >> Putting elements in the new tentacles **/
-        GL_tentacles_old[lv][GL_tentacles_size[lv]  + i] = ptr_node_pt->pptr_chn[i];
-        GL_tentacles_new[lv][GL_tentacles_size[lv]  + i] = ptr_node_pt->pptr_chn[i];
+        GL_tentacles[lv][GL_tentacles_size[lv]  + i] = ptr_node_pt->pptr_chn[i];
     }
 
     //** Increasing the number of structs in the level lv **/
@@ -860,7 +859,7 @@ int tree_construction()
             //** >> For cycle over parent nodes **/
             for (int i = 0; i < no_pts; i++)
             {
-                ptr_node = GL_tentacles_old[lv][i];
+                ptr_node = GL_tentacles[lv][i];
 
                 required_space_cell_ptcl = ptr_node->box_real_dim_x * ptr_node->box_real_dim_y * ptr_node->box_real_dim_z;
 

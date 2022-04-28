@@ -55,13 +55,18 @@ static void computing_grid_density(struct node *ptr_node)
 
     vtype w[8]; // Weight of the CIC method
 
+    //printf("hola mundo\n");
+    //printf("mo lv = %d, ID = %d\n",ptr_node->lv, ptr_node->ID);
+
     no_ptcl = ptr_node->ptcl_size;
     lv = ptr_node->lv;
     H = 1.0L / (1 << lv);
     poisson_coeff = 4 * _G_ * _PI_ / (H * H * H);
 
+
     for (int i = 0; i < no_ptcl; i++)
     {
+
         //** >> grid_idx of the particles in the node **/
         ptcl_idx = ptr_node->ptr_ptcl[i];
 
@@ -90,6 +95,7 @@ static void computing_grid_density(struct node *ptr_node)
                 }
             }
         }
+
 
         //** >> Particle density contributes to 8 enclosure grid points **/
         for (int kk = 0; kk < 2; kk++)
@@ -124,7 +130,7 @@ void grid_density()
         //** >> For cycle over parent nodes **/
         for (int i = 0; i < no_pts; i++)
         {
-            ptr_node = GL_tentacles_old[lv][i];
+            ptr_node = GL_tentacles[lv][i];
             computing_grid_density(ptr_node);
         }
         if (GL_tentacles_size[lv+1] == 0)

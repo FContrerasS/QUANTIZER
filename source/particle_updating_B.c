@@ -92,7 +92,7 @@ int particle_updating_B(vtype dt)
         //** >> For cycle over parent nodes **/
         for (int i = 0; i < no_pts; i++)
         {
-            ptr_node = GL_tentacles_old[lv][i];
+            ptr_node = GL_tentacles[lv][i];
 
             if (computing_particles_updating_B(ptr_node, dt, status) == _FAILURE_)
             {

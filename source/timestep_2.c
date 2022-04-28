@@ -192,7 +192,7 @@ int timestep_2(vtype *ptr_dt)
         //** >> For cycle over parent nodes **/
         for (int i = 0; i < no_pts; i++)
         {
-            ptr_node = GL_tentacles_old[lv][i];
+            ptr_node = GL_tentacles[lv][i];
 
             //** >> Computing the time step of the node
             aux_dt = timestep_computation_2(ptr_node,status);

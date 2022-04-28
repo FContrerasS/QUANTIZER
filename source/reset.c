@@ -40,7 +40,7 @@
 // 		//** >> For cycle over parent nodes **/
 // 		for (int i = 0; i < no_pts; i++)
 // 		{
-// 			ptr_node = GL_tentacles_old[lv][i];
+// 			ptr_node = GL_tentacles[lv][i];
 
 // 			free(ptr_node->ptr_cell_idx_x);
 // 			free(ptr_node->ptr_cell_idx_y);
@@ -96,7 +96,7 @@ int reset()
 		//** >> For cycle over parent nodes **/
 		for (int i = 0; i < no_pts; i++)
 		{
-			ptr_node = GL_tentacles_old[lv][i];
+			ptr_node = GL_tentacles[lv][i];
 
 			TOTAL_MEMORY_NODES += sizeof(struct node);
 			TOTAL_MEMORY_CELDAS += 3 * ptr_node->cell_cap * sizeof(int);

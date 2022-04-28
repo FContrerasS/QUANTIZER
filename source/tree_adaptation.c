@@ -560,7 +560,7 @@ static int create_links(struct node *ptr_node, int *links_old_ord_old, int *link
 
     // printf("\nlv = %d, parent = %d\n", ptr_node->lv,ptr_node->ID);
     // printf("zones new = %d, zones old = %d\n", ptr_node->zones_size, ptr_node->chn_size);
-    printf("cntr_links = %d\n", cntr_links);
+    //printf("cntr_links = %d\n", cntr_links);
 
     if (cntr_links < ptr_node->zones_size)
     {
@@ -625,19 +625,19 @@ static int create_links(struct node *ptr_node, int *links_old_ord_old, int *link
         }
     }
 
-    printf("\n\n");
-    printf("Links_old_ord_old = [ ");
-    for (int i = 0; i < ptr_node->zones_size; i++)
-    {
-        printf("%d ", links_old_ord_old[i]);
-    }
-    printf("]\n");
-    printf("Links_new_ord_old = [ ");
-    for (int i = 0; i < ptr_node->zones_size; i++)
-    {
-        printf("%d ", links_new_ord_old[i]);
-    }
-    printf("]\n");
+    // printf("\n\n");
+    // printf("Links_old_ord_old = [ ");
+    // for (int i = 0; i < ptr_node->zones_size; i++)
+    // {
+    //     printf("%d ", links_old_ord_old[i]);
+    // }
+    // printf("]\n");
+    // printf("Links_new_ord_old = [ ");
+    // for (int i = 0; i < ptr_node->zones_size; i++)
+    // {
+    //     printf("%d ", links_new_ord_old[i]);
+    // }
+    // printf("]\n");
 
     //** >> Ordering links arrays **/
     //** >> Old order **/
@@ -873,31 +873,6 @@ static int adapt_child_box_and_cells(struct node *ptr_node, const int *links_old
             
             //** CELLS **/
             size = 8 * ptr_node->ptr_zone_size[new_zone_idx] + ptr_ch->cell_size;
-            if (links_old_ord_old[zone_idx] == 13 && ptr_node->lv == lmin + 3 && ptr_node->ID == 0)
-            {
-                printf("Existe el valor de hijo 13, para nueva zona 11\n");
-                printf("zone_idx = %d, zones_size = %d, new_zone_idx = %d\n", zone_idx, ptr_node->zones_size, new_zone_idx);
-                printf("Numero de celdas del nuevo ref + antiguas del hijo (puede haber repeticion) = %d\n", size);
-            }
-
-            if (links_old_ord_old[zone_idx] == 13 && ptr_node->lv == lmin + 3 && ptr_node->ID == 0)
-            {
-                printf("ptr_ch->box_min_x = %d\n", ptr_ch->box_min_x);
-                printf("ptr_ch->box_min_y = %d\n", ptr_ch->box_min_y);
-                printf("ptr_ch->box_min_z = %d\n", ptr_ch->box_min_z);
-                printf("ptr_ch->box_max_x = %d\n", ptr_ch->box_max_x);
-                printf("ptr_ch->box_max_y = %d\n", ptr_ch->box_max_y);
-                printf("ptr_ch->box_max_z = %d\n", ptr_ch->box_max_z);
-                printf("ptr_ch->box_dim_x = %d\n", ptr_ch->box_dim_x);
-                printf("ptr_ch->box_dim_y = %d\n", ptr_ch->box_dim_y);
-                printf("ptr_ch->box_dim_z = %d\n", ptr_ch->box_dim_z);
-                printf("ptr_ch->box_real_dim_x = %d\n", ptr_ch->box_real_dim_x);
-                printf("ptr_ch->box_real_dim_y = %d\n", ptr_ch->box_real_dim_y);
-                printf("ptr_ch->box_real_dim_z = %d\n", ptr_ch->box_real_dim_z);
-                printf("ptr_ch->box_ts_x = %d\n", ptr_ch->box_ts_x);
-                printf("ptr_ch->box_ts_y = %d\n", ptr_ch->box_ts_y);
-                printf("ptr_ch->box_ts_z = %d\n", ptr_ch->box_ts_z);
-            }
 
             //** >> Space checking of cells indexes of the child node
             if (space_check(&(ptr_ch->cell_cap), size, "p3i1i1i1", &(ptr_ch->ptr_cell_idx_x), &(ptr_ch->ptr_cell_idx_y), &(ptr_ch->ptr_cell_idx_z)) == _FAILURE_)
@@ -990,17 +965,7 @@ static int adapt_child_box_and_cells(struct node *ptr_node, const int *links_old
             {
                 ptr_ch->box_check_fit = false;
             }
-            if (links_old_ord_old[zone_idx] == 13 && ptr_node->lv == lmin + 3 && ptr_node->ID == 0)
-            {
-                if(ptr_ch->box_check_fit == true)
-                {
-                    printf("los nuevos valores fitesan\n");
-                }
-                else
-                {
-                    printf("Los nuveos valores no fitean\n");
-                }
-            }
+
             //** >> The new box does not fit in the old box **/
             if (ptr_ch->box_check_fit == false)
             {
@@ -1091,25 +1056,7 @@ static int adapt_child_box_and_cells(struct node *ptr_node, const int *links_old
             //     ptr_ch->ptr_d[j] = 0;
             // }
 
-            if (links_old_ord_old[zone_idx] == 13 && ptr_node->lv == lmin + 3 && ptr_node->ID == 0)
-            {
-                printf("\n AGAIN:\n");
-                printf("ptr_ch->box_min_x = %d\n", ptr_ch->box_min_x);
-                printf("ptr_ch->box_min_y = %d\n", ptr_ch->box_min_y);
-                printf("ptr_ch->box_min_z = %d\n", ptr_ch->box_min_z);
-                printf("ptr_ch->box_max_x = %d\n", ptr_ch->box_max_x);
-                printf("ptr_ch->box_max_y = %d\n", ptr_ch->box_max_y);
-                printf("ptr_ch->box_max_z = %d\n", ptr_ch->box_max_z);
-                printf("ptr_ch->box_dim_x = %d\n", ptr_ch->box_dim_x);
-                printf("ptr_ch->box_dim_y = %d\n", ptr_ch->box_dim_y);
-                printf("ptr_ch->box_dim_z = %d\n", ptr_ch->box_dim_z);
-                printf("ptr_ch->box_real_dim_x = %d\n", ptr_ch->box_real_dim_x);
-                printf("ptr_ch->box_real_dim_y = %d\n", ptr_ch->box_real_dim_y);
-                printf("ptr_ch->box_real_dim_z = %d\n", ptr_ch->box_real_dim_z);
-                printf("ptr_ch->box_ts_x = %d\n", ptr_ch->box_ts_x);
-                printf("ptr_ch->box_ts_y = %d\n", ptr_ch->box_ts_y);
-                printf("ptr_ch->box_ts_z = %d\n", ptr_ch->box_ts_z);
-            }
+
         }
     }
 
@@ -1359,12 +1306,12 @@ static int moving_old_child_to_new_child(struct node *ptr_node, const int *links
 
     lv = ptr_node->lv;
 
-     printf("A\n");
+    //printf("A\n");
 
     int cntr = 0;
     if (ptr_node->lv == 3 + lmin && ptr_node->ID == 0)
     {
-        printf("\n\nEntramos\n");
+        //printf("\n\nEntramos\n");
         
         for(int j = 0; j< ptr_node->zones_size; j++)
         {
@@ -1382,10 +1329,10 @@ static int moving_old_child_to_new_child(struct node *ptr_node, const int *links
                 }
             }
 
-            printf("zone %d, size = %d, repetitions in box = %d\n", j, ptr_node->ptr_zone_size[j], cntr);
+            //printf("zone %d, size = %d, repetitions in box = %d\n", j, ptr_node->ptr_zone_size[j], cntr);
         }
 
-        printf("\n\n");
+        //printf("\n\n");
     }
 
     // for(int i = 0; i< ptr_node->zones_size; i++)
@@ -1412,7 +1359,7 @@ static int moving_old_child_to_new_child(struct node *ptr_node, const int *links
             no_ptcl_ch_A = ptr_ch_A->ptcl_size;
             no_cells_ch_A = ptr_ch_A->cell_size;
             //printf("no_cell_ch_A = %d\n", no_cells_ch_A);
-            printf("ID ch A = %d, new_zone idx = %d, no_cells child A = %d\n", ptr_ch_A->ID, new_zone_idx, no_cells_ch_A);
+            //printf("ID ch A = %d, new_zone idx = %d, no_cells child A = %d\n", ptr_ch_A->ID, new_zone_idx, no_cells_ch_A);
             // printf("no_cells_ch_A = %d, no_ptcl_ch_A = %d\n", no_cells_ch_A, no_ptcl_ch_A);
             
             if(ptr_ch_A->box_check_fit == true)
@@ -1430,7 +1377,7 @@ static int moving_old_child_to_new_child(struct node *ptr_node, const int *links
                     box_idx_z_node = (ptr_ch_A->ptr_cell_idx_z[cell_idx] >> 1) - ptr_node->box_ts_z;
                     box_idx_node = box_idx_x_node + box_idx_y_node * ptr_node->box_real_dim_x + box_idx_z_node * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
                     
-                    printf("before box_idx_node = %d, ptr_node->ptr_box_aux[box_idx_node] = %d\n", box_idx_node, ptr_node->ptr_box_aux[box_idx_node]);
+                    //printf("before box_idx_node = %d, ptr_node->ptr_box_aux[box_idx_node] = %d\n", box_idx_node, ptr_node->ptr_box_aux[box_idx_node]);
 
                     box_idx_x_ch_A = ptr_ch_A->ptr_cell_idx_x[cell_idx] - ptr_ch_A->box_ts_x;
                     box_idx_y_ch_A = ptr_ch_A->ptr_cell_idx_y[cell_idx] - ptr_ch_A->box_ts_y;
@@ -1493,7 +1440,7 @@ static int moving_old_child_to_new_child(struct node *ptr_node, const int *links
                         
                         //** >> MASS and PARTICLES **/
                         // printf("A3\n");
-                        printf("A8\n");
+                        //printf("A8\n");
                         //** >> MASS **//
                         box_idx_x_ch_B = ptr_ch_B->ptr_cell_idx_x[no_cells_ch_B] - ptr_ch_B->box_ts_x;
                         box_idx_y_ch_B = ptr_ch_B->ptr_cell_idx_y[no_cells_ch_B] - ptr_ch_B->box_ts_y;
@@ -1517,33 +1464,32 @@ static int moving_old_child_to_new_child(struct node *ptr_node, const int *links
 
                         
 
-                        printf("chn_size = %d, zones_size = %d\n", ptr_node->chn_size, ptr_node->zones_size);
-                        printf("child B ID = %d, child A ID = %d, box_aux value = %d\n", ptr_ch_B->ID, ptr_ch_A->ID, ptr_node->ptr_box_aux[box_idx_node]);
-
-                        printf("ptr_ch_B->box_ts_x = %d\n", ptr_ch_B->box_ts_x);
-                        printf("ptr_ch_B->box_ts_y = %d\n", ptr_ch_B->box_ts_y);
-                        printf("ptr_ch_B->box_ts_z = %d\n", ptr_ch_B->box_ts_z);
-                        printf("ptr_ch_B->box_dim_x = %d\n", ptr_ch_B->box_dim_x);
-                        printf("ptr_ch_B->box_dim_y = %d\n", ptr_ch_B->box_dim_y);
-                        printf("ptr_ch_B->box_dim_z = %d\n", ptr_ch_B->box_dim_z);
-                        printf("ptr_ch_B->box_real_dim_x = %d\n", ptr_ch_B->box_real_dim_x);
-                        printf("ptr_ch_B->box_real_dim_y = %d\n", ptr_ch_B->box_real_dim_y);
-                        printf("ptr_ch_B->box_real_dim_z = %d\n", ptr_ch_B->box_real_dim_z);
+                        // printf("chn_size = %d, zones_size = %d\n", ptr_node->chn_size, ptr_node->zones_size);
+                        // printf("child B ID = %d, child A ID = %d, box_aux value = %d\n", ptr_ch_B->ID, ptr_ch_A->ID, ptr_node->ptr_box_aux[box_idx_node]);
+                        // printf("ptr_ch_B->box_ts_x = %d\n", ptr_ch_B->box_ts_x);
+                        // printf("ptr_ch_B->box_ts_y = %d\n", ptr_ch_B->box_ts_y);
+                        // printf("ptr_ch_B->box_ts_z = %d\n", ptr_ch_B->box_ts_z);
+                        // printf("ptr_ch_B->box_dim_x = %d\n", ptr_ch_B->box_dim_x);
+                        // printf("ptr_ch_B->box_dim_y = %d\n", ptr_ch_B->box_dim_y);
+                        // printf("ptr_ch_B->box_dim_z = %d\n", ptr_ch_B->box_dim_z);
+                        // printf("ptr_ch_B->box_real_dim_x = %d\n", ptr_ch_B->box_real_dim_x);
+                        // printf("ptr_ch_B->box_real_dim_y = %d\n", ptr_ch_B->box_real_dim_y);
+                        // printf("ptr_ch_B->box_real_dim_z = %d\n", ptr_ch_B->box_real_dim_z);
                         // printf("box_idx_x_ptcl_ch_B = %d\n", box_idx_x_ptcl_ch_B);
                         // printf("box_idx_y_ptcl_ch_B = %d\n", box_idx_y_ptcl_ch_B);
                         // printf("box_idx_z_ptcl_ch_B = %d\n\n", box_idx_z_ptcl_ch_B);
 
-                        printf("\n\n");
+                        //printf("\n\n");
 
-                        printf("ptr_ch_A->box_ts_x = %d\n", ptr_ch_A->box_ts_x);
-                        printf("ptr_ch_A->box_ts_y = %d\n", ptr_ch_A->box_ts_y);
-                        printf("ptr_ch_A->box_ts_z = %d\n", ptr_ch_A->box_ts_z);
-                        printf("ptr_ch_A->box_dim_x = %d\n", ptr_ch_A->box_dim_x);
-                        printf("ptr_ch_A->box_dim_y = %d\n", ptr_ch_A->box_dim_y);
-                        printf("ptr_ch_A->box_dim_z = %d\n", ptr_ch_A->box_dim_z);
-                        printf("ptr_ch_A->box_real_dim_x = %d\n", ptr_ch_A->box_real_dim_x);
-                        printf("ptr_ch_A->box_real_dim_y = %d\n", ptr_ch_A->box_real_dim_y);
-                        printf("ptr_ch_A->box_real_dim_z = %d\n", ptr_ch_A->box_real_dim_z);
+                        // printf("ptr_ch_A->box_ts_x = %d\n", ptr_ch_A->box_ts_x);
+                        // printf("ptr_ch_A->box_ts_y = %d\n", ptr_ch_A->box_ts_y);
+                        // printf("ptr_ch_A->box_ts_z = %d\n", ptr_ch_A->box_ts_z);
+                        // printf("ptr_ch_A->box_dim_x = %d\n", ptr_ch_A->box_dim_x);
+                        // printf("ptr_ch_A->box_dim_y = %d\n", ptr_ch_A->box_dim_y);
+                        // printf("ptr_ch_A->box_dim_z = %d\n", ptr_ch_A->box_dim_z);
+                        // printf("ptr_ch_A->box_real_dim_x = %d\n", ptr_ch_A->box_real_dim_x);
+                        // printf("ptr_ch_A->box_real_dim_y = %d\n", ptr_ch_A->box_real_dim_y);
+                        // printf("ptr_ch_A->box_real_dim_z = %d\n", ptr_ch_A->box_real_dim_z);
                         // printf("box_idx_x_ptcl_ch_A = %d\n", box_idx_x_ptcl_ch_A);
                         // printf("box_idx_y_ptcl_ch_A = %d\n", box_idx_y_ptcl_ch_A);
                         // printf("box_idx_z_ptcl_ch_A = %d\n\n", box_idx_z_ptcl_ch_A);
@@ -1598,7 +1544,7 @@ static int moving_old_child_to_new_child(struct node *ptr_node, const int *links
                     box_idx_z_node = (ptr_ch_A->ptr_cell_idx_z[cell_idx] >> 1) - ptr_node->box_ts_z;
                     box_idx_node = box_idx_x_node + box_idx_y_node * ptr_node->box_real_dim_x + box_idx_z_node * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
                     
-                    printf("before box_idx_node = %d, ptr_node->ptr_box_aux[box_idx_node] = %d\n", box_idx_node, ptr_node->ptr_box_aux[box_idx_node]);
+                    //printf("before box_idx_node = %d, ptr_node->ptr_box_aux[box_idx_node] = %d\n", box_idx_node, ptr_node->ptr_box_aux[box_idx_node]);
 
                     box_idx_x_ch_A_aux = ptr_ch_A->ptr_cell_idx_x[cell_idx] - ptr_ch_A->box_ts_x_aux;
                     box_idx_y_ch_A_aux = ptr_ch_A->ptr_cell_idx_y[cell_idx] - ptr_ch_A->box_ts_y_aux;
@@ -1668,7 +1614,7 @@ static int moving_old_child_to_new_child(struct node *ptr_node, const int *links
 
                         //** >> MASS and PARTICLES **/
                         // printf("A3\n");
-                        printf("A8\n");
+                        //printf("A8\n");
                         //** >> MASS **//
                         box_idx_x_ch_B = ptr_ch_B->ptr_cell_idx_x[no_cells_ch_B] - ptr_ch_B->box_ts_x;
                         box_idx_y_ch_B = ptr_ch_B->ptr_cell_idx_y[no_cells_ch_B] - ptr_ch_B->box_ts_y;
@@ -1693,33 +1639,32 @@ static int moving_old_child_to_new_child(struct node *ptr_node, const int *links
 
                         
 
-                        printf("chn_size = %d, zones_size = %d\n", ptr_node->chn_size, ptr_node->zones_size);
-                        printf("child B ID = %d, child A ID = %d, box_aux value = %d\n", ptr_ch_B->ID, ptr_ch_A->ID, ptr_node->ptr_box_aux[box_idx_node]);
-
-                        printf("ptr_ch_B->box_ts_x = %d\n", ptr_ch_B->box_ts_x);
-                        printf("ptr_ch_B->box_ts_y = %d\n", ptr_ch_B->box_ts_y);
-                        printf("ptr_ch_B->box_ts_z = %d\n", ptr_ch_B->box_ts_z);
-                        printf("ptr_ch_B->box_dim_x = %d\n", ptr_ch_B->box_dim_x);
-                        printf("ptr_ch_B->box_dim_y = %d\n", ptr_ch_B->box_dim_y);
-                        printf("ptr_ch_B->box_dim_z = %d\n", ptr_ch_B->box_dim_z);
-                        printf("ptr_ch_B->box_real_dim_x = %d\n", ptr_ch_B->box_real_dim_x);
-                        printf("ptr_ch_B->box_real_dim_y = %d\n", ptr_ch_B->box_real_dim_y);
-                        printf("ptr_ch_B->box_real_dim_z = %d\n", ptr_ch_B->box_real_dim_z);
+                        // printf("chn_size = %d, zones_size = %d\n", ptr_node->chn_size, ptr_node->zones_size);
+                        // printf("child B ID = %d, child A ID = %d, box_aux value = %d\n", ptr_ch_B->ID, ptr_ch_A->ID, ptr_node->ptr_box_aux[box_idx_node]);
+                        // printf("ptr_ch_B->box_ts_x = %d\n", ptr_ch_B->box_ts_x);
+                        // printf("ptr_ch_B->box_ts_y = %d\n", ptr_ch_B->box_ts_y);
+                        // printf("ptr_ch_B->box_ts_z = %d\n", ptr_ch_B->box_ts_z);
+                        // printf("ptr_ch_B->box_dim_x = %d\n", ptr_ch_B->box_dim_x);
+                        // printf("ptr_ch_B->box_dim_y = %d\n", ptr_ch_B->box_dim_y);
+                        // printf("ptr_ch_B->box_dim_z = %d\n", ptr_ch_B->box_dim_z);
+                        // printf("ptr_ch_B->box_real_dim_x = %d\n", ptr_ch_B->box_real_dim_x);
+                        // printf("ptr_ch_B->box_real_dim_y = %d\n", ptr_ch_B->box_real_dim_y);
+                        // printf("ptr_ch_B->box_real_dim_z = %d\n", ptr_ch_B->box_real_dim_z);
                         // printf("box_idx_x_ptcl_ch_B = %d\n", box_idx_x_ptcl_ch_B);
                         // printf("box_idx_y_ptcl_ch_B = %d\n", box_idx_y_ptcl_ch_B);
                         // printf("box_idx_z_ptcl_ch_B = %d\n\n", box_idx_z_ptcl_ch_B);
 
-                        printf("\n\n");
+                        //printf("\n\n");
 
-                        printf("ptr_ch_A->box_ts_x = %d\n", ptr_ch_A->box_ts_x);
-                        printf("ptr_ch_A->box_ts_y = %d\n", ptr_ch_A->box_ts_y);
-                        printf("ptr_ch_A->box_ts_z = %d\n", ptr_ch_A->box_ts_z);
-                        printf("ptr_ch_A->box_dim_x = %d\n", ptr_ch_A->box_dim_x);
-                        printf("ptr_ch_A->box_dim_y = %d\n", ptr_ch_A->box_dim_y);
-                        printf("ptr_ch_A->box_dim_z = %d\n", ptr_ch_A->box_dim_z);
-                        printf("ptr_ch_A->box_real_dim_x = %d\n", ptr_ch_A->box_real_dim_x);
-                        printf("ptr_ch_A->box_real_dim_y = %d\n", ptr_ch_A->box_real_dim_y);
-                        printf("ptr_ch_A->box_real_dim_z = %d\n", ptr_ch_A->box_real_dim_z);
+                        // printf("ptr_ch_A->box_ts_x = %d\n", ptr_ch_A->box_ts_x);
+                        // printf("ptr_ch_A->box_ts_y = %d\n", ptr_ch_A->box_ts_y);
+                        // printf("ptr_ch_A->box_ts_z = %d\n", ptr_ch_A->box_ts_z);
+                        // printf("ptr_ch_A->box_dim_x = %d\n", ptr_ch_A->box_dim_x);
+                        // printf("ptr_ch_A->box_dim_y = %d\n", ptr_ch_A->box_dim_y);
+                        // printf("ptr_ch_A->box_dim_z = %d\n", ptr_ch_A->box_dim_z);
+                        // printf("ptr_ch_A->box_real_dim_x = %d\n", ptr_ch_A->box_real_dim_x);
+                        // printf("ptr_ch_A->box_real_dim_y = %d\n", ptr_ch_A->box_real_dim_y);
+                        // printf("ptr_ch_A->box_real_dim_z = %d\n", ptr_ch_A->box_real_dim_z);
                         // printf("box_idx_x_ptcl_ch_A = %d\n", box_idx_x_ptcl_ch_A);
                         // printf("box_idx_y_ptcl_ch_A = %d\n", box_idx_y_ptcl_ch_A);
                         // printf("box_idx_z_ptcl_ch_A = %d\n\n", box_idx_z_ptcl_ch_A);
@@ -1735,7 +1680,7 @@ static int moving_old_child_to_new_child(struct node *ptr_node, const int *links
                             box_idx_z_ptcl_node = GL_ptcl_z[ptcl_idx] * (1 << lv) - ptr_node->box_ts_z;
                             box_idx_ptcl_node = box_idx_x_ptcl_node + box_idx_y_ptcl_node * ptr_node->box_real_dim_x + box_idx_z_ptcl_node * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
 
-                            printf("A11\n");
+                            //printf("A11\n");
 
                             if (box_idx_ptcl_node == box_idx_node)
                             {
@@ -1764,7 +1709,7 @@ static int moving_old_child_to_new_child(struct node *ptr_node, const int *links
         }
     }
 
-    printf("B\n");
+    //printf("B\n");
 
     //Case of old child nodes that will not be used
     cntr_ch = 0;
@@ -2149,7 +2094,7 @@ static void reorganization_child_node(struct node *ptr_node, const int *links_ol
 
 static int reorganization_grandchild_node(struct node *ptr_node)
 {
-    printf("\nA\n");
+    //printf("\nA\n");
 
     int no_grandchildren = 0;
 
@@ -2159,12 +2104,12 @@ static int reorganization_grandchild_node(struct node *ptr_node)
         no_grandchildren += ptr_node->pptr_chn[ch]->chn_size;
     }
 
-    printf("B\n");
+    //printf("B\n");
 
     if(no_grandchildren > 0)
     {
-        printf("C\n");
-        printf("no_grandchildren = %d\n", no_grandchildren);
+        // printf("C\n");
+        // printf("no_grandchildren = %d\n", no_grandchildren);
         int box_idx_x_node; // Box index in X direcction of the node cell
         int box_idx_y_node; // Box index in Y direcction of the node cell
         int box_idx_z_node; // Box index in Z direcction of the node cell
@@ -2178,7 +2123,7 @@ static int reorganization_grandchild_node(struct node *ptr_node)
         int cntr_ch = 0; //Counter the number of grandchildren
         pptr_aux = (struct node **)malloc(no_grandchildren * sizeof(struct node *));
 
-        printf("D\n");
+        //printf("D\n");
         //Storing the grandchildren in the auxiliary array pptr_aux
         for (int ch = 0; ch < ptr_node->chn_size; ch++)
         {
@@ -2190,10 +2135,10 @@ static int reorganization_grandchild_node(struct node *ptr_node)
             ptr_node->pptr_chn[ch]->chn_size = 0; // Reseting the number of grandchildren to 0
         }
 
-        printf("E\n");
+        //printf("E\n");
         for (int grandch = 0; grandch < no_grandchildren; grandch++)
         {
-            printf("E1\n");
+            //printf("E1\n");
             // printf("node box_ts_x = %d\n", ptr_node->box_ts_x);
             // printf("node box_ts_y = %d\n", ptr_node->box_ts_y);
             // printf("node box_ts_z = %d\n", ptr_node->box_ts_z);
@@ -2209,16 +2154,16 @@ static int reorganization_grandchild_node(struct node *ptr_node)
             box_idx_z_node = (pptr_aux[grandch]->ptr_cell_idx_z[0] >> 2) - ptr_node->box_ts_z;
             box_idx_node = box_idx_x_node + box_idx_y_node * ptr_node->box_real_dim_x + box_idx_z_node * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
             // printf("E2\n");
-            printf("box_idx_node = %d\n", box_idx_node);
+            //printf("box_idx_node = %d\n", box_idx_node);
             child_ID = ptr_node->ptr_box_aux[box_idx_node];
-            printf("Child_ID = %d\n", child_ID);
+            //printf("Child_ID = %d\n", child_ID);
             // printf("E3\n");
             size = ptr_node->pptr_chn[child_ID]->chn_size;
             // printf("E31\n");
-            printf("E32\n");
-            printf("child cap = %d\n", ptr_node->pptr_chn[child_ID]->chn_cap);
-            printf("child size = %d\n", ptr_node->pptr_chn[child_ID]->chn_size);
-            printf("new size +1 = %d\n", size + 1);
+            //printf("E32\n");
+            //printf("child cap = %d\n", ptr_node->pptr_chn[child_ID]->chn_cap);
+            //printf("child size = %d\n", ptr_node->pptr_chn[child_ID]->chn_size);
+            //printf("new size +1 = %d\n", size + 1);
             // if (ptr_node->pptr_chn[child_ID]->chn_size > 0)
             // {
             //     for (int i = 0; i < ptr_node->pptr_chn[child_ID]->chn_size; i++)
@@ -2227,7 +2172,7 @@ static int reorganization_grandchild_node(struct node *ptr_node)
             //     }
                     
             // }
-            printf("E33\n");
+            //printf("E33\n");
 
             //** >> Space checking of the child capacity of the child node "child_ID" **/
 
@@ -2238,19 +2183,19 @@ static int reorganization_grandchild_node(struct node *ptr_node)
                 printf("Error, in space_check function\n");
                 return _FAILURE_;
             }
-            printf("tuto bene\n");
+            //printf("tuto bene\n");
 
-            printf("E4\n");
+            //printf("E4\n");
             ptr_node->pptr_chn[child_ID]->pptr_chn[size] = pptr_aux[grandch];
             ptr_node->pptr_chn[child_ID]->chn_size = size + 1;
-            printf("E6\n");
+            //printf("E6\n");
         }
-        printf("F\n");
+        //printf("F\n");
         free(pptr_aux);
         pptr_aux = NULL;
     }
 
-    printf("G\n");
+    //printf("G\n");
     return _SUCCESS_;
 }
 
@@ -2448,7 +2393,7 @@ static int tentacles_updating(struct node *ptr_node, int tentacle_lv)
     int size = no_tentacles + ptr_node->zones_size;
 
     //** >> Space checking of the capacity of the refined cells **/
-    if (space_check(&(GL_tentacles_cap[tentacle_lv]), size, "p1n2", &(GL_tentacles_new[tentacle_lv])) == _FAILURE_)
+    if (space_check(&(GL_tentacles_cap[tentacle_lv]), size, "p1n2", &(GL_tentacles[tentacle_lv])) == _FAILURE_)
     {
         printf("Error, in space_check function\n");
         return _FAILURE_;
@@ -2456,7 +2401,7 @@ static int tentacles_updating(struct node *ptr_node, int tentacle_lv)
 
     for (int i = 0; i < ptr_node->zones_size; i++)
     {
-        GL_tentacles_new[tentacle_lv][no_tentacles + i] = ptr_node->pptr_chn[i];
+        GL_tentacles[tentacle_lv][no_tentacles + i] = ptr_node->pptr_chn[i];
     }
     GL_tentacles_size[tentacle_lv] = size;
 
@@ -2513,23 +2458,23 @@ int tree_adaptation()
             //** >> For cycle over parent nodes **/
             for (int i = 0; i < no_pts; i++)
             {
-                ptr_node = GL_tentacles_old[lv][i];
-                printf("\nLv = %d, parent = %d\n", lv, i);
+                ptr_node = GL_tentacles[lv][i];
+                //printf("\nLv = %d, parent = %d\n", lv, i);
 
                 //** Updating the box mass information **/
-                printf("Updating box mass\n");
+                //printf("Updating box mass\n");
                 updating_box_mass(ptr_node);
 
                 //** Initialization of the box_aux **/
-                printf("Initialization box aux\n");
+                //printf("Initialization box aux\n");
                 initialization_box_aux(ptr_node);
 
                 //** Initialization of the auiliary refinement arrays**/
-                printf("Initialization ref aux\n");
+                //printf("Initialization ref aux\n");
                 initialization_ref_aux(ptr_node);
 
                 //** >> Filling the refinement cells array **/
-                printf("Fill cell ref\n");
+                //printf("Fill cell ref\n");
                 if (fill_cell_ref(ptr_node) == _FAILURE_)
                 {
                     printf("Error at function fill_cell_ref()\n");
@@ -2537,7 +2482,7 @@ int tree_adaptation()
                 }
 
                 //** >> Filling the different zones of refinement **/
-                printf("Fill zones ref\n");
+                //printf("Fill zones ref\n");
                 if (fill_zones_ref(ptr_node) == _FAILURE_)
                 {
                     printf("Error at function fill_zones_ref()\n");
@@ -2545,7 +2490,7 @@ int tree_adaptation()
                 }
 
                 //** >> Adapting to new refinement zones **/
-                printf("Create links\n");
+                //printf("Create links\n");
                 if (create_links(ptr_node, links_old_ord_old, links_new_ord_old, links_old_ord_new, links_new_ord_new, &links_cap) == _FAILURE_)
                 {
                     printf("Error at function fill_zones_ref()\n");
@@ -2553,14 +2498,14 @@ int tree_adaptation()
                 }
 
                 //** >> Removing cells that no longer require refinement **/
-                printf("Removing cells nolonger requiere refinement\n");
+                //printf("Removing cells nolonger requiere refinement\n");
                 if (0 < ptr_node->zones_size && 0 < ptr_node->chn_size)
                 {
                     remov_cells_nolonger_require_refinement(ptr_node, links_old_ord_old, links_new_ord_old);
                 }
 
                 //** >> Adapting child boxes to the new space **/
-                printf("Adapt child box\n");
+                //printf("Adapt child box\n");
                 if (0 < ptr_node->zones_size && 0 < ptr_node->chn_size)
                 {
                     if (adapt_child_box_and_cells(ptr_node, links_old_ord_old, links_new_ord_old) == _FAILURE_)
@@ -2571,7 +2516,7 @@ int tree_adaptation()
                 }
 
                 //** >> Creating and defining new children nodes for excess in refinement zones and and linking them to the parent node ptr_node **/
-                printf("Create new child nodes\n");
+                //printf("Create new child nodes\n");
                 if (ptr_node->zones_size > ptr_node->chn_size)
                 {
 
@@ -2582,22 +2527,22 @@ int tree_adaptation()
                     }
                 }
 
-                printf("chn size = %d, zones size = %d, chn cap = %d\n", ptr_node->chn_size, ptr_node->zones_size, ptr_node->chn_cap);
-                printf("links_old_ord_old = [ ");
-                for (int i = 0; i < ptr_node->zones_size; i++)
-                {
-                    printf("%d ", links_old_ord_old[i]);
-                }
-                printf("]\n");
-                printf("links_new_ord_old = [ ");
-                for (int i = 0; i < ptr_node->zones_size; i++)
-                {
-                    printf("%d ", links_new_ord_old[i]);
-                }
-                printf("]\n");
+                // printf("chn size = %d, zones size = %d, chn cap = %d\n", ptr_node->chn_size, ptr_node->zones_size, ptr_node->chn_cap);
+                // printf("links_old_ord_old = [ ");
+                // for (int i = 0; i < ptr_node->zones_size; i++)
+                // {
+                //     printf("%d ", links_old_ord_old[i]);
+                // }
+                // printf("]\n");
+                // printf("links_new_ord_old = [ ");
+                // for (int i = 0; i < ptr_node->zones_size; i++)
+                // {
+                //     printf("%d ", links_new_ord_old[i]);
+                // }
+                // printf("]\n");
 
                 //** >> Adapting the information from old child nodes to new child nodes **/
-                printf("Moving old child to new child\n");
+                //printf("Moving old child to new child\n");
                 if (0 < ptr_node->zones_size && 0 < ptr_node->chn_size)
                 {
                     if (moving_old_child_to_new_child(ptr_node, links_old_ord_old, links_new_ord_old, links_old_ord_new, links_new_ord_new) == _FAILURE_)
@@ -2608,7 +2553,7 @@ int tree_adaptation()
                 }
 
                 //** >> Moving new zones of refienemnt information to all child nodes **/
-                printf("Moving new zones to new childd\n");
+                //printf("Moving new zones to new childd\n");
                 if (0 < ptr_node->zones_size)
                 {
                     if (moving_new_zones_to_new_child(ptr_node, links_old_ord_new) == _FAILURE_)
@@ -2621,7 +2566,7 @@ int tree_adaptation()
                 
 
                 //** >> Update border of the child boxes **//
-                printf("Update border child boxes\n");
+                //printf("Update border child boxes\n");
                 if (ptr_node->zones_size > 0)
                 {
                     update_border_child_boxes(ptr_node, links_old_ord_old);
@@ -2629,7 +2574,7 @@ int tree_adaptation()
                     
 
                 //** >> Reseting the density of the reused child nodes **/
-                printf("Reset grid properties\n");
+                //printf("Reset grid properties\n");
                 if (0 < ptr_node->zones_size)
                 {
                     if (reset_grid_properties(ptr_node, links_old_ord_old) == _FAILURE_)
@@ -2640,14 +2585,14 @@ int tree_adaptation()
                 }
 
                 //** >> Reorganization child nodes **/
-                printf("Reorganization child nodes\n");
+                //printf("Reorganization child nodes\n");
                 if(ptr_node->zones_size > 0)
                 {
                     reorganization_child_node(ptr_node, links_old_ord_old, links_new_ord_old, links_old_ord_new);
                 }
 
                 //** >> Reorganization grandchild nodes **/
-                printf("Reorganization grandchild nodes\n");
+                //printf("Reorganization grandchild nodes\n");
                 if (ptr_node->zones_size > 0 && ptr_node->chn_size > 0 && lv < no_lvs)
                 {
                     if (reorganization_grandchild_node(ptr_node) == _FAILURE_)
@@ -2658,14 +2603,14 @@ int tree_adaptation()
                 }
 
                 //** >> Updating refinement zones of the grandchildren **/
-                printf("Updating refinement zones of the grandchildren\n");
+                //printf("Updating refinement zones of the grandchildren\n");
                 if (ptr_node->zones_size > 0 && ptr_node->chn_size > 0 && lv < no_lvs)
                 {
                     updating_ref_zones_grandchildren(ptr_node);
                 }
 
                 //** >> Updating children grid points **/
-                printf("Updating children grid points\n");
+                //printf("Updating children grid points\n");
                 if (ptr_node->zones_size > 0)
                 {
                     if (update_child_grid_points(ptr_node) == _FAILURE_)
@@ -2676,14 +2621,14 @@ int tree_adaptation()
                 }
 
                 //** >> Exchange between auiliary box and box **/
-                printf("Exchange between auiliary box and box\n");
+                //printf("Exchange between auiliary box and box\n");
                 if (ptr_node->zones_size > 0)
                 {
                     exchange_box_aux_to_box(ptr_node);
                 }
 
                 //** >> Tentacles updating **/
-                printf("Tentacles Updating\n");
+                //printf("Tentacles Updating\n");
                 if (0 < ptr_node->zones_size)
                 {
                     if (tentacles_updating(ptr_node, lv + 1) == _FAILURE_)
@@ -2700,7 +2645,7 @@ int tree_adaptation()
         }
 
         //** >> Tentacles Updating lv max **/
-        printf("Tentacles updating lv max\n");
+        //printf("Tentacles updating lv max\n");
         updating_tentacles_max_lv();
 
         free(links_old_ord_old);

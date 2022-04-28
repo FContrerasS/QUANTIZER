@@ -176,32 +176,27 @@ static void initializing_head_node()
 
 static void initializing_tentacles()
 {
-	GL_tentacles_old = NULL;
-	GL_tentacles_new = NULL;
+	GL_tentacles = NULL;
 	GL_tentacles_cap = NULL;
 	GL_tentacles_size = NULL;
 
-	GL_tentacles_old = (struct node ***)malloc((lmax - lmin + 1) * sizeof(struct node **));
-	GL_tentacles_new = (struct node ***)malloc((lmax - lmin + 1) * sizeof(struct node **));
+	GL_tentacles = (struct node ***)malloc((lmax - lmin + 1) * sizeof(struct node **));
 	GL_tentacles_cap = (int *)calloc((lmax - lmin + 1), sizeof(int)); // Capacity of pointer of the tentacles in each level
 	GL_tentacles_size = (int *)calloc((lmax - lmin + 1), sizeof(int));
 
 	for (int i = 0; i < (lmax - lmin + 1); i++)
 	{
-		GL_tentacles_old[i] = NULL;
-		GL_tentacles_new[i] = NULL;
+		GL_tentacles[i] = NULL;
 	}
 
 	//** >> Head node **/
-	GL_tentacles_old[0] = (struct node **)malloc(1 * sizeof(struct node *));	
-	GL_tentacles_new[0] = (struct node **)malloc(1 * sizeof(struct node *));
+	GL_tentacles[0] = (struct node **)malloc(1 * sizeof(struct node *));	
 	GL_tentacles_cap[0] = 1;
 	GL_tentacles_size[0] = 1;
 
 
 	//** >> Filling Head node **/
-	GL_tentacles_old[0][0] = GL_ptr_tree;
-	GL_tentacles_new[0][0] = GL_ptr_tree;
+	GL_tentacles[0][0] = GL_ptr_tree;
 
 	GL_tentacles_level_max = 0; // Maximum depth of the tentacles
 

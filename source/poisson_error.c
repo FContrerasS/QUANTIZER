@@ -130,7 +130,7 @@ static bool poisson_error_mehod_0(const struct node *ptr_node)
 	error = error / cntr;
 	error = sqrt(error);
 	error = error / rhomean_times_4piG;
-
+	//printf("local mass = %f\n",ptr_node->local_mass);
 	//printf("error = %.12f\n", error);
 
 	//** >> If the precision condition satisfied **/

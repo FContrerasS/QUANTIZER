@@ -102,8 +102,7 @@ bool *GL_ptcl_updating_flag;  // Particle updating state
 struct node *GL_ptr_tree; // Pointer to the tree head or  coarsest level
 
 //** >> Tentacles struct pointer **/
-struct node ***GL_tentacles_old;
-struct node ***GL_tentacles_new;
+struct node ***GL_tentacles;
 int *GL_tentacles_cap;      // Capacity of pointers in each level
 int *GL_tentacles_size;     // Number of pointers in each level
 int GL_tentacles_level_max; // Maximum level of refinement of the tentacles
@@ -160,8 +159,8 @@ static void init_global_user_params()
     Maxdt = 3 * _Mgyear_;
     meanmass = 100;
     total_mass = GL_no_ptcl * meanmass;
-    fr_output = 5;
-    MaxIterations = 1;
+    fr_output = 40;
+    MaxIterations = 1000000;
     no_grid_pow2 = no_grid * no_grid;
     no_grid_pow3 = no_grid * no_grid * no_grid;
 
@@ -190,7 +189,7 @@ static void init_global_poisson_params()
                          branches of the tree using Successive over-relaxation
     vtype _w_SOR_: The overrelaxation parameter
 */
-    _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_ = 100;
+    _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_ = 1000;
     _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ = (1.5e-10);
     check_poisson_error_method = 0; 
     multigrid = 0; 

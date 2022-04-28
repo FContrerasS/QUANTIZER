@@ -191,7 +191,7 @@ static void computing_particle_acceleration(const struct node *ptr_node, bool st
         //** >> For cycle over parent nodes **/
         for (int i = 0; i < no_pts; i++)
         {
-            ptr_node = GL_tentacles_old[lv][i];
+            ptr_node = GL_tentacles[lv][i];
             computing_particle_acceleration(ptr_node,status);
         }
     }

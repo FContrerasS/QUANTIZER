@@ -154,7 +154,7 @@ static void computing_grid_acceleration(struct node *ptr_node)
         //** >> For cycle over parent nodes **/
         for (int i = 0; i < no_pts; i++)
         {
-            ptr_node = GL_tentacles_old[lv][i];
+            ptr_node = GL_tentacles[lv][i];
             computing_grid_acceleration(ptr_node);
         }
         if (GL_tentacles_size[lv + 1] == 0)

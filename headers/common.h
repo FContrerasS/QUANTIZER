@@ -143,8 +143,7 @@ extern bool *GL_ptcl_updating_flag;
 extern struct node *GL_ptr_tree;
 
 //** >> Tentacles pointer **/
-extern struct node ***GL_tentacles_old; // Array of arrays of pointers. Organized first by levels, then by pointers
-extern struct node ***GL_tentacles_new;
+extern struct node ***GL_tentacles; // Array of arrays of pointers. Organized first by levels, then by pointers
 extern int *GL_tentacles_cap;   // Capacity of pointers in each level
 extern int *GL_tentacles_size; // Number of pointers in each level
 extern int GL_tentacles_level_max; // Maximum level of refinement of the tentacles
