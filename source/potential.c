@@ -26,66 +26,6 @@
 
 #include "potential.h"
 
-static int potential_branch_node(int **pptr_red_black, const int *ptr_red_black_size, struct node *ptr_node)
-{
-    vtype H;
-    vtype H_pow2;
-
-    int red_size;
-    int black_size;
-    vtype aux_pot; 
-
-    red_size = ptr_red_black_size[0];
-    black_size = ptr_red_black_size[1];
-
-    int box_grid_idx;
-    int box_grid_idxNbr_x_plus; // Box grid index in the neigborhood on the right
-    int box_grid_idxNbr_x_minus; // Box grid index in the neigborhood on the left
-    int box_grid_idxNbr_y_plus; // Box grid index in the neigborhood behind
-    int box_grid_idxNbr_y_minus; // Box grid index in the neigborhood in front
-    int box_grid_idxNbr_z_plus; // Box grid index in the neigborhood up
-    int box_grid_idxNbr_z_minus; // Box grid index in the neigborhood down
-
-    H = 1.0L / (1 << ptr_node->lv);
-    H_pow2 = H * H;
-
-    //** >> Cycle over the Successive over-relaxation **/
-    for (int iter = 0; iter < _Iter_branches_SOR_; iter++)
-    {
-        //** >> Cycle over red points **/
-        for (int i = 0; i < red_size; i++)
-        {
-            box_grid_idx = pptr_red_black[0][i];
-            box_grid_idxNbr_x_plus = box_grid_idx + 1;
-            box_grid_idxNbr_x_minus = box_grid_idx - 1;
-            box_grid_idxNbr_y_plus = box_grid_idx + (ptr_node->box_real_dim_x + 1);
-            box_grid_idxNbr_y_minus = box_grid_idx - (ptr_node->box_real_dim_x + 1);
-            box_grid_idxNbr_z_plus = box_grid_idx + (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1);
-            box_grid_idxNbr_z_minus = box_grid_idx - (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1);
-
-            aux_pot = 1.0L / 6.0L * (-H_pow2 * ptr_node->ptr_d[box_grid_idx] + ptr_node->ptr_pot[box_grid_idxNbr_x_plus] + ptr_node->ptr_pot[box_grid_idxNbr_x_minus] + ptr_node->ptr_pot[box_grid_idxNbr_y_plus] + ptr_node->ptr_pot[box_grid_idxNbr_y_minus] + ptr_node->ptr_pot[box_grid_idxNbr_z_plus] + ptr_node->ptr_pot[box_grid_idxNbr_z_minus]);
-            ptr_node->ptr_pot[box_grid_idx] = _w_SOR_ * aux_pot + (1 - _w_SOR_) * ptr_node->ptr_pot[box_grid_idx];
-        }
-
-        //** >> Cycle over black points **/
-        for (int i = 0; i < black_size; i++)
-        {
-            box_grid_idx = pptr_red_black[1][i];
-            box_grid_idxNbr_x_plus = box_grid_idx + 1;
-            box_grid_idxNbr_x_minus = box_grid_idx - 1;
-            box_grid_idxNbr_y_plus = box_grid_idx + (ptr_node->box_real_dim_x + 1);
-            box_grid_idxNbr_y_minus = box_grid_idx - (ptr_node->box_real_dim_x + 1);
-            box_grid_idxNbr_z_plus = box_grid_idx + (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1);
-            box_grid_idxNbr_z_minus = box_grid_idx - (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1);
-
-            aux_pot = 1.0L / 6.0L * (-H_pow2 * ptr_node->ptr_d[box_grid_idx] + ptr_node->ptr_pot[box_grid_idxNbr_x_plus] + ptr_node->ptr_pot[box_grid_idxNbr_x_minus] + ptr_node->ptr_pot[box_grid_idxNbr_y_plus] + ptr_node->ptr_pot[box_grid_idxNbr_y_minus] + ptr_node->ptr_pot[box_grid_idxNbr_z_plus] + ptr_node->ptr_pot[box_grid_idxNbr_z_minus]);
-            ptr_node->ptr_pot[box_grid_idx] = _w_SOR_ * aux_pot + (1 - _w_SOR_) * ptr_node->ptr_pot[box_grid_idx];
-        }
-    }
-
-
-    return _SUCCESS_;
-}
 
 static int fill_red_and_black(int **pptr_red_black, int *ptr_red_black_cap, int *ptr_red_black_size, const struct node *ptr_node)
 {
@@ -269,6 +209,66 @@ static void initial_potential(const struct node *ptr_node_pt, struct node *ptr_n
     }
 }
 
+static int potential_branch_node(int **pptr_red_black, const int *ptr_red_black_size, struct node *ptr_node)
+{
+    vtype H;
+    vtype H_pow2;
+
+    int red_size;
+    int black_size;
+    vtype aux_pot;
+
+    red_size = ptr_red_black_size[0];
+    black_size = ptr_red_black_size[1];
+
+    int box_grid_idx;
+    int box_grid_idxNbr_x_plus;  // Box grid index in the neigborhood on the right
+    int box_grid_idxNbr_x_minus; // Box grid index in the neigborhood on the left
+    int box_grid_idxNbr_y_plus;  // Box grid index in the neigborhood behind
+    int box_grid_idxNbr_y_minus; // Box grid index in the neigborhood in front
+    int box_grid_idxNbr_z_plus;  // Box grid index in the neigborhood up
+    int box_grid_idxNbr_z_minus; // Box grid index in the neigborhood down
+
+    H = 1.0L / (1 << ptr_node->lv);
+    H_pow2 = H * H;
+
+    //** >> Cycle over the Successive over-relaxation **/
+    for (int iter = 0; iter < _Iter_branches_SOR_; iter++)
+    {
+        //** >> Cycle over red points **/
+        for (int i = 0; i < red_size; i++)
+        {
+            box_grid_idx = pptr_red_black[0][i];
+            box_grid_idxNbr_x_plus = box_grid_idx + 1;
+            box_grid_idxNbr_x_minus = box_grid_idx - 1;
+            box_grid_idxNbr_y_plus = box_grid_idx + (ptr_node->box_real_dim_x + 1);
+            box_grid_idxNbr_y_minus = box_grid_idx - (ptr_node->box_real_dim_x + 1);
+            box_grid_idxNbr_z_plus = box_grid_idx + (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1);
+            box_grid_idxNbr_z_minus = box_grid_idx - (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1);
+
+            aux_pot = 1.0L / 6.0L * (-H_pow2 * ptr_node->ptr_d[box_grid_idx] + ptr_node->ptr_pot[box_grid_idxNbr_x_plus] + ptr_node->ptr_pot[box_grid_idxNbr_x_minus] + ptr_node->ptr_pot[box_grid_idxNbr_y_plus] + ptr_node->ptr_pot[box_grid_idxNbr_y_minus] + ptr_node->ptr_pot[box_grid_idxNbr_z_plus] + ptr_node->ptr_pot[box_grid_idxNbr_z_minus]);
+            ptr_node->ptr_pot[box_grid_idx] = _w_SOR_ * aux_pot + (1 - _w_SOR_) * ptr_node->ptr_pot[box_grid_idx];
+        }
+
+        //** >> Cycle over black points **/
+        for (int i = 0; i < black_size; i++)
+        {
+            box_grid_idx = pptr_red_black[1][i];
+            box_grid_idxNbr_x_plus = box_grid_idx + 1;
+            box_grid_idxNbr_x_minus = box_grid_idx - 1;
+            box_grid_idxNbr_y_plus = box_grid_idx + (ptr_node->box_real_dim_x + 1);
+            box_grid_idxNbr_y_minus = box_grid_idx - (ptr_node->box_real_dim_x + 1);
+            box_grid_idxNbr_z_plus = box_grid_idx + (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1);
+            box_grid_idxNbr_z_minus = box_grid_idx - (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1);
+
+            aux_pot = 1.0L / 6.0L * (-H_pow2 * ptr_node->ptr_d[box_grid_idx] + ptr_node->ptr_pot[box_grid_idxNbr_x_plus] + ptr_node->ptr_pot[box_grid_idxNbr_x_minus] + ptr_node->ptr_pot[box_grid_idxNbr_y_plus] + ptr_node->ptr_pot[box_grid_idxNbr_y_minus] + ptr_node->ptr_pot[box_grid_idxNbr_z_plus] + ptr_node->ptr_pot[box_grid_idxNbr_z_minus]);
+            ptr_node->ptr_pot[box_grid_idx] = _w_SOR_ * aux_pot + (1 - _w_SOR_) * ptr_node->ptr_pot[box_grid_idx];
+        }
+    }
+
+    return _SUCCESS_;
+}
+
 int potential()
 {
     int iter;
@@ -285,7 +285,7 @@ int potential()
     GL_times[21] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
     //** >> SOLVING POISSON EQUATION **/
-    printf("potential Head\n");
+    //printf("potential Head\n");
     iter = 0;
     while (iter < _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_ && check == false)
     {
@@ -312,7 +312,7 @@ int potential()
         return _FAILURE_;
     }
 
-    printf("Potential in Branches\n");
+    //printf("Potential in Branches\n");
     //** >> POTENTIAL BRANCH NODES **/
     if(lmin < lmax)
     {

@@ -150,7 +150,7 @@ static void init_global_user_params()
 {
     BoxSize = 1.0L;
     lmin = 5;     //Coarset level of refinement
-    lmax = lmin + 5;  //Finest level of refinement
+    lmax = lmin + 4;  //Finest level of refinement
     no_lmin_cell = 1 << lmin; // Number of cells in the lmin level of refinement
     no_lmin_cell_pow2 = no_lmin_cell * no_lmin_cell;
     no_lmin_cell_pow3 = no_lmin_cell * no_lmin_cell * no_lmin_cell;
@@ -160,7 +160,7 @@ static void init_global_user_params()
     meanmass = 100;
     total_mass = GL_no_ptcl * meanmass;
     fr_output = 40;
-    MaxIterations = 1000000;
+    MaxIterations = 1;
     no_grid_pow2 = no_grid * no_grid;
     no_grid_pow3 = no_grid * no_grid * no_grid;
 
@@ -168,7 +168,7 @@ static void init_global_user_params()
 
 static void init_global_ref_crit()
 {
-    ref_criterion_mass = meanmass * 3;
+    ref_criterion_mass = meanmass * 2;
     n_exp = 0;
     _CFL_ = 0.5; // CFL criteria 0.5
     _MAX_dt_ = 6.7e-6;
@@ -189,8 +189,8 @@ static void init_global_poisson_params()
                          branches of the tree using Successive over-relaxation
     vtype _w_SOR_: The overrelaxation parameter
 */
-    _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_ = 1000;
-    _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ = (1.5e-10);
+    _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_ = 500;
+    _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ = (1.5e-6);
     check_poisson_error_method = 0; 
     multigrid = 0; 
     solver = 0; 
