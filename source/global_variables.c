@@ -150,7 +150,7 @@ static void init_global_user_params()
 {
     BoxSize = 1.0L;
     lmin = 5;     //Coarset level of refinement
-    lmax = lmin + 2;  //Finest level of refinement
+    lmax = lmin + 1;  //Finest level of refinement
     no_lmin_cell = 1 << lmin; // Number of cells in the lmin level of refinement
     no_lmin_cell_pow2 = no_lmin_cell * no_lmin_cell;
     no_lmin_cell_pow3 = no_lmin_cell * no_lmin_cell * no_lmin_cell;
@@ -168,8 +168,8 @@ static void init_global_user_params()
 
 static void init_global_ref_crit()
 {
-    ref_criterion_mass = meanmass * 7;
-    n_exp = 0;
+    ref_criterion_mass = meanmass * 18;
+    n_exp = 1;
     _CFL_ = 0.5; // CFL criteria 0.5
     _MAX_dt_ = 6.7e-6;
 }

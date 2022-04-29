@@ -437,7 +437,7 @@ static int fill_zones_ref(struct node *ptr_node)
     //** >> Space checking in each zone **/
     for (int i = 0; i < ptr_node->zones_size; i++)
     {
-        if (space_check(&(ptr_node->ptr_zone_cap[i]), ptr_node->ptr_zone_size[i], 1.5f, "p1i1", &(ptr_node->pptr_zones[i])) == _FAILURE_)
+        if (space_check(&(ptr_node->ptr_zone_cap[i]), ptr_node->ptr_zone_size[i], 1.0f, "p1i1", &(ptr_node->pptr_zones[i])) == _FAILURE_)
         {
             printf("Error, in space_check function\n");
             return _FAILURE_;
@@ -2062,6 +2062,7 @@ static int moving_new_zones_to_new_child(struct node *ptr_node, int *links_old_o
             // Case cell is a new refinement cell. If it was not new, the past child nodes would have already added it to the corresponding child node
             if(ptr_node->ptr_box[box_idx_node] < 0)
             {
+
                 //** >> CELLS AND BOX STATUS**/
                 cell_idx_x_aux = ptr_node->ptr_cell_idx_x[cell_idx_node] * 2;
                 cell_idx_y_aux = ptr_node->ptr_cell_idx_y[cell_idx_node] * 2;
@@ -2372,8 +2373,11 @@ static int reorganization_grandchild_node(struct node *ptr_node)
 
             //printf("E4\n");
             ptr_node->pptr_chn[child_ID]->pptr_chn[size] = pptr_aux[grandch];
+            pptr_aux[grandch]->ptr_pt = ptr_node->pptr_chn[child_ID];
+            pptr_aux[grandch]->ID = size;
             ptr_node->pptr_chn[child_ID]->chn_size = size + 1;
-            //printf("E6\n");
+            
+            // printf("E6\n");
         }
         //printf("F\n");
         free(pptr_aux);
@@ -2526,7 +2530,7 @@ static int update_child_grid_points (struct node *ptr_node)
                         if (is_bder_grid_point == true)
                         {
                             //** >> Space checking of border grid points array**/
-                            if (space_check(&(ptr_ch->grid_bder_cap), ptr_ch->grid_bder_size + 1, 1.0f, "p1i1", &(ptr_ch->ptr_grid_bder)) == _FAILURE_)
+                            if (space_check(&(ptr_ch->grid_bder_cap), ptr_ch->grid_bder_size + 1, 1.5f, "p1i1", &(ptr_ch->ptr_grid_bder)) == _FAILURE_)
                             {
                                 printf("Error, in space_check function\n");
                                 return _FAILURE_;
@@ -2540,7 +2544,7 @@ static int update_child_grid_points (struct node *ptr_node)
                         else
                         {
                             //** >> Space checking of interior grid points array**/
-                            if (space_check(&(ptr_ch->grid_intr_cap), ptr_ch->grid_intr_size + 1, 1.0f, "p1i1", &(ptr_ch->ptr_grid_intr)) == _FAILURE_)
+                            if (space_check(&(ptr_ch->grid_intr_cap), ptr_ch->grid_intr_size + 1, 1.5f, "p1i1", &(ptr_ch->ptr_grid_intr)) == _FAILURE_)
                             {
                                 printf("Error, in space_check function\n");
                                 return _FAILURE_;
@@ -2665,7 +2669,7 @@ int tree_adaptation()
         int *links_new_ord_new = NULL; // Storing the new zone of refinement id using new order
         int links_cap;
 
-        links_cap = 10;
+        links_cap = 256;
         links_old_ord_old = (int *) malloc (links_cap * sizeof(int));
         links_new_ord_old = (int *) malloc (links_cap * sizeof(int));
         links_old_ord_new = (int *) malloc (links_cap * sizeof(int));
@@ -2754,6 +2758,7 @@ int tree_adaptation()
 
                 //** >> Adapting child boxes to the new space **/
                 //printf("Adapt child box\n");
+
                 if (0 < ptr_node->zones_size && 0 < ptr_node->chn_size)
                 {
                     if (adapt_child_box_and_cells(ptr_node, links_old_ord_old, links_new_ord_old) == _FAILURE_)
@@ -2775,7 +2780,7 @@ int tree_adaptation()
                     }
                 }
 
-                //printf("\nB chn size = %d, zones size = %d, chn cap = %d\n", ptr_node->chn_size, ptr_node->zones_size, ptr_node->chn_cap);
+                // printf("\nB chn size = %d, zones size = %d, chn cap = %d\n", ptr_node->chn_size, ptr_node->zones_size, ptr_node->chn_cap);
                 // printf("Links_old_ord_old = [ ");
                 // for (int i = 0; i < ptr_node->zones_size; i++)
                 // {
