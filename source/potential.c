@@ -57,7 +57,7 @@ static int fill_red_and_black(int **pptr_red_black, int *ptr_red_black_cap, int 
             red_size++;
 
             //** >> Space checking of the particle capacity of the red array **/
-            if (space_check(&(ptr_red_black_cap[0]), red_size, "p1i1", &(pptr_red_black[0])) == _FAILURE_)
+            if (space_check(&(ptr_red_black_cap[0]), red_size, 2.0f, "p1i1", &(pptr_red_black[0])) == _FAILURE_)
             {
                 printf("Error, in space_check function\n");
                 return _FAILURE_;
@@ -71,7 +71,7 @@ static int fill_red_and_black(int **pptr_red_black, int *ptr_red_black_cap, int 
             black_size++;
 
             //** >> Space checking of the particle capacity of the black array **/
-            if (space_check(&(ptr_red_black_cap[1]), black_size, "p1i1", &(pptr_red_black[1])) == _FAILURE_)
+            if (space_check(&(ptr_red_black_cap[1]), black_size, 2.0f, "p1i1", &(pptr_red_black[1])) == _FAILURE_)
             {
                 printf("Error, in space_check function\n");
                 return _FAILURE_;

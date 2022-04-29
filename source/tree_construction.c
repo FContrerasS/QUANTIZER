@@ -60,7 +60,7 @@ static int particle_distribution_in_cell(int **pptr_cell_ptcl, int *ptr_cell_ptc
         box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
 
         // //** >> Space checking of the capacity of particles in the cells **/
-        if (space_check(&(ptr_cell_ptcl_cap[box_idx]), ptr_cell_ptcl_size[box_idx] + 1, "p1i1", &(pptr_cell_ptcl[box_idx])) == _FAILURE_)
+        if (space_check(&(ptr_cell_ptcl_cap[box_idx]), ptr_cell_ptcl_size[box_idx] + 1, 2.0f, "p1i1", &(pptr_cell_ptcl[box_idx])) == _FAILURE_)
         {
             printf("Error, in space_check function\n");
             return _FAILURE_;
@@ -161,7 +161,7 @@ static int fill_cell_ref(struct node *ptr_node)
     }
 
     // //** >> Space checking of the capacity of the refined cells **/
-    if (space_check(&(ptr_node->cell_ref_cap), size, "p1i1", &(ptr_node->ptr_cell_ref)) == _FAILURE_)
+    if (space_check(&(ptr_node->cell_ref_cap), size, 1.5f, "p1i1", &(ptr_node->ptr_cell_ref)) == _FAILURE_)
     {
         printf("Error, in space_check function\n");
         return _FAILURE_;
@@ -221,7 +221,7 @@ static int fill_zones_ref(struct node *ptr_node)
     //** >> Space checking of auxiliary array ptr_aux_idx **/
     // The size will always be bigger or equal than the number of refined cells
 
-    if (space_check(&(ptr_node->aux_idx_cap), ptr_node->cell_ref_cap, "p1i1", &(ptr_node->ptr_aux_idx)) == _FAILURE_)
+    if (space_check(&(ptr_node->aux_idx_cap), ptr_node->cell_ref_cap, 1.5f, "p1i1", &(ptr_node->ptr_aux_idx)) == _FAILURE_)
     {
         printf("Error, in space_check function\n");
         return _FAILURE_;
@@ -321,7 +321,7 @@ static int fill_zones_ref(struct node *ptr_node)
             //** >> Space checking of refinement zones arrays, refinement capacity array and refinement size array **/
             if (zone_idx_max < zone_idx + 1)
             {
-                if (space_check(&(zone_idx_max), zone_idx + 1, "p3i2i1i1", &(ptr_node->pptr_zones), &(ptr_node->ptr_zone_cap), &(ptr_node->ptr_zone_size)) == _FAILURE_)
+                if (space_check(&(zone_idx_max), zone_idx + 1, 1.0f, "p3i2i1i1", &(ptr_node->pptr_zones), &(ptr_node->ptr_zone_cap), &(ptr_node->ptr_zone_size)) == _FAILURE_)
                 {
                     printf("Error, in space_check function\n");
                     return _FAILURE_;
@@ -347,7 +347,7 @@ static int fill_zones_ref(struct node *ptr_node)
     //** >> Space checking in each zone **/
     for (int i = 0; i < ptr_node->zones_size; i++)
     {
-        if (space_check(&(ptr_node->ptr_zone_cap[i]), ptr_node->ptr_zone_size[i], "p1i1", &(ptr_node->pptr_zones[i])) == _FAILURE_)
+        if (space_check(&(ptr_node->ptr_zone_cap[i]), ptr_node->ptr_zone_size[i], 1.5f, "p1i1", &(ptr_node->pptr_zones[i])) == _FAILURE_)
         {
             printf("Error, in space_check function\n");
             return _FAILURE_;
@@ -418,7 +418,8 @@ static int fill_child_nodes(int **pptr_cell_ptcl, const int *ptr_cell_ptcl_size,
     int size; // Size or number of elements in some array in child nodes
 
     //** >> Creating child nodes in parent node **/
-    ptr_node_pt->chn_cap = ptr_node_pt->zones_cap; // Same amount than refinement zones
+    // ptr_node_pt->chn_cap = ptr_node_pt->zones_cap; // Same amount than refinement zones
+    ptr_node_pt->chn_cap = ptr_node_pt->zones_size; // Same amount than the exact number fo refinement zones
     ptr_node_pt->chn_size = ptr_node_pt->zones_size;
 
     if(ptr_node_pt->chn_cap > 0)
@@ -709,7 +710,7 @@ static int fill_child_nodes(int **pptr_cell_ptcl, const int *ptr_cell_ptcl_size,
                         if(is_bder_grid_point == true)
                         {
                             //** >> Space checking of border grid points array**/
-                            if (space_check(&(ptr_node_ch->grid_bder_cap), ptr_node_ch->grid_bder_size + 1, "p1i1", &(ptr_node_ch->ptr_grid_bder)) == _FAILURE_)
+                            if (space_check(&(ptr_node_ch->grid_bder_cap), ptr_node_ch->grid_bder_size + 1, 1.5f, "p1i1", &(ptr_node_ch->ptr_grid_bder)) == _FAILURE_)
                             {
                                 printf("Error, in space_check function\n");
                                 return _FAILURE_;
@@ -723,7 +724,7 @@ static int fill_child_nodes(int **pptr_cell_ptcl, const int *ptr_cell_ptcl_size,
                         else
                         {
                             //** >> Space checking of border grid points array**/
-                            if (space_check(&(ptr_node_ch->grid_intr_cap), ptr_node_ch->grid_intr_size + 1, "p1i1", &(ptr_node_ch->ptr_grid_intr)) == _FAILURE_)
+                            if (space_check(&(ptr_node_ch->grid_intr_cap), ptr_node_ch->grid_intr_size + 1, 1.5f, "p1i1", &(ptr_node_ch->ptr_grid_intr)) == _FAILURE_)
                             {
                                 printf("Error, in space_check function\n");
                                 return _FAILURE_;
@@ -795,7 +796,7 @@ static int fill_tentacles(const struct node *ptr_node_pt)
         TOTAL_MEMORY_TENTACLES += 2 * (2 * size - GL_tentacles_cap[lv]) * sizeof(struct node *);
     }
 
-    if (space_check(&(GL_tentacles_cap[lv]), size, "p1n2", &(GL_tentacles[lv])) == _FAILURE_)
+    if (space_check(&(GL_tentacles_cap[lv]), size, 4.0f, "p1n2", &(GL_tentacles[lv])) == _FAILURE_)
     {
         printf("Error, in space_check function\n");
         return _FAILURE_;
@@ -868,7 +869,7 @@ int tree_construction()
                 if (space_cell_ptcl < required_space_cell_ptcl)
                 {
                     //aux_cap = space_cell_ptcl;
-                    if (space_check(&(space_cell_ptcl), required_space_cell_ptcl, "p3i2i1i1", &(pptr_cell_ptcl), &(ptr_cell_ptcl_cap), &(ptr_cell_ptcl_size)) == _FAILURE_)
+                    if (space_check(&(space_cell_ptcl), required_space_cell_ptcl, 4.0f, "p3i2i1i1", &(pptr_cell_ptcl), &(ptr_cell_ptcl_cap), &(ptr_cell_ptcl_size)) == _FAILURE_)
                     {
                         printf("Error, in space_check function\n");
                         return _FAILURE_;

@@ -26,7 +26,7 @@
 
 #include "space_check.h"
 
-int space_check(int *ptr_cap, int size, const char *format, ...)
+int space_check(int *ptr_cap, int size, float increase, const char *format, ...)
 {
 
     
@@ -52,7 +52,7 @@ int space_check(int *ptr_cap, int size, const char *format, ...)
         }
         int cntr = *format - '0'; // Number of variables inserted in the space checking function
 
-        *ptr_cap = cntr > 0 ? (2 * size) : *ptr_cap; // Duplicated capacity
+        *ptr_cap = cntr > 0 ? ((int ) (increase * size)) : *ptr_cap; // Duplicated capacity
 
         ++format; // Type of variable: i = int, v = vtype
 

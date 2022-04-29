@@ -30,6 +30,6 @@
 #include "common.h"
 
     int
-    space_check(int *ptr_cap, int size, const char *format, ...);
+    space_check(int *ptr_cap, int size, float increase, const char *format, ...);
 
 #endif
