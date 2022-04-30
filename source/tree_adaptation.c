@@ -45,9 +45,12 @@ static void updating_box_mass(struct node *ptr_node)
 
     no_chn = ptr_node->chn_size;
 
+    
+
     for (int i = 0; i < no_chn; i++)    //Cycle over children
     {
         ptr_ch = ptr_node->pptr_chn[i];
+        printf("child cell size = %d\n", ptr_ch->cell_size);
         for (int j = 0; j < ptr_ch->cell_size; j += 8) // Cycle over packeges of 8 cells
         {
             //** >> Computing the mass of the 8 child cells **/
@@ -796,7 +799,7 @@ static void remov_cells_nolonger_require_refinement(struct node *ptr_node, const
                         if (box_idx_ptcl == box_idx_node)
                         {
                             ptr_ch->ptr_ptcl[i] = ptr_ch->ptr_ptcl[no_ptcl - 1];
-                            ptr_ch->local_mass -= GL_ptcl_mass[ptcl_idx];
+                            //ptr_ch->local_mass -= GL_ptcl_mass[ptcl_idx];
                             no_ptcl--; // The total number of particle decrease
                             i--;       // The last element that was just moved to the current position should also must be analized
                         }
@@ -814,6 +817,7 @@ static void remov_cells_nolonger_require_refinement(struct node *ptr_node, const
                             for (int ii = 0; ii < 2; ii++)
                             {
                                 box_idx_ch = (box_idx_x_ch + ii) + (box_idx_y_ch + jj) * ptr_ch->box_real_dim_x + (box_idx_z_ch + kk) * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
+                                ptr_ch->local_mass -= ptr_ch->ptr_box_mass[box_idx_ch];
                                 ptr_ch->ptr_box_mass[box_idx_ch] = 0;
                             }
                         }
@@ -2605,6 +2609,35 @@ int tree_adaptation()
                 //     printf("%d ", links_new_ord_new[i]);
                 // }
                 // printf("]\n\n");
+
+                // vtype aux_mass1 = 0;
+                // vtype aux_mass2 = 0;
+                // for (int i = 0; i < ptr_node->box_real_dim_x * ptr_node->box_real_dim_y * ptr_node->box_real_dim_z; i++)
+                // {
+                //     aux_mass1 += ptr_node->ptr_box_mass[i];
+                // }
+                // aux_mass2 = 0;
+                // int box_idx_aux_x;
+                // int box_idx_aux_y;
+                // int box_idx_aux_z;
+                // int box_idx_aux;
+                // for (int i = 0; i < ptr_node->cell_size; i++)
+                // {
+                //     box_idx_aux_x = ptr_node->ptr_cell_idx_x[i] - ptr_node->box_ts_x;
+                //     box_idx_aux_y = ptr_node->ptr_cell_idx_y[i] - ptr_node->box_ts_y;
+                //     box_idx_aux_z = ptr_node->ptr_cell_idx_z[i] - ptr_node->box_ts_z;
+                //     box_idx_aux = box_idx_aux_x + box_idx_aux_y * ptr_node->box_real_dim_x + box_idx_aux_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+                //     aux_mass2 += ptr_node->ptr_box_mass[box_idx_aux];
+                // }
+
+                // if (aux_mass1 != aux_mass2 || aux_mass1 != ptr_node->local_mass)
+                // {
+                //     printf("\n\n Error \n\n");
+                //     printf("aux mass per box = %f, ", aux_mass1);
+                //     printf("aux mass per cell = %f, ", aux_mass2);
+                //     printf("local mass = %f\n", ptr_node->local_mass);
+                //     printf("\n\n");
+                // }
 
                 //** >> Removing cells that no longer require refinement **/
                 //printf("Removing cells nolonger requiere refinement\n");
