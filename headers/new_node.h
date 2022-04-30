@@ -1,7 +1,7 @@
 /*
- * tree_adaptation.h
+ * new_node.h
  *
- * Header file of the tree_adaptation.c source file
+ * Header file of the new_node.c source file
  *
  * Felipe Contreras
  * felipe.contrerass@postgrado.uv.cl
@@ -24,14 +24,11 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __TREEADAPTATION__
-#define __TREEADAPTATION__
+#ifndef __NEWNODE__
+#define __NEWNODE__
 
 #include "common.h"
-#include "space_check.h"
-#include "new_node.h"
-#include "add_node_to_stack.h"
 
-int tree_adaptation();
+struct node* new_node();
 
 #endif

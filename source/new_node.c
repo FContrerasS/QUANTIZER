@@ -1,7 +1,7 @@
 /*
- * tree_adaptation.h
+ * new_node.c
  *
- * Header file of the tree_adaptation.c source file
+ * Return a pointer to a node using the stack of the memory pool 
  *
  * Felipe Contreras
  * felipe.contrerass@postgrado.uv.cl
@@ -24,14 +24,30 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __TREEADAPTATION__
-#define __TREEADAPTATION__
-
-#include "common.h"
-#include "space_check.h"
 #include "new_node.h"
-#include "add_node_to_stack.h"
 
-int tree_adaptation();
+struct node *new_node()
+{
+	struct node *ptr_node = NULL;
 
-#endif
+	if (GL_pool_node_start == NULL)
+	{
+		ptr_node = (struct node *)malloc(sizeof(struct node));
+		initialize_node(ptr_node);
+	}
+	else
+	{
+		ptr_node = GL_pool_node_start;
+		if (GL_pool_node_start == GL_pool_node_end)
+		{
+			GL_pool_node_start = NULL;
+			GL_pool_node_end = NULL;
+		}
+		else
+		{
+			GL_pool_node_start = ptr_node->ptr_pt;
+		}
+	}
+
+	return ptr_node;
+}

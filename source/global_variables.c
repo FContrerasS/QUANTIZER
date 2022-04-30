@@ -107,6 +107,10 @@ int *GL_tentacles_cap;      // Capacity of pointers in each level
 int *GL_tentacles_size;     // Number of pointers in each level
 int GL_tentacles_level_max; // Maximum level of refinement of the tentacles
 
+//** >> Initializing Pool node list **/
+struct node *GL_pool_node_start = NULL;
+struct node *GL_pool_node_end = NULL;
+
 //** >> Border of the simulation box **/
 int bder_os_sim;        // Border outside the simulation box
 int box_side_lmin; // Side of the coarsest box
@@ -159,7 +163,7 @@ static void init_global_user_params()
     Maxdt = 3.0 * _Mgyear_;
     meanmass = 100;
     total_mass = GL_no_ptcl * meanmass;
-    fr_output = 5;
+    fr_output = 1;
     MaxIterations = 1000000;
     no_grid_pow2 = no_grid * no_grid;
     no_grid_pow3 = no_grid * no_grid * no_grid;

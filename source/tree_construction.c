@@ -321,7 +321,7 @@ static int fill_zones_ref(struct node *ptr_node)
             //** >> Space checking of refinement zones arrays, refinement capacity array and refinement size array **/
             if (zone_idx_max < zone_idx + 1)
             {
-                if (space_check(&(zone_idx_max), zone_idx + 1, 1.0f, "p3i2i1i1", &(ptr_node->pptr_zones), &(ptr_node->ptr_zone_cap), &(ptr_node->ptr_zone_size)) == _FAILURE_)
+                if (space_check(&(zone_idx_max), zone_idx + 1, 1.5f, "p3i2i1i1", &(ptr_node->pptr_zones), &(ptr_node->ptr_zone_cap), &(ptr_node->ptr_zone_size)) == _FAILURE_)
                 {
                     printf("Error, in space_check function\n");
                     return _FAILURE_;
@@ -418,8 +418,8 @@ static int fill_child_nodes(int **pptr_cell_ptcl, const int *ptr_cell_ptcl_size,
     int size; // Size or number of elements in some array in child nodes
 
     //** >> Creating child nodes in parent node **/
-    // ptr_node_pt->chn_cap = ptr_node_pt->zones_cap; // Same amount than refinement zones
-    ptr_node_pt->chn_cap = ptr_node_pt->zones_size; // Same amount than the exact number fo refinement zones
+    ptr_node_pt->chn_cap = ptr_node_pt->zones_cap; // Same amount than refinement zones
+    //ptr_node_pt->chn_cap = ptr_node_pt->zones_size; // Same amount than the exact number fo refinement zones
     ptr_node_pt->chn_size = ptr_node_pt->zones_size;
 
     if(ptr_node_pt->chn_cap > 0)

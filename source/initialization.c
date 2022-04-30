@@ -214,11 +214,8 @@ int initialization()
 	//** >> Initializing the Head of the Tree **/
 	initializing_head_node();
 
-	//** >>  Initializing tentacles struct pointer **/
+	//** >> Initializing tentacles struct pointer **/
 	initializing_tentacles();
-
-
-
 
 	return _SUCCESS_;
 }

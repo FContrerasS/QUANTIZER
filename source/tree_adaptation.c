@@ -980,7 +980,7 @@ static int adapt_child_box_and_cells(struct node *ptr_node, const int *links_old
             //** >> The new box does not fit in the old box **/
             if (ptr_ch->box_check_fit == false)
             {
-
+                printf("No hay fit\n");
                 // Real dimensions of the old box
                 ptr_ch->box_real_dim_x_aux = ptr_ch->box_real_dim_x;
                 ptr_ch->box_real_dim_y_aux = ptr_ch->box_real_dim_y;
@@ -1101,7 +1101,6 @@ static int create_new_child_nodes(struct node *ptr_node, const int *links_old_or
     int pos_y;
     int pos_z;
 
-    int cap;  // Capacity of arrays in child nodes
     int size; // Size or number of elements in some array in child nodes
 
     //int box_idx_x; // Box index at X direction
@@ -1110,10 +1109,10 @@ static int create_new_child_nodes(struct node *ptr_node, const int *links_old_or
     //int box_idx;   // Box index
     //int box_idxNbr; // Box index in the neigborhood
 
-    int old_chn_cap = ptr_node->chn_cap;
+
 
     //** >> Space checking in the number of child nodes of ptr_node
-    if (space_check(&(ptr_node->chn_cap), ptr_node->zones_size, 1.0f, "p1n2", &(ptr_node->pptr_chn)) == _FAILURE_)
+    if (space_check(&(ptr_node->chn_cap), ptr_node->zones_size, 1.5f, "p1n2", &(ptr_node->pptr_chn)) == _FAILURE_)
     {
         printf("Error, in space_check function\n");
         return _FAILURE_;
@@ -1122,339 +1121,185 @@ static int create_new_child_nodes(struct node *ptr_node, const int *links_old_or
     for (int i = ptr_node->chn_size; i < ptr_node->zones_size; i++)
     {
         printf("cycclo = %d\n", i);
-        if (i < old_chn_cap)
+
+        ptr_ch = new_node();
+
+        //** >> Global node properties **/
+        ptr_ch->ID = i;
+        ptr_ch->lv = ptr_node->lv + 1;
+
+        //** >> Cells in the node **/
+        size = 8 * ptr_node->ptr_zone_size[links_new_ord_old[i]];
+        ptr_ch->cell_size = 0;
+
+        //** >> Space checking of cells indexes of the child node
+        if (space_check(&(ptr_ch->cell_cap), size, 1.5f, "p3i1i1i1", &(ptr_ch->ptr_cell_idx_x), &(ptr_ch->ptr_cell_idx_y), &(ptr_ch->ptr_cell_idx_z)) == _FAILURE_)
         {
-
-            ptr_ch = ptr_node->pptr_chn[i];
-
-            //** >> Global node properties **/
-            ptr_ch->ID = i;
-            ptr_ch->lv = ptr_node->lv + 1;
-
-            //** >> Cells in the node **/
-            size = 8 * ptr_node->ptr_zone_size[links_new_ord_old[i]];
-            ptr_ch->cell_size = 0;
-
-            //** >> Space checking of cells indexes of the child node
-            if (space_check(&(ptr_ch->cell_cap), size, 1.5f, "p3i1i1i1", &(ptr_ch->ptr_cell_idx_x), &(ptr_ch->ptr_cell_idx_y), &(ptr_ch->ptr_cell_idx_z)) == _FAILURE_)
-            {
-                printf("Error, in space_check function\n");
-                return _FAILURE_;
-            }
-
-            //** >> Particles in the node **/
-            ptr_ch->ptcl_size = 0;
-
-            //** >> Boxes **/
-            // MIN and MAX cell indexes values of the node.
-            for (int j = 0; j < ptr_node->ptr_zone_size[links_new_ord_old[i]]; j++)
-            {
-                cell_idx = ptr_node->pptr_zones[links_new_ord_old[i]][j]; // Cell index in the zone
-                if (ptr_ch->box_min_x > ptr_node->ptr_cell_idx_x[cell_idx])
-                {
-                    ptr_ch->box_min_x = ptr_node->ptr_cell_idx_x[cell_idx];
-                }
-                if (ptr_ch->box_min_y > ptr_node->ptr_cell_idx_y[cell_idx])
-                {
-                    ptr_ch->box_min_y = ptr_node->ptr_cell_idx_y[cell_idx];
-                }
-                if (ptr_ch->box_min_z > ptr_node->ptr_cell_idx_z[cell_idx])
-                {
-                    ptr_ch->box_min_z = ptr_node->ptr_cell_idx_z[cell_idx];
-                }
-                if (ptr_ch->box_max_x < ptr_node->ptr_cell_idx_x[cell_idx])
-                {
-                    ptr_ch->box_max_x = ptr_node->ptr_cell_idx_x[cell_idx];
-                }
-                if (ptr_ch->box_max_y < ptr_node->ptr_cell_idx_y[cell_idx])
-                {
-                    ptr_ch->box_max_y = ptr_node->ptr_cell_idx_y[cell_idx];
-                }
-                if (ptr_ch->box_max_z < ptr_node->ptr_cell_idx_z[cell_idx])
-                {
-                    ptr_ch->box_max_z = ptr_node->ptr_cell_idx_z[cell_idx];
-                }
-            }
-
-            // Changing the min and max of the "minimal box" from parent units to child units
-            ptr_ch->box_min_x = 2 * ptr_ch->box_min_x;
-            ptr_ch->box_min_y = 2 * ptr_ch->box_min_y;
-            ptr_ch->box_min_z = 2 * ptr_ch->box_min_z;
-            ptr_ch->box_max_x = 2 * ptr_ch->box_max_x + 1;
-            ptr_ch->box_max_y = 2 * ptr_ch->box_max_y + 1;
-            ptr_ch->box_max_z = 2 * ptr_ch->box_max_z + 1;
-
-            // Size of the "minimal box"
-            ptr_ch->box_dim_x = ptr_ch->box_max_x - ptr_ch->box_min_x + 1;
-            ptr_ch->box_dim_y = ptr_ch->box_max_y - ptr_ch->box_min_y + 1;
-            ptr_ch->box_dim_z = ptr_ch->box_max_z - ptr_ch->box_min_z + 1;
-
-            // Real dimensions of the box, or real capacity
-            // ptr_ch->box_real_dim_x = fmax(ptr_ch->box_dim_x * 3, ptr_ch->box_dim_x + 2 * n_exp - 2);
-            // ptr_ch->box_real_dim_y = fmax(ptr_ch->box_dim_y * 3, ptr_ch->box_dim_y + 2 * n_exp - 2);
-            // ptr_ch->box_real_dim_z = fmax(ptr_ch->box_dim_z * 3, ptr_ch->box_dim_z + 2 * n_exp - 2);
-            // ptr_ch->box_real_dim_x = fmax(ptr_ch->box_dim_x + 10, ptr_ch->box_dim_x + 2 * n_exp - 2);
-            // ptr_ch->box_real_dim_y = fmax(ptr_ch->box_dim_y + 10, ptr_ch->box_dim_y + 2 * n_exp - 2);
-            // ptr_ch->box_real_dim_z = fmax(ptr_ch->box_dim_z + 10, ptr_ch->box_dim_z + 2 * n_exp - 2);
-            ptr_ch->box_real_dim_x = (ptr_ch->box_dim_x + 10) > (ptr_ch->box_dim_x + 2 * n_exp - 2) ? (ptr_ch->box_dim_x + 10) : (ptr_ch->box_dim_x + 2 * n_exp - 2);
-            ptr_ch->box_real_dim_y = (ptr_ch->box_dim_y + 10) > (ptr_ch->box_dim_y + 2 * n_exp - 2) ? (ptr_ch->box_dim_y + 10) : (ptr_ch->box_dim_y + 2 * n_exp - 2);
-            ptr_ch->box_real_dim_z = (ptr_ch->box_dim_z + 10) > (ptr_ch->box_dim_z + 2 * n_exp - 2) ? (ptr_ch->box_dim_z + 10) : (ptr_ch->box_dim_z + 2 * n_exp - 2);
-
-            // Translations between cell array and box
-            pos_x = (ptr_ch->box_real_dim_x - ptr_ch->box_dim_x) / 2; // Half of the distance of the box side less the "minimal box" side
-            ptr_ch->box_ts_x = ptr_ch->box_min_x - pos_x;             // Every cell in the level l in the box must be subtracted this value to obtain the box index
-            pos_y = (ptr_ch->box_real_dim_y - ptr_ch->box_dim_y) / 2;
-            ptr_ch->box_ts_y = ptr_ch->box_min_y - pos_y;
-            pos_z = (ptr_ch->box_real_dim_z - ptr_ch->box_dim_z) / 2;
-            ptr_ch->box_ts_z = ptr_ch->box_min_z - pos_z;
-
-            ptr_ch->box_check_fit = true;
-
-            // Filling the boxes 
-            size = ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y * ptr_ch->box_real_dim_z;
-            //** >> Space checking of boxes: box, box_aux and box_mass_aux
-            if (space_check(&(ptr_ch->box_cap), size, 1.0f, "p4i1i1v1v1", &(ptr_ch->ptr_box), &(ptr_ch->ptr_box_aux), &(ptr_ch->ptr_box_mass), &(ptr_ch->ptr_box_mass_aux)) == _FAILURE_)
-            {
-                printf("Error, in space_check function\n");
-                return _FAILURE_;
-            }
-
-            // Putting the value of NO-EXIST (-4) in every box index
-            for (int j = 0; j < size; j++)
-            {
-                ptr_ch->ptr_box[j] = -4;
-            }
-
-            //** >> Grid points **/
-            ptr_ch->grid_intr_size = 0;
-            ptr_ch->grid_bder_size = 0;
-
-            //** >> Refinement Criterion **/
-            ptr_ch->local_mass = 0;
-            for (int j = 0; j < size; j++)
-            {
-                ptr_ch->ptr_box_mass[j] = 0;
-            }
-
-            // // Changing from NO-EXIST (-4) to EXIST (-3) to all cells in the block of the child node
-            // for (int j = 0; j < size; j++)
-            // {
-            //     box_idx_x = ptr_ch->ptr_cell_idx_x[j] - ptr_ch->box_ts_x;
-            //     box_idx_y = ptr_ch->ptr_cell_idx_y[j] - ptr_ch->box_ts_y;
-            //     box_idx_z = ptr_ch->ptr_cell_idx_z[j] - ptr_ch->box_ts_z;
-            //     box_idx = box_idx_x + box_idx_y * ptr_ch->box_real_dim_x + box_idx_z * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
-            //     ptr_ch->ptr_box[box_idx] = -3;
-            // }
-            // // Changing the EXIST (-3) TO BORDER (-2) to all border cells in the block
-            // for (int j = 0; j < size; j++)
-            // {
-            //     box_idx_x = ptr_ch->ptr_cell_idx_x[j] - ptr_ch->box_ts_x;
-            //     box_idx_y = ptr_ch->ptr_cell_idx_y[j] - ptr_ch->box_ts_y;
-            //     box_idx_z = ptr_ch->ptr_cell_idx_z[j] - ptr_ch->box_ts_z;
-            //     box_idx = box_idx_x + box_idx_y * ptr_ch->box_real_dim_x + box_idx_z * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
-
-            //     for (int kk = -1; kk < 2; kk++)
-            //     {
-            //         for (int jj = -1; jj < 2; jj++)
-            //         {
-            //             for (int ii = -1; ii < 2; ii++)
-            //             {
-            //                 box_idxNbr = box_idx + ii + jj * ptr_ch->box_real_dim_x + kk * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
-            //                 if (ptr_ch->ptr_box[box_idxNbr] == -4) // Border cells are those such that at least on of their first neighbors are NO-EXIST cells.
-            //                 {
-            //                     ptr_ch->ptr_box[box_idx] = -2;
-            //                     ii = 2;
-            //                     jj = 2;
-            //                     kk = 2;
-            //                 }
-            //             }
-            //         }
-            //     }
-            // }
-
-            //** >> Potential, acceleration and density of the grid **/
-            size = (ptr_ch->box_real_dim_x + 1) * (ptr_ch->box_real_dim_y + 1) * (ptr_ch->box_real_dim_z + 1);
-            //** >> Space checking
-            if (space_check(&(ptr_ch->grid_properties_cap), size, 1.0f, "p5v1v1v1v1v1", &(ptr_ch->ptr_pot), &(ptr_ch->ptr_ax), &(ptr_ch->ptr_ay), &(ptr_ch->ptr_az), &(ptr_ch->ptr_d)) == _FAILURE_)
-            {
-                printf("Error, in space_check function\n");
-                return _FAILURE_;
-            }
-
-            //** >> Reset grid properties **/
-            for(int j = 0; j< size; j++)
-            {
-                // ptr_ch->ptr_pot[j] = 0;
-                // ptr_ch->ptr_ax[j] = 0;
-                // ptr_ch->ptr_ay[j] = 0;
-                // ptr_ch->ptr_az[j] = 0;
-                ptr_ch->ptr_d[j] = 0;
-            }
-
-            //** >> Tree structure **/
-            ptr_ch->chn_size = 0;
-            // ptr_ch->ptr_pt = ptr_node;
-            // ptr_node->pptr_chn[i] = ptr_ch;
-
-            //** >> Auxililary arrays to go from old box to new box **/
-            ptr_ch->cell_ref_size = 0;
-            for (int j = 0; j < ptr_ch->zones_size; j++)
-            {
-                ptr_ch->ptr_zone_size[j] = 0;
-            }
-            ptr_ch->zones_size = 0;
+            printf("Error, in space_check function\n");
+            return _FAILURE_;
         }
-        else
+
+        //** >> Particles in the node **/
+        ptr_ch->ptcl_size = 0;
+
+        //** >> Boxes **/
+        // MIN and MAX cell indexes values of the node.
+        for (int j = 0; j < ptr_node->ptr_zone_size[links_new_ord_old[i]]; j++)
         {
-            ptr_ch = (struct node *)malloc(sizeof(struct node));
-            initialize_node(ptr_ch);
-
-            //** >> Global node properties **/
-            ptr_ch->ID = i;
-            ptr_ch->lv = ptr_node->lv + 1;
-
-            //** >> Cells in the node **/
-            ptr_ch->cell_cap = 8 * ptr_node->ptr_zone_cap[links_new_ord_old[i]];
-            ptr_ch->ptr_cell_idx_x = (int *)malloc(ptr_ch->cell_cap * sizeof(int));
-            ptr_ch->ptr_cell_idx_y = (int *)malloc(ptr_ch->cell_cap * sizeof(int));
-            ptr_ch->ptr_cell_idx_z = (int *)malloc(ptr_ch->cell_cap * sizeof(int));
-
-            //** >> Particles in the node **/
-            ptr_ch->ptcl_cap = 8;
-            ptr_ch->ptr_ptcl = (int *)malloc(ptr_node->ptcl_cap * sizeof(int));
-
-            //** >> Boxes **/
-            // MIN and MAX cell indexes values of the node.
-            for (int j = 0; j < ptr_node->ptr_zone_size[links_new_ord_old[i]]; j++)
+            cell_idx = ptr_node->pptr_zones[links_new_ord_old[i]][j]; // Cell index in the zone
+            if (ptr_ch->box_min_x > ptr_node->ptr_cell_idx_x[cell_idx])
             {
-                cell_idx = ptr_node->pptr_zones[links_new_ord_old[i]][j]; // Cell index in the zone
-                if (ptr_ch->box_min_x > ptr_node->ptr_cell_idx_x[cell_idx])
-                {
-                    ptr_ch->box_min_x = ptr_node->ptr_cell_idx_x[cell_idx];
-                }
-                if (ptr_ch->box_min_y > ptr_node->ptr_cell_idx_y[cell_idx])
-                {
-                    ptr_ch->box_min_y = ptr_node->ptr_cell_idx_y[cell_idx];
-                }
-                if (ptr_ch->box_min_z > ptr_node->ptr_cell_idx_z[cell_idx])
-                {
-                    ptr_ch->box_min_z = ptr_node->ptr_cell_idx_z[cell_idx];
-                }
-                if (ptr_ch->box_max_x < ptr_node->ptr_cell_idx_x[cell_idx])
-                {
-                    ptr_ch->box_max_x = ptr_node->ptr_cell_idx_x[cell_idx];
-                }
-                if (ptr_ch->box_max_y < ptr_node->ptr_cell_idx_y[cell_idx])
-                {
-                    ptr_ch->box_max_y = ptr_node->ptr_cell_idx_y[cell_idx];
-                }
-                if (ptr_ch->box_max_z < ptr_node->ptr_cell_idx_z[cell_idx])
-                {
-                    ptr_ch->box_max_z = ptr_node->ptr_cell_idx_z[cell_idx];
-                }
+                ptr_ch->box_min_x = ptr_node->ptr_cell_idx_x[cell_idx];
             }
-
-            // Changing the min and max of the "minimal box" from parent units to child units
-            ptr_ch->box_min_x = 2 * ptr_ch->box_min_x;
-            ptr_ch->box_min_y = 2 * ptr_ch->box_min_y;
-            ptr_ch->box_min_z = 2 * ptr_ch->box_min_z;
-            ptr_ch->box_max_x = 2 * ptr_ch->box_max_x + 1;
-            ptr_ch->box_max_y = 2 * ptr_ch->box_max_y + 1;
-            ptr_ch->box_max_z = 2 * ptr_ch->box_max_z + 1;
-
-            // Size of the "minimal box"
-            ptr_ch->box_dim_x = ptr_ch->box_max_x - ptr_ch->box_min_x + 1;
-            ptr_ch->box_dim_y = ptr_ch->box_max_y - ptr_ch->box_min_y + 1;
-            ptr_ch->box_dim_z = ptr_ch->box_max_z - ptr_ch->box_min_z + 1;
-
-            // Real dimensions of the box, or real capacity
-            // ptr_ch->box_real_dim_x = fmax(ptr_ch->box_dim_x * 3, ptr_ch->box_dim_x + 2 * n_exp - 2);
-            // ptr_ch->box_real_dim_y = fmax(ptr_ch->box_dim_y * 3, ptr_ch->box_dim_y + 2 * n_exp - 2);
-            // ptr_ch->box_real_dim_z = fmax(ptr_ch->box_dim_z * 3, ptr_ch->box_dim_z + 2 * n_exp - 2);
-            // ptr_ch->box_real_dim_x = fmax(ptr_ch->box_dim_x + 10, ptr_ch->box_dim_x + 2 * n_exp - 2);
-            // ptr_ch->box_real_dim_y = fmax(ptr_ch->box_dim_y + 10, ptr_ch->box_dim_y + 2 * n_exp - 2);
-            // ptr_ch->box_real_dim_z = fmax(ptr_ch->box_dim_z + 10, ptr_ch->box_dim_z + 2 * n_exp - 2);
-            ptr_ch->box_real_dim_x = (ptr_ch->box_dim_x + 10) > (ptr_ch->box_dim_x + 2 * n_exp - 2) ? (ptr_ch->box_dim_x + 10) : (ptr_ch->box_dim_x + 2 * n_exp - 2);
-            ptr_ch->box_real_dim_y = (ptr_ch->box_dim_y + 10) > (ptr_ch->box_dim_y + 2 * n_exp - 2) ? (ptr_ch->box_dim_y + 10) : (ptr_ch->box_dim_y + 2 * n_exp - 2);
-            ptr_ch->box_real_dim_z = (ptr_ch->box_dim_z + 10) > (ptr_ch->box_dim_z + 2 * n_exp - 2) ? (ptr_ch->box_dim_z + 10) : (ptr_ch->box_dim_z + 2 * n_exp - 2);
-
-            // Translations between cell array and box
-            pos_x = (ptr_ch->box_real_dim_x - ptr_ch->box_dim_x) / 2; // Half of the distance of the box side less the "minimal box" side
-            ptr_ch->box_ts_x = ptr_ch->box_min_x - pos_x;             // Every cell in the level l in the box must be subtracted this value to obtain the box index
-            pos_y = (ptr_ch->box_real_dim_y - ptr_ch->box_dim_y) / 2;
-            ptr_ch->box_ts_y = ptr_ch->box_min_y - pos_y;
-            pos_z = (ptr_ch->box_real_dim_z - ptr_ch->box_dim_z) / 2;
-            ptr_ch->box_ts_z = ptr_ch->box_min_z - pos_z;
-
-            // Filling the box status
-            cap = ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y * ptr_ch->box_real_dim_z; // In general, the size of each side must be 3 times bigger than the same side of the "minimal box"
-            ptr_ch->box_cap = cap;
-            // size = 8 * ptr_node->ptr_zone_size[links_new_ord_old[i]]; // Number of cells in the block
-            ptr_ch->ptr_box = (int *)malloc(cap * sizeof(int));
-            ptr_ch->ptr_box_aux = (int *)malloc(cap * sizeof(int));
-
-            // Putting the value of NO-EXIST (-4) in every box index
-            for (int j = 0; j < cap; j++)
+            if (ptr_ch->box_min_y > ptr_node->ptr_cell_idx_y[cell_idx])
             {
-                ptr_ch->ptr_box[j] = -4;
+                ptr_ch->box_min_y = ptr_node->ptr_cell_idx_y[cell_idx];
             }
-            // // Changing from NO-EXIST (-4) to EXIST (-3) to all cells in the block of the child node
-            // for (int j = 0; j < size; j++)
-            // {
-            //     box_idx_x = ptr_ch->ptr_cell_idx_x[j] - ptr_ch->box_ts_x;
-            //     box_idx_y = ptr_ch->ptr_cell_idx_y[j] - ptr_ch->box_ts_y;
-            //     box_idx_z = ptr_ch->ptr_cell_idx_z[j] - ptr_ch->box_ts_z;
-            //     box_idx = box_idx_x + box_idx_y * ptr_ch->box_real_dim_x + box_idx_z * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
-            //     ptr_ch->ptr_box[box_idx] = -3;
-            // }
-            // // Changing the EXIST (-3) TO BORDER (-2) to all border cells in the block
-            // for (int j = 0; j < size; j++)
-            // {
-            //     box_idx_x = ptr_ch->ptr_cell_idx_x[j] - ptr_ch->box_ts_x;
-            //     box_idx_y = ptr_ch->ptr_cell_idx_y[j] - ptr_ch->box_ts_y;
-            //     box_idx_z = ptr_ch->ptr_cell_idx_z[j] - ptr_ch->box_ts_z;
-            //     box_idx = box_idx_x + box_idx_y * ptr_ch->box_real_dim_x + box_idx_z * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
-
-            //     for (int kk = -1; kk < 2; kk++)
-            //     {
-            //         for (int jj = -1; jj < 2; jj++)
-            //         {
-            //             for (int ii = -1; ii < 2; ii++)
-            //             {
-            //                 box_idxNbr = box_idx + ii + jj * ptr_ch->box_real_dim_x + kk * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
-            //                 if (ptr_ch->ptr_box[box_idxNbr] == -4) // Border cells are those such that at least on of their first neighbors are NO-EXIST cells.
-            //                 {
-            //                     ptr_ch->ptr_box[box_idx] = -2;
-            //                     ii = 2;
-            //                     jj = 2;
-            //                     kk = 2;
-            //                 }
-            //             }
-            //         }
-            //     }
-            // }
-
-            //** >> Grid points **/
-            // They are defined after the box definition
-
-            //** >> Refinement Criterion **/
-            cap = ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y * ptr_ch->box_real_dim_z;
-            ptr_ch->ptr_box_mass = (vtype *)calloc(cap, sizeof(vtype));
-            ptr_ch->ptr_box_mass_aux = (vtype *)calloc(cap, sizeof(vtype));
-
-            //** >> Potential, acceleration and density of the grid **/
-            cap = (ptr_ch->box_real_dim_x + 1) * (ptr_ch->box_real_dim_y + 1) * (ptr_ch->box_real_dim_z + 1);
-            ptr_ch->grid_properties_cap = cap;
-            ptr_ch->ptr_pot = (vtype *)calloc(cap, sizeof(vtype));
-            ptr_ch->ptr_ax = (vtype *)calloc(cap, sizeof(vtype));
-            ptr_ch->ptr_ay = (vtype *)calloc(cap, sizeof(vtype));
-            ptr_ch->ptr_az = (vtype *)calloc(cap, sizeof(vtype));
-            ptr_ch->ptr_d = (vtype *)calloc(cap, sizeof(vtype));
-
-            //** >> Tree structure **/
-            ptr_ch->ptr_pt = ptr_node;
-            ptr_node->pptr_chn[i] = ptr_ch;
+            if (ptr_ch->box_min_z > ptr_node->ptr_cell_idx_z[cell_idx])
+            {
+                ptr_ch->box_min_z = ptr_node->ptr_cell_idx_z[cell_idx];
+            }
+            if (ptr_ch->box_max_x < ptr_node->ptr_cell_idx_x[cell_idx])
+            {
+                ptr_ch->box_max_x = ptr_node->ptr_cell_idx_x[cell_idx];
+            }
+            if (ptr_ch->box_max_y < ptr_node->ptr_cell_idx_y[cell_idx])
+            {
+                ptr_ch->box_max_y = ptr_node->ptr_cell_idx_y[cell_idx];
+            }
+            if (ptr_ch->box_max_z < ptr_node->ptr_cell_idx_z[cell_idx])
+            {
+                ptr_ch->box_max_z = ptr_node->ptr_cell_idx_z[cell_idx];
+            }
         }
+
+        // Changing the min and max of the "minimal box" from parent units to child units
+        ptr_ch->box_min_x = 2 * ptr_ch->box_min_x;
+        ptr_ch->box_min_y = 2 * ptr_ch->box_min_y;
+        ptr_ch->box_min_z = 2 * ptr_ch->box_min_z;
+        ptr_ch->box_max_x = 2 * ptr_ch->box_max_x + 1;
+        ptr_ch->box_max_y = 2 * ptr_ch->box_max_y + 1;
+        ptr_ch->box_max_z = 2 * ptr_ch->box_max_z + 1;
+
+        // Size of the "minimal box"
+        ptr_ch->box_dim_x = ptr_ch->box_max_x - ptr_ch->box_min_x + 1;
+        ptr_ch->box_dim_y = ptr_ch->box_max_y - ptr_ch->box_min_y + 1;
+        ptr_ch->box_dim_z = ptr_ch->box_max_z - ptr_ch->box_min_z + 1;
+
+        // Real dimensions of the box, or real capacity
+        // ptr_ch->box_real_dim_x = fmax(ptr_ch->box_dim_x * 3, ptr_ch->box_dim_x + 2 * n_exp - 2);
+        // ptr_ch->box_real_dim_y = fmax(ptr_ch->box_dim_y * 3, ptr_ch->box_dim_y + 2 * n_exp - 2);
+        // ptr_ch->box_real_dim_z = fmax(ptr_ch->box_dim_z * 3, ptr_ch->box_dim_z + 2 * n_exp - 2);
+        // ptr_ch->box_real_dim_x = fmax(ptr_ch->box_dim_x + 10, ptr_ch->box_dim_x + 2 * n_exp - 2);
+        // ptr_ch->box_real_dim_y = fmax(ptr_ch->box_dim_y + 10, ptr_ch->box_dim_y + 2 * n_exp - 2);
+        // ptr_ch->box_real_dim_z = fmax(ptr_ch->box_dim_z + 10, ptr_ch->box_dim_z + 2 * n_exp - 2);
+        ptr_ch->box_real_dim_x = (ptr_ch->box_dim_x + 10) > (ptr_ch->box_dim_x + 2 * n_exp - 2) ? (ptr_ch->box_dim_x + 10) : (ptr_ch->box_dim_x + 2 * n_exp - 2);
+        ptr_ch->box_real_dim_y = (ptr_ch->box_dim_y + 10) > (ptr_ch->box_dim_y + 2 * n_exp - 2) ? (ptr_ch->box_dim_y + 10) : (ptr_ch->box_dim_y + 2 * n_exp - 2);
+        ptr_ch->box_real_dim_z = (ptr_ch->box_dim_z + 10) > (ptr_ch->box_dim_z + 2 * n_exp - 2) ? (ptr_ch->box_dim_z + 10) : (ptr_ch->box_dim_z + 2 * n_exp - 2);
+
+        // Translations between cell array and box
+        pos_x = (ptr_ch->box_real_dim_x - ptr_ch->box_dim_x) / 2; // Half of the distance of the box side less the "minimal box" side
+        ptr_ch->box_ts_x = ptr_ch->box_min_x - pos_x;             // Every cell in the level l in the box must be subtracted this value to obtain the box index
+        pos_y = (ptr_ch->box_real_dim_y - ptr_ch->box_dim_y) / 2;
+        ptr_ch->box_ts_y = ptr_ch->box_min_y - pos_y;
+        pos_z = (ptr_ch->box_real_dim_z - ptr_ch->box_dim_z) / 2;
+        ptr_ch->box_ts_z = ptr_ch->box_min_z - pos_z;
+
+        ptr_ch->box_check_fit = true;
+
+        // Filling the boxes
+        size = ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y * ptr_ch->box_real_dim_z;
+        //** >> Space checking of boxes: box, box_aux and box_mass_aux
+        if (space_check(&(ptr_ch->box_cap), size, 1.0f, "p4i1i1v1v1", &(ptr_ch->ptr_box), &(ptr_ch->ptr_box_aux), &(ptr_ch->ptr_box_mass), &(ptr_ch->ptr_box_mass_aux)) == _FAILURE_)
+        {
+            printf("Error, in space_check function\n");
+            return _FAILURE_;
+        }
+
+        // Putting the value of NO-EXIST (-4) in every box index
+        for (int j = 0; j < size; j++)
+        {
+            ptr_ch->ptr_box[j] = -4;
+        }
+
+        //** >> Grid points **/
+        ptr_ch->grid_intr_size = 0;
+        ptr_ch->grid_bder_size = 0;
+
+        //** >> Refinement Criterion **/
+        ptr_ch->local_mass = 0;
+        for (int j = 0; j < size; j++)
+        {
+            ptr_ch->ptr_box_mass[j] = 0;
+        }
+
+        // // Changing from NO-EXIST (-4) to EXIST (-3) to all cells in the block of the child node
+        // for (int j = 0; j < size; j++)
+        // {
+        //     box_idx_x = ptr_ch->ptr_cell_idx_x[j] - ptr_ch->box_ts_x;
+        //     box_idx_y = ptr_ch->ptr_cell_idx_y[j] - ptr_ch->box_ts_y;
+        //     box_idx_z = ptr_ch->ptr_cell_idx_z[j] - ptr_ch->box_ts_z;
+        //     box_idx = box_idx_x + box_idx_y * ptr_ch->box_real_dim_x + box_idx_z * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
+        //     ptr_ch->ptr_box[box_idx] = -3;
+        // }
+        // // Changing the EXIST (-3) TO BORDER (-2) to all border cells in the block
+        // for (int j = 0; j < size; j++)
+        // {
+        //     box_idx_x = ptr_ch->ptr_cell_idx_x[j] - ptr_ch->box_ts_x;
+        //     box_idx_y = ptr_ch->ptr_cell_idx_y[j] - ptr_ch->box_ts_y;
+        //     box_idx_z = ptr_ch->ptr_cell_idx_z[j] - ptr_ch->box_ts_z;
+        //     box_idx = box_idx_x + box_idx_y * ptr_ch->box_real_dim_x + box_idx_z * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
+
+        //     for (int kk = -1; kk < 2; kk++)
+        //     {
+        //         for (int jj = -1; jj < 2; jj++)
+        //         {
+        //             for (int ii = -1; ii < 2; ii++)
+        //             {
+        //                 box_idxNbr = box_idx + ii + jj * ptr_ch->box_real_dim_x + kk * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
+        //                 if (ptr_ch->ptr_box[box_idxNbr] == -4) // Border cells are those such that at least on of their first neighbors are NO-EXIST cells.
+        //                 {
+        //                     ptr_ch->ptr_box[box_idx] = -2;
+        //                     ii = 2;
+        //                     jj = 2;
+        //                     kk = 2;
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+
+        //** >> Potential, acceleration and density of the grid **/
+        size = (ptr_ch->box_real_dim_x + 1) * (ptr_ch->box_real_dim_y + 1) * (ptr_ch->box_real_dim_z + 1);
+        //** >> Space checking
+        if (space_check(&(ptr_ch->grid_properties_cap), size, 1.0f, "p5v1v1v1v1v1", &(ptr_ch->ptr_pot), &(ptr_ch->ptr_ax), &(ptr_ch->ptr_ay), &(ptr_ch->ptr_az), &(ptr_ch->ptr_d)) == _FAILURE_)
+        {
+            printf("Error, in space_check function\n");
+            return _FAILURE_;
+        }
+
+        //** >> Reset grid properties **/
+        for (int j = 0; j < size; j++)
+        {
+            // ptr_ch->ptr_pot[j] = 0;
+            // ptr_ch->ptr_ax[j] = 0;
+            // ptr_ch->ptr_ay[j] = 0;
+            // ptr_ch->ptr_az[j] = 0;
+            ptr_ch->ptr_d[j] = 0;
+        }
+
+        //** >> Tree structure **/
+        ptr_ch->chn_size = 0;
+        ptr_ch->ptr_pt = ptr_node;
+        ptr_node->pptr_chn[i] = ptr_ch;
+
+        //** >> Auxililary arrays to go from old box to new box **/
+        ptr_ch->cell_ref_size = 0;
+        for (int j = 0; j < ptr_ch->zones_size; j++)
+        {
+            ptr_ch->ptr_zone_size[j] = 0;
+        }
+        ptr_ch->zones_size = 0;
     }
 
     ptr_ch = NULL;
@@ -2268,6 +2113,9 @@ static void reorganization_child_node(struct node *ptr_node, const int *links_ol
         ptr_node->pptr_chn[i] = pptr_aux[i];
     }
 
+
+
+
     // pptr_aux_free = ptr_node->pptr_chn;
     // ptr_node->pptr_chn = pptr_aux;
 
@@ -2386,6 +2234,15 @@ static int reorganization_grandchild_node(struct node *ptr_node)
 
     //printf("G\n");
     return _SUCCESS_;
+}
+
+static void moved_unused_child_node_to_memory_pool(struct node *ptr_node)
+{
+    //** >> Putting unused child nodes to the stack of memory pool **/
+    for (int i = 0; i < ptr_node->chn_size - ptr_node->zones_size; i++)
+    {
+        add_node_to_stack(ptr_node->pptr_chn[i]);
+    }
 }
 
 static void updating_ref_zones_grandchildren(struct node *ptr_node)
@@ -2780,7 +2637,7 @@ int tree_adaptation()
                     }
                 }
 
-                // printf("\nB chn size = %d, zones size = %d, chn cap = %d\n", ptr_node->chn_size, ptr_node->zones_size, ptr_node->chn_cap);
+                //printf("\nB chn size = %d, zones size = %d, chn cap = %d\n", ptr_node->chn_size, ptr_node->zones_size, ptr_node->chn_cap);
                 // printf("Links_old_ord_old = [ ");
                 // for (int i = 0; i < ptr_node->zones_size; i++)
                 // {
@@ -2857,7 +2714,7 @@ int tree_adaptation()
                 }
 
                 //** >> Reorganization grandchild nodes **/
-                //printf("Reorganization grandchild nodes\n");
+                // printf("Reorganization grandchild nodes\n");
                 if (ptr_node->zones_size > 0 && ptr_node->chn_size > 0 && lv < no_lvs)
                 {
                     if (reorganization_grandchild_node(ptr_node) == _FAILURE_)
@@ -2865,6 +2722,13 @@ int tree_adaptation()
                         printf("Error at function reorganization_grandchild_node()\n");
                         return _FAILURE_;
                     }
+                }
+
+                //** >> Moved Unused child node to the stack of memory pool **/
+                // printf("Moved Unused child node to the stack of memory pool\n");
+                if (ptr_node->chn_size > ptr_node->zones_size)
+                {
+                    moved_unused_child_node_to_memory_pool(ptr_node);
                 }
 
                 //** >> Updating refinement zones of the grandchildren **/

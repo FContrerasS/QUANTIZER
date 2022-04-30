@@ -102,6 +102,10 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
 
                 //** >> Removing the mass of the mass box array of the node**/
                 ptr_node->ptr_box_mass[box_idx_node] -= GL_ptcl_mass[ptcl_idx];
+                if(ptr_node->ptr_box_mass[box_idx_node] < 0)
+                {
+                    printf("\nError, %d, ptcl = %d mass = %f\n",i, ptcl_idx , ptr_node->ptr_box_mass[box_idx_node]);
+                }
                 //** >> Updating the new position of the particle **/
                 //** >> Velocities **/
                 GL_ptcl_vx[ptcl_idx] += GL_ptcl_ax[ptcl_idx] * dt / 2;

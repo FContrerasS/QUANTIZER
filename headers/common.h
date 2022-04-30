@@ -148,6 +148,10 @@ extern int *GL_tentacles_cap;   // Capacity of pointers in each level
 extern int *GL_tentacles_size; // Number of pointers in each level
 extern int GL_tentacles_level_max; // Maximum level of refinement of the tentacles
 
+//** >> Pool of nodes **/
+extern struct node *GL_pool_node_start;
+extern struct node *GL_pool_node_end;
+
 //** >> Outputs **/
 extern char file_data_name[1000];
 extern char folder_name[1000];

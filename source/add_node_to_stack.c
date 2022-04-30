@@ -1,7 +1,7 @@
 /*
- * tree_adaptation.h
+ * add_node_to_stack.c
  *
- * Header file of the tree_adaptation.c source file
+ * Add the node to the stack of memory pool
  *
  * Felipe Contreras
  * felipe.contrerass@postgrado.uv.cl
@@ -24,14 +24,19 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __TREEADAPTATION__
-#define __TREEADAPTATION__
-
-#include "common.h"
-#include "space_check.h"
-#include "new_node.h"
 #include "add_node_to_stack.h"
 
-int tree_adaptation();
+void add_node_to_stack(struct node *ptr_node)
+{
 
-#endif
+	if (GL_pool_node_end == NULL)
+	{
+		GL_pool_node_start = ptr_node;
+		GL_pool_node_end = ptr_node;
+	}
+	else
+	{
+		GL_pool_node_end->ptr_pt = ptr_node;
+		GL_pool_node_end = ptr_node;
+	}
+}
