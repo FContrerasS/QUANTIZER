@@ -101,6 +101,8 @@ static void filling_mass_box(int **pptr_cell_ptcl, const int *ptr_cell_ptcl_size
         }
     }
 
+
+
 } // end function filling_density_box_main_node
 
 static int fill_cell_ref(struct node *ptr_node)
@@ -937,6 +939,20 @@ int tree_construction()
                     }
 
                 }// End computing new refinement zones and children
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             } // End of cycle over parent nodes
             lv++;
         } // End of cycle over refinement levels

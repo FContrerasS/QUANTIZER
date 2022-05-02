@@ -87,15 +87,17 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
 
     vtype aux_mass1 = 0;
     vtype aux_mass2 = 0;
+
+    int box_idx_aux_x;
+    int box_idx_aux_y;
+    int box_idx_aux_z;
+    int box_idx_aux;
+
     for (int i = 0; i < ptr_node->box_real_dim_x * ptr_node->box_real_dim_y * ptr_node->box_real_dim_z; i++)
     {
         aux_mass1 += ptr_node->ptr_box_mass[i];
     }
     aux_mass2 = 0;
-    int box_idx_aux_x;
-    int box_idx_aux_y;
-    int box_idx_aux_z;
-    int box_idx_aux;
     for (int i = 0; i < ptr_node->cell_size; i++)
     {
         box_idx_aux_x = ptr_node->ptr_cell_idx_x[i] - ptr_node->box_ts_x;
@@ -105,15 +107,52 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
         aux_mass2 += ptr_node->ptr_box_mass[box_idx_aux];
     }
 
-    // if (aux_mass1 != aux_mass2 || aux_mass1 != ptr_node->local_mass)
-    //{
-    printf("\n\n Error Antes \n\n");
-    printf("lv = %d\n", ptr_node->lv);
-    printf("aux mass per box = %f, ", aux_mass1);
-    printf("aux mass per cell = %f, ", aux_mass2);
-    printf("local mass = %f\n", ptr_node->local_mass);
+    printf("\n\n Error, particle updating Antes\n\n");
+    printf("lv = %d, aux mass per box = %f\n", ptr_node->lv, aux_mass1);
+    printf("lv = %d, aux mass per cell = %f\n",ptr_node->lv, aux_mass2);
+    printf("lv = %d, local mass = %f\n",ptr_node->lv, ptr_node->local_mass);
+    printf("lv = %d, no ptcl = %d\n",ptr_node->lv,ptr_node->ptcl_size);
     printf("\n\n");
-    //}
+    
+
+
+
+    if(ptr_node->lv == 5)
+    {
+        struct node *ptr_ch;
+        ptr_ch = ptr_node->pptr_chn[0];
+        aux_mass1 = 0;
+        for (int i = 0; i < ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y * ptr_ch->box_real_dim_z; i++)
+        {
+            aux_mass1 += ptr_ch->ptr_box_mass[i];
+        }
+        aux_mass2 = 0;
+        for (int i = 0; i < ptr_ch->cell_size; i++)
+        {
+            box_idx_aux_x = ptr_ch->ptr_cell_idx_x[i] - ptr_ch->box_ts_x;
+            box_idx_aux_y = ptr_ch->ptr_cell_idx_y[i] - ptr_ch->box_ts_y;
+            box_idx_aux_z = ptr_ch->ptr_cell_idx_z[i] - ptr_ch->box_ts_z;
+            box_idx_aux = box_idx_aux_x + box_idx_aux_y * ptr_ch->box_real_dim_x + box_idx_aux_z * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
+            aux_mass2 += ptr_ch->ptr_box_mass[box_idx_aux];
+        }
+
+        printf("\n\n Error, particle updating Antes\n\n");
+        printf("lv = %d, aux mass per box = %f\n", ptr_ch->lv, aux_mass1);
+        printf("lv = %d, aux mass per cell = %f\n",ptr_ch->lv, aux_mass2);
+        printf("lv = %d, local mass = %f\n",ptr_ch->lv, ptr_ch->local_mass);
+        printf("lv = %d, no ptcl = %d\n",ptr_ch->lv,ptr_ch->ptcl_size);
+        printf("\n\n");
+    
+    }
+
+
+
+
+
+
+
+
+
 
     if(lmin < lmax)
     {
@@ -171,7 +210,7 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
 
                 if(ptr_node->ptr_box_mass[box_idx_node] < 0)
                 {
-                    printf("\nError (if), %d, ptcl = %d mass = %f,\n", i, ptcl_idx, ptr_node->ptr_box_mass[box_idx_node]);
+                    printf("\nError (if), %d, ptcl = %d box cell mass = %f, local mass = %f\n", i, ptcl_idx, ptr_node->ptr_box_mass[box_idx_node], ptr_node->local_mass);
                 }
                 //** >> Updating the new position of the particle **/
                 //** >> Velocities **/
@@ -471,6 +510,19 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
         }
     }
 
+
+
+
+    ptr_node_ch = NULL;
+    ptr_node_pt = NULL; 
+    ptr_node_sib = NULL;
+
+
+
+
+
+
+
     aux_mass1 = 0;
     for (int i = 0; i < ptr_node->box_real_dim_x * ptr_node->box_real_dim_y * ptr_node->box_real_dim_z; i++)
     {
@@ -486,20 +538,41 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
         aux_mass2 += ptr_node->ptr_box_mass[box_idx_aux];
     }
 
-    // if (aux_mass1 != aux_mass2 || aux_mass1 != ptr_node->local_mass)
-    //{
-    printf("\n\n Error Despues \n\n");
-    printf("lv = %d\n", ptr_node->lv);
-    printf("aux mass per box = %f, ", aux_mass1);
-    printf("aux mass per cell = %f, ", aux_mass2);
-    printf("local mass = %f\n", ptr_node->local_mass);
+    printf("\n\n Error, particle updating Despues\n\n");
+    printf("lv = %d, aux mass per box = %f\n", ptr_node->lv, aux_mass1);
+    printf("lv = %d, aux mass per cell = %f\n",ptr_node->lv, aux_mass2);
+    printf("lv = %d, local mass = %f\n",ptr_node->lv, ptr_node->local_mass);
+    printf("lv = %d, no ptcl = %d\n",ptr_node->lv,ptr_node->ptcl_size);
     printf("\n\n");
-    //}
 
-    ptr_node_ch = NULL;
-    ptr_node_pt = NULL; 
-    ptr_node_sib = NULL;
 
+
+    if(ptr_node->lv == 5)
+    {
+        struct node *ptr_ch;
+        ptr_ch = ptr_node->pptr_chn[0];
+        aux_mass1 = 0;
+        for (int i = 0; i < ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y * ptr_ch->box_real_dim_z; i++)
+        {
+            aux_mass1 += ptr_ch->ptr_box_mass[i];
+        }
+        aux_mass2 = 0;
+        for (int i = 0; i < ptr_ch->cell_size; i++)
+        {
+            box_idx_aux_x = ptr_ch->ptr_cell_idx_x[i] - ptr_ch->box_ts_x;
+            box_idx_aux_y = ptr_ch->ptr_cell_idx_y[i] - ptr_ch->box_ts_y;
+            box_idx_aux_z = ptr_ch->ptr_cell_idx_z[i] - ptr_ch->box_ts_z;
+            box_idx_aux = box_idx_aux_x + box_idx_aux_y * ptr_ch->box_real_dim_x + box_idx_aux_z * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
+            aux_mass2 += ptr_ch->ptr_box_mass[box_idx_aux];
+        }
+
+        printf("\n\n Error, particle updating Despues\n\n");
+        printf("lv = %d, aux mass per box = %f\n", ptr_ch->lv, aux_mass1);
+        printf("lv = %d, aux mass per cell = %f\n",ptr_ch->lv, aux_mass2);
+        printf("lv = %d, local mass = %f\n",ptr_ch->lv, ptr_ch->local_mass);
+        printf("lv = %d, no ptcl = %d\n",ptr_ch->lv,ptr_ch->ptcl_size);
+        printf("\n\n");
+    }
 
     return _SUCCESS_;
 }

@@ -47,6 +47,73 @@ static void updating_box_mass(struct node *ptr_node)
 
     
 
+
+
+
+    vtype aux_mass1 = 0;
+    vtype aux_mass2 = 0;
+    vtype aux_mass3 = 0;
+    vtype aux_mass4 = 0;
+    ptr_ch = ptr_node->pptr_chn[0];
+    for (int i = 0; i < ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y * ptr_ch->box_real_dim_z; i++)
+    {
+        aux_mass1 += ptr_ch->ptr_box_mass[i];
+    }
+    aux_mass2 = 0;
+    int box_idx_aux_x;
+    int box_idx_aux_y;
+    int box_idx_aux_z;
+    int box_idx_aux;
+    for (int i = 0; i < ptr_ch->cell_size; i++)
+    {
+        box_idx_aux_x = ptr_ch->ptr_cell_idx_x[i] - ptr_ch->box_ts_x;
+        box_idx_aux_y = ptr_ch->ptr_cell_idx_y[i] - ptr_ch->box_ts_y;
+        box_idx_aux_z = ptr_ch->ptr_cell_idx_z[i] - ptr_ch->box_ts_z;
+        box_idx_aux = box_idx_aux_x + box_idx_aux_y * ptr_ch->box_real_dim_x + box_idx_aux_z * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
+        aux_mass2 += ptr_ch->ptr_box_mass[box_idx_aux];
+    }
+
+
+    for (int i = 0; i < ptr_node->box_real_dim_x * ptr_node->box_real_dim_y * ptr_node->box_real_dim_z; i++)
+    {
+        aux_mass3 += ptr_node->ptr_box_mass[i];
+    }
+    aux_mass4 = 0;
+    for (int i = 0; i < ptr_node->cell_size; i++)
+    {
+        box_idx_aux_x = ptr_node->ptr_cell_idx_x[i] - ptr_node->box_ts_x;
+        box_idx_aux_y = ptr_node->ptr_cell_idx_y[i] - ptr_node->box_ts_y;
+        box_idx_aux_z = ptr_node->ptr_cell_idx_z[i] - ptr_node->box_ts_z;
+        box_idx_aux = box_idx_aux_x + box_idx_aux_y * ptr_node->box_real_dim_x + box_idx_aux_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+        aux_mass4 += ptr_node->ptr_box_mass[box_idx_aux];
+    }
+
+
+
+
+
+    // if (aux_mass1 != aux_mass2 || aux_mass1 != ptr_ch->local_mass)
+    // {
+        printf("\n\n Error, tree adaptation Antes\n\n");
+        printf("aux mass per box: child = %f, parent = %f\n", aux_mass1, aux_mass3);
+        printf("aux mass per cell: child = %f, parent = %f\n", aux_mass2, aux_mass4);
+        printf("local mass: child = %f, parent = %f\n", ptr_ch->local_mass, ptr_node->local_mass);
+        printf("no ptcl: child = %d, parent = %d\n",ptr_ch->ptcl_size, ptr_node->ptcl_size);
+        printf("\n\n");
+    // }
+
+
+
+
+
+
+
+
+
+
+
+
+
     for (int i = 0; i < no_chn; i++)    //Cycle over children
     {
         ptr_ch = ptr_node->pptr_chn[i];
@@ -81,6 +148,57 @@ static void updating_box_mass(struct node *ptr_node)
         }
     }
     ptr_ch = NULL;
+
+
+    aux_mass1 = 0;
+    aux_mass2 = 0;
+    aux_mass3 = 0;
+    aux_mass4 = 0;
+    ptr_ch = ptr_node->pptr_chn[0];
+    for (int i = 0; i < ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y * ptr_ch->box_real_dim_z; i++)
+    {
+        aux_mass1 += ptr_ch->ptr_box_mass[i];
+    }
+    aux_mass2 = 0;
+    for (int i = 0; i < ptr_ch->cell_size; i++)
+    {
+        box_idx_aux_x = ptr_ch->ptr_cell_idx_x[i] - ptr_ch->box_ts_x;
+        box_idx_aux_y = ptr_ch->ptr_cell_idx_y[i] - ptr_ch->box_ts_y;
+        box_idx_aux_z = ptr_ch->ptr_cell_idx_z[i] - ptr_ch->box_ts_z;
+        box_idx_aux = box_idx_aux_x + box_idx_aux_y * ptr_ch->box_real_dim_x + box_idx_aux_z * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
+        aux_mass2 += ptr_ch->ptr_box_mass[box_idx_aux];
+    }
+
+
+    for (int i = 0; i < ptr_node->box_real_dim_x * ptr_node->box_real_dim_y * ptr_node->box_real_dim_z; i++)
+    {
+        aux_mass3 += ptr_node->ptr_box_mass[i];
+    }
+    aux_mass4 = 0;
+    for (int i = 0; i < ptr_node->cell_size; i++)
+    {
+        box_idx_aux_x = ptr_node->ptr_cell_idx_x[i] - ptr_node->box_ts_x;
+        box_idx_aux_y = ptr_node->ptr_cell_idx_y[i] - ptr_node->box_ts_y;
+        box_idx_aux_z = ptr_node->ptr_cell_idx_z[i] - ptr_node->box_ts_z;
+        box_idx_aux = box_idx_aux_x + box_idx_aux_y * ptr_node->box_real_dim_x + box_idx_aux_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+        aux_mass4 += ptr_node->ptr_box_mass[box_idx_aux];
+    }
+
+
+
+
+
+    // if (aux_mass1 != aux_mass2 || aux_mass1 != ptr_ch->local_mass)
+    // {
+        printf("\n\n Error, tree adaptation Despues\n\n");
+        printf("aux mass per box: child = %f, parent = %f\n", aux_mass1, aux_mass3);
+        printf("aux mass per cell: child = %f, parent = %f\n", aux_mass2, aux_mass4);
+        printf("local mass: child = %f, parent = %f\n", ptr_ch->local_mass, ptr_node->local_mass);
+        printf("no ptcl: child = %d, parent = %d\n",ptr_ch->ptcl_size, ptr_node->ptcl_size);
+        printf("\n\n");
+    // }
+
+
 }
 
 static void initialization_box_aux(struct node *ptr_node)
@@ -1898,6 +2016,14 @@ static int moving_new_zones_to_new_child(struct node *ptr_node, int *links_old_o
     for (int zone_idx = 0; zone_idx < ptr_node->zones_size; zone_idx++)
     {
         ptr_ch = ptr_node->pptr_chn[links_old_ord_new[zone_idx]];
+
+
+
+
+
+
+
+
         no_cells_ch = ptr_ch->cell_size;
         no_ptcl_ch = ptr_ch->ptcl_size;
         for (int zone_element = 0; zone_element < ptr_node->ptr_zone_size[zone_idx]; zone_element++)
@@ -1939,6 +2065,8 @@ static int moving_new_zones_to_new_child(struct node *ptr_node, int *links_old_o
                 }
                 no_cells_ch += 8;
                 //** >> MASS and PARTICLES **/
+            
+
                 //Cycle over all particles in the node
                 for (int j = 0; j < no_ptcl_node; j++)
                 {
@@ -2545,6 +2673,8 @@ int tree_adaptation()
             //** >> For cycle over parent nodes **/
             for (int i = 0; i < no_pts; i++)
             {
+
+
                 ptr_node = GL_tentacles[lv][i];
                 //printf("\nLv = %d, parent = %d, parent ID = %d\n", lv, i,ptr_node->ID);
 
