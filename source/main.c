@@ -162,7 +162,7 @@ int main(int argc, char **argv) {
 	while (actualtime < Maxdt && Number_timesteps < MaxIterations)
 	{
 		//** >> TIMESTEP **/
-		//printf("Time-step compute\n");
+		// printf("Time-step compute\n");
 		GL_clock_begin = clock();
 		if (timestep_2(&dt) == _FAILURE_)
 		{
