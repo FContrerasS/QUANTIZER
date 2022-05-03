@@ -117,7 +117,7 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
 
 
 
-    // if(ptr_node->lv == 5)
+    // if(ptr_node->lv == 7)
     // {
     //     struct node *ptr_ch;
     //     ptr_ch = ptr_node->pptr_chn[0];
@@ -248,6 +248,10 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
                 //** >> The particle moves towards its parent node or towards some sibling node  **/
                 if (ptr_node->ptr_box[box_idx_node] < -3)
                 {
+                    // if(ptr_node->lv == 8 && ptr_node->ID == 0)
+                    // {
+                    //     printf("\n\n\nparticle removed\n\n\n");
+                    // }
                     
                     //** The local mass is reduced **/
                     ptr_node->local_mass -= GL_ptcl_mass[ptcl_idx];
@@ -259,6 +263,7 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
                     //** >> If the particle moves towards a sibling node **/
                     if (ptr_node_pt->ptr_box[box_idx_pt] >= 0)
                     {
+                        printf("\n\n\nSibling\n\n\n");
                         zone_idx = ptr_node_pt->ptr_box[box_idx_pt];
                         ptr_node_sib = ptr_node_pt->pptr_chn[zone_idx];
 
@@ -548,7 +553,7 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
 
 
 
-    // if(ptr_node->lv == 5)
+    // if(ptr_node->lv == 7)
     // {
     //     struct node *ptr_ch;
     //     ptr_ch = ptr_node->pptr_chn[0];
