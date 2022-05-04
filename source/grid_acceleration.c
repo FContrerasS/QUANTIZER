@@ -52,7 +52,6 @@ static void computing_grid_acceleration(struct node *ptr_node)
     int pt_box_grid_idx_1; // Parent box grid index 1
     int pt_box_grid_idx_2; // Parent box grid index 2
 
-
     lv = ptr_node->lv;
 
     H = 1.0L / (1 << lv);
@@ -85,7 +84,6 @@ static void computing_grid_acceleration(struct node *ptr_node)
             ptr_node->ptr_ax[box_grid_idx] = one_over_2H * (ptr_node->ptr_pot[box_grid_idxNbr_2] - ptr_node->ptr_pot[box_grid_idxNbr_1]);
             ptr_node->ptr_ay[box_grid_idx] = one_over_2H * (ptr_node->ptr_pot[box_grid_idxNbr_4] - ptr_node->ptr_pot[box_grid_idxNbr_3]);
             ptr_node->ptr_az[box_grid_idx] = one_over_2H * (ptr_node->ptr_pot[box_grid_idxNbr_6] - ptr_node->ptr_pot[box_grid_idxNbr_5]);
-  
         }
     }
     //** >> Case branch nodes **/
@@ -102,7 +100,6 @@ static void computing_grid_acceleration(struct node *ptr_node)
             cell_idx_y = box_idx_y + ptr_node->box_ts_y;
             cell_idx_z = box_idx_z + ptr_node->box_ts_z;
 
-            
             pt_box_idx_1_x = (cell_idx_x >> 1) - ptr_node->ptr_pt->box_ts_x;
             pt_box_idx_2_x = ((cell_idx_x + 1) >> 1) - ptr_node->ptr_pt->box_ts_x;
             pt_box_idx_1_y = (cell_idx_y >> 1) - ptr_node->ptr_pt->box_ts_y;

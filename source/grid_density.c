@@ -55,9 +55,6 @@ static void computing_grid_density(struct node *ptr_node)
 
     vtype w[8]; // Weight of the CIC method
 
-    //printf("hola mundo\n");
-    //printf("mo lv = %d, ID = %d\n",ptr_node->lv, ptr_node->ID);
-
     no_ptcl = ptr_node->ptcl_size;
     lv = ptr_node->lv;
     H = 1.0L / (1 << lv);
@@ -105,38 +102,6 @@ static void computing_grid_density(struct node *ptr_node)
                     box_grid_idx_y = (pos_y_floor + jj) - ptr_node->box_ts_y;
                     box_grid_idx_z = (pos_z_floor + kk) - ptr_node->box_ts_z;
                     box_grid_idx = box_grid_idx_x + box_grid_idx_y * (ptr_node->box_real_dim_x + 1) + box_grid_idx_z * (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1);
-
-                    if(ii == 0 && jj == 0 && kk == 0 && ptr_node->lv > lmin)
-                    {
-                        if (box_grid_idx_x < 0 || box_grid_idx_y < 0 || box_grid_idx_z < 0)
-                        {
-                            printf("lv = %d, ID = %d\n", ptr_node->lv, ptr_node->ID);
-                            printf("cell_size = %d, ptcl_size = %d\n",ptr_node->cell_size, ptr_node->ptcl_size );
-                            printf("\nbox_grid_idx = %d\n", box_grid_idx);
-                            printf("pos_x_floor = %d\n", pos_x_floor);
-                            printf("pos_y_floor = %d\n", pos_y_floor);
-                            printf("pos_z_floor = %d\n", pos_z_floor);
-                            printf("box_ts_x = %d\n", ptr_node->box_ts_x);
-                            printf("box_ts_y = %d\n", ptr_node->box_ts_y);
-                            printf("box_ts_z = %d\n", ptr_node->box_ts_z);
-                            printf("box_dim_x = %d\n", ptr_node->box_dim_x);
-                            printf("box_dim_y = %d\n", ptr_node->box_dim_y);
-                            printf("box_dim_z = %d\n", ptr_node->box_dim_z);
-                            printf("box_min_x = %d\n", ptr_node->box_min_x);
-                            printf("box_min_y = %d\n", ptr_node->box_min_y);
-                            printf("box_min_z = %d\n", ptr_node->box_min_z);
-                            printf("box_max_x = %d\n", ptr_node->box_max_x);
-                            printf("box_max_y = %d\n", ptr_node->box_max_y);
-                            printf("box_max_z = %d\n", ptr_node->box_max_z);
-                            printf("box_real_dim_x = %d\n", ptr_node->box_real_dim_x);
-                            printf("box_real_dim_y = %d\n", ptr_node->box_real_dim_y);
-                            printf("box_real_dim_z = %d\n", ptr_node->box_real_dim_z);
-                            printf("box_grid_idx_x = %d\n", box_grid_idx_x);
-                            printf("box_grid_idx_y = %d\n", box_grid_idx_y);
-                            printf("box_grid_idx_z = %d\n\n", box_grid_idx_z);
-                        }
-                    }
-
                     ptr_node->ptr_d[box_grid_idx] += poisson_coeff * GL_ptcl_mass[ptcl_idx] * w[ii + 2 * jj + 4 * kk];
                 }
             }

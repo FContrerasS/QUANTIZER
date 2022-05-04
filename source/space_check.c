@@ -28,9 +28,6 @@
 
 int space_check(int *ptr_cap, int size, float increase, const char *format, ...)
 {
-
-    
-
     if(*ptr_cap < size)
     {
         int cap = *ptr_cap;

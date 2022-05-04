@@ -32,22 +32,12 @@ struct node* new_node()
 
 	if (GL_pool_node_start == NULL)
 	{
-		//printf("nuevo nodo\n");
 		ptr_node = (struct node *)malloc(sizeof(struct node));
 		initialize_node(ptr_node);
 	}
 	else
 	{
-		//printf("reutilizacion\n");
 		ptr_node = GL_pool_node_start;
-		//printf("ptr_node->ID = %d\n", ptr_node->ID);
-		// ptr_node->box_min_x = INT_MAX;
-		// ptr_node->box_min_y = INT_MAX;
-		// ptr_node->box_min_z = INT_MAX;
-		// ptr_node->box_max_x = 0;
-		// ptr_node->box_max_y = 0;
-		// ptr_node->box_max_z = 0;
-
 		if (GL_pool_node_start == GL_pool_node_end)
 		{
 			GL_pool_node_start = NULL;
@@ -57,7 +47,6 @@ struct node* new_node()
 		{
 			GL_pool_node_start = ptr_node->ptr_pt;
 		}
-		//printf("ptr_node->ID = %d\n", ptr_node->ID);
 	}
 
 	return ptr_node;

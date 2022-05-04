@@ -85,75 +85,6 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
 
     no_ptcl = ptr_node->ptcl_size;
 
-    // vtype aux_mass1 = 0;
-    // vtype aux_mass2 = 0;
-
-    // int box_idx_aux_x;
-    // int box_idx_aux_y;
-    // int box_idx_aux_z;
-    // int box_idx_aux;
-
-    // for (int i = 0; i < ptr_node->box_real_dim_x * ptr_node->box_real_dim_y * ptr_node->box_real_dim_z; i++)
-    // {
-    //     aux_mass1 += ptr_node->ptr_box_mass[i];
-    // }
-    // aux_mass2 = 0;
-    // for (int i = 0; i < ptr_node->cell_size; i++)
-    // {
-    //     box_idx_aux_x = ptr_node->ptr_cell_idx_x[i] - ptr_node->box_ts_x;
-    //     box_idx_aux_y = ptr_node->ptr_cell_idx_y[i] - ptr_node->box_ts_y;
-    //     box_idx_aux_z = ptr_node->ptr_cell_idx_z[i] - ptr_node->box_ts_z;
-    //     box_idx_aux = box_idx_aux_x + box_idx_aux_y * ptr_node->box_real_dim_x + box_idx_aux_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
-    //     aux_mass2 += ptr_node->ptr_box_mass[box_idx_aux];
-    // }
-
-    // printf("\n\n Error, particle updating Antes\n\n");
-    // printf("lv = %d, aux mass per box = %f\n", ptr_node->lv, aux_mass1);
-    // printf("lv = %d, aux mass per cell = %f\n",ptr_node->lv, aux_mass2);
-    // printf("lv = %d, local mass = %f\n",ptr_node->lv, ptr_node->local_mass);
-    // printf("lv = %d, no ptcl = %d\n",ptr_node->lv,ptr_node->ptcl_size);
-    // printf("\n\n");
-    
-
-
-
-    // if(ptr_node->lv == 7)
-    // {
-    //     struct node *ptr_ch;
-    //     ptr_ch = ptr_node->pptr_chn[0];
-    //     aux_mass1 = 0;
-    //     for (int i = 0; i < ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y * ptr_ch->box_real_dim_z; i++)
-    //     {
-    //         aux_mass1 += ptr_ch->ptr_box_mass[i];
-    //     }
-    //     aux_mass2 = 0;
-    //     for (int i = 0; i < ptr_ch->cell_size; i++)
-    //     {
-    //         box_idx_aux_x = ptr_ch->ptr_cell_idx_x[i] - ptr_ch->box_ts_x;
-    //         box_idx_aux_y = ptr_ch->ptr_cell_idx_y[i] - ptr_ch->box_ts_y;
-    //         box_idx_aux_z = ptr_ch->ptr_cell_idx_z[i] - ptr_ch->box_ts_z;
-    //         box_idx_aux = box_idx_aux_x + box_idx_aux_y * ptr_ch->box_real_dim_x + box_idx_aux_z * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
-    //         aux_mass2 += ptr_ch->ptr_box_mass[box_idx_aux];
-    //     }
-
-    //     printf("\n\n Error, particle updating Antes\n\n");
-    //     printf("lv = %d, aux mass per box = %f\n", ptr_ch->lv, aux_mass1);
-    //     printf("lv = %d, aux mass per cell = %f\n",ptr_ch->lv, aux_mass2);
-    //     printf("lv = %d, local mass = %f\n",ptr_ch->lv, ptr_ch->local_mass);
-    //     printf("lv = %d, no ptcl = %d\n",ptr_ch->lv,ptr_ch->ptcl_size);
-    //     printf("\n\n");
-    
-    // }
-
-
-
-
-
-
-
-
-
-
     if(lmin < lmax)
     {
         if (ptr_node->chn_size == 0)
@@ -161,57 +92,14 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
 
             for (int i = 0; i < no_ptcl; i++)
             {
-
                 ptcl_idx = ptr_node->ptr_ptcl[i]; // Particle index
 
                 //** >> First we remove the mass of the box_mass array of the node **/
                 box_idx_node = ptcl_idx_to_box_idx(ptr_node, ptcl_idx);
 
-                
-                // if(i == no_ptcl -1)
-                // {
-                //     vtype aux_mass1 = 0;
-                //     vtype aux_mass2 = 0;
-                //     for (int i = 0; i < ptr_node->box_real_dim_x * ptr_node->box_real_dim_y * ptr_node->box_real_dim_z; i++)
-                //     {
-                //         aux_mass1 += ptr_node->ptr_box_mass[i];
-                //     }
-                //     aux_mass2 = 0;
-                //     int box_idx_aux_x;
-                //     int box_idx_aux_y;
-                //     int box_idx_aux_z;
-                //     int box_idx_aux;
-                //     for (int i = 0; i < ptr_node->cell_size; i++)
-                //     {
-                //         box_idx_aux_x = ptr_node->ptr_cell_idx_x[i] - ptr_node->box_ts_x;
-                //         box_idx_aux_y = ptr_node->ptr_cell_idx_y[i] - ptr_node->box_ts_y;
-                //         box_idx_aux_z = ptr_node->ptr_cell_idx_z[i] - ptr_node->box_ts_z;
-                //         box_idx_aux = box_idx_aux_x + box_idx_aux_y * ptr_node->box_real_dim_x + box_idx_aux_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
-                //         aux_mass2 += ptr_node->ptr_box_mass[box_idx_aux];
-                //     }
-
-                //     if (aux_mass1 != aux_mass2 || aux_mass1 != ptr_node->local_mass)
-                //     {
-                //         printf("\n\n Error \n\n");
-                //         printf("aux mass per box = %f, ", aux_mass1);
-                //         printf("aux mass per cell = %f, ", aux_mass2);
-                //         printf("local mass = %f\n", ptr_node->local_mass);
-                //         printf("\n\n");
-                //     }
-                // }
-
-
-
-
                 //** >> Removing the mass of the mass box array of the node**/
                 ptr_node->ptr_box_mass[box_idx_node] -= GL_ptcl_mass[ptcl_idx];
 
-
-
-                if(ptr_node->ptr_box_mass[box_idx_node] < 0)
-                {
-                    printf("\nError (if), %d, ptcl = %d box cell mass = %f, local mass = %f\n", i, ptcl_idx, ptr_node->ptr_box_mass[box_idx_node], ptr_node->local_mass);
-                }
                 //** >> Updating the new position of the particle **/
                 //** >> Velocities **/
                 GL_ptcl_vx[ptcl_idx] += GL_ptcl_ax[ptcl_idx] * dt / 2;
@@ -248,11 +136,6 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
                 //** >> The particle moves towards its parent node or towards some sibling node  **/
                 if (ptr_node->ptr_box[box_idx_node] < -3)
                 {
-                    // if(ptr_node->lv == 8 && ptr_node->ID == 0)
-                    // {
-                    //     printf("\n\n\nparticle removed\n\n\n");
-                    // }
-                    
                     //** The local mass is reduced **/
                     ptr_node->local_mass -= GL_ptcl_mass[ptcl_idx];
 
@@ -263,7 +146,6 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
                     //** >> If the particle moves towards a sibling node **/
                     if (ptr_node_pt->ptr_box[box_idx_pt] >= 0)
                     {
-                        printf("\n\n\nSibling\n\n\n");
                         zone_idx = ptr_node_pt->ptr_box[box_idx_pt];
                         ptr_node_sib = ptr_node_pt->pptr_chn[zone_idx];
 
@@ -318,46 +200,9 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
                 if (GL_ptcl_updating_flag[ptcl_idx] != status)
                 {
 
-                    // if(i < no_ptcl -9800)
-                    // {
-                    //     vtype aux_mass1 = 0;
-                    //     vtype aux_mass2 = 0;
-                    //     for (int i = 0; i < ptr_node->box_real_dim_x * ptr_node->box_real_dim_y * ptr_node->box_real_dim_z; i++)
-                    //     {
-                    //         aux_mass1 += ptr_node->ptr_box_mass[i];
-                    //     }
-                    //     aux_mass2 = 0;
-                    //     int box_idx_aux_x;
-                    //     int box_idx_aux_y;
-                    //     int box_idx_aux_z;
-                    //     int box_idx_aux;
-                    //     for (int i = 0; i < ptr_node->cell_size; i++)
-                    //     {
-                    //         box_idx_aux_x = ptr_node->ptr_cell_idx_x[i] - ptr_node->box_ts_x;
-                    //         box_idx_aux_y = ptr_node->ptr_cell_idx_y[i] - ptr_node->box_ts_y;
-                    //         box_idx_aux_z = ptr_node->ptr_cell_idx_z[i] - ptr_node->box_ts_z;
-                    //         box_idx_aux = box_idx_aux_x + box_idx_aux_y * ptr_node->box_real_dim_x + box_idx_aux_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
-                    //         aux_mass2 += ptr_node->ptr_box_mass[box_idx_aux];
-                    //     }
-
-                    //     if (aux_mass1 != aux_mass2 || aux_mass1 != ptr_node->local_mass)
-                    //     {
-                    //         printf("\n\n Error \n\n");
-                    //         printf("aux mass per box = %f, ", aux_mass1);
-                    //         printf("aux mass per cell = %f, ", aux_mass2);
-                    //         printf("local mass = %f\n", ptr_node->local_mass);
-                    //         printf("\n\n");
-                    //     }
-                    // }
-
                     //** >> Removing the mass of the mass box array of the node**/
                     box_idx_node = ptcl_idx_to_box_idx(ptr_node, ptcl_idx);
                     ptr_node->ptr_box_mass[box_idx_node] -= GL_ptcl_mass[ptcl_idx];
-
-                    if (ptr_node->ptr_box_mass[box_idx_node] < 0)
-                    {
-                        printf("\nError (else), %d, ptcl = %d mass = %f\n", i, ptcl_idx, ptr_node->ptr_box_mass[box_idx_node]);
-                    }
 
                     //** >> Updating the new position of the particle **/
                     //** >> Velocities **/
@@ -516,69 +361,9 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
         }
     }
 
-
-
-
     ptr_node_ch = NULL;
     ptr_node_pt = NULL; 
     ptr_node_sib = NULL;
-
-
-
-
-
-
-
-    // aux_mass1 = 0;
-    // for (int i = 0; i < ptr_node->box_real_dim_x * ptr_node->box_real_dim_y * ptr_node->box_real_dim_z; i++)
-    // {
-    //     aux_mass1 += ptr_node->ptr_box_mass[i];
-    // }
-    // aux_mass2 = 0;
-    // for (int i = 0; i < ptr_node->cell_size; i++)
-    // {
-    //     box_idx_aux_x = ptr_node->ptr_cell_idx_x[i] - ptr_node->box_ts_x;
-    //     box_idx_aux_y = ptr_node->ptr_cell_idx_y[i] - ptr_node->box_ts_y;
-    //     box_idx_aux_z = ptr_node->ptr_cell_idx_z[i] - ptr_node->box_ts_z;
-    //     box_idx_aux = box_idx_aux_x + box_idx_aux_y * ptr_node->box_real_dim_x + box_idx_aux_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
-    //     aux_mass2 += ptr_node->ptr_box_mass[box_idx_aux];
-    // }
-
-    // printf("\n\n Error, particle updating Despues\n\n");
-    // printf("lv = %d, aux mass per box = %f\n", ptr_node->lv, aux_mass1);
-    // printf("lv = %d, aux mass per cell = %f\n",ptr_node->lv, aux_mass2);
-    // printf("lv = %d, local mass = %f\n",ptr_node->lv, ptr_node->local_mass);
-    // printf("lv = %d, no ptcl = %d\n",ptr_node->lv,ptr_node->ptcl_size);
-    // printf("\n\n");
-
-
-
-    // if(ptr_node->lv == 7)
-    // {
-    //     struct node *ptr_ch;
-    //     ptr_ch = ptr_node->pptr_chn[0];
-    //     aux_mass1 = 0;
-    //     for (int i = 0; i < ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y * ptr_ch->box_real_dim_z; i++)
-    //     {
-    //         aux_mass1 += ptr_ch->ptr_box_mass[i];
-    //     }
-    //     aux_mass2 = 0;
-    //     for (int i = 0; i < ptr_ch->cell_size; i++)
-    //     {
-    //         box_idx_aux_x = ptr_ch->ptr_cell_idx_x[i] - ptr_ch->box_ts_x;
-    //         box_idx_aux_y = ptr_ch->ptr_cell_idx_y[i] - ptr_ch->box_ts_y;
-    //         box_idx_aux_z = ptr_ch->ptr_cell_idx_z[i] - ptr_ch->box_ts_z;
-    //         box_idx_aux = box_idx_aux_x + box_idx_aux_y * ptr_ch->box_real_dim_x + box_idx_aux_z * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
-    //         aux_mass2 += ptr_ch->ptr_box_mass[box_idx_aux];
-    //     }
-
-    //     printf("\n\n Error, particle updating Despues\n\n");
-    //     printf("lv = %d, aux mass per box = %f\n", ptr_ch->lv, aux_mass1);
-    //     printf("lv = %d, aux mass per cell = %f\n",ptr_ch->lv, aux_mass2);
-    //     printf("lv = %d, local mass = %f\n",ptr_ch->lv, ptr_ch->local_mass);
-    //     printf("lv = %d, no ptcl = %d\n",ptr_ch->lv,ptr_ch->ptcl_size);
-    //     printf("\n\n");
-    // }
 
     return _SUCCESS_;
 }
@@ -595,8 +380,6 @@ int particle_updating_A(vtype dt)
 
     int no_pts; // Number of parents in the cycle
     status = !GL_ptcl_updating_flag[0];
-
-    
 
     for (int lv = GL_tentacles_level_max; lv > -1; lv--)
     {

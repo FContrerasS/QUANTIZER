@@ -126,12 +126,9 @@ static bool poisson_error_mehod_0(const struct node *ptr_node)
 			
 		}
 	}
-	//printf("cntr = %d, rhomean_times_4piG = %1.3e,\n", cntr, rhomean_times_4piG);
 	error = error / cntr;
 	error = sqrt(error);
 	error = error / rhomean_times_4piG;
-		
-	//printf("error = %.12f\n", error);
 
 	//** >> If the precision condition satisfied **/
 	if (error < _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_)

@@ -49,7 +49,6 @@ static int particle_distribution_in_cell(int **pptr_cell_ptcl, int *ptr_cell_ptc
         ptr_cell_ptcl_size[i] = 0;
     }
 
-
     //** >> Filling cell particles arrays **/
     for (int i = 0; i < ptr_node->ptcl_size; i++)
     {
@@ -325,14 +324,6 @@ static int fill_zones_ref(struct node *ptr_node)
                     printf("Error, in space_check function\n");
                     return _FAILURE_;
                 }
-
-                    //The initialization is done in the space_check function
-                // //** >> Initiazling the new allocated values **/
-                // for (int i = 0; i < zone_idx_max - zone_idx; i++)
-                // {
-                //     ptr_node->pptr_zones[zone_idx_max - i - 1] = NULL;
-                //     ptr_node->ptr_zone_cap[zone_idx_max - i - 1] = 0;
-                // }
             }
             ptr_node->ptr_zone_size[zone_idx] = zone_size;
             zone_idx++; // Increasing the zone number
@@ -418,7 +409,6 @@ static int fill_child_nodes(int **pptr_cell_ptcl, const int *ptr_cell_ptcl_size,
 
     //** >> Creating child nodes in parent node **/
     ptr_node_pt->chn_cap = ptr_node_pt->zones_cap; // Same amount than refinement zones
-    //ptr_node_pt->chn_cap = ptr_node_pt->zones_size; // Same amount than the exact number fo refinement zones
     ptr_node_pt->chn_size = ptr_node_pt->zones_size;
 
     if(ptr_node_pt->chn_cap > 0)
@@ -550,12 +540,6 @@ static int fill_child_nodes(int **pptr_cell_ptcl, const int *ptr_cell_ptcl_size,
         ptr_node_ch->box_dim_z = ptr_node_ch->box_max_z - ptr_node_ch->box_min_z + 1;
 
         // Real dimensions of the boxcap = ptr_ch->box_cap;
-        // ptr_node_ch->box_real_dim_x = fmax(ptr_node_ch->box_dim_x * 3, ptr_node_ch->box_dim_x + 2 * n_exp - 2);
-        // ptr_node_ch->box_real_dim_y = fmax(ptr_node_ch->box_dim_y * 3, ptr_node_ch->box_dim_y + 2 * n_exp - 2);
-        // ptr_node_ch->box_real_dim_z = fmax(ptr_node_ch->box_dim_z * 3, ptr_node_ch->box_dim_z + 2 * n_exp - 2);
-        // ptr_node_ch->box_real_dim_x = fmax(ptr_node_ch->box_dim_x + 10, ptr_node_ch->box_dim_x + 2 * n_exp - 2);
-        // ptr_node_ch->box_real_dim_y = fmax(ptr_node_ch->box_dim_y + 10, ptr_node_ch->box_dim_y + 2 * n_exp - 2);
-        // ptr_node_ch->box_real_dim_z = fmax(ptr_node_ch->box_dim_z + 10, ptr_node_ch->box_dim_z + 2 * n_exp - 2);
         ptr_node_ch->box_real_dim_x = (ptr_node_ch->box_dim_x + 10) > (ptr_node_ch->box_dim_x + 2 * n_exp - 2) ? (ptr_node_ch->box_dim_x + 10) : (ptr_node_ch->box_dim_x + 2 * n_exp - 2);
         ptr_node_ch->box_real_dim_y = (ptr_node_ch->box_dim_y + 10) > (ptr_node_ch->box_dim_y + 2 * n_exp - 2) ? (ptr_node_ch->box_dim_y + 10) : (ptr_node_ch->box_dim_y + 2 * n_exp - 2);
         ptr_node_ch->box_real_dim_z = (ptr_node_ch->box_dim_z + 10) > (ptr_node_ch->box_dim_z + 2 * n_exp - 2) ? (ptr_node_ch->box_dim_z + 10) : (ptr_node_ch->box_dim_z + 2 * n_exp - 2);
@@ -834,8 +818,6 @@ int tree_construction()
 
         int no_pts; // Number of parents in the cycle
 
-        //int aux_cap; // Old capacity of the space cell particles array. Used in space checking
-
         int lv;
 
         //** >> Initializing cell particles pointers **/
@@ -851,7 +833,6 @@ int tree_construction()
 
         // Comienza el ciclo for:
         //** >> For cycle over refinement levels **/
-        //for (int lv = 0; lv < lmax - lmin + 1; lv++)
         lv = 0;
         while (lv < lmax - lmin + 1 && lv <= GL_tentacles_level_max)
         {
@@ -867,20 +848,11 @@ int tree_construction()
 
                 if (space_cell_ptcl < required_space_cell_ptcl)
                 {
-                    //aux_cap = space_cell_ptcl;
                     if (space_check(&(space_cell_ptcl), required_space_cell_ptcl, 4.0f, "p3i2i1i1", &(pptr_cell_ptcl), &(ptr_cell_ptcl_cap), &(ptr_cell_ptcl_size)) == _FAILURE_)
                     {
                         printf("Error, in space_check function\n");
                         return _FAILURE_;
                     }
-
-                    //The initialization is done in the space_check function
-                    // //** >> Initiazling the new allocated values **/
-                    // for (int j = 0; j < space_cell_ptcl - aux_cap; j++)
-                    // {
-                    //     pptr_cell_ptcl[space_cell_ptcl - j - 1] = NULL;
-                    //     ptr_cell_ptcl_cap[space_cell_ptcl - j - 1] = 0;
-                    // }
                 }
 
                 for (int j = 0; j < space_cell_ptcl; j++)

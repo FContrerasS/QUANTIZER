@@ -26,53 +26,6 @@
 
 #include "reset.h"
 
-// static void cleaning()
-// {
-// 	//** >> Cleaning nodes**/
-
-// 	struct node *ptr_node;
-
-// 	int no_pts; // Number of parents in the cycle
-
-// 	for (int lv = GL_tentacles_level_max; lv > 0; lv--)
-// 	{
-// 		no_pts = GL_tentacles_size[lv];
-// 		//** >> For cycle over parent nodes **/
-// 		for (int i = 0; i < no_pts; i++)
-// 		{
-// 			ptr_node = GL_tentacles[lv][i];
-
-// 			free(ptr_node->ptr_cell_idx_x);
-// 			free(ptr_node->ptr_cell_idx_y);
-// 			free(ptr_node->ptr_cell_idx_z);
-// 			free(ptr_node->ptr_ptcl);
-// 			free(ptr_node->ptr_box);
-// 			free(ptr_node->ptr_box_aux);
-// 			free(ptr_node->ptr_grid_intr);
-// 			free(ptr_node->ptr_grid_bder);
-// 			free(ptr_node->ptr_box_mass);
-// 			free(ptr_node->ptr_pot);
-// 			free(ptr_node->ptr_ax);
-// 			free(ptr_node->ptr_ay);
-// 			free(ptr_node->ptr_az);
-// 			free(ptr_node->ptr_d);
-// 			ptr_node->ptr_pt = NULL;
-// 			for (int j = 0; j < ptr_node->zones_size; j++)
-// 			{
-// 				ptr_node->pptr_chn[j] = NULL;
-// 				free(ptr_node->pptr_zones[j]);
-// 			}
-// 			free(ptr_node->pptr_chn);
-// 			free(ptr_node->ptr_cell_ref);
-// 			free(ptr_node->pptr_zones);
-// 			free(ptr_node->ptr_zone_cap);
-// 			free(ptr_node->ptr_zone_size);
-// 			free(ptr_node->ptr_aux_idx);
-// 			free(ptr_node);
-// 		}
-// 	}
-// }
-
 int reset()
 {
 
@@ -114,8 +67,6 @@ int reset()
 		}
 	}
 
-
-
 	//** >> Global particle accelerations **/
 	for (int i = 0; i < GL_no_ptcl; i++)
 	{
@@ -127,45 +78,6 @@ int reset()
 	//** >> Head node **/
 	struct node *ptr_head = NULL;
 	ptr_head = GL_ptr_tree;
-
-	// int box_idx_x; // Box index in X direcction
-	// int box_idx_y; // Box index in Y direcction
-	// int box_idx_z; // Box index in Z direcction
-	// int box_idx;   // Box index
-	// int cell_idx;  // The cell index is simply i of the for loop
-
-	// if(lmin < lmax)
-	// {
-	// 	//** >> Reset of the boxes **/
-	// 	for (int i = 0; i < ptr_head->cell_ref_size; i++)
-	// 	{
-	// 		cell_idx = ptr_head->ptr_cell_ref[i];
-	// 		box_idx_x = ptr_head->ptr_cell_idx_x[cell_idx] - ptr_head->box_ts_x;
-	// 		box_idx_y = ptr_head->ptr_cell_idx_y[cell_idx] - ptr_head->box_ts_y;
-	// 		box_idx_z = ptr_head->ptr_cell_idx_z[cell_idx] - ptr_head->box_ts_z;
-	// 		box_idx = box_idx_x + box_idx_y * ptr_head->box_real_dim_x + box_idx_z * ptr_head->box_real_dim_x * ptr_head->box_real_dim_y;
-	// 		//** >> Restarting the box values
-	// 		ptr_head->ptr_box[box_idx] = -3;
-	// 		ptr_head->ptr_box_aux[box_idx] = -3;
-	// 	}
-
-	// 	// //** Reset of the mass box **/
-	// 	for (int i = 0; i < box_side_lmin_pow3; i++)
-	// 	{
-	// 		ptr_head->ptr_box_mass[i] = 0;
-	// 	}
-
-	// 	// //** >> Tree structure reset **/
-	// 	ptr_head->chn_size = 0;
-
-	// 	// //** >> Reset of the refinement zones auxiliary arrays **/
-	// 	ptr_head->cell_ref_size = 0;
-	// 	for (int i = 0; i < ptr_head->zones_size;i++)
-	// 	{
-	// 		ptr_head->ptr_zone_size[i] = 0;
-	// 	}
-	// 	ptr_head->zones_size = 0;
-	// }
 
 	//** >> Potential, Acceleration and density of the grid **/
 	int cap = (ptr_head->box_real_dim_x + 1) * (ptr_head->box_real_dim_y + 1) * (ptr_head->box_real_dim_z + 1);
@@ -179,15 +91,6 @@ int reset()
 	//** Here we are modified the boundary values of the potential and acceleration
 	initial_potential_and_acceleration_head(ptr_head);
 
-	//** Free branch and leaf nodes
-	//cleaning();
-
-	//** Reset Tentacles **/
-	// for (int i = 1; i < GL_tentacles_level_max + 1; i++)
-	// {
-	// 	GL_tentacles_size[i] = 0;
-	// }
-	// GL_tentacles_level_max = 0;
 
 	ptr_node = NULL;
 	ptr_head = NULL;

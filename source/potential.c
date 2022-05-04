@@ -285,7 +285,6 @@ int potential()
     GL_times[21] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
     //** >> SOLVING POISSON EQUATION **/
-    //printf("potential Head\n");
     iter = 0;
     while (iter < _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_ && check == false)
     {
@@ -312,7 +311,6 @@ int potential()
         return _FAILURE_;
     }
 
-    //printf("Potential in Branches\n");
     //** >> POTENTIAL BRANCH NODES **/
     if(lmin < lmax)
     {
@@ -347,7 +345,6 @@ int potential()
                 for (int j = 0; j < ptr_node_pt->chn_size; j++)
                 {
                     ptr_node_ch = ptr_node_pt->pptr_chn[j];
-                    //printf("Parent lv = %d, Parent ID = %d, child ID = %d\n",ptr_node_pt->lv, ptr_node_pt->ID,ptr_node_ch->ID);
                     //** >> Transfer the potential from parent to child nodes **/
                     aux_clock = clock();
                     initial_potential(ptr_node_pt, ptr_node_ch);
