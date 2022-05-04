@@ -172,7 +172,7 @@ static void init_global_user_params()
 
 static void init_global_ref_crit()
 {
-    ref_criterion_mass = meanmass * 2;
+    ref_criterion_mass = meanmass * 1;
     n_exp = 1;
     _CFL_ = 0.5; // CFL criteria 0.5
     _MAX_dt_ = 6.7e-6;
