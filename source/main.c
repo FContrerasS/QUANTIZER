@@ -69,7 +69,7 @@ int main(int argc, char **argv) {
 	//   Energies[0] = Kinetic
 	//   Energies[1] = Potential
 	//   Energies[2] = Total = K + P
-	vtype *energies = NULL;
+	vtype *energies;
 	energies = (vtype *)calloc(3, sizeof(vtype));
 
 	//** >> GLOBAL VARIABLES **/

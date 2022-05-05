@@ -65,5 +65,4 @@ void output_main_parameters(vtype final_time, int Number_timesteps, int Number_o
     fprintf(file, "G %1.5e\n", (double)_G_);
 
     fclose(file);
-    file = NULL;
 }

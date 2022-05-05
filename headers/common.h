@@ -177,8 +177,11 @@ extern double TOTAL_MEMORY_NODES;
 extern double TOTAL_MEMORY_CELDAS;
 extern double TOTAL_MEMORY_PARTICULAS;
 extern double TOTAL_MEMORY_CAJAS;
+extern double TOTAL_MEMORY_GRID_POINTS;
+extern double TOTAL_MEMORY_GRID_PROPERTIES;
 extern double TOTAL_MEMORY_AUX;
 extern double TOTAL_MEMORY_TENTACLES;
 extern double TOTAL_MEMORY_OTROS;
+extern double TOTAL_MEMORY_STACK;
 
 #endif

@@ -174,10 +174,8 @@ int timestep_2(vtype *ptr_dt)
 
     //** >> Time-step computing **/
 
-    struct node *ptr_node = NULL;
     bool status; // Boolean value for the updating particles
 
-    int no_pts;   // Number of parents in the cycle
     status = !GL_ptcl_updating_flag[0];
 
     vtype dt_min;   // minimum dt
@@ -187,16 +185,16 @@ int timestep_2(vtype *ptr_dt)
 
     for (int lv = GL_tentacles_level_max; lv > -1; lv--)
     {
-        no_pts = GL_tentacles_size[lv];
+        //Number of parent of the level = GL_tentacles_size[lv];
 
         //** >> For cycle over parent nodes **/
-        for (int i = 0; i < no_pts; i++)
+        for (int i = 0; i < GL_tentacles_size[lv]; i++)
         {
-            ptr_node = GL_tentacles[lv][i];
+            //ptr_node = GL_tentacles[lv][i];
 
             //** >> Computing the time step of the node
-            aux_dt = timestep_computation_2(ptr_node,status);
-            
+            aux_dt = timestep_computation_2(GL_tentacles[lv][i], status);
+
             if (dt_min > aux_dt)
             {
                 dt_min = aux_dt;
@@ -205,8 +203,6 @@ int timestep_2(vtype *ptr_dt)
     }
 
     *ptr_dt = dt_min;
-
-    ptr_node = NULL;
 
     return _SUCCESS_;
 }

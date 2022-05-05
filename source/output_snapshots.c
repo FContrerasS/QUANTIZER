@@ -174,6 +174,13 @@ int output_snapshots(const vtype *energies, vtype actualtime, int snapshot)
 
 	FILE *file = NULL;
 	file = fopen(snapshot_name, "w");
+
+	if (file == NULL)
+	{
+		printf("Error opening snapshot file!\n");
+		exit(EXIT_FAILURE);
+	}
+
 	fwrite(GL_ptcl_mass, size, 1, file);
 	fwrite(GL_ptcl_x, size, 1, file);
 	fwrite(GL_ptcl_y, size, 1, file);
@@ -184,7 +191,6 @@ int output_snapshots(const vtype *energies, vtype actualtime, int snapshot)
 	fwrite(energies, 3 * sizeof(vtype),1,file);
 	fwrite(&time_Megayear, sizeof(vtype), 1, file);
 	fclose(file);
-	file = NULL;
 
 	// Returning to code units
 	for (int i = 0; i < GL_no_ptcl; i++)

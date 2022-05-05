@@ -70,9 +70,9 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
 
     int no_ptcl; // Total number of particles in the node
 
-    struct node *ptr_node_ch = NULL; // Child node of the node ptr_node
-    struct node *ptr_node_pt = NULL; // parent node of the node ptr_node
-    struct node *ptr_node_sib = NULL; // sibling node of the node ptr_node
+    struct node *ptr_node_ch; // Child node of the node ptr_node
+    struct node *ptr_node_pt; // parent node of the node ptr_node
+    struct node *ptr_node_sib; // sibling node of the node ptr_node
 
     int ptcl_idx; // Particle grid_idx in the node
 
@@ -361,10 +361,6 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
         }
     }
 
-    ptr_node_ch = NULL;
-    ptr_node_pt = NULL; 
-    ptr_node_sib = NULL;
-
     return _SUCCESS_;
 }
 
@@ -375,29 +371,27 @@ int particle_updating_A(vtype dt)
 
     //** >> Particle updating A **/
 
-    struct node *ptr_node = NULL;
     bool status;    // Boolean value for the updating particles
 
-    int no_pts; // Number of parents in the cycle
+    // number of parents of the level = GL_tentacles_size[lv]
+
     status = !GL_ptcl_updating_flag[0];
 
     for (int lv = GL_tentacles_level_max; lv > -1; lv--)
     {
-        no_pts = GL_tentacles_size[lv];
         //** >> For cycle over parent nodes **/
-        for (int i = 0; i < no_pts; i++)
+        for (int i = 0; i < GL_tentacles_size[lv]; i++)
         {
-            ptr_node = GL_tentacles[lv][i];
 
-            if (computing_particles_updating_A(ptr_node, dt, status) == _FAILURE_)
+            // ptr_node = GL_tentacles[lv][i];
+
+            if (computing_particles_updating_A(GL_tentacles[lv][i], dt, status) == _FAILURE_)
             {
                 printf("Error at function computing_particles_updating_A()\n");
                 return _FAILURE_;
             }
         }
     }
-
-    ptr_node = NULL;
 
     return _SUCCESS_;
 }

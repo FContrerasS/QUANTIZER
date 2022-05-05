@@ -26,20 +26,96 @@
 
 #include "terminal_print.h"
 
+static void computing_memory()
+{
+
+    int no_pts;
+
+    struct node *ptr_node;
+
+    //** >> Tentacles **/
+    TOTAL_MEMORY_TENTACLES += (lmax - lmin + 1) * sizeof(struct node **);
+
+    for (int lv = 0; lv < lmax - lmin + 1; lv++)
+    {
+        TOTAL_MEMORY_TENTACLES += GL_tentacles_cap[lv] * sizeof(struct node *);
+    }
+
+    //** >> Global particles **/
+    TOTAL_MEMORY_PARTICULAS += GL_no_ptcl * (sizeof(bool) + 10 * sizeof(vtype)); // Global particles
+
+
+    //** >> Node properties **/
+    for (int lv = 0; lv < GL_tentacles_level_max; lv++)
+    {
+        no_pts = GL_tentacles_size[lv];
+
+        for (int i = 0; i < no_pts; i++)
+        {
+            ptr_node = GL_tentacles[lv][i];
+            TOTAL_MEMORY_CELDAS += 3 * ptr_node->cell_cap * sizeof(int);
+            TOTAL_MEMORY_PARTICULAS += ptr_node->ptcl_cap * sizeof(int);
+            TOTAL_MEMORY_CAJAS += 2 * ptr_node->box_cap * (sizeof(int) + sizeof(vtype)); //Boxes and mass boxes
+            TOTAL_MEMORY_GRID_POINTS += 2 * (ptr_node->grid_bder_cap + ptr_node->grid_intr_cap) * sizeof(int); // Grid interior and border points
+            TOTAL_MEMORY_GRID_PROPERTIES += 5 * ptr_node->grid_properties_cap * sizeof(vtype); // Grid properties, accelerations, potential and density
+            TOTAL_MEMORY_AUX += ptr_node->zones_cap * sizeof(int *) + ptr_node->cell_ref_cap * sizeof(int);
+            for (int j = 0; j < ptr_node->zones_cap;j++)
+            {
+                TOTAL_MEMORY_AUX += ptr_node->ptr_zone_cap[j] * sizeof(int);
+            }
+            TOTAL_MEMORY_AUX += ptr_node->aux_idx_cap * sizeof(int);
+            
+        }
+        TOTAL_MEMORY_NODES += no_pts * sizeof(struct node);
+    }
+
+    //Stack of memory pool
+    ptr_node = GL_pool_node_start;
+    while(ptr_node != NULL)
+    {
+        TOTAL_MEMORY_STACK += 3 * ptr_node->cell_cap * sizeof(int);
+        TOTAL_MEMORY_STACK += ptr_node->ptcl_cap * sizeof(int);
+        TOTAL_MEMORY_STACK += 2 * ptr_node->box_cap * (sizeof(int) + sizeof(vtype));                       // Boxes and mass boxes
+        TOTAL_MEMORY_STACK += 2 * (ptr_node->grid_bder_cap + ptr_node->grid_intr_cap) * sizeof(int);       // Grid interior and border points
+        TOTAL_MEMORY_STACK += 5 * ptr_node->grid_properties_cap * sizeof(vtype);                           // Grid properties, accelerations, potential and density
+        TOTAL_MEMORY_STACK += ptr_node->zones_cap * sizeof(int *) + ptr_node->cell_ref_cap * sizeof(int);
+        for (int j = 0; j < ptr_node->zones_cap; j++)
+        {
+            TOTAL_MEMORY_STACK += ptr_node->ptr_zone_cap[j] * sizeof(int);
+        }
+        TOTAL_MEMORY_STACK += ptr_node->aux_idx_cap * sizeof(int);
+        TOTAL_MEMORY_STACK += sizeof(struct node);
+        if (ptr_node == GL_pool_node_end)
+        {
+            ptr_node = NULL;
+        }
+        else
+        {
+            ptr_node = ptr_node->ptr_pt;
+        }
+    }
+    
+}
+
 void terminal_print()
 {
-    double sum = TOTAL_MEMORY_NODES + TOTAL_MEMORY_CELDAS + TOTAL_MEMORY_PARTICULAS + TOTAL_MEMORY_CAJAS + TOTAL_MEMORY_AUX + TOTAL_MEMORY_TENTACLES + TOTAL_MEMORY_OTROS;
+
+    computing_memory();
+
+    double sum = TOTAL_MEMORY_NODES + TOTAL_MEMORY_CELDAS + TOTAL_MEMORY_PARTICULAS + TOTAL_MEMORY_CAJAS + TOTAL_MEMORY_GRID_POINTS + TOTAL_MEMORY_GRID_PROPERTIES + TOTAL_MEMORY_AUX + TOTAL_MEMORY_TENTACLES + TOTAL_MEMORY_STACK;
     int max_memory_secction = 0;
 
-    double Total_memory[7] = {TOTAL_MEMORY_NODES,
+    double Total_memory[9] = {TOTAL_MEMORY_NODES,
                               TOTAL_MEMORY_CELDAS,
                               TOTAL_MEMORY_PARTICULAS,
                               TOTAL_MEMORY_CAJAS,
+                              TOTAL_MEMORY_GRID_POINTS,
+                              TOTAL_MEMORY_GRID_PROPERTIES,
                               TOTAL_MEMORY_AUX,
                               TOTAL_MEMORY_TENTACLES,
-                              TOTAL_MEMORY_OTROS};
+                              TOTAL_MEMORY_STACK};
 
-    for (int i = 0; i < 7; i++)
+    for (int i = 0; i < 9; i++)
     {
         max_memory_secction = Total_memory[max_memory_secction] > Total_memory[i] ? max_memory_secction : i;
     }
@@ -51,12 +127,14 @@ void terminal_print()
         "Celdas",
         "Particulas",
         "Cajas",
+        "Grid Points",
+        "Grid Properties",
         "Auxiliary",
         "Tentacles",
-        "OTROS",
-        ""};
+        "Memory Pool",
+        };
 
-    for (int i = 0; i < 7; i++)
+    for (int i = 0; i < 9; i++)
     {
         if (i == max_memory_secction)
         {
@@ -64,7 +142,7 @@ void terminal_print()
         }
         else
         {
-            printf("%s = %1.3e\n", Memory_names[i], Total_memory[i]);
+            printf("%s = %f\n", Memory_names[i], Total_memory[i] / 1000000);
         }
     }
 

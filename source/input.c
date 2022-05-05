@@ -83,7 +83,6 @@ int input_plummer_model()
         }
     }
     fclose(file);
-    file = NULL;
 
     return _SUCCESS_;
 }

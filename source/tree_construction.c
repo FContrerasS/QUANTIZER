@@ -159,7 +159,7 @@ static int fill_cell_ref(struct node *ptr_node)
     }
 
     // //** >> Space checking of the capacity of the refined cells **/
-    if (space_check(&(ptr_node->cell_ref_cap), size, 1.5f, "p1i1", &(ptr_node->ptr_cell_ref)) == _FAILURE_)
+    if (space_check(&(ptr_node->cell_ref_cap), size, 2.0f, "p1i1", &(ptr_node->ptr_cell_ref)) == _FAILURE_)
     {
         printf("Error, in space_check function\n");
         return _FAILURE_;
@@ -219,7 +219,7 @@ static int fill_zones_ref(struct node *ptr_node)
     //** >> Space checking of auxiliary array ptr_aux_idx **/
     // The size will always be bigger or equal than the number of refined cells
 
-    if (space_check(&(ptr_node->aux_idx_cap), ptr_node->cell_ref_cap, 1.5f, "p1i1", &(ptr_node->ptr_aux_idx)) == _FAILURE_)
+    if (space_check(&(ptr_node->aux_idx_cap), ptr_node->cell_ref_cap, 2.0f, "p1i1", &(ptr_node->ptr_aux_idx)) == _FAILURE_)
     {
         printf("Error, in space_check function\n");
         return _FAILURE_;
@@ -319,7 +319,7 @@ static int fill_zones_ref(struct node *ptr_node)
             //** >> Space checking of refinement zones arrays, refinement capacity array and refinement size array **/
             if (zone_idx_max < zone_idx + 1)
             {
-                if (space_check(&(zone_idx_max), zone_idx + 1, 1.5f, "p3i2i1i1", &(ptr_node->pptr_zones), &(ptr_node->ptr_zone_cap), &(ptr_node->ptr_zone_size)) == _FAILURE_)
+                if (space_check(&(zone_idx_max), zone_idx + 1, 2.0f, "p3i2i1i1", &(ptr_node->pptr_zones), &(ptr_node->ptr_zone_cap), &(ptr_node->ptr_zone_size)) == _FAILURE_)
                 {
                     printf("Error, in space_check function\n");
                     return _FAILURE_;
@@ -337,7 +337,7 @@ static int fill_zones_ref(struct node *ptr_node)
     //** >> Space checking in each zone **/
     for (int i = 0; i < ptr_node->zones_size; i++)
     {
-        if (space_check(&(ptr_node->ptr_zone_cap[i]), ptr_node->ptr_zone_size[i], 1.5f, "p1i1", &(ptr_node->pptr_zones[i])) == _FAILURE_)
+        if (space_check(&(ptr_node->ptr_zone_cap[i]), ptr_node->ptr_zone_size[i], 2.0f, "p1i1", &(ptr_node->pptr_zones[i])) == _FAILURE_)
         {
             printf("Error, in space_check function\n");
             return _FAILURE_;
@@ -371,9 +371,9 @@ static int fill_zones_ref(struct node *ptr_node)
 static int fill_child_nodes(int **pptr_cell_ptcl, const int *ptr_cell_ptcl_size, struct node *ptr_node_pt)
 {
 
-    struct node *ptr_node_ch = NULL; // Pointer to the child node
+    struct node *ptr_node_ch; // Pointer to the child node
     int pt_cells_no;                 // Number of parent cells in the child
-    int *ptr_pt_cells = NULL;        // Parent cells in the child
+    int *ptr_pt_cells;        // Parent cells in the child
 
     int cell_idx;  // Cell index
     int aux_idx_x; // Auxiliary indexes
@@ -693,7 +693,7 @@ static int fill_child_nodes(int **pptr_cell_ptcl, const int *ptr_cell_ptcl_size,
                         if(is_bder_grid_point == true)
                         {
                             //** >> Space checking of border grid points array**/
-                            if (space_check(&(ptr_node_ch->grid_bder_cap), ptr_node_ch->grid_bder_size + 1, 1.5f, "p1i1", &(ptr_node_ch->ptr_grid_bder)) == _FAILURE_)
+                            if (space_check(&(ptr_node_ch->grid_bder_cap), ptr_node_ch->grid_bder_size + 1, 2.0f, "p1i1", &(ptr_node_ch->ptr_grid_bder)) == _FAILURE_)
                             {
                                 printf("Error, in space_check function\n");
                                 return _FAILURE_;
@@ -707,7 +707,7 @@ static int fill_child_nodes(int **pptr_cell_ptcl, const int *ptr_cell_ptcl_size,
                         else
                         {
                             //** >> Space checking of border grid points array**/
-                            if (space_check(&(ptr_node_ch->grid_intr_cap), ptr_node_ch->grid_intr_size + 1, 1.5f, "p1i1", &(ptr_node_ch->ptr_grid_intr)) == _FAILURE_)
+                            if (space_check(&(ptr_node_ch->grid_intr_cap), ptr_node_ch->grid_intr_size + 1, 2.0f, "p1i1", &(ptr_node_ch->ptr_grid_intr)) == _FAILURE_)
                             {
                                 printf("Error, in space_check function\n");
                                 return _FAILURE_;
@@ -762,9 +762,6 @@ static int fill_child_nodes(int **pptr_cell_ptcl, const int *ptr_cell_ptcl_size,
         }
     }
 
-    ptr_node_ch = NULL;
-    ptr_pt_cells = NULL;
-
     return _SUCCESS_;
 } // end function fill_child_nodes
 
@@ -773,11 +770,6 @@ static int fill_tentacles(const struct node *ptr_node_pt)
     int lv = ptr_node_pt->lv - lmin + 1; // Children level
 
     int size = GL_tentacles_size[lv] + ptr_node_pt->chn_size;
-
-    if(size > GL_tentacles_cap[lv])
-    {
-        TOTAL_MEMORY_TENTACLES += 2 * (2 * size - GL_tentacles_cap[lv]) * sizeof(struct node *);
-    }
 
     if (space_check(&(GL_tentacles_cap[lv]), size, 4.0f, "p1n2", &(GL_tentacles[lv])) == _FAILURE_)
     {
@@ -809,10 +801,10 @@ int tree_construction()
     //** >> Working in the refinement zones **/
     if (lmin < lmax)
     {
-        struct node *ptr_node = NULL; // Parent node
-        int **pptr_cell_ptcl = NULL;    // Particles indexes in each cell of the main node
-        int *ptr_cell_ptcl_cap = NULL;  // Maximum number (capacity) of particles in each cell of the box
-        int *ptr_cell_ptcl_size = NULL; // Number of particles in each cell of the box
+        struct node *ptr_node; // Parent node
+        int **pptr_cell_ptcl;    // Particles indexes in each cell of the main node
+        int *ptr_cell_ptcl_cap;  // Maximum number (capacity) of particles in each cell of the box
+        int *ptr_cell_ptcl_size; // Number of particles in each cell of the box
         int space_cell_ptcl;     // Total space of the pptr_cell_ptcl array
         int required_space_cell_ptcl; // New total space required to the array pptr_cell_ptcl
 
@@ -922,13 +914,8 @@ int tree_construction()
             }
         }
         free(ptr_cell_ptcl_size);
-        ptr_cell_ptcl_size = NULL;
         free(ptr_cell_ptcl_cap);
-        ptr_cell_ptcl_cap = NULL;
         free(pptr_cell_ptcl);
-        pptr_cell_ptcl = NULL; 
-
-        ptr_node = NULL; 
     } // Finalized tree structure
 
     return _SUCCESS_;

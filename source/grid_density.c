@@ -114,25 +114,18 @@ void grid_density()
     
     //** >> Density in the grid **/
 
-    struct node *ptr_node = NULL;
-
-    int no_pts;   // Number of parents in the cycle
-
     for (int lv = 0; lv < lmax - lmin + 1; lv++)
     {
-        no_pts = GL_tentacles_size[lv];
+        //number of parent of the level = GL_tentacles_size[lv];
         //** >> For cycle over parent nodes **/
-        for (int i = 0; i < no_pts; i++)
+        for (int i = 0; i < GL_tentacles_size[lv]; i++)
         {
-            ptr_node = GL_tentacles[lv][i];
-            computing_grid_density(ptr_node);
+            //ptr_node = GL_tentacles[lv][i];
+            computing_grid_density(GL_tentacles[lv][i]);
         }
         if (GL_tentacles_size[lv+1] == 0)
         {
             lv = lmax - lmin + 1;
         }
     }
-
-    ptr_node = NULL;
-
 }

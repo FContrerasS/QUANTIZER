@@ -30,7 +30,7 @@ static void updating_box_mass(struct node *ptr_node)
 {
 
     int no_chn; // Number of child nodes
-    struct node *ptr_ch = NULL; //child node
+    struct node *ptr_ch; //child node
     vtype aux_box_mass; //Total mass in the 8 child cells
 
     int box_idx_x_ch; // Box index in X direcction of the child cell 
@@ -76,7 +76,6 @@ static void updating_box_mass(struct node *ptr_node)
             ptr_node->ptr_box_mass[box_idx_node] = aux_box_mass;
         }
     }
-    ptr_ch = NULL;
 }
 
 static void initialization_box_aux(struct node *ptr_node)
@@ -150,8 +149,8 @@ static int fill_cell_ref(struct node *ptr_node)
 {
     //** >> Adding cells which satisfy the refinement criteria or contains grandchild cells to the array ptr_cell_ref and chaning the box_aux the status of refinement -1 **/
 
-    struct node *ptr_ch = NULL; // Child node
-    struct node *ptr_grandch = NULL; // Grandchild node
+    struct node *ptr_ch; // Child node
+    struct node *ptr_grandch; // Grandchild node
 
     int size; // Size of the refinement cells array
     
@@ -252,7 +251,7 @@ static int fill_cell_ref(struct node *ptr_node)
     }
 
     //** >> Space checking of the capacity of the refined cells **/
-    if (space_check(&(ptr_node->cell_ref_cap), size, 1.5f, "p1i1", &(ptr_node->ptr_cell_ref)) == _FAILURE_)
+    if (space_check(&(ptr_node->cell_ref_cap), size, 2.0f, "p1i1", &(ptr_node->ptr_cell_ref)) == _FAILURE_)
     {
         printf("Error, in space_check function\n");
         return _FAILURE_;
@@ -276,9 +275,6 @@ static int fill_cell_ref(struct node *ptr_node)
             cntr++;
         }
     }
-
-    ptr_ch = NULL;
-    ptr_grandch = NULL;
 
     return _SUCCESS_;
 } // end function fill_cell_ref
@@ -315,7 +311,7 @@ static int fill_zones_ref(struct node *ptr_node)
     //** >> Space checking of auxiliary array ptr_aux_idx **/
     // The size will always be bigger or equal than the number of refined cells
 
-    if (space_check(&(ptr_node->aux_idx_cap), ptr_node->cell_ref_cap, 1.5f, "p1i1", &(ptr_node->ptr_aux_idx)) == _FAILURE_)
+    if (space_check(&(ptr_node->aux_idx_cap), ptr_node->cell_ref_cap, 2.0f, "p1i1", &(ptr_node->ptr_aux_idx)) == _FAILURE_)
     {
         printf("Error, in space_check function\n");
         return _FAILURE_;
@@ -415,7 +411,7 @@ static int fill_zones_ref(struct node *ptr_node)
             //** >> Space checking of refinement zones arrays, refinement capacity array and refinement size array **/
             if (zone_idx_max < zone_idx + 1)
             {
-                if (space_check(&(zone_idx_max), zone_idx + 1, 1.0f, "p3i2i1i1", &(ptr_node->pptr_zones), &(ptr_node->ptr_zone_cap), &(ptr_node->ptr_zone_size)) == _FAILURE_)
+                if (space_check(&(zone_idx_max), zone_idx + 1, 2.0f, "p3i2i1i1", &(ptr_node->pptr_zones), &(ptr_node->ptr_zone_cap), &(ptr_node->ptr_zone_size)) == _FAILURE_)
                 {
                     printf("Error, in space_check function\n");
                     return _FAILURE_;
@@ -433,7 +429,7 @@ static int fill_zones_ref(struct node *ptr_node)
     //** >> Space checking in each zone **/
     for (int i = 0; i < ptr_node->zones_size; i++)
     {
-        if (space_check(&(ptr_node->ptr_zone_cap[i]), ptr_node->ptr_zone_size[i], 1.0f, "p1i1", &(ptr_node->pptr_zones[i])) == _FAILURE_)
+        if (space_check(&(ptr_node->ptr_zone_cap[i]), ptr_node->ptr_zone_size[i], 2.0f, "p1i1", &(ptr_node->pptr_zones[i])) == _FAILURE_)
         {
             printf("Error, in space_check function\n");
             return _FAILURE_;
@@ -463,7 +459,7 @@ static int fill_zones_ref(struct node *ptr_node)
 
 static int create_links(struct node *ptr_node, int **links_old_ord_old, int **links_new_ord_old, int **links_old_ord_new, int **links_new_ord_new, int *ptr_links_cap)
 {
-    struct node *ptr_ch = NULL; // child node
+    struct node *ptr_ch; // child node
 
     int cntr_links; // Counter the number of links between the new and old zones of refinement
 
@@ -651,15 +647,13 @@ static int create_links(struct node *ptr_node, int **links_old_ord_old, int **li
         }
     }
 
-    ptr_ch = NULL;
-
     return _SUCCESS_;
 }
 
 static void remov_cells_nolonger_require_refinement(struct node *ptr_node, const int *links_old_ord_old, const int *links_new_ord_old)
 {
 
-    struct node *ptr_ch = NULL;
+    struct node *ptr_ch;
 
     int box_idx_x_ch; // Box index in X direcction of the child cell
     int box_idx_y_ch; // Box index in Y direcction of the child cell
@@ -755,12 +749,11 @@ static void remov_cells_nolonger_require_refinement(struct node *ptr_node, const
             ptr_ch->cell_size = no_cells;
         }
     }
-    ptr_ch = NULL;
 }
 
 static int adapt_child_box_and_cells(struct node *ptr_node, const int *links_old_ord_old, const int *links_new_ord_old)
 {
-    struct node *ptr_ch = NULL;
+    struct node *ptr_ch;
 
     int new_box_min_x;
     int new_box_min_y;
@@ -795,7 +788,7 @@ static int adapt_child_box_and_cells(struct node *ptr_node, const int *links_old
             size = 8 * ptr_node->ptr_zone_size[new_zone_idx] + ptr_ch->cell_size;
 
             //** >> Space checking of cells indexes of the child node
-            if (space_check(&(ptr_ch->cell_cap), size, 1.5f, "p3i1i1i1", &(ptr_ch->ptr_cell_idx_x), &(ptr_ch->ptr_cell_idx_y), &(ptr_ch->ptr_cell_idx_z)) == _FAILURE_)
+            if (space_check(&(ptr_ch->cell_cap), size, 2.0f, "p3i1i1i1", &(ptr_ch->ptr_cell_idx_x), &(ptr_ch->ptr_cell_idx_y), &(ptr_ch->ptr_cell_idx_z)) == _FAILURE_)
             {
                 printf("Error, in space_check function\n");
                 return _FAILURE_;
@@ -957,16 +950,13 @@ static int adapt_child_box_and_cells(struct node *ptr_node, const int *links_old
             }
         }
     }
-
-    ptr_ch = NULL;
-
     return _SUCCESS_;
 }
 
 static int create_new_child_nodes(struct node *ptr_node, const int *links_old_ord_old, const int *links_new_ord_old)
 {
 
-    struct node *ptr_ch = NULL; // child node
+    struct node *ptr_ch; // child node
     int cell_idx;        // The cell index is simply i of the for loop
 
     int pos_x;  // Distance between the real box and the minimal box when the last is localized in the middle of the real one
@@ -976,7 +966,7 @@ static int create_new_child_nodes(struct node *ptr_node, const int *links_old_or
     int size; // Size or number of elements in some array in child nodes
 
     //** >> Space checking in the number of child nodes of ptr_node
-    if (space_check(&(ptr_node->chn_cap), ptr_node->zones_size, 1.5f, "p1n2", &(ptr_node->pptr_chn)) == _FAILURE_)
+    if (space_check(&(ptr_node->chn_cap), ptr_node->zones_size, 2.0f, "p1n2", &(ptr_node->pptr_chn)) == _FAILURE_)
     {
         printf("Error, in space_check function\n");
         return _FAILURE_;
@@ -994,7 +984,7 @@ static int create_new_child_nodes(struct node *ptr_node, const int *links_old_or
         ptr_ch->cell_size = 0;
 
         //** >> Space checking of cells indexes of the child node
-        if (space_check(&(ptr_ch->cell_cap), size, 1.5f, "p3i1i1i1", &(ptr_ch->ptr_cell_idx_x), &(ptr_ch->ptr_cell_idx_y), &(ptr_ch->ptr_cell_idx_z)) == _FAILURE_)
+        if (space_check(&(ptr_ch->cell_cap), size, 2.0f, "p3i1i1i1", &(ptr_ch->ptr_cell_idx_x), &(ptr_ch->ptr_cell_idx_y), &(ptr_ch->ptr_cell_idx_z)) == _FAILURE_)
         {
             printf("Error, in space_check function\n");
             return _FAILURE_;
@@ -1127,16 +1117,13 @@ static int create_new_child_nodes(struct node *ptr_node, const int *links_old_or
         }
         ptr_ch->zones_size = 0;
     }
-
-    ptr_ch = NULL;
-
     return _SUCCESS_;
 }
 
 static int moving_old_child_to_new_child(struct node *ptr_node, const int *links_old_ord_old, const int *links_new_ord_old, const int *links_old_ord_new, const int *links_new_ord_new)
 {
-    struct node *ptr_ch_A = NULL;
-    struct node *ptr_ch_B = NULL;
+    struct node *ptr_ch_A;
+    struct node *ptr_ch_B;
     int no_cells_ch_A; // Total number of cells in the child node A
     int no_cells_ch_B; // Total number of cells in the child node A
 
@@ -1300,7 +1287,7 @@ static int moving_old_child_to_new_child(struct node *ptr_node, const int *links
                             if (box_idx_ptcl_node == box_idx_node)
                             {
                                 //** >> Space checking of the capacity of the particles in the child node B **/
-                                if (space_check(&(ptr_ch_B->ptcl_cap), no_ptcl_ch_B + 1, 1.5f, "p1i1", &(ptr_ch_B->ptr_ptcl)) == _FAILURE_)
+                                if (space_check(&(ptr_ch_B->ptcl_cap), no_ptcl_ch_B + 1, 2.0f, "p1i1", &(ptr_ch_B->ptr_ptcl)) == _FAILURE_)
                                 {
                                     printf("Error, in space_check function\n");
                                     return _FAILURE_;
@@ -1421,7 +1408,7 @@ static int moving_old_child_to_new_child(struct node *ptr_node, const int *links
                             if (box_idx_ptcl_node == box_idx_node)
                             {
                                 //** >> Space checking of the capacity of the particles in the child node B **/
-                                if (space_check(&(ptr_ch_B->ptcl_cap), no_ptcl_ch_B + 1, 1.5f, "p1i1", &(ptr_ch_B->ptr_ptcl)) == _FAILURE_)
+                                if (space_check(&(ptr_ch_B->ptcl_cap), no_ptcl_ch_B + 1, 2.0f, "p1i1", &(ptr_ch_B->ptr_ptcl)) == _FAILURE_)
                                 {
                                     printf("Error, in space_check function\n");
                                     return _FAILURE_;
@@ -1528,7 +1515,7 @@ static int moving_old_child_to_new_child(struct node *ptr_node, const int *links
                         //** >> PARTICLES **//
 
                         //** >> Space checking of the capacity of the particles in the child node B **/
-                        if (space_check(&(ptr_ch_B->ptcl_cap), no_ptcl_ch_B + 1, 1.5f, "p1i1", &(ptr_ch_B->ptr_ptcl)) == _FAILURE_)
+                        if (space_check(&(ptr_ch_B->ptcl_cap), no_ptcl_ch_B + 1, 2.0f, "p1i1", &(ptr_ch_B->ptr_ptcl)) == _FAILURE_)
                         {
                             printf("Error, in space_check function\n");
                             return _FAILURE_;
@@ -1542,16 +1529,12 @@ static int moving_old_child_to_new_child(struct node *ptr_node, const int *links
             }
         }
     }
-
-    ptr_ch_A = NULL;
-    ptr_ch_B = NULL;
-
     return _SUCCESS_;
 }
 
 static int moving_new_zones_to_new_child(struct node *ptr_node, int *links_old_ord_new)
 {
-    struct node *ptr_ch = NULL; // child node
+    struct node *ptr_ch; // child node
 
     int lv;
 
@@ -1659,7 +1642,7 @@ static int moving_new_zones_to_new_child(struct node *ptr_node, int *links_old_o
                         //** >> PARTICLES **//
 
                         //** >> Space checking of the capacity of the particles in the child node B **/
-                        if (space_check(&(ptr_ch->ptcl_cap), no_ptcl_ch + 1, 1.5f, "p1i1", &(ptr_ch->ptr_ptcl)) == _FAILURE_)
+                        if (space_check(&(ptr_ch->ptcl_cap), no_ptcl_ch + 1, 2.0f, "p1i1", &(ptr_ch->ptr_ptcl)) == _FAILURE_)
                         {
                             printf("Error, in space_check function\n");
                             return _FAILURE_;
@@ -1673,16 +1656,13 @@ static int moving_new_zones_to_new_child(struct node *ptr_node, int *links_old_o
         ptr_ch->cell_size = no_cells_ch;
         ptr_ch->ptcl_size = no_ptcl_ch;
     }
-
-    ptr_ch = NULL;
-
     return _SUCCESS_;
 }
 
 static void update_border_child_boxes(struct node *ptr_node, const int *links_old_ord_old)
 {
 
-    struct node *ptr_ch = NULL;
+    struct node *ptr_ch;
 
     int box_idx_x_ch; // Box index in X direcction of the child cell
     int box_idx_y_ch; // Box index in Y direcction of the child cell
@@ -1722,14 +1702,12 @@ static void update_border_child_boxes(struct node *ptr_node, const int *links_ol
             }
         }
     }
-
-    ptr_ch = NULL;
 }
 
 static void reorganization_child_node(struct node *ptr_node, const int *links_old_ord_old, const int *links_new_ord_old, const int *links_old_ord_new)
 {
-    struct node *ptr_ch = NULL;
-    struct node **pptr_aux = NULL;
+    struct node *ptr_ch;
+    struct node **pptr_aux;
 
     int cntr_ch;
 
@@ -1780,8 +1758,6 @@ static void reorganization_child_node(struct node *ptr_node, const int *links_ol
     }
 
     free(pptr_aux);
-    pptr_aux = NULL;
-    ptr_ch = NULL;
 }
 
 static int reorganization_grandchild_node(struct node *ptr_node)
@@ -1814,7 +1790,7 @@ static int reorganization_grandchild_node(struct node *ptr_node)
 
         int size;
 
-        struct node **pptr_aux = NULL;
+        struct node **pptr_aux;
         int cntr_ch = 0; //Counter the number of grandchildren
         pptr_aux = (struct node **)malloc(no_grandchildren * sizeof(struct node *));
 
@@ -1850,7 +1826,7 @@ static int reorganization_grandchild_node(struct node *ptr_node)
 
             //** >> Space checking of the child capacity of the child node "child_ID" **/
 
-            if (space_check(&(ptr_node->pptr_chn[child_ID]->chn_cap), size + 1, 1.0f, "p1n2", &(ptr_node->pptr_chn[child_ID]->pptr_chn)) == _FAILURE_)
+            if (space_check(&(ptr_node->pptr_chn[child_ID]->chn_cap), size + 1, 2.0f, "p1n2", &(ptr_node->pptr_chn[child_ID]->pptr_chn)) == _FAILURE_)
             {
                 printf("Error, in space_check function\n");
                 return _FAILURE_;
@@ -1861,7 +1837,6 @@ static int reorganization_grandchild_node(struct node *ptr_node)
             ptr_node->pptr_chn[child_ID]->chn_size = size + 1;
         }
         free(pptr_aux);
-        pptr_aux = NULL;
     }
 
     return _SUCCESS_;
@@ -1878,8 +1853,8 @@ static void moved_unused_child_node_to_memory_pool(struct node *ptr_node)
 
 static void updating_ref_zones_grandchildren(struct node *ptr_node)
 {
-    struct node *ptr_ch = NULL;
-    struct node *ptr_grandch = NULL;
+    struct node *ptr_ch;
+    struct node *ptr_grandch;
 
     int box_idx_x_ch; // Box index in X direcction of the child cell
     int box_idx_y_ch; // Box index in Y direcction of the child cell
@@ -1902,15 +1877,12 @@ static void updating_ref_zones_grandchildren(struct node *ptr_node)
             }
         }
     }
-
-    ptr_ch = NULL;
-    ptr_grandch = NULL;
 }
 
 static int update_child_grid_points (struct node *ptr_node)
 {
 
-    struct node *ptr_ch = NULL;
+    struct node *ptr_ch;
 
     int box_idxNbr_i0_j0_k0_ch;    // Box index of the child node at x=0,y=0,z=0
     int box_idxNbr_im1_j0_k0_ch;   // Box index of the child node of the neighbor at x=-1,y=0,z=0
@@ -2016,7 +1988,7 @@ static int update_child_grid_points (struct node *ptr_node)
                         if (is_bder_grid_point == true)
                         {
                             //** >> Space checking of border grid points array**/
-                            if (space_check(&(ptr_ch->grid_bder_cap), ptr_ch->grid_bder_size + 1, 1.5f, "p1i1", &(ptr_ch->ptr_grid_bder)) == _FAILURE_)
+                            if (space_check(&(ptr_ch->grid_bder_cap), ptr_ch->grid_bder_size + 1, 2.0f, "p1i1", &(ptr_ch->ptr_grid_bder)) == _FAILURE_)
                             {
                                 printf("Error, in space_check function\n");
                                 return _FAILURE_;
@@ -2030,7 +2002,7 @@ static int update_child_grid_points (struct node *ptr_node)
                         else
                         {
                             //** >> Space checking of interior grid points array**/
-                            if (space_check(&(ptr_ch->grid_intr_cap), ptr_ch->grid_intr_size + 1, 1.5f, "p1i1", &(ptr_ch->ptr_grid_intr)) == _FAILURE_)
+                            if (space_check(&(ptr_ch->grid_intr_cap), ptr_ch->grid_intr_size + 1, 2.0f, "p1i1", &(ptr_ch->ptr_grid_intr)) == _FAILURE_)
                             {
                                 printf("Error, in space_check function\n");
                                 return _FAILURE_;
@@ -2045,21 +2017,17 @@ static int update_child_grid_points (struct node *ptr_node)
             }
         }
     }
-
-    ptr_ch = NULL;
-
     return _SUCCESS_;
 }
 
 static void exchange_box_aux_to_box(struct node *ptr_node)
 {
-    int *ptr_aux = NULL;
+    int *ptr_aux;
 
     ptr_aux = ptr_node->ptr_box;
     ptr_node->ptr_box = ptr_node->ptr_box_aux;
     ptr_node->ptr_box_aux = ptr_aux;
 
-    ptr_aux = NULL;
 }
 
 static int tentacles_updating(struct node *ptr_node, int tentacle_lv)
@@ -2108,14 +2076,14 @@ int tree_adaptation()
     //** >> Working in the refinement zones **/
     if (lmin < lmax)
     {
-        struct node *ptr_node = NULL;
+        struct node *ptr_node;
         int no_pts; // Number of parents in the cycle
         int no_lvs; // Number of level of refinement to adapt
 
-        int *links_old_ord_old = NULL; // Storing the old zone of refinement id using old order
-        int *links_new_ord_old = NULL; // Storing the new zone of refinement id using old order
-        int *links_old_ord_new = NULL; // Storing the old zone of refinement id using new order
-        int *links_new_ord_new = NULL; // Storing the new zone of refinement id using new order
+        int *links_old_ord_old; // Storing the old zone of refinement id using old order
+        int *links_new_ord_old; // Storing the new zone of refinement id using old order
+        int *links_old_ord_new; // Storing the old zone of refinement id using new order
+        int *links_new_ord_new; // Storing the new zone of refinement id using new order
         int links_cap;
 
         links_cap = 256;
@@ -2307,11 +2275,6 @@ int tree_adaptation()
         free(links_new_ord_old);
         free(links_old_ord_new);
         free(links_new_ord_new);
-        links_old_ord_old = NULL;
-        links_new_ord_old = NULL;
-        links_old_ord_new = NULL;
-        links_new_ord_new = NULL;
-        ptr_node = NULL;
     }
 
         return _SUCCESS_;

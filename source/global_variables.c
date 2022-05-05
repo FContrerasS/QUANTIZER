@@ -133,9 +133,11 @@ double TOTAL_MEMORY_NODES;
 double TOTAL_MEMORY_CELDAS;
 double TOTAL_MEMORY_PARTICULAS;
 double TOTAL_MEMORY_CAJAS;
+double TOTAL_MEMORY_GRID_POINTS;
+double TOTAL_MEMORY_GRID_PROPERTIES;
 double TOTAL_MEMORY_AUX;
 double TOTAL_MEMORY_TENTACLES;
-double TOTAL_MEMORY_OTROS;
+double TOTAL_MEMORY_STACK;
 
 static void init_global_constants()
 {
@@ -163,7 +165,7 @@ static void init_global_user_params()
     Maxdt = 3.0 * _Mgyear_;
     meanmass = 100;
     total_mass = GL_no_ptcl * meanmass;
-    fr_output = 40;
+    fr_output = 5;
     MaxIterations = 1000000;
     no_grid_pow2 = no_grid * no_grid;
     no_grid_pow3 = no_grid * no_grid * no_grid;
@@ -173,7 +175,7 @@ static void init_global_user_params()
 static void init_global_ref_crit()
 {
     ref_criterion_mass = meanmass * 2;
-    n_exp = 1;
+    n_exp = 1;  //n_exp = 0 is corrupted because particles can move between more than 1 level of refinement
     _CFL_ = 0.5; // CFL criteria 0.5
     _MAX_dt_ = 6.7e-6;
 }
@@ -208,18 +210,6 @@ static void init_global_poisson_params()
 
 static void init_global_ptcl()
 {
-
-    GL_ptcl_mass = NULL;
-    GL_ptcl_x = NULL;
-    GL_ptcl_y = NULL;
-    GL_ptcl_z = NULL;
-    GL_ptcl_vx = NULL;
-    GL_ptcl_vy = NULL;
-    GL_ptcl_vz = NULL;
-    GL_ptcl_ax = NULL;
-    GL_ptcl_ay = NULL;
-    GL_ptcl_az = NULL;
-
     GL_ptcl_mass = (vtype *)calloc(GL_no_ptcl , sizeof(vtype));
     GL_ptcl_x = (vtype *)calloc(GL_no_ptcl , sizeof(vtype));
     GL_ptcl_y = (vtype *)calloc(GL_no_ptcl , sizeof(vtype));
@@ -231,7 +221,6 @@ static void init_global_ptcl()
     GL_ptcl_ay = (vtype *)calloc(GL_no_ptcl , sizeof(vtype));
     GL_ptcl_az = (vtype *)calloc(GL_no_ptcl , sizeof(vtype));
 
-    GL_ptcl = NULL;
     GL_ptcl = (vtype **)malloc(10 * sizeof(vtype *));
     GL_ptcl[0] = GL_ptcl_mass;
     GL_ptcl[1] = GL_ptcl_x;
@@ -247,7 +236,6 @@ static void init_global_ptcl()
 
 static void init_tree_head()
 {
-    GL_ptr_tree = NULL;
     GL_ptr_tree = (struct node *)malloc(sizeof(struct node));
 }
 
@@ -272,7 +260,6 @@ static void init_global_folder_params()
 
 static void init_global_timer()
 {
-    GL_times = NULL;
     GL_times = (double *)calloc(50 , sizeof(double));
 }
 
@@ -282,9 +269,11 @@ static void init_global_memory()
     TOTAL_MEMORY_CELDAS = 0;
     TOTAL_MEMORY_PARTICULAS = 0;
     TOTAL_MEMORY_CAJAS = 0;
+    TOTAL_MEMORY_GRID_POINTS = 0;
+    TOTAL_MEMORY_GRID_PROPERTIES = 0;
     TOTAL_MEMORY_AUX = 0;
     TOTAL_MEMORY_TENTACLES = 0;
-    TOTAL_MEMORY_OTROS = 0;
+    TOTAL_MEMORY_STACK = 0;
 }
 
 void global_variables()

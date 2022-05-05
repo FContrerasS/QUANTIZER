@@ -28,7 +28,7 @@
 
 struct node* new_node()
 {
-	struct node *ptr_node = NULL;
+	struct node *ptr_node;
 
 	if (GL_pool_node_start == NULL)
 	{

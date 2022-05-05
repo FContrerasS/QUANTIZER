@@ -28,7 +28,6 @@
 
 static void initializing_particle_flag_updating()
 {
-	GL_ptcl_updating_flag = NULL;
 	GL_ptcl_updating_flag = (bool *)malloc(GL_no_ptcl * sizeof(bool));
 
 	for (int i = 0;i< GL_no_ptcl; i++)
@@ -170,16 +169,10 @@ static void initializing_head_node()
 	//** >> Initial values for the potential and acceleration **/
 	initial_potential_and_acceleration_head(ptr_head);
 
-	ptr_head = NULL;
-
 } // end function initializing_main_node
 
 static void initializing_tentacles()
 {
-	GL_tentacles = NULL;
-	GL_tentacles_cap = NULL;
-	GL_tentacles_size = NULL;
-
 	GL_tentacles = (struct node ***)malloc((lmax - lmin + 1) * sizeof(struct node **));
 	GL_tentacles_cap = (int *)calloc((lmax - lmin + 1), sizeof(int)); // Capacity of pointer of the tentacles in each level
 	GL_tentacles_size = (int *)calloc((lmax - lmin + 1), sizeof(int));
@@ -199,9 +192,6 @@ static void initializing_tentacles()
 	GL_tentacles[0][0] = GL_ptr_tree;
 
 	GL_tentacles_level_max = 0; // Maximum depth of the tentacles
-
-	//** >> Memory computing **/
-	TOTAL_MEMORY_TENTACLES += 2 * (lmax - lmin + 1) * ( sizeof(struct node **) + sizeof(int)) + 2 * sizeof(struct node *);
 }
 
 int initialization()
