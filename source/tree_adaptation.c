@@ -457,7 +457,7 @@ static int fill_zones_ref(struct node *ptr_node)
     return _SUCCESS_;
 } // End function fill_zones_ref
 
-static int create_links(struct node *ptr_node, int **links_old_ord_old, int **links_new_ord_old, int **links_old_ord_new, int **links_new_ord_new, int *ptr_links_cap)
+int create_links(struct node *ptr_node, int **links_old_ord_old, int **links_new_ord_old, int **links_old_ord_new, int **links_new_ord_new, int *ptr_links_cap)
 {
     struct node *ptr_ch; // child node
 
@@ -647,7 +647,317 @@ static int create_links(struct node *ptr_node, int **links_old_ord_old, int **li
         }
     }
 
+    // printf("\nOld option:\n\n");
+    // printf("old children: [ ");
+    // for (int i = 0; i < ptr_node->zones_size; i++)
+    // {
+    //     printf("%d ", (*links_old_ord_old)[i]);
+    // }
+    // printf("]\n");
+    // printf("new children: [ ");
+    // for (int i = 0; i < ptr_node->zones_size; i++)
+    // {
+    //     printf("%d ", (*links_new_ord_old)[i]);
+    // }
+    // printf("]\n");
+
     return _SUCCESS_;
+}
+
+int create_links_2(struct node *ptr_node, int **links_old_ord_old, int **links_new_ord_old, int **links_old_ord_new, int **links_new_ord_new, int *ptr_links_cap)
+{
+    struct node *ptr_ch; // child node
+
+    int cntr_links; // Counter the number of links between the new and old zones of refinement
+
+    int cntr_links_plus;    // Counte links
+    int cntr_link_elements; // Counter linked elements
+    bool check_link;        // Check if the element is linked
+
+    int box_value_new; // Value in the new box
+
+    int box_idx_x; // Box index at X direction
+    int box_idx_y; // Box index at Y direction
+    int box_idx_z; // Box index at Z direction
+    int box_idx;   // Box index
+
+    int aux_min;
+    int element_idx;
+    int aux_int;
+
+    //** >> Creating the links between old and new refinement zones IDs **/
+
+    cntr_links = 0;
+
+    //** >> Space checking of the capacity of links order arrays **/
+    if (space_check(ptr_links_cap, ptr_node->zones_size, 4.0f, "p4i1i1i1i1", links_old_ord_old, links_new_ord_old, links_old_ord_new, links_new_ord_new) == _FAILURE_)
+    {
+        printf("Error, in space_check function\n");
+        return _FAILURE_;
+    }
+
+    for (int i = 0; i < ptr_node->zones_size; i++)
+    {
+        (*links_new_ord_old)[i] = -1;
+        (*links_old_ord_old)[i] = -1;
+    }
+
+    if(ptr_node->chn_size > 0)
+    {
+        int **pptr_cntr_zones;
+        pptr_cntr_zones = (int **)malloc(ptr_node->chn_size * sizeof(int *));
+        for (int i = 0; i< ptr_node->chn_size; i++)
+        {
+            pptr_cntr_zones[i] = (int *)calloc(ptr_node->zones_size, sizeof(int));
+        }
+
+        //Filling the repetitions zone number of each child
+        for (int ch = 0; ch < ptr_node->chn_size; ch++)
+        {
+            ptr_ch = ptr_node->pptr_chn[ch];
+            for(int cell_idx = 0; cell_idx < ptr_ch->cell_size; cell_idx+=8)
+            {
+                box_idx_x = (ptr_ch->ptr_cell_idx_x[cell_idx] >> 1) - ptr_node->box_ts_x;
+                box_idx_y = (ptr_ch->ptr_cell_idx_y[cell_idx] >> 1) - ptr_node->box_ts_y;
+                box_idx_z = (ptr_ch->ptr_cell_idx_z[cell_idx] >> 1) - ptr_node->box_ts_z;
+                box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+                box_value_new = ptr_node->ptr_box_aux[box_idx];
+                if(box_value_new >= 0)
+                {
+                    pptr_cntr_zones[ch][box_value_new] += 1;
+                }
+            }
+        }
+
+        int *ptr_higher_repetitions, *ptr_zone_higher_repetitions;
+        ptr_higher_repetitions = (int *)calloc(ptr_node->chn_size , sizeof(int));
+        ptr_zone_higher_repetitions = (int *) calloc(ptr_node->chn_size , sizeof(int));
+
+        //Finding the higher number of zone repetitions of each child
+        for(int ch = 0; ch < ptr_node->chn_size; ch++)
+        {
+            ptr_higher_repetitions[ch] = pptr_cntr_zones[ch][0];
+
+            for (int zone_idx = 1; zone_idx < ptr_node->zones_size; zone_idx++)
+            {
+                if (ptr_higher_repetitions[ch] < pptr_cntr_zones[ch][zone_idx])
+                {
+                    ptr_higher_repetitions[ch] = pptr_cntr_zones[ch][zone_idx];
+                    ptr_zone_higher_repetitions[ch] = zone_idx;
+                }
+            }
+        }
+
+        //Reorganization of pptr_cntr_zones according to the biggest number of zone repetitions
+        int aux_pos;
+        int aux_int;
+        int *ptr_ch_ID;
+        ptr_ch_ID = (int *) malloc(ptr_node->chn_size * sizeof(int));
+
+        for (int ch = 0; ch < ptr_node->chn_size; ch ++)
+        {
+            ptr_ch_ID[ch] = ch;
+        }
+
+        for (int ch = 0; ch < ptr_node->chn_size; ch++)
+        {
+            aux_pos = ch;
+            for (int i = ch + 1; i < ptr_node->chn_size; i++)
+            {
+                if (ptr_higher_repetitions[ptr_ch_ID[aux_pos]] < ptr_higher_repetitions[ptr_ch_ID[i]])
+                {
+                    aux_pos = i;
+                }
+            }
+            aux_int = ptr_ch_ID[ch];
+            ptr_ch_ID[ch] = ptr_ch_ID[aux_pos];
+            ptr_ch_ID[aux_pos] = aux_int;
+
+            for(int i = ch + 1; i < ptr_node->chn_size; i++ )
+            {
+                pptr_cntr_zones[ptr_ch_ID[i]][ptr_zone_higher_repetitions[ptr_ch_ID[ch]]] = -1;
+                if (ptr_zone_higher_repetitions[ptr_ch_ID[i]] == ptr_zone_higher_repetitions[ptr_ch_ID[ch]])
+                {
+                    ptr_higher_repetitions[ptr_ch_ID[i]] = pptr_cntr_zones[ptr_ch_ID[i]][0];
+                    ptr_zone_higher_repetitions[ptr_ch_ID[i]] = 0;
+
+                    for (int zone_idx = 1; zone_idx < ptr_node->zones_size; zone_idx++)
+                    {
+                        if (ptr_higher_repetitions[ptr_ch_ID[i]] < pptr_cntr_zones[ptr_ch_ID[i]][zone_idx])
+                        {
+                            ptr_higher_repetitions[ptr_ch_ID[i]] = pptr_cntr_zones[ptr_ch_ID[i]][zone_idx];
+                            ptr_zone_higher_repetitions[ptr_ch_ID[i]] = zone_idx;
+                        }
+                    }
+                }
+            }
+
+
+            if (ptr_node->zones_size < ch + 1)
+            {
+                ch = ptr_node->chn_size;
+            }
+        }
+
+        while (cntr_links < ptr_node->zones_size && cntr_links < ptr_node->chn_size)
+        {
+            (*links_old_ord_old)[cntr_links] = ptr_ch_ID[cntr_links];
+            (*links_new_ord_old)[cntr_links] = ptr_zone_higher_repetitions[ptr_ch_ID[cntr_links]];
+            cntr_links++;
+        }
+
+        for (int i = 0; i < ptr_node->chn_size; i++)
+        {
+            free(pptr_cntr_zones[i]);
+        }
+        free(pptr_cntr_zones);
+        free(ptr_higher_repetitions);
+        free(ptr_zone_higher_repetitions);
+        free(ptr_ch_ID);
+    }
+
+    if (ptr_node->chn_size < ptr_node->zones_size)
+    {
+        cntr_link_elements = -1;
+        for (int ch = ptr_node->chn_size; ch < ptr_node->zones_size; ch++)
+        {
+            (*links_old_ord_old)[ch] = ch;
+
+            check_link = true;
+            while (check_link == true)
+            {
+                check_link = false;
+                cntr_link_elements++;
+                for (int j = 0; j < cntr_links; j++)
+                {
+                    if ((*links_new_ord_old)[j] == cntr_link_elements)
+                    {
+                        check_link = true;
+                        j = cntr_links;
+                    }
+                }
+            }
+            (*links_new_ord_old)[ch] = cntr_link_elements;
+        }
+    }
+
+    //** >> Ordering links arrays **/
+    //** >> Old order **/
+    cntr_links_plus = 0;
+    for (int i = 0; i < ptr_node->zones_size - 1; i++)
+    {
+        aux_min = ptr_node->chn_size + ptr_node->zones_size;
+        element_idx = -1;
+        cntr_link_elements = i;
+        while (aux_min > cntr_links_plus && cntr_link_elements < ptr_node->zones_size)
+        {
+            if (aux_min > (*links_old_ord_old)[cntr_link_elements])
+            {
+                aux_min = (*links_old_ord_old)[cntr_link_elements];
+                element_idx = cntr_link_elements;
+            }
+            cntr_link_elements++;
+        }
+
+        if ((*links_old_ord_old)[i] != aux_min)
+        {
+            //** >> Old **/
+            aux_int = (*links_old_ord_old)[i];
+            (*links_old_ord_old)[i] = aux_min;
+            (*links_old_ord_old)[element_idx] = aux_int;
+            //** >> New **/
+            aux_int = (*links_new_ord_old)[i];
+            (*links_new_ord_old)[i] = (*links_new_ord_old)[element_idx];
+            (*links_new_ord_old)[element_idx] = aux_int;
+        }
+        cntr_links_plus = aux_min + 1;
+    }
+
+    //** >> New order **/
+    for (int i = 0; i < ptr_node->zones_size; i++)
+    {
+        (*links_new_ord_new)[i] = i;
+    }
+    for (int i = 0; i < ptr_node->zones_size; i++)
+    {
+        for (int j = 0; j < ptr_node->zones_size; j++)
+        {
+            if ((*links_new_ord_old)[j] == i)
+            {
+                (*links_old_ord_new)[i] = (*links_old_ord_old)[j];
+                j = ptr_node->zones_size;
+            }
+        }
+    }
+
+    // printf("\nNew option:\n\n");
+    // printf("old children: [ ");
+    // for (int i = 0; i < ptr_node->zones_size; i++)
+    // {
+    //     printf("%d ", (*links_old_ord_old)[i]);
+    // }
+    // printf("]\n");
+    // printf("new children: [ ");
+    // for (int i = 0; i < ptr_node->zones_size; i++)
+    // {
+    //     printf("%d ", (*links_new_ord_old)[i]);
+    // }
+    // printf("]\n");
+
+    //** >> Checking  minium and maximum nunber of refinement zones:
+    for (int i = 0; i < ptr_node->zones_size; i++)
+    {
+        if ((*links_old_ord_old)[i] < 0 || ((*links_old_ord_old)[i] >= ptr_node->zones_size && (*links_old_ord_old)[i] >= ptr_node->chn_size))
+        {
+            printf("ERROR v2, links_old_ord_old out of zones number:\n");
+            printf("links_old_ord_old)[%d] = %d\n", i, (*links_old_ord_old)[i]);
+        }
+        if ((*links_old_ord_new)[i] < 0 || ((*links_old_ord_new)[i] >= ptr_node->zones_size && (*links_old_ord_new)[i] >= ptr_node->chn_size))
+        {
+            printf("ERROR v2, links_old_ord_new out of zones number:\n");
+            printf("links_old_ord_new)[%d] = %d\n", i, (*links_old_ord_new)[i]);
+        }
+        if ((*links_new_ord_old)[i] < 0 || (*links_new_ord_old)[i] >= ptr_node->zones_size)
+        {
+            printf("ERROR v2, links_new_ord_old out of zones number:\n");
+            printf("links_new_ord_old)[%d] = %d\n", i, (*links_new_ord_old)[i]);
+        }
+        if ((*links_new_ord_new)[i] < 0 || (*links_new_ord_new)[i] >= ptr_node->zones_size)
+        {
+            printf("ERROR v2, links_new_ord_new out of zones number:\n");
+            printf("links_new_ord_new)[%d] = %d\n", i, (*links_new_ord_new)[i]);
+        }
+    }
+
+    //** >> Checking repetitions:
+    for (int i = 0; i < ptr_node->zones_size - 1; i++)
+    {
+        for (int j = i + 1; j < ptr_node->zones_size;j++)
+        {
+            if ((*links_old_ord_old)[i] == (*links_old_ord_old)[j])
+            {
+                printf("Error v2, Repetition of links_old_ord_old\n");
+                printf("i = %d, j = %d, value = %d\n", i, j, (*links_old_ord_old)[i]);
+            }
+            if ((*links_old_ord_new)[i] == (*links_old_ord_new)[j])
+            {
+                printf("Error v2, Repetition of links_old_ord_new\n");
+                printf("i = %d, j = %d, value = %d\n", i, j, (*links_old_ord_new)[i]);
+            }
+            if ((*links_new_ord_old)[i] == (*links_new_ord_old)[j])
+            {
+                printf("Error v2, Repetition of links_new_ord_old\n");
+                printf("i = %d, j = %d, value = %d\n", i, j, (*links_new_ord_old)[i]);
+            }
+            if ((*links_new_ord_new)[i] == (*links_new_ord_new)[j])
+            {
+                printf("Error v2, Repetition of links_new_ord_new\n");
+                printf("i = %d, j = %d, value = %d\n", i, j, (*links_new_ord_new)[i]);
+            }
+        }
+    }
+
+        return _SUCCESS_;
 }
 
 static void remov_cells_nolonger_require_refinement(struct node *ptr_node, const int *links_old_ord_old, const int *links_new_ord_old)
@@ -2076,6 +2386,9 @@ int tree_adaptation()
     //** >> Working in the refinement zones **/
     if (lmin < lmax)
     {
+
+        clock_t aux_clock;
+
         struct node *ptr_node;
         int no_pts; // Number of parents in the cycle
         int no_lvs; // Number of level of refinement to adapt
@@ -2105,50 +2418,193 @@ int tree_adaptation()
 
                 //** Updating the box mass information **/
                 //printf("\n\nUpdating box mass\n\n");
+
+                aux_clock = clock();
                 updating_box_mass(ptr_node);
+                GL_times[30] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+                
 
                 //** Initialization of the box_aux **/
                 //printf("\n\nInitialization box aux\n\n");
+                aux_clock = clock();
                 initialization_box_aux(ptr_node);
+                GL_times[31] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+                
 
                 //** Initialization of the auiliary refinement arrays**/
                 //printf("\n\nInitialization ref aux\n\n\n");
+                aux_clock = clock();
                 initialization_ref_aux(ptr_node);
+                GL_times[32] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+                
 
                 //** >> Filling the refinement cells array **/
                 //printf("\n\nFill cell ref\n\n\n");
+                aux_clock = clock();
                 if (fill_cell_ref(ptr_node) == _FAILURE_)
                 {
                     printf("Error at function fill_cell_ref()\n");
                     return _FAILURE_;
                 }
+                GL_times[33] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
 
                 //** >> Filling the different zones of refinement **/
                 //printf("\n\nFill zones ref\n\n");
+                aux_clock = clock();
                 if (fill_zones_ref(ptr_node) == _FAILURE_)
                 {
                     printf("Error at function fill_zones_ref()\n");
                     return _FAILURE_;
                 }
+                GL_times[34] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
-                //** >> Adapting to new refinement zones **/
+
+                //** >> Create links **/
                 //printf("\n\nCreate links\n\n");
-                if (create_links(ptr_node, &links_old_ord_old, &links_new_ord_old, &links_old_ord_new, &links_new_ord_new, &links_cap) == _FAILURE_)
+                aux_clock = clock();
+                if (ptr_node->zones_size > 0)
                 {
-                    printf("Error at function create_links()\n");
-                    return _FAILURE_;
+                    if (create_links(ptr_node, &links_old_ord_old, &links_new_ord_old, &links_old_ord_new, &links_new_ord_new, &links_cap) == _FAILURE_)
+                    {
+                        printf("Error at function create_links()\n");
+                        return _FAILURE_;
+                    }
+                }
+                GL_times[35] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+                //** >> Checking  minium and maximum nunber of refinement zones:
+                for (int i = 0; i < ptr_node->zones_size; i++)
+                {
+                    if (links_old_ord_old[i] < 0 || (links_old_ord_old[i] >= ptr_node->zones_size && links_old_ord_old[i] >= ptr_node->chn_size))
+                    {
+                        printf("ERROR v1, links_old_ord_old out of zones number:\n");
+                        printf("links_old_ord_old)[%d] = %d\n", i, links_old_ord_old[i]);
+                    }
+                    if (links_old_ord_new[i] < 0 || (links_old_ord_new[i] >= ptr_node->zones_size && links_old_ord_new[i] >= ptr_node->chn_size))
+                    {
+                        printf("ERROR v1, links_old_ord_new out of zones number:\n");
+                        printf("links_old_ord_new)[%d] = %d\n", i, links_old_ord_new[i]);
+                    }
+                    if (links_new_ord_old[i] < 0 || links_new_ord_old[i] >= ptr_node->zones_size)
+                    {
+                        printf("ERROR v1, links_new_ord_old out of zones number:\n");
+                        printf("links_new_ord_old)[%d] = %d\n", i, links_new_ord_old[i]);
+                    }
+                    if (links_new_ord_new[i] < 0 || links_new_ord_new[i] >= ptr_node->zones_size)
+                    {
+                        printf("ERROR v1, links_new_ord_new out of zones number:\n");
+                        printf("links_new_ord_new)[%d] = %d\n", i, links_new_ord_new[i]);
+                    }
+                }
+
+                //** >> Checking repetitions:
+                for (int i = 0; i < ptr_node->zones_size - 1; i++)
+                {
+                    for (int j = i + 1; j < ptr_node->zones_size; j++)
+                    {
+                        if (links_old_ord_old[i] == links_old_ord_old[j])
+                        {
+                            printf("Error v1, Repetition of links_old_ord_old\n");
+                            printf("i = %d, j = %d, value = %d\n", i, j, links_old_ord_old[i]);
+                        }
+                        if (links_old_ord_new[i] == links_old_ord_new[j])
+                        {
+                            printf("Error v1, Repetition of links_old_ord_new\n");
+                            printf("i = %d, j = %d, value = %d\n", i, j, links_old_ord_new[i]);
+                        }
+                        if (links_new_ord_old[i] == links_new_ord_old[j])
+                        {
+                            printf("Error v1, Repetition of links_new_ord_old\n");
+                            printf("i = %d, j = %d, value = %d\n", i, j, links_new_ord_old[i]);
+                        }
+                        if (links_new_ord_new[i] == links_new_ord_new[j])
+                        {
+                            printf("Error v1, Repetition of links_new_ord_new\n");
+                            printf("i = %d, j = %d, value = %d\n", i, j, links_new_ord_new[i]);
+                        }
+                    }
+                }
+
+                //** >> Create links v2 **/
+                // printf("\n\nCreate links v2\n\n");
+                aux_clock = clock();
+                if(ptr_node->zones_size > 0)
+                {
+                    if (create_links_2(ptr_node, &links_old_ord_old, &links_new_ord_old, &links_old_ord_new, &links_new_ord_new, &links_cap) == _FAILURE_)
+                    {
+                        printf("Error at function create_links()\n");
+                        return _FAILURE_;
+                    }
+                }
+                GL_times[36] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+                //** >> Checking  minium and maximum nunber of refinement zones:
+                for (int i = 0; i < ptr_node->zones_size; i++)
+                {
+                    if (links_old_ord_old[i] < 0 || (links_old_ord_old[i] >= ptr_node->zones_size && links_old_ord_old[i] >= ptr_node->chn_size))
+                    {
+                        printf("ERROR v2, links_old_ord_old out of zones number:\n");
+                        printf("links_old_ord_old)[%d] = %d\n", i, links_old_ord_old[i]);
+                    }
+                    if (links_old_ord_new[i] < 0 || (links_old_ord_new[i] >= ptr_node->zones_size && links_old_ord_new[i] >= ptr_node->chn_size))
+                    {
+                        printf("ERROR v2, links_old_ord_new out of zones number:\n");
+                        printf("links_old_ord_new)[%d] = %d\n", i, links_old_ord_new[i]);
+                    }
+                    if (links_new_ord_old[i] < 0 || links_new_ord_old[i] >= ptr_node->zones_size)
+                    {
+                        printf("ERROR v2, links_new_ord_old out of zones number:\n");
+                        printf("links_new_ord_old)[%d] = %d\n", i, links_new_ord_old[i]);
+                    }
+                    if (links_new_ord_new[i] < 0 || links_new_ord_new[i] >= ptr_node->zones_size)
+                    {
+                        printf("ERROR v2, links_new_ord_new out of zones number:\n");
+                        printf("links_new_ord_new)[%d] = %d\n", i, links_new_ord_new[i]);
+                    }
+                }
+
+                //** >> Checking repetitions:
+                for (int i = 0; i < ptr_node->zones_size - 1; i++)
+                {
+                    for (int j = i + 1; j < ptr_node->zones_size; j++)
+                    {
+                        if (links_old_ord_old[i] == links_old_ord_old[j])
+                        {
+                            printf("Error v2, Repetition of links_old_ord_old\n");
+                            printf("i = %d, j = %d, value = %d\n", i, j, links_old_ord_old[i]);
+                        }
+                        if (links_old_ord_new[i] == links_old_ord_new[j])
+                        {
+                            printf("Error v2, Repetition of links_old_ord_new\n");
+                            printf("i = %d, j = %d, value = %d\n", i, j, links_old_ord_new[i]);
+                        }
+                        if (links_new_ord_old[i] == links_new_ord_old[j])
+                        {
+                            printf("Error v2, Repetition of links_new_ord_old\n");
+                            printf("i = %d, j = %d, value = %d\n", i, j, links_new_ord_old[i]);
+                        }
+                        if (links_new_ord_new[i] == links_new_ord_new[j])
+                        {
+                            printf("Error v2, Repetition of links_new_ord_new\n");
+                            printf("i = %d, j = %d, value = %d\n", i, j, links_new_ord_new[i]);
+                        }
+                    }
                 }
 
                 //** >> Removing cells that no longer require refinement **/
                 //printf("\n\nRemoving cells nolonger requiere refinement\n\n");
+                aux_clock = clock();
                 if (0 < ptr_node->zones_size && 0 < ptr_node->chn_size)
                 {
                     remov_cells_nolonger_require_refinement(ptr_node, links_old_ord_old, links_new_ord_old);
                 }
+                GL_times[37] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
 
                 //** >> Adapting child boxes to the new space **/
-                //printf("\n\nAdapt child box\n\n");
-
+                aux_clock = clock();
                 if (0 < ptr_node->zones_size && 0 < ptr_node->chn_size)
                 {
                     if (adapt_child_box_and_cells(ptr_node, links_old_ord_old, links_new_ord_old) == _FAILURE_)
@@ -2157,9 +2613,14 @@ int tree_adaptation()
                         return _FAILURE_;
                     }
                 }
+                GL_times[38] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+                //printf("\n\nAdapt child box\n\n");
+
+
 
                 //** >> Creating and defining new children nodes for excess in refinement zones and and linking them to the parent node ptr_node **/
                 //printf("\n\nCreate new child nodes\n\n");
+                aux_clock = clock();
                 if (ptr_node->zones_size > ptr_node->chn_size)
                 {
 
@@ -2169,9 +2630,12 @@ int tree_adaptation()
                         return _FAILURE_;
                     }
                 }
+                GL_times[39] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
 
                 //** >> Adapting the information from old child nodes to new child nodes **/
                 //printf("\n\nMoving old child to new child\n\n");
+                aux_clock = clock();
                 if (0 < ptr_node->zones_size && 0 < ptr_node->chn_size)
                 {
                     if (moving_old_child_to_new_child(ptr_node, links_old_ord_old, links_new_ord_old, links_old_ord_new, links_new_ord_new) == _FAILURE_)
@@ -2180,9 +2644,12 @@ int tree_adaptation()
                         return _FAILURE_;
                     }
                 }
+                GL_times[40] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
 
                 //** >> Moving new zones of refienemnt information to all child nodes **/
                 //printf("\n\nMoving new zones to new child\n\n");
+                aux_clock = clock();
                 if (0 < ptr_node->zones_size)
                 {
                     if (moving_new_zones_to_new_child(ptr_node, links_old_ord_new) == _FAILURE_)
@@ -2191,23 +2658,32 @@ int tree_adaptation()
                         return _FAILURE_;
                     }
                 }
+                GL_times[41] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
 
                 //** >> Update border of the child boxes **//
                 //printf("\n\nUpdate border child boxes\n\n");
+                aux_clock = clock();
                 if (ptr_node->zones_size > 0)
                 {
                     update_border_child_boxes(ptr_node, links_old_ord_old);
                 }
+                GL_times[42] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
 
                 //** >> Reorganization child nodes **/
                 //printf("\n\nReorganization child nodes\n\n");
-                if(ptr_node->zones_size > 0)
+                aux_clock = clock();
+                if (ptr_node->zones_size > 0)
                 {
                     reorganization_child_node(ptr_node, links_old_ord_old, links_new_ord_old, links_old_ord_new);
                 }
+                GL_times[43] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
 
                 //** >> Reorganization grandchild nodes **/
                 //printf("\n\nReorganization grandchild nodes\n\n");
+                aux_clock = clock();
                 if (ptr_node->zones_size > 0 && ptr_node->chn_size > 0 && lv < no_lvs)
                 {
                     if (reorganization_grandchild_node(ptr_node) == _FAILURE_)
@@ -2216,23 +2692,32 @@ int tree_adaptation()
                         return _FAILURE_;
                     }
                 }
+                GL_times[44] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
 
                 //** >> Moved Unused child node to the stack of memory pool **/
                 //printf("\n\nMoved Unused child node to the stack of memory pool\n\n");
+                aux_clock = clock();
                 if (ptr_node->chn_size > ptr_node->zones_size)
                 {
                     moved_unused_child_node_to_memory_pool(ptr_node);
                 }
+                GL_times[45] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
 
                 //** >> Updating refinement zones of the grandchildren **/
                 //printf("\n\nUpdating refinement zones of the grandchildren\n\n");
+                aux_clock = clock();
                 if (ptr_node->zones_size > 0 && ptr_node->chn_size > 0 && lv < no_lvs)
                 {
                     updating_ref_zones_grandchildren(ptr_node);
                 }
+                GL_times[46] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
 
                 //** >> Updating children grid points **/
                 //printf("\n\nUpdating children grid points\n\n");
+                aux_clock = clock();
                 if (ptr_node->zones_size > 0)
                 {
                     if (update_child_grid_points(ptr_node) == _FAILURE_)
@@ -2241,17 +2726,22 @@ int tree_adaptation()
                         return _FAILURE_;
                     }
                 }
+                GL_times[47] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
 
                 //** >> Exchange between auiliary box and box **/
                 //printf("\n\nExchange between auiliary box and box\n\n");
+                aux_clock = clock();
                 if (ptr_node->zones_size > 0 || ptr_node->chn_size > 0)
                 {
                     exchange_box_aux_to_box(ptr_node);
-
                 }
+                GL_times[48] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
 
                 //** >> Tentacles updating **/
                 //printf("\n\nTentacles Updating\n\n");
+                aux_clock = clock();
                 if (0 < ptr_node->zones_size)
                 {
                     if (tentacles_updating(ptr_node, lv + 1) == _FAILURE_)
@@ -2260,21 +2750,32 @@ int tree_adaptation()
                         return _FAILURE_;
                     }
                 }
+                GL_times[49] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
 
                 //** >> Updating children size
                 //printf("\n\nUpdating chn size\n\n");
+                aux_clock = clock();
                 update_chn_size(ptr_node);
+                GL_times[50] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+                
             }
         }
 
         //** >> Tentacles Updating lv max **/
         //printf("\n\nTentacles updating lv max\n\n");
+        aux_clock = clock();
         updating_tentacles_max_lv();
+        GL_times[51] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+        
 
+        aux_clock = clock();
         free(links_old_ord_old);
         free(links_new_ord_old);
         free(links_old_ord_new);
         free(links_new_ord_new);
+        GL_times[52] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
     }
 
         return _SUCCESS_;
