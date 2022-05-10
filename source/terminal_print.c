@@ -46,7 +46,7 @@ static void computing_memory()
 
 
     //** >> Node properties **/
-    for (int lv = 0; lv < GL_tentacles_level_max; lv++)
+    for (int lv = 0; lv < GL_tentacles_level_max + 1; lv++)
     {
         no_pts = GL_tentacles_size[lv];
 

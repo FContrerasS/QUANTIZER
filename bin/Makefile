@@ -30,7 +30,7 @@ OBJ = global_variables.o input.o main.o output_snapshots.o tree_construction.o i
 # Main.cpp Initialization.cpp Jacobi.cpp GS.cpp Fine2coarse.cpp Coarse2fine.cpp Vgrid.cpp Fgrid.cpp Wgrid.cpp Error.cpp
 
 # the build target executable:
-EXECUTABLE = nbody.exe
+EXECUTABLE = nbody11.exe
 	
 all:
 	make compile -s

@@ -334,7 +334,7 @@ int potential()
         ptr_red_black_size[0] = 0;
         ptr_red_black_size[1] = 0;
 
-        for (int lv = 0; lv < lmax - lmin + 1; lv++)
+        for (int lv = 0; lv < GL_tentacles_level_max; lv++)
         {
             no_pts = GL_tentacles_size[lv];
 
@@ -390,11 +390,6 @@ int potential()
                     }
                 }   // End cycle over number of children
             } // End cycle over number of parents
-
-            if (GL_tentacles_size[lv + 1] == 0)
-            {
-                lv = lmax - lmin + 1;
-            }
         }
 
         //** >> Free pointers **/
@@ -402,9 +397,17 @@ int potential()
         {
             free(pptr_red_black[0]); // Free red
         }
+        else
+        {
+            printf("Error, pptr_red_black[0] = NULL\n");
+        }
         if (pptr_red_black[1] != NULL)
         {
             free(pptr_red_black[1]); // Free black
+        }
+        else
+        {
+            printf("Error, pptr_red_black[1] = NULL\n");
         }
         free(pptr_red_black); // Free red and black
         free(ptr_red_black_cap); // Free capacity of red and black

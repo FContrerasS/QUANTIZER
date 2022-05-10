@@ -140,7 +140,7 @@ static void computing_grid_acceleration(struct node *ptr_node)
 {
     //** >> Acceleration in the grid **/
 
-    for (int lv = 0; lv < lmax - lmin + 1; lv++)
+    for (int lv = 0; lv < GL_tentacles_level_max + 1; lv++)
     {
         //Number of parent of the level = GL_tentacles_size[lv];
 
@@ -149,10 +149,6 @@ static void computing_grid_acceleration(struct node *ptr_node)
         {
             //ptr_node = GL_tentacles[lv][i];
             computing_grid_acceleration(GL_tentacles[lv][i]);
-        }
-        if (GL_tentacles_size[lv + 1] == 0)
-        {
-            lv = lmax - lmin + 1;
         }
     }
 
