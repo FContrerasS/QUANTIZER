@@ -195,8 +195,8 @@ static void init_global_poisson_params()
                          branches of the tree using Successive over-relaxation
     vtype _w_SOR_: The overrelaxation parameter
 */
-    _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_ = 1000;
-    _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ = (1.5e-14);
+    _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_ = 100;
+    _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ = (1.5e-10);
     check_poisson_error_method = 0; 
     multigrid = 0; 
     solver = 0; 
