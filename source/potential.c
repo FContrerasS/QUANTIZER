@@ -307,7 +307,7 @@ int potential()
 
     if (iter == _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_)
     {
-        printf("\nERROR: The precision was not reached in the parent node. Too many Multigrid Iterations, plz choose a lower precision than %1.3e\n", _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_);
+        printf("\nERROR: The precision was not reached in the parent node. Too many Multigrid Iterations, plz choose a lower precision than %1.3e\n", (double) _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_);
         return _FAILURE_;
     }
 
@@ -385,7 +385,7 @@ int potential()
                     }
                     if (iter == _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_)
                     {
-                        printf("\nERROR: The precision was not reached in the branch node. Too many SOR Iterations, plz choose a lower precision than %1.3e\n", _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_);
+                        printf("\nERROR: The precision was not reached in the branch node. Too many SOR Iterations, plz choose a lower precision than %1.3e\n", (double) _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_);
                         return _FAILURE_;
                     }
                 }   // End cycle over number of children

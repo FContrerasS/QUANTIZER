@@ -45,6 +45,66 @@
 
 #include "main.h"
 
+void grid_check()
+{
+
+	vtype aux_pot;
+	vtype aux_dens;
+	vtype aux_ax;
+	vtype aux_ay;
+	vtype aux_az;
+	struct node *ptr_node;
+	int no_pts;
+	for (int i = 0; i < GL_tentacles_level_max + 1; i++)
+	{
+		no_pts = GL_tentacles_size[i];
+		aux_pot = 0;
+		aux_dens = 0;
+		aux_ax = 0;
+		aux_ay = 0;
+		aux_az = 0;
+		for (int j = 0; j < no_pts; j++)
+		{
+			ptr_node = GL_tentacles[i][j];
+			for (int k = 0; k < ptr_node->grid_intr_size; k++)
+			{
+				aux_pot += ptr_node->ptr_pot[ptr_node->ptr_grid_intr[k]];
+				aux_dens += ptr_node->ptr_d[ptr_node->ptr_grid_intr[k]];
+				aux_ax += ptr_node->ptr_ax[ptr_node->ptr_grid_intr[k]];
+				aux_ay += ptr_node->ptr_ay[ptr_node->ptr_grid_intr[k]];
+				aux_az += ptr_node->ptr_az[ptr_node->ptr_grid_intr[k]];
+			}
+		}
+		printf("\nInterior, lv = %d\n", i);
+		//printf("pot = %.16Lf, d = %.16Lf, ax = %.16Lf, ay = %.16Lf, az = %.16Lf\n", aux_pot, aux_dens, aux_ax, aux_ay, aux_az);
+		//printf("pot = %.16f, d = %.16f, ax = %.16f, ay = %.16f, az = %.16f\n", aux_pot, aux_dens, aux_ax, aux_ay, aux_az);
+		printf("pot = %.10f, d = %.10f, ax = %.10f, ay = %.10f, az = %.10f\n", (double)aux_pot, (double)aux_dens, (double)aux_ax, (double)aux_ay, (double)aux_az);
+
+		aux_pot = 0;
+		aux_dens = 0;
+		aux_ax = 0;
+		aux_ay = 0;
+		aux_az = 0;
+		for (int j = 0; j < no_pts; j++)
+		{
+			ptr_node = GL_tentacles[i][j];
+			for (int k = 0; k < ptr_node->grid_bder_size; k++)
+			{
+				aux_pot += ptr_node->ptr_pot[ptr_node->ptr_grid_bder[k]];
+				aux_dens += ptr_node->ptr_d[ptr_node->ptr_grid_bder[k]];
+				aux_ax += ptr_node->ptr_ax[ptr_node->ptr_grid_bder[k]];
+				aux_ay += ptr_node->ptr_ay[ptr_node->ptr_grid_bder[k]];
+				aux_az += ptr_node->ptr_az[ptr_node->ptr_grid_bder[k]];
+			}
+		}
+		printf("\nBorder, lv = %d\n", i);
+		//printf("pot = %.16Lf, d = %.16Lf, ax = %.16Lf, ay = %.16Lf, az = %.16Lf\n", aux_pot, aux_dens, aux_ax, aux_ay, aux_az);
+		//printf("pot = %.16f, d = %.16f, ax = %.16f, ay = %.16f, az = %.16f\n", aux_pot, aux_dens, aux_ax, aux_ay, aux_az);
+		printf("pot = %.10f, d = %.10f, ax = %.10f, ay = %.10f, az = %.10f\n", (double)aux_pot, (double)aux_dens, (double)aux_ax, (double)aux_ay, (double)aux_az);
+	}
+}
+
+
 int main(int argc, char **argv) {
 
 	printf("\n ********** RUNNING N-BODY CODE ********** \n\n");
@@ -161,6 +221,15 @@ int main(int argc, char **argv) {
 
 	while (actualtime < Maxdt && Number_timesteps < MaxIterations)
 	{
+		
+		// printf("\n Inicio de while\n");
+		// for (int i = 0; i < 10000; i++)
+		// {
+		// 	printf("%d, x = %.16f, y = %.16f, z = %.16f\n", i, (double)GL_ptcl_x[i], (double)GL_ptcl_y[i], (double)GL_ptcl_z[i]);
+		// 	printf("%d, ax = %.16f, ay = %.16f, az = %.16f\n", i, (double)GL_ptcl_ax[i], (double)GL_ptcl_ay[i], (double)GL_ptcl_az[i]);
+		// }
+		// grid_check();
+
 		//** >> TIMESTEP **/
 		// printf("Time-step compute\n");
 		GL_clock_begin = clock();
@@ -183,6 +252,14 @@ int main(int argc, char **argv) {
 		}
 		GL_times[9] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 
+		//printf("\n AFTER Particle Updating A\n");
+		// for (int i = 0; i < 10000; i++)
+		// {
+		// 	printf("%d, x = %.16f, y = %.16f, z = %.16f\n", i, GL_ptcl_x[i], GL_ptcl_y[i], GL_ptcl_z[i]);
+		// 	printf("%d, ax = %.16f, ay = %.16f, az = %.16f\n", i, GL_ptcl_ax[i], GL_ptcl_ay[i], GL_ptcl_az[i]);
+		// }
+		//grid_check();
+
 		//** >> RESET **/
 		// printf("Reset\n");
 		GL_clock_begin = clock();
@@ -203,11 +280,27 @@ int main(int argc, char **argv) {
 		}
 		GL_times[10] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 
+		//printf("\n AFTER Tree adaptation \n");
+		// for (int i = 0; i < 10000; i++)
+		// {
+		// 	printf("%d, x = %.16f, y = %.16f, z = %.16f\n", i, GL_ptcl_x[i], GL_ptcl_y[i], GL_ptcl_z[i]);
+		// 	printf("%d, ax = %.16f, ay = %.16f, az = %.16f\n", i, GL_ptcl_ax[i], GL_ptcl_ay[i], GL_ptcl_az[i]);
+		// }
+		//grid_check();
+
 		// printf("density \n");
 		//** >> DENSITY COMPUTATION **/
 		GL_clock_begin = clock();
 		grid_density();
 		GL_times[4] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
+
+		//printf("\n AFTER density \n");
+		// for (int i = 0; i < 10000; i++)
+		// {
+		// 	printf("%d, x = %.16f, y = %.16f, z = %.16f\n", i, GL_ptcl_x[i], GL_ptcl_y[i], GL_ptcl_z[i]);
+		// 	printf("%d, ax = %.16f, ay = %.16f, az = %.16f\n", i, GL_ptcl_ax[i], GL_ptcl_ay[i], GL_ptcl_az[i]);
+		// }
+		//grid_check();
 
 		// printf("Potential\n");
 		//** >> POTENTIAL COMPUTATION **/
@@ -229,6 +322,14 @@ int main(int argc, char **argv) {
 		}
 		GL_times[6] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 
+		//printf("\n AFTER Grid acceleration \n");
+		// for (int i = 0; i < 10000; i++)
+		// {
+		// 	printf("%d, x = %.16f, y = %.16f, z = %.16f\n", i, GL_ptcl_x[i], GL_ptcl_y[i], GL_ptcl_z[i]);
+		// 	printf("%d, ax = %.16f, ay = %.16f, az = %.16f\n", i, GL_ptcl_ax[i], GL_ptcl_ay[i], GL_ptcl_az[i]);
+		// }
+		//grid_check();
+
 		//** >> PARTICLE ACCELERATION **/
 		// printf("Particle acceleration\n");
 		GL_clock_begin = clock();
@@ -238,6 +339,14 @@ int main(int argc, char **argv) {
 			return _FAILURE_;
 		}
 		GL_times[7] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
+
+		//printf("\n AFTER Particle acceleration \n");
+		// for (int i = 0; i < 10000; i++)
+		// {
+		// 	printf("%d, x = %.16f, y = %.16f, z = %.16f\n", i, GL_ptcl_x[i], GL_ptcl_y[i], GL_ptcl_z[i]);
+		// 	printf("%d, ax = %.16f, ay = %.16f, az = %.16f\n", i, GL_ptcl_ax[i], GL_ptcl_ay[i], GL_ptcl_az[i]);
+		// }
+		//grid_check();
 
 		//** >> PARTICLE UPDATING B **/
 		// printf("Particle Updating B\n");
@@ -286,10 +395,23 @@ int main(int argc, char **argv) {
 		}
 		printf("] %.2f %%", (double)(actualtime * 100.0 / Maxdt));
 
+		// Particles printf
+		// if (Number_timesteps % 500 == 0)
+		// {
+		// 	printf("\n Fin while\n");
+		// 	for (int i = 0; i < 10000; i++)
+		// 	{
+		// 		printf("%d, x = %.10f, y = %.10f, z = %.10f\n", i, (double)GL_ptcl_x[i], (double)GL_ptcl_y[i], (double)GL_ptcl_z[i]);
+		// 		printf("%d, ax = %.10f, ay = %.10f, az = %.10f\n", i, (double)GL_ptcl_ax[i], (double)GL_ptcl_ay[i], (double)GL_ptcl_az[i]);
+		// 	}
+		// 	grid_check();
+		// }
+
+
 		Number_timesteps++; // Increasing the number of time-steps
 	}
 
-	printf("\n\n%sMaxdt = %f, Final time = %f%s\n\n",KRED ,Maxdt,actualtime,KNRM);
+	printf("\n\n%sMaxdt = %f, Final time = %f%s\n\n",KRED ,(double) Maxdt, (double) actualtime,KNRM);
 
 	/**
 	*! ******************************************************************************

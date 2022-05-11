@@ -165,8 +165,8 @@ static void init_global_user_params()
     Maxdt = 3.0 * _Mgyear_;
     meanmass = 100;
     total_mass = GL_no_ptcl * meanmass;
-    fr_output = 1000000;
-    MaxIterations = 500;
+    fr_output = 100000;
+    MaxIterations = 1000000;
     no_grid_pow2 = no_grid * no_grid;
     no_grid_pow3 = no_grid * no_grid * no_grid;
 
@@ -195,8 +195,8 @@ static void init_global_poisson_params()
                          branches of the tree using Successive over-relaxation
     vtype _w_SOR_: The overrelaxation parameter
 */
-    _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_ = 100;
-    _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ = (1.5e-10);
+    _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_ = 1000;
+    _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ = (1.5e-14);
     check_poisson_error_method = 0; 
     multigrid = 0; 
     solver = 0; 

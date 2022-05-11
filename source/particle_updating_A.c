@@ -116,15 +116,15 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
                     if (GL_ptcl_x[ptcl_idx] < 0 || GL_ptcl_x[ptcl_idx] > 1 || GL_ptcl_y[ptcl_idx] < 0 || GL_ptcl_y[ptcl_idx] > 1 || GL_ptcl_z[ptcl_idx] < 0 || GL_ptcl_z[ptcl_idx] > 1)
                     {
                         printf("Error, Partícula %d, sale de la simulación at positions:\n", ptcl_idx);
-                        printf("x = %f\n", GL_ptcl_x[ptcl_idx]);
-                        printf("y = %f\n", GL_ptcl_y[ptcl_idx]);
-                        printf("z = %f\n", GL_ptcl_z[ptcl_idx]);
-                        printf("vx = %f\n", GL_ptcl_vx[ptcl_idx]);
-                        printf("vy = %f\n", GL_ptcl_vy[ptcl_idx]);
-                        printf("vz = %f\n", GL_ptcl_vz[ptcl_idx]);
-                        printf("ax = %f\n", GL_ptcl_ax[ptcl_idx]);
-                        printf("ay = %f\n", GL_ptcl_ay[ptcl_idx]);
-                        printf("az = %f\n", GL_ptcl_az[ptcl_idx]);
+                        printf("x = %f\n", (double)GL_ptcl_x[ptcl_idx]);
+                        printf("y = %f\n", (double)GL_ptcl_y[ptcl_idx]);
+                        printf("z = %f\n", (double)GL_ptcl_z[ptcl_idx]);
+                        printf("vx = %f\n", (double)GL_ptcl_vx[ptcl_idx]);
+                        printf("vy = %f\n", (double)GL_ptcl_vy[ptcl_idx]);
+                        printf("vz = %f\n", (double)GL_ptcl_vz[ptcl_idx]);
+                        printf("ax = %f\n", (double)GL_ptcl_ax[ptcl_idx]);
+                        printf("ay = %f\n", (double)GL_ptcl_ay[ptcl_idx]);
+                        printf("az = %f\n", (double)GL_ptcl_az[ptcl_idx]);
                         printf("index = %d\n", ptcl_idx);
 
                         return _FAILURE_;
@@ -222,15 +222,15 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
                     if (GL_ptcl_x[ptcl_idx] < 0 || GL_ptcl_x[ptcl_idx] > 1 || GL_ptcl_y[ptcl_idx] < 0 || GL_ptcl_y[ptcl_idx] > 1 || GL_ptcl_z[ptcl_idx] < 0 || GL_ptcl_z[ptcl_idx] > 1)
                     {
                         printf("Error, Partícula %d, sale de la simulación at positions:\n", ptcl_idx);
-                        printf("x = %f\n", GL_ptcl_x[ptcl_idx]);
-                        printf("y = %f\n", GL_ptcl_y[ptcl_idx]);
-                        printf("z = %f\n", GL_ptcl_z[ptcl_idx]);
-                        printf("vx = %f\n", GL_ptcl_vx[ptcl_idx]);
-                        printf("vy = %f\n", GL_ptcl_vy[ptcl_idx]);
-                        printf("vz = %f\n", GL_ptcl_vz[ptcl_idx]);
-                        printf("ax = %f\n", GL_ptcl_ax[ptcl_idx]);
-                        printf("ay = %f\n", GL_ptcl_ay[ptcl_idx]);
-                        printf("az = %f\n", GL_ptcl_az[ptcl_idx]);
+                        printf("x = %f\n", (double) GL_ptcl_x[ptcl_idx]);
+                        printf("y = %f\n", (double) GL_ptcl_y[ptcl_idx]);
+                        printf("z = %f\n", (double) GL_ptcl_z[ptcl_idx]);
+                        printf("vx = %f\n", (double) GL_ptcl_vx[ptcl_idx]);
+                        printf("vy = %f\n", (double) GL_ptcl_vy[ptcl_idx]);
+                        printf("vz = %f\n", (double) GL_ptcl_vz[ptcl_idx]);
+                        printf("ax = %f\n", (double) GL_ptcl_ax[ptcl_idx]);
+                        printf("ay = %f\n", (double) GL_ptcl_ay[ptcl_idx]);
+                        printf("az = %f\n", (double) GL_ptcl_az[ptcl_idx]);
                         printf("index = %d\n", ptcl_idx);
 
                         return _FAILURE_;
@@ -349,15 +349,15 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
             if (GL_ptcl_x[ptcl_idx] < 0 || GL_ptcl_x[ptcl_idx] > 1 || GL_ptcl_y[ptcl_idx] < 0 || GL_ptcl_y[ptcl_idx] > 1 || GL_ptcl_z[ptcl_idx] < 0 || GL_ptcl_z[ptcl_idx] > 1)
             {
                 printf("Error, Partícula %d, sale de la simulación at positions:\n", ptcl_idx);
-                printf("x = %f\n", GL_ptcl_x[ptcl_idx]);
-                printf("y = %f\n", GL_ptcl_y[ptcl_idx]);
-                printf("z = %f\n", GL_ptcl_z[ptcl_idx]);
-                printf("vx = %f\n", GL_ptcl_vx[ptcl_idx]);
-                printf("vy = %f\n", GL_ptcl_vy[ptcl_idx]);
-                printf("vz = %f\n", GL_ptcl_vz[ptcl_idx]);
-                printf("ax = %f\n", GL_ptcl_ax[ptcl_idx]);
-                printf("ay = %f\n", GL_ptcl_ay[ptcl_idx]);
-                printf("az = %f\n", GL_ptcl_az[ptcl_idx]);
+                printf("x = %f\n", (double)GL_ptcl_x[ptcl_idx]);
+                printf("y = %f\n", (double)GL_ptcl_y[ptcl_idx]);
+                printf("z = %f\n", (double)GL_ptcl_z[ptcl_idx]);
+                printf("vx = %f\n", (double)GL_ptcl_vx[ptcl_idx]);
+                printf("vy = %f\n", (double)GL_ptcl_vy[ptcl_idx]);
+                printf("vz = %f\n", (double)GL_ptcl_vz[ptcl_idx]);
+                printf("ax = %f\n", (double)GL_ptcl_ax[ptcl_idx]);
+                printf("ay = %f\n", (double)GL_ptcl_ay[ptcl_idx]);
+                printf("az = %f\n", (double)GL_ptcl_az[ptcl_idx]);
                 printf("index = %d\n", ptcl_idx);
 
                 return _FAILURE_;

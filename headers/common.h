@@ -46,8 +46,8 @@ typedef float vtype;
 typedef double vtype;
 #define myabs fabs
 #elif _VTYPE_ == 3
-typedef long float vtype;
-#define myabs fabsfl
+typedef long double vtype;
+#define myabs fabsl
 #else
 typedef double vtype;
 #define myabs fabs

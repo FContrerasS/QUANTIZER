@@ -64,7 +64,7 @@ static int output_folder_names()
 	{
 		// Default value (total time, Ng, Np, )
 		char aux_char[100];
-		sprintf(aux_char, "Simulation_Maxdt[My](%1.1f)_lv(%d+%d)_Np(%d)", Maxdt / _Mgyear_, lmin, lmax - lmin, GL_no_ptcl);
+		sprintf(aux_char, "Simulation_Maxdt[My](%1.1f)_lv(%d+%d)_Np(%d)", (double) (Maxdt / _Mgyear_), lmin, lmax - lmin, GL_no_ptcl);
 		strcpy(folder_Simulation_output_name, aux_char);
 	}
 	else
