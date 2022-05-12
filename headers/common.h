@@ -53,19 +53,19 @@ typedef double vtype;
 #define myabs fabs
 #endif
 
+#define _SUCCESS_ 0 /* integer returned after successful call of a function */
+#define _FAILURE_ 1 /* integer returnd after failure in a function */
 
-
+#define _TRUE_ 1  /* integer associated to true statement */
+#define _FALSE_ 0 /* integer associated to false statement */
 
 //** Tree structure **/
 #include "initialize_cell_struct.h"
 #include "initialize_node.h"
 #include "ptcl_idx_to_box_idx.h"
 
-#define _SUCCESS_ 0 /* integer returned after successful call of a function */
-#define _FAILURE_ 1 /* integer returnd after failure in a function */
 
-#define _TRUE_ 1 /* integer associated to true statement */
-#define _FALSE_ 0 /* integer associated to false statement */
+
 
 //** >> Terminal Colors **/
 #define KNRM "\x1B[0m" // Normal
@@ -177,7 +177,8 @@ extern vtype _Min_Particle_Distance_For_Energy_Computation_;
 // MEMORY
 extern double TOTAL_MEMORY_NODES;
 extern double TOTAL_MEMORY_CELDAS;
-extern double TOTAL_MEMORY_PARTICULAS;
+extern double TOTAL_MEMORY_PARTICLES;
+extern double TOTAL_MEMORY_CELL_STRUCT;
 extern double TOTAL_MEMORY_CAJAS;
 extern double TOTAL_MEMORY_GRID_POINTS;
 extern double TOTAL_MEMORY_GRID_PROPERTIES;

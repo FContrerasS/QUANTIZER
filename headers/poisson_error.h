@@ -29,7 +29,8 @@
 
 #include "common.h"
 
-    bool
-    poisson_error(struct node *ptr_node);
+struct node;
+
+bool poisson_error(struct node *ptr_node);
 
 #endif

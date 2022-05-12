@@ -42,8 +42,7 @@ static void computing_memory()
     }
 
     //** >> Global particles **/
-    TOTAL_MEMORY_PARTICULAS += GL_no_ptcl * (sizeof(bool) + 10 * sizeof(vtype)); // Global particles
-
+    TOTAL_MEMORY_PARTICLES += GL_no_ptcl * (sizeof(bool) + 10 * sizeof(vtype)); // Global particles
 
     //** >> Node properties **/
     for (int lv = 0; lv < GL_tentacles_level_max + 1; lv++)
@@ -54,7 +53,12 @@ static void computing_memory()
         {
             ptr_node = GL_tentacles[lv][i];
             TOTAL_MEMORY_CELDAS += 3 * ptr_node->cell_cap * sizeof(int);
-            TOTAL_MEMORY_PARTICULAS += ptr_node->ptcl_cap * sizeof(int);
+
+            TOTAL_MEMORY_CELL_STRUCT += ptr_node->box_cap * sizeof(struct cell_struct);
+            for (int j = 0; j < ptr_node->box_cap; j++)
+            {
+                TOTAL_MEMORY_CELL_STRUCT += ptr_node->ptr_cell_struct[j].ptcl_cap * sizeof(int);
+            }
             TOTAL_MEMORY_CAJAS += 2 * ptr_node->box_cap * (sizeof(int) + sizeof(vtype)); //Boxes and mass boxes
             TOTAL_MEMORY_GRID_POINTS += 2 * (ptr_node->grid_bder_cap + ptr_node->grid_intr_cap) * sizeof(int); // Grid interior and border points
             TOTAL_MEMORY_GRID_PROPERTIES += 5 * ptr_node->grid_properties_cap * sizeof(vtype); // Grid properties, accelerations, potential and density
@@ -74,7 +78,11 @@ static void computing_memory()
     while(ptr_node != NULL)
     {
         TOTAL_MEMORY_STACK += 3 * ptr_node->cell_cap * sizeof(int);
-        TOTAL_MEMORY_STACK += ptr_node->ptcl_cap * sizeof(int);
+        TOTAL_MEMORY_STACK += ptr_node->box_cap * sizeof(struct cell_struct);
+        for (int j = 0; j < ptr_node->box_cap; j++)
+        {
+            TOTAL_MEMORY_STACK += ptr_node->ptr_cell_struct[j].ptcl_cap * sizeof(int);
+        }
         TOTAL_MEMORY_STACK += 2 * ptr_node->box_cap * (sizeof(int) + sizeof(vtype));                       // Boxes and mass boxes
         TOTAL_MEMORY_STACK += 2 * (ptr_node->grid_bder_cap + ptr_node->grid_intr_cap) * sizeof(int);       // Grid interior and border points
         TOTAL_MEMORY_STACK += 5 * ptr_node->grid_properties_cap * sizeof(vtype);                           // Grid properties, accelerations, potential and density
@@ -102,12 +110,13 @@ void terminal_print()
 
     computing_memory();
 
-    double sum = TOTAL_MEMORY_NODES + TOTAL_MEMORY_CELDAS + TOTAL_MEMORY_PARTICULAS + TOTAL_MEMORY_CAJAS + TOTAL_MEMORY_GRID_POINTS + TOTAL_MEMORY_GRID_PROPERTIES + TOTAL_MEMORY_AUX + TOTAL_MEMORY_TENTACLES + TOTAL_MEMORY_STACK;
+    double sum = TOTAL_MEMORY_NODES + TOTAL_MEMORY_CELDAS + TOTAL_MEMORY_PARTICLES + TOTAL_MEMORY_CELL_STRUCT + TOTAL_MEMORY_CAJAS + TOTAL_MEMORY_GRID_POINTS + TOTAL_MEMORY_GRID_PROPERTIES + TOTAL_MEMORY_AUX + TOTAL_MEMORY_TENTACLES + TOTAL_MEMORY_STACK;
     int max_memory_secction = 0;
 
-    double Total_memory[9] = {TOTAL_MEMORY_NODES,
+    double Total_memory[10] = {TOTAL_MEMORY_NODES,
                               TOTAL_MEMORY_CELDAS,
-                              TOTAL_MEMORY_PARTICULAS,
+                              TOTAL_MEMORY_PARTICLES,
+                              TOTAL_MEMORY_CELL_STRUCT,
                               TOTAL_MEMORY_CAJAS,
                               TOTAL_MEMORY_GRID_POINTS,
                               TOTAL_MEMORY_GRID_PROPERTIES,
@@ -115,7 +124,7 @@ void terminal_print()
                               TOTAL_MEMORY_TENTACLES,
                               TOTAL_MEMORY_STACK};
 
-    for (int i = 0; i < 9; i++)
+    for (int i = 0; i < 10; i++)
     {
         max_memory_secction = Total_memory[max_memory_secction] > Total_memory[i] ? max_memory_secction : i;
     }

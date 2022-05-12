@@ -28,20 +28,22 @@
 
 static vtype timestep_computation_1(const struct node *ptr_node, bool status)
 {
-
-    int no_ptcl; // Total number of particles in the node
     int lv;      // Level of refinement
 
     vtype aux_v_pow2; // Auxiliary square velocity
 
     vtype H;
 
+    int box_idx_x; // Box index in X direcction of the node cell
+    int box_idx_y; // Box index in Y direcction of the node cell
+    int box_idx_z; // Box index in Z direcction of the node cell
+    int box_idx;   // Box index of the node cell
+
     int ptcl_idx; // Particle grid_idx in the node
 
     vtype mydt; // The time-step of the node
     vtype myvmax;   // Maximum velocity of all particles
 
-    no_ptcl = ptr_node->ptcl_size;
     lv = ptr_node->lv;
     H = 1.0L / (1 << lv);
 
@@ -50,45 +52,16 @@ static vtype timestep_computation_1(const struct node *ptr_node, bool status)
     //** >> Case no more child, the node is a leaf **/
     if (ptr_node->chn_size == 0)
     {
-        for (int i = 0; i < no_ptcl; i++)
+
+        for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
         {
-            //** >> grid_idx of the particles in the node **/
-            ptcl_idx = ptr_node->ptr_ptcl[i];
-
-            //** >> Velocity at x-axis
-            aux_v_pow2 = GL_ptcl_vx[ptcl_idx] * GL_ptcl_vx[ptcl_idx];
-            if (myvmax < aux_v_pow2)
+            box_idx_x = ptr_node->ptr_cell_idx_x[cell_idx] - ptr_node->box_ts_x;
+            box_idx_y = ptr_node->ptr_cell_idx_y[cell_idx] - ptr_node->box_ts_y;
+            box_idx_z = ptr_node->ptr_cell_idx_z[cell_idx] - ptr_node->box_ts_z;
+            box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+            for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
             {
-                myvmax = aux_v_pow2;
-            }
-            //** >> Velocity at y-axis
-            aux_v_pow2 = GL_ptcl_vy[ptcl_idx] * GL_ptcl_vy[ptcl_idx];
-            if (myvmax < aux_v_pow2)
-            {
-                myvmax = aux_v_pow2;
-            }
-            //** >> Velocity at z-axis
-            aux_v_pow2 = GL_ptcl_vz[ptcl_idx] * GL_ptcl_vz[ptcl_idx];
-            if (myvmax < aux_v_pow2)
-            {
-                myvmax = aux_v_pow2;
-            }
-
-            //** >> The status of the particle is changed from not updated to updated **/
-            GL_ptcl_updating_flag[ptcl_idx] = status;
-        }
-    }
-    //** >> Case there are more children, the node is a branch **/
-    else
-    {
-        for (int i = 0; i < no_ptcl; i++)
-        {
-
-            //** >> grid_idx of the particles in the node **/
-            ptcl_idx = ptr_node->ptr_ptcl[i];
-
-            if (GL_ptcl_updating_flag[ptcl_idx] != status)
-            {
+                ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
 
                 //** >> Velocity at x-axis
                 aux_v_pow2 = GL_ptcl_vx[ptcl_idx] * GL_ptcl_vx[ptcl_idx];
@@ -111,6 +84,48 @@ static vtype timestep_computation_1(const struct node *ptr_node, bool status)
 
                 //** >> The status of the particle is changed from not updated to updated **/
                 GL_ptcl_updating_flag[ptcl_idx] = status;
+            }
+        }
+    }
+    //** >> Case there are more children, the node is a branch **/
+    else
+    {
+
+        for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
+        {
+            box_idx_x = ptr_node->ptr_cell_idx_x[cell_idx] - ptr_node->box_ts_x;
+            box_idx_y = ptr_node->ptr_cell_idx_y[cell_idx] - ptr_node->box_ts_y;
+            box_idx_z = ptr_node->ptr_cell_idx_z[cell_idx] - ptr_node->box_ts_z;
+            box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+            for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
+            {
+                ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
+
+                if (GL_ptcl_updating_flag[ptcl_idx] != status)
+                {
+
+                    //** >> Velocity at x-axis
+                    aux_v_pow2 = GL_ptcl_vx[ptcl_idx] * GL_ptcl_vx[ptcl_idx];
+                    if (myvmax < aux_v_pow2)
+                    {
+                        myvmax = aux_v_pow2;
+                    }
+                    //** >> Velocity at y-axis
+                    aux_v_pow2 = GL_ptcl_vy[ptcl_idx] * GL_ptcl_vy[ptcl_idx];
+                    if (myvmax < aux_v_pow2)
+                    {
+                        myvmax = aux_v_pow2;
+                    }
+                    //** >> Velocity at z-axis
+                    aux_v_pow2 = GL_ptcl_vz[ptcl_idx] * GL_ptcl_vz[ptcl_idx];
+                    if (myvmax < aux_v_pow2)
+                    {
+                        myvmax = aux_v_pow2;
+                    }
+
+                    //** >> The status of the particle is changed from not updated to updated **/
+                    GL_ptcl_updating_flag[ptcl_idx] = status;
+                }
             }
         }
     }

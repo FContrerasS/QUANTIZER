@@ -29,7 +29,8 @@
 
 #include "common.h"
 
-    void
-    initial_potential_and_acceleration_head(struct node *ptr_head);
+struct node;
+
+void initial_potential_and_acceleration_head(struct node *ptr_head);
 
 #endif

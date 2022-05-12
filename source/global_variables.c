@@ -131,7 +131,8 @@ double *GL_times;
 //** >> MEMORY **/
 double TOTAL_MEMORY_NODES;
 double TOTAL_MEMORY_CELDAS;
-double TOTAL_MEMORY_PARTICULAS;
+double TOTAL_MEMORY_PARTICLES;
+double TOTAL_MEMORY_CELL_STRUCT;
 double TOTAL_MEMORY_CAJAS;
 double TOTAL_MEMORY_GRID_POINTS;
 double TOTAL_MEMORY_GRID_PROPERTIES;
@@ -166,7 +167,7 @@ static void init_global_user_params()
     meanmass = 100;
     total_mass = GL_no_ptcl * meanmass;
     fr_output = 100000;
-    MaxIterations = 1000000;
+    MaxIterations = 10;
     no_grid_pow2 = no_grid * no_grid;
     no_grid_pow3 = no_grid * no_grid * no_grid;
 
@@ -267,7 +268,8 @@ static void init_global_memory()
 {
     TOTAL_MEMORY_NODES = 0;
     TOTAL_MEMORY_CELDAS = 0;
-    TOTAL_MEMORY_PARTICULAS = 0;
+    TOTAL_MEMORY_PARTICLES = 0;
+    TOTAL_MEMORY_CELL_STRUCT = 0;
     TOTAL_MEMORY_CAJAS = 0;
     TOTAL_MEMORY_GRID_POINTS = 0;
     TOTAL_MEMORY_GRID_PROPERTIES = 0;

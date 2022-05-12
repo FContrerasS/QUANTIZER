@@ -226,6 +226,34 @@ int space_check(int *ptr_cap, int size, float increase, const char *format, ...)
                     (*ppptr_node)[j] = NULL;
                 }
             }
+            else if (format_aux == 'c' && *format == '1')
+            {
+                struct cell_struct **pptr_cell = NULL;
+                pptr_cell = va_arg(args, struct cell_struct **);
+                if (*pptr_cell == NULL)
+                {
+                    *pptr_cell = (struct cell_struct *)malloc((*ptr_cap) * sizeof(struct cell_struct));
+                }
+                else
+                {
+                    struct cell_struct *ptr_aux = NULL;
+                    ptr_aux = (struct cell_struct *)realloc(*pptr_cell, (*ptr_cap) * sizeof(struct cell_struct));
+                    if (ptr_aux == NULL)
+                    {
+                        printf("Error in the realocation of ptr_cell");
+                        return _FAILURE_;
+                    }
+                    else
+                    {
+                        *pptr_cell = ptr_aux;
+                    }
+                    ptr_aux = NULL;
+                }
+                for (int j = cap; j < *ptr_cap; j++)
+                {
+                    initialize_cell_struct(&((*pptr_cell)[j]));
+                }
+            }
             else
             {
                 printf("Error in the realocation of the pointer\n");

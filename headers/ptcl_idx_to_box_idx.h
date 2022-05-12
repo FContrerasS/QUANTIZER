@@ -29,6 +29,8 @@
 
 #include "common.h"
 
+struct node;
+
 int ptcl_idx_to_box_idx(struct node *ptr_node, int ptcl_idx);
 
 #endif

@@ -35,289 +35,333 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
     struct node *ptr_node_pt; // parent node of the node ptr_node
     struct node *ptr_node_sib; // sibling node of the node ptr_node
 
+    int box_idx_x_node; // Box index in X direcction of the node cell
+    int box_idx_y_node; // Box index in Y direcction of the node cell
+    int box_idx_z_node; // Box index in Z direcction of the node cell
+
     int ptcl_idx; // Particle grid_idx in the node
 
     int zone_idx; // Index of the refinement zone
 
-    int box_idx_node;   // Box index of the current node
+    int box_idx_node_old;   // Box index of the current node
+    int box_idx_node_new;   // Box index of the current node
     int box_idx_pt;   // Box index of the parent node
     int box_idx_sib;   // Box index of the sibling node
     int box_idx_ch;   // Box index of the child node
 
-    no_ptcl = ptr_node->ptcl_size;
 
     if(lmin < lmax)
     {
         if (ptr_node->chn_size == 0)
         {
-            for (int i = 0; i < no_ptcl; i++)
+            for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
             {
-                ptcl_idx = ptr_node->ptr_ptcl[i];
-                //** >> Particle has not been updated yet
-                if (GL_ptcl_updating_flag[ptcl_idx] != status)
+                box_idx_x_node = ptr_node->ptr_cell_idx_x[cell_idx] - ptr_node->box_ts_x;
+                box_idx_y_node = ptr_node->ptr_cell_idx_y[cell_idx] - ptr_node->box_ts_y;
+                box_idx_z_node = ptr_node->ptr_cell_idx_z[cell_idx] - ptr_node->box_ts_z;
+                box_idx_node_old = box_idx_x_node + box_idx_y_node * ptr_node->box_real_dim_x + box_idx_z_node * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+
+                no_ptcl = ptr_node->ptr_cell_struct[box_idx_node_old].ptcl_size;
+                for (int j = 0; j < no_ptcl; j++)
                 {
-                    //** >> First we remove the mass of the box_mass array of the node **/
-                    box_idx_node = ptcl_idx_to_box_idx(ptr_node, ptcl_idx);
-
-                    //** >> Removing the mass of the mass box array of the node**/
-                    ptr_node->ptr_box_mass[box_idx_node] -= GL_ptcl_mass[ptcl_idx];
-
-                    //** >> Updating the new position of the particle **/
-                    //** >> Velocities **/
-                    GL_ptcl_vx[ptcl_idx] += GL_ptcl_ax[ptcl_idx] * dt / 2;
-                    GL_ptcl_vy[ptcl_idx] += GL_ptcl_ay[ptcl_idx] * dt / 2;
-                    GL_ptcl_vz[ptcl_idx] += GL_ptcl_az[ptcl_idx] * dt / 2;
-
-                    //** >> Positions **/
-                    GL_ptcl_x[ptcl_idx] += GL_ptcl_vx[ptcl_idx] * dt;
-                    GL_ptcl_y[ptcl_idx] += GL_ptcl_vy[ptcl_idx] * dt;
-                    GL_ptcl_z[ptcl_idx] += GL_ptcl_vz[ptcl_idx] * dt;
-
-                    //** >> Checking if the particle exits the simulation **/
-                    if (GL_ptcl_x[ptcl_idx] < 0 || GL_ptcl_x[ptcl_idx] > 1 || GL_ptcl_y[ptcl_idx] < 0 || GL_ptcl_y[ptcl_idx] > 1 || GL_ptcl_z[ptcl_idx] < 0 || GL_ptcl_z[ptcl_idx] > 1)
+                    ptcl_idx = ptr_node->ptr_cell_struct[box_idx_node_old].ptr_ptcl[j];
+                    if (GL_ptcl_updating_flag[ptcl_idx] != status)
                     {
-                        printf("Error, Partícula %d, sale de la simulación at positions:\n", ptcl_idx);
-                        printf("x = %f\n", (double)GL_ptcl_x[ptcl_idx]);
-                        printf("y = %f\n", (double)GL_ptcl_y[ptcl_idx]);
-                        printf("z = %f\n", (double)GL_ptcl_z[ptcl_idx]);
-                        printf("vx = %f\n", (double)GL_ptcl_vx[ptcl_idx]);
-                        printf("vy = %f\n", (double)GL_ptcl_vy[ptcl_idx]);
-                        printf("vz = %f\n", (double)GL_ptcl_vz[ptcl_idx]);
-                        printf("ax = %f\n", (double)GL_ptcl_ax[ptcl_idx]);
-                        printf("ay = %f\n", (double)GL_ptcl_ay[ptcl_idx]);
-                        printf("az = %f\n", (double)GL_ptcl_az[ptcl_idx]);
-                        printf("index = %d\n", ptcl_idx);
 
-                        return _FAILURE_;
-                    }
+                        //** >> Updating the new position of the particle **/
+                        //** >> Velocities **/
+                        GL_ptcl_vx[ptcl_idx] += GL_ptcl_ax[ptcl_idx] * dt / 2;
+                        GL_ptcl_vy[ptcl_idx] += GL_ptcl_ay[ptcl_idx] * dt / 2;
+                        GL_ptcl_vz[ptcl_idx] += GL_ptcl_az[ptcl_idx] * dt / 2;
 
-                    //** >> Moving the particle to the new node if it is necessary **/
-                    box_idx_node = ptcl_idx_to_box_idx(ptr_node, ptcl_idx);
+                        //** >> Positions **/
+                        GL_ptcl_x[ptcl_idx] += GL_ptcl_vx[ptcl_idx] * dt;
+                        GL_ptcl_y[ptcl_idx] += GL_ptcl_vy[ptcl_idx] * dt;
+                        GL_ptcl_z[ptcl_idx] += GL_ptcl_vz[ptcl_idx] * dt;
 
-                    //** We ask if the particle leaves the node
-                    //** >> The particle moves towards its parent node or towards some sibling node  **/
-                    if (ptr_node->ptr_box[box_idx_node] < -3)
-                    {
-                        //** The local mass is reduced **/
-                        ptr_node->local_mass -= GL_ptcl_mass[ptcl_idx];
-
-                        ptr_node_pt = ptr_node->ptr_pt;
-                        //** >> Box index in the parent node **/
-                        box_idx_pt = ptcl_idx_to_box_idx(ptr_node_pt, ptcl_idx);
-
-                        //** >> If the particle moves towards a sibling node **/
-                        if (ptr_node_pt->ptr_box[box_idx_pt] >= 0)
+                        //** >> Checking if the particle exits the simulation **/
+                        if (GL_ptcl_x[ptcl_idx] < 0 || GL_ptcl_x[ptcl_idx] > 1 || GL_ptcl_y[ptcl_idx] < 0 || GL_ptcl_y[ptcl_idx] > 1 || GL_ptcl_z[ptcl_idx] < 0 || GL_ptcl_z[ptcl_idx] > 1)
                         {
-                            zone_idx = ptr_node_pt->ptr_box[box_idx_pt];
-                            ptr_node_sib = ptr_node_pt->pptr_chn[zone_idx];
+                            printf("Error, Partícula %d, sale de la simulación at positions:\n", ptcl_idx);
+                            printf("x = %f\n", (double)GL_ptcl_x[ptcl_idx]);
+                            printf("y = %f\n", (double)GL_ptcl_y[ptcl_idx]);
+                            printf("z = %f\n", (double)GL_ptcl_z[ptcl_idx]);
+                            printf("vx = %f\n", (double)GL_ptcl_vx[ptcl_idx]);
+                            printf("vy = %f\n", (double)GL_ptcl_vy[ptcl_idx]);
+                            printf("vz = %f\n", (double)GL_ptcl_vz[ptcl_idx]);
+                            printf("ax = %f\n", (double)GL_ptcl_ax[ptcl_idx]);
+                            printf("ay = %f\n", (double)GL_ptcl_ay[ptcl_idx]);
+                            printf("az = %f\n", (double)GL_ptcl_az[ptcl_idx]);
+                            printf("index = %d\n", ptcl_idx);
 
-                            //** >> Space checking of the particle capacity in the sibling node **/
-                            if (space_check(&(ptr_node_sib->ptcl_cap), ptr_node_sib->ptcl_size + 1, 2.0f, "p1i1", &(ptr_node_sib->ptr_ptcl)) == _FAILURE_)
+                            return _FAILURE_;
+                        }
+
+                        //** >> Moving the particle to the new node if it is necessary **/
+                        box_idx_node_new = ptcl_idx_to_box_idx(ptr_node, ptcl_idx);
+
+                        //** We ask if the particle leaves the node
+                        //** >> The particle moves towards its parent node or towards some sibling node  **/
+
+                        if (box_idx_node_old != box_idx_node_new)
+                        {
+                            if (ptr_node->ptr_box[box_idx_node_new] < -3)
                             {
-                                printf("Error, in space_check function\n");
-                                return _FAILURE_;
+                                ptr_node_pt = ptr_node->ptr_pt;
+                                //** >> Box index in the parent node **/
+                                box_idx_pt = ptcl_idx_to_box_idx(ptr_node_pt, ptcl_idx);
+
+                                //** >> If the particle moves towards a sibling node **/
+                                if (ptr_node_pt->ptr_box[box_idx_pt] >= 0)
+                                {
+                                    zone_idx = ptr_node_pt->ptr_box[box_idx_pt];
+                                    ptr_node_sib = ptr_node_pt->pptr_chn[zone_idx];
+
+                                    box_idx_sib = ptcl_idx_to_box_idx(ptr_node_sib, ptcl_idx);
+
+                                    //** >> Space checking of the particle capacity in the sibling node **/
+                                    if (space_check(&(ptr_node_sib->ptr_cell_struct[box_idx_sib].ptcl_cap), ptr_node_sib->ptr_cell_struct[box_idx_sib].ptcl_size + 1, 2.0f, "p1i1", &(ptr_node_sib->ptr_cell_struct[box_idx_sib].ptr_ptcl)) == _FAILURE_)
+                                    {
+                                        printf("Error, in space_check function\n");
+                                        return _FAILURE_;
+                                    }
+
+                                    //** >> Adding the particle in the sibling node **/
+                                    ptr_node_sib->ptr_cell_struct[box_idx_sib].ptr_ptcl[ptr_node_sib->ptr_cell_struct[box_idx_sib].ptcl_size] = ptcl_idx;
+                                    ptr_node_sib->ptr_cell_struct[box_idx_sib].ptcl_size += 1;
+                                    ptr_node_sib->ptr_cell_struct[box_idx_sib].cell_mass += GL_ptcl_mass[ptcl_idx]; // Cell mass
+                                    ptr_node_sib->local_mass += GL_ptcl_mass[ptcl_idx];                             // Local mass
+                                }
+                                //** If the particle is only in the parent node **/
+                                else
+                                {
+                                    //** >> Space checking of the particle capacity in the sibling cell node **/
+                                    if (space_check(&(ptr_node_pt->ptr_cell_struct[box_idx_pt].ptcl_cap), ptr_node_pt->ptr_cell_struct[box_idx_pt].ptcl_size + 1, 2.0f, "p1i1", &(ptr_node_pt->ptr_cell_struct[box_idx_pt].ptr_ptcl)) == _FAILURE_)
+                                    {
+                                        printf("Error, in space_check function\n");
+                                        return _FAILURE_;
+                                    }
+                                    //** >> Adding the particle in the parent cell node **/
+                                    ptr_node_pt->ptr_cell_struct[box_idx_pt].ptr_ptcl[ptr_node_pt->ptr_cell_struct[box_idx_pt].ptcl_size] = ptcl_idx;
+                                    ptr_node_pt->ptr_cell_struct[box_idx_pt].ptcl_size += 1;
+                                    ptr_node_pt->ptr_cell_struct[box_idx_pt].cell_mass += GL_ptcl_mass[ptcl_idx]; // Cell mass
+                                }
+
+                                //** The local mass is reduced **/
+                                ptr_node->local_mass -= GL_ptcl_mass[ptcl_idx];
+                            }
+                            //** >> The particle stay in the node **/
+                            else
+                            {
+                                //** >> Space checking of the particle capacity in the sibling cell **/
+                                if (space_check(&(ptr_node->ptr_cell_struct[box_idx_node_new].ptcl_cap), ptr_node->ptr_cell_struct[box_idx_node_new].ptcl_size + 1, 2.0f, "p1i1", &(ptr_node->ptr_cell_struct[box_idx_node_new].ptr_ptcl)) == _FAILURE_)
+                                {
+                                    printf("Error, in space_check function\n");
+                                    return _FAILURE_;
+                                }
+
+                                //** >> Adding the particle in the sibling cell **/
+                                ptr_node->ptr_cell_struct[box_idx_node_new].ptr_ptcl[ptr_node->ptr_cell_struct[box_idx_node_new].ptcl_size] = ptcl_idx;
+                                ptr_node->ptr_cell_struct[box_idx_node_new].ptcl_size += 1;
+                                ptr_node->ptr_cell_struct[box_idx_node_new].cell_mass += GL_ptcl_mass[ptcl_idx]; // Cell mass
                             }
 
-                            //** >> Adding the particle in the sibling node **/
-                            ptr_node_sib->ptr_ptcl[ptr_node_sib->ptcl_size] = ptcl_idx;
-                            ptr_node_sib->ptcl_size += 1; // +1 to the total particles in the sibling node
-
-                            //** >> Adding the mass of the mass box array of the sibling node in the new cell position**/
-                            box_idx_sib = ptcl_idx_to_box_idx(ptr_node_sib, ptcl_idx);
-                            ptr_node_sib->ptr_box_mass[box_idx_sib] += GL_ptcl_mass[ptcl_idx];
-                            //** The local mass is increased **/
-                            ptr_node_sib->local_mass += GL_ptcl_mass[ptcl_idx];
+                            // Whether the particle stays at the parent node or moves to a sibling node, it must be removed from the current cell of the old node
+                            //** >> Removing the particle index of the current node ptr_node **/
+                            // We move the last element of the array to the current position
+                            ptr_node->ptr_cell_struct[box_idx_node_old].ptr_ptcl[j] = ptr_node->ptr_cell_struct[box_idx_node_old].ptr_ptcl[no_ptcl - 1];
+                            no_ptcl--; // The total number of particle decrease
+                            j--;       // The last element that was just moved to the current position should also must be analized
+                            ptr_node->ptr_cell_struct[box_idx_node_old].cell_mass -= GL_ptcl_mass[ptcl_idx];
                         }
-                        //** If the particle is only in the parent node **/
-                        else
-                        {
-                            //** >> Adding the mass of the mass box array of the parent node in the new cell position**/
-                            ptr_node_pt->ptr_box_mass[box_idx_pt] += GL_ptcl_mass[ptcl_idx];
-                        }
-
-                        // Whether the particle stays at the parent node or moves to a sibling node, it must be removed from the current node
-                        //** >> Removing the particle index of the current node ptr_node **/
-                        // We move the last element of the array to the current position
-                        ptr_node->ptr_ptcl[i] = ptr_node->ptr_ptcl[no_ptcl - 1];
-                        no_ptcl--; // The total number of particle decrease
-                        i--;       // The last element that was just moved to the current position should also must be analized
+                        //** >> The status of the particle is changed from not updated to updated **/
+                        GL_ptcl_updating_flag[ptcl_idx] = status;
                     }
-                    //** >> The particle stay in the node **/
-                    else
-                    {
-                        //** >> Adding the mass of the mass box array of the node in the new cell position**/
-                        ptr_node->ptr_box_mass[box_idx_node] += GL_ptcl_mass[ptcl_idx];
-                    }
-
-                    //** >> The status of the particle is changed from not updated to updated **/
-                    GL_ptcl_updating_flag[ptcl_idx] = status;
                 }
+                ptr_node->ptr_cell_struct[box_idx_node_old].ptcl_size = no_ptcl;
             }
         } // End cycle over particles in the node
         else
         {
-            for (int i = 0; i < no_ptcl; i++)
+            for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
             {
-                ptcl_idx = ptr_node->ptr_ptcl[i];
-                //** >> Particle has not been updated yet
-                if (GL_ptcl_updating_flag[ptcl_idx] != status)
+                box_idx_x_node = ptr_node->ptr_cell_idx_x[cell_idx] - ptr_node->box_ts_x;
+                box_idx_y_node = ptr_node->ptr_cell_idx_y[cell_idx] - ptr_node->box_ts_y;
+                box_idx_z_node = ptr_node->ptr_cell_idx_z[cell_idx] - ptr_node->box_ts_z;
+                box_idx_node_old = box_idx_x_node + box_idx_y_node * ptr_node->box_real_dim_x + box_idx_z_node * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+
+                no_ptcl = ptr_node->ptr_cell_struct[box_idx_node_old].ptcl_size;
+                for (int j = 0; j < no_ptcl; j++)
                 {
-
-                    //** >> Removing the mass of the mass box array of the node**/
-                    box_idx_node = ptcl_idx_to_box_idx(ptr_node, ptcl_idx);
-                    ptr_node->ptr_box_mass[box_idx_node] -= GL_ptcl_mass[ptcl_idx];
-
-                    //** >> Updating the new position of the particle **/
-                    //** >> Velocities **/
-                    GL_ptcl_vx[ptcl_idx] += GL_ptcl_ax[ptcl_idx] * dt / 2;
-                    GL_ptcl_vy[ptcl_idx] += GL_ptcl_ay[ptcl_idx] * dt / 2;
-                    GL_ptcl_vz[ptcl_idx] += GL_ptcl_az[ptcl_idx] * dt / 2;
-
-                    //** >> Positions **/
-                    GL_ptcl_x[ptcl_idx] += GL_ptcl_vx[ptcl_idx] * dt;
-                    GL_ptcl_y[ptcl_idx] += GL_ptcl_vy[ptcl_idx] * dt;
-                    GL_ptcl_z[ptcl_idx] += GL_ptcl_vz[ptcl_idx] * dt;
-
-                    //** >> Checking if the particle exits the simulation **/
-                    if (GL_ptcl_x[ptcl_idx] < 0 || GL_ptcl_x[ptcl_idx] > 1 || GL_ptcl_y[ptcl_idx] < 0 || GL_ptcl_y[ptcl_idx] > 1 || GL_ptcl_z[ptcl_idx] < 0 || GL_ptcl_z[ptcl_idx] > 1)
+                    ptcl_idx = ptr_node->ptr_cell_struct[box_idx_node_old].ptr_ptcl[j];
+                    if (GL_ptcl_updating_flag[ptcl_idx] != status)
                     {
-                        printf("Error, Partícula %d, sale de la simulación at positions:\n", ptcl_idx);
-                        printf("x = %f\n", (double) GL_ptcl_x[ptcl_idx]);
-                        printf("y = %f\n", (double) GL_ptcl_y[ptcl_idx]);
-                        printf("z = %f\n", (double) GL_ptcl_z[ptcl_idx]);
-                        printf("vx = %f\n", (double) GL_ptcl_vx[ptcl_idx]);
-                        printf("vy = %f\n", (double) GL_ptcl_vy[ptcl_idx]);
-                        printf("vz = %f\n", (double) GL_ptcl_vz[ptcl_idx]);
-                        printf("ax = %f\n", (double) GL_ptcl_ax[ptcl_idx]);
-                        printf("ay = %f\n", (double) GL_ptcl_ay[ptcl_idx]);
-                        printf("az = %f\n", (double) GL_ptcl_az[ptcl_idx]);
-                        printf("index = %d\n", ptcl_idx);
 
-                        return _FAILURE_;
-                    }
+                        //** >> Updating the new position of the particle **/
+                        //** >> Velocities **/
+                        GL_ptcl_vx[ptcl_idx] += GL_ptcl_ax[ptcl_idx] * dt / 2;
+                        GL_ptcl_vy[ptcl_idx] += GL_ptcl_ay[ptcl_idx] * dt / 2;
+                        GL_ptcl_vz[ptcl_idx] += GL_ptcl_az[ptcl_idx] * dt / 2;
 
-                    //** >> Moving the particle to the new node if it is necessary **/
+                        //** >> Positions **/
+                        GL_ptcl_x[ptcl_idx] += GL_ptcl_vx[ptcl_idx] * dt;
+                        GL_ptcl_y[ptcl_idx] += GL_ptcl_vy[ptcl_idx] * dt;
+                        GL_ptcl_z[ptcl_idx] += GL_ptcl_vz[ptcl_idx] * dt;
 
-                    //** >> We ask if the particle stays on the node **/
-                    box_idx_node = ptcl_idx_to_box_idx(ptr_node, ptcl_idx);
-
-                    //** >> The particle moves towards one of its child nodes **/
-                    if (ptr_node->ptr_box[box_idx_node] >= 0)
-                    {
-                        zone_idx = ptr_node->ptr_box[box_idx_node];
-                        ptr_node_ch = ptr_node->pptr_chn[zone_idx];
-
-                        //** >> Space checking of the particle capacity in the child node **/
-                        if (space_check(&(ptr_node_ch->ptcl_cap), ptr_node_ch->ptcl_size + 1, 2.0f, "p1i1", &(ptr_node_ch->ptr_ptcl)) == _FAILURE_)
+                        //** >> Checking if the particle exits the simulation **/
+                        if (GL_ptcl_x[ptcl_idx] < 0 || GL_ptcl_x[ptcl_idx] > 1 || GL_ptcl_y[ptcl_idx] < 0 || GL_ptcl_y[ptcl_idx] > 1 || GL_ptcl_z[ptcl_idx] < 0 || GL_ptcl_z[ptcl_idx] > 1)
                         {
-                            printf("Error, in space_check function\n");
+                            printf("Error, Partícula %d, sale de la simulación at positions:\n", ptcl_idx);
+                            printf("x = %f\n", (double)GL_ptcl_x[ptcl_idx]);
+                            printf("y = %f\n", (double)GL_ptcl_y[ptcl_idx]);
+                            printf("z = %f\n", (double)GL_ptcl_z[ptcl_idx]);
+                            printf("vx = %f\n", (double)GL_ptcl_vx[ptcl_idx]);
+                            printf("vy = %f\n", (double)GL_ptcl_vy[ptcl_idx]);
+                            printf("vz = %f\n", (double)GL_ptcl_vz[ptcl_idx]);
+                            printf("ax = %f\n", (double)GL_ptcl_ax[ptcl_idx]);
+                            printf("ay = %f\n", (double)GL_ptcl_ay[ptcl_idx]);
+                            printf("az = %f\n", (double)GL_ptcl_az[ptcl_idx]);
+                            printf("index = %d\n", ptcl_idx);
+
                             return _FAILURE_;
                         }
 
-                        //** >> Adding the particle in the sibling node **/
-                        ptr_node_ch->ptr_ptcl[ptr_node_ch->ptcl_size] = ptcl_idx;
-                        ptr_node_ch->ptcl_size += 1; // +1 to the total particles in the child node
+                        //** >> Moving the particle to the new node if it is necessary **/
+                        box_idx_node_new = ptcl_idx_to_box_idx(ptr_node, ptcl_idx);
 
-                        //** >> Adding the mass of the mass box array of the chile node in the new cell position**/
-                        box_idx_ch = ptcl_idx_to_box_idx(ptr_node_ch, ptcl_idx);
-                        ptr_node_ch->ptr_box_mass[box_idx_ch] += GL_ptcl_mass[ptcl_idx];
-                        //** The local mass is increased **/
-                        ptr_node_ch->local_mass += GL_ptcl_mass[ptcl_idx];
-                    }
-                    //** >> The particle moves towards its parent node or towards some sibling node  **/
-                    else if (ptr_node->ptr_box[box_idx_node] < -3)
-                    {
-                        //** The local mass is reduced **/
-                        ptr_node->local_mass -= GL_ptcl_mass[ptcl_idx];
+                        //** We ask if the particle leaves the node
+                        //** >> The particle moves towards its parent node or towards some sibling node  **/
 
-                        ptr_node_pt = ptr_node->ptr_pt;
-                        //** >> Box index in the parent node **/
-                        box_idx_pt = ptcl_idx_to_box_idx(ptr_node_pt, ptcl_idx);
-
-                        //** >> If the particle moves towards a sibling node **/
-                        if (ptr_node_pt->ptr_box[box_idx_pt] >= 0)
+                        if (box_idx_node_old != box_idx_node_new)
                         {
-                            zone_idx = ptr_node_pt->ptr_box[box_idx_pt];
-                            ptr_node_sib = ptr_node_pt->pptr_chn[zone_idx];
-
-                            //** >> Space checking of the particle capacity in the sibling node **/
-                            if (space_check(&(ptr_node_sib->ptcl_cap), ptr_node_sib->ptcl_size + 1, 2.0f, "p1i1", &(ptr_node_sib->ptr_ptcl)) == _FAILURE_)
+                            //** >> The particle moves towards one of its child nodes **/
+                            if (ptr_node->ptr_box[box_idx_node_new] >= 0)
                             {
-                                printf("Error, in space_check function\n");
-                                return _FAILURE_;
+                                zone_idx = ptr_node->ptr_box[box_idx_node_new];
+                                ptr_node_ch = ptr_node->pptr_chn[zone_idx];
+
+                                box_idx_ch = ptcl_idx_to_box_idx(ptr_node_ch, ptcl_idx);
+
+                                //** >> Space checking of the particle capacity in the child node cell **/
+                                if (space_check(&(ptr_node_ch->ptr_cell_struct[box_idx_ch].ptcl_cap), ptr_node_ch->ptr_cell_struct[box_idx_ch].ptcl_size + 1, 2.0f, "p1i1", &(ptr_node_ch->ptr_cell_struct[box_idx_ch].ptr_ptcl)) == _FAILURE_)
+                                {
+                                    printf("Error, in space_check function\n");
+                                    return _FAILURE_;
+                                }
+
+                                //** >> Adding the particle in the child cell node **/
+                                ptr_node_ch->ptr_cell_struct[box_idx_ch].ptr_ptcl[ptr_node_ch->ptr_cell_struct[box_idx_ch].ptcl_size] = ptcl_idx;
+                                ptr_node_ch->ptr_cell_struct[box_idx_ch].ptcl_size += 1;
+                                ptr_node_ch->ptr_cell_struct[box_idx_ch].cell_mass += GL_ptcl_mass[ptcl_idx]; // Cell mass
+                                ptr_node_ch->local_mass += GL_ptcl_mass[ptcl_idx];
+                            }
+                            //** >> The particle moves towards its parent node or towards some sibling node  **/
+                            else if (ptr_node->ptr_box[box_idx_node_new] < -3)
+                            {
+                                ptr_node_pt = ptr_node->ptr_pt;
+                                //** >> Box index in the parent node **/
+                                box_idx_pt = ptcl_idx_to_box_idx(ptr_node_pt, ptcl_idx);
+
+                                //** >> If the particle moves towards a sibling node **/
+                                if (ptr_node_pt->ptr_box[box_idx_pt] >= 0)
+                                {
+                                    zone_idx = ptr_node_pt->ptr_box[box_idx_pt];
+                                    ptr_node_sib = ptr_node_pt->pptr_chn[zone_idx];
+
+                                    box_idx_sib = ptcl_idx_to_box_idx(ptr_node_sib, ptcl_idx);
+
+                                    //** >> Space checking of the particle capacity in the sibling node **/
+                                    if (space_check(&(ptr_node_sib->ptr_cell_struct[box_idx_sib].ptcl_cap), ptr_node_sib->ptr_cell_struct[box_idx_sib].ptcl_size + 1, 2.0f, "p1i1", &(ptr_node_sib->ptr_cell_struct[box_idx_sib].ptr_ptcl)) == _FAILURE_)
+                                    {
+                                        printf("Error, in space_check function\n");
+                                        return _FAILURE_;
+                                    }
+
+                                    //** >> Adding the particle in the sibling node **/
+                                    ptr_node_sib->ptr_cell_struct[box_idx_sib].ptr_ptcl[ptr_node_sib->ptr_cell_struct[box_idx_sib].ptcl_size] = ptcl_idx;
+                                    ptr_node_sib->ptr_cell_struct[box_idx_sib].ptcl_size += 1;
+                                    ptr_node_sib->ptr_cell_struct[box_idx_sib].cell_mass += GL_ptcl_mass[ptcl_idx]; // Cell mass
+                                    ptr_node_sib->local_mass += GL_ptcl_mass[ptcl_idx];                             // Local mass
+                                }
+                                //** If the particle is only in the parent node **/
+                                else
+                                {
+                                    //** >> Space checking of the particle capacity in the sibling cell node **/
+                                    if (space_check(&(ptr_node_pt->ptr_cell_struct[box_idx_pt].ptcl_cap), ptr_node_pt->ptr_cell_struct[box_idx_pt].ptcl_size + 1, 2.0f, "p1i1", &(ptr_node_pt->ptr_cell_struct[box_idx_pt].ptr_ptcl)) == _FAILURE_)
+                                    {
+                                        printf("Error, in space_check function\n");
+                                        return _FAILURE_;
+                                    }
+                                    //** >> Adding the particle in the parent cell node **/
+                                    ptr_node_pt->ptr_cell_struct[box_idx_pt].ptr_ptcl[ptr_node_pt->ptr_cell_struct[box_idx_pt].ptcl_size] = ptcl_idx;
+                                    ptr_node_pt->ptr_cell_struct[box_idx_pt].ptcl_size += 1;
+                                    ptr_node_pt->ptr_cell_struct[box_idx_pt].cell_mass += GL_ptcl_mass[ptcl_idx]; // Cell mass
+                                }
+
+                                //** The local mass of the node is reduced **/
+                                ptr_node->local_mass -= GL_ptcl_mass[ptcl_idx];
+                            }
+                            //** >> The particle stay in the node **/
+                            else
+                            {
+                                //** >> Space checking of the particle capacity in the sibling cell **/
+                                if (space_check(&(ptr_node->ptr_cell_struct[box_idx_node_new].ptcl_cap), ptr_node->ptr_cell_struct[box_idx_node_new].ptcl_size + 1, 2.0f, "p1i1", &(ptr_node->ptr_cell_struct[box_idx_node_new].ptr_ptcl)) == _FAILURE_)
+                                {
+                                    printf("Error, in space_check function\n");
+                                    return _FAILURE_;
+                                }
+
+                                //** >> Adding the particle in the sibling cell **/
+                                ptr_node->ptr_cell_struct[box_idx_node_new].ptr_ptcl[ptr_node->ptr_cell_struct[box_idx_node_new].ptcl_size] = ptcl_idx;
+                                ptr_node->ptr_cell_struct[box_idx_node_new].ptcl_size += 1;
+                                ptr_node->ptr_cell_struct[box_idx_node_new].cell_mass += GL_ptcl_mass[ptcl_idx]; // Cell mass
                             }
 
-                            //** >> Adding the particle in the sibling node **/
-                            ptr_node_sib->ptr_ptcl[ptr_node_sib->ptcl_size] = ptcl_idx;
-                            ptr_node_sib->ptcl_size += 1; // +1 to the total particles in the sibling node
-
-                            //** >> Adding the mass of the mass box array of the sibling node in the new cell position**/
-                            box_idx_sib = ptcl_idx_to_box_idx(ptr_node_sib, ptcl_idx);
-                            ptr_node_sib->ptr_box_mass[box_idx_sib] += GL_ptcl_mass[ptcl_idx];
-                            //** The local mass is increased **/
-                            ptr_node_sib->local_mass += GL_ptcl_mass[ptcl_idx];
+                            // Whether the particle stays at the parent node or moves to a sibling node, it must be removed from the current cell of the old node
+                            //** >> Removing the particle index of the current node ptr_node **/
+                            // We move the last element of the array to the current position
+                            ptr_node->ptr_cell_struct[box_idx_node_old].ptr_ptcl[j] = ptr_node->ptr_cell_struct[box_idx_node_old].ptr_ptcl[no_ptcl - 1];
+                            no_ptcl--; // The total number of particle decrease
+                            j--;       // The last element that was just moved to the current position should also must be analized
+                            ptr_node->ptr_cell_struct[box_idx_node_old].cell_mass -= GL_ptcl_mass[ptcl_idx];
                         }
-                        //** >> The particle stay in the parent node node **/
-                        else
-                        {
-                            //** >> Adding the mass of the mass box array of the parent node in the new cell position**/
-                            ptr_node_pt->ptr_box_mass[box_idx_pt] += GL_ptcl_mass[ptcl_idx];
-                        }
-
-                        // Whether the particle stays at the parent node or moves to a sibling node, it must be removed from the current node
-                        //** >> Removing the particle index of the current node ptr_node **/
-                        // We move the last element of the array to the current position
-                        ptr_node->ptr_ptcl[i] = ptr_node->ptr_ptcl[no_ptcl - 1];
-                        no_ptcl--; // The total number of particle decrease
-                        i--;       // The last element that was just moved to the current position should also must be analized
+                        //** >> The status of the particle is changed from not updated to updated **/
+                        GL_ptcl_updating_flag[ptcl_idx] = status;
                     }
-                    //** >> The particle stay in the node but not inside of a child **/
-                    else
-                    {
-                        //** >> Adding the mass of the mass box array of the node in the new cell position**/
-                        ptr_node->ptr_box_mass[box_idx_node] += GL_ptcl_mass[ptcl_idx];
-                    }
-
-                    //** >> The status of the particle is changed from not updated to updated **/
-                    GL_ptcl_updating_flag[ptcl_idx] = status;
                 }
-            } // End cycle over particles in the node
+                ptr_node->ptr_cell_struct[box_idx_node_old].ptcl_size = no_ptcl;
+            }
         }
-
-        //** >> Updating the number of particles in the current node **/
-        ptr_node->ptcl_size = no_ptcl;
     }   //End if(lmin < lmax)
     else // Case only 1 level, i.e. lmin = lmax
     {
-        for (int i = 0; i < no_ptcl; i++)
+        for (int i = 0; i < GL_no_ptcl; i++)
         {
-            ptcl_idx = ptr_node->ptr_ptcl[i]; // Particle index
-
             //** >> Updating the new position of the particle **/
             //** >> Velocities **/
-            GL_ptcl_vx[ptcl_idx] += GL_ptcl_ax[ptcl_idx] * dt / 2;
-            GL_ptcl_vy[ptcl_idx] += GL_ptcl_ay[ptcl_idx] * dt / 2;
-            GL_ptcl_vz[ptcl_idx] += GL_ptcl_az[ptcl_idx] * dt / 2;
+            GL_ptcl_vx[i] += GL_ptcl_ax[i] * dt / 2;
+            GL_ptcl_vy[i] += GL_ptcl_ay[i] * dt / 2;
+            GL_ptcl_vz[i] += GL_ptcl_az[i] * dt / 2;
 
             //** >> Positions **/
-            GL_ptcl_x[ptcl_idx] += GL_ptcl_vx[ptcl_idx] * dt;
-            GL_ptcl_y[ptcl_idx] += GL_ptcl_vy[ptcl_idx] * dt;
-            GL_ptcl_z[ptcl_idx] += GL_ptcl_vz[ptcl_idx] * dt;
+            GL_ptcl_x[i] += GL_ptcl_vx[i] * dt;
+            GL_ptcl_y[i] += GL_ptcl_vy[i] * dt;
+            GL_ptcl_z[i] += GL_ptcl_vz[i] * dt;
 
             //** >> Checking if the particle exits the simulation **/
-            if (GL_ptcl_x[ptcl_idx] < 0 || GL_ptcl_x[ptcl_idx] > 1 || GL_ptcl_y[ptcl_idx] < 0 || GL_ptcl_y[ptcl_idx] > 1 || GL_ptcl_z[ptcl_idx] < 0 || GL_ptcl_z[ptcl_idx] > 1)
+            if (GL_ptcl_x[i] < 0 || GL_ptcl_x[i] > 1 || GL_ptcl_y[i] < 0 || GL_ptcl_y[i] > 1 || GL_ptcl_z[i] < 0 || GL_ptcl_z[i] > 1)
             {
-                printf("Error, Partícula %d, sale de la simulación at positions:\n", ptcl_idx);
-                printf("x = %f\n", (double)GL_ptcl_x[ptcl_idx]);
-                printf("y = %f\n", (double)GL_ptcl_y[ptcl_idx]);
-                printf("z = %f\n", (double)GL_ptcl_z[ptcl_idx]);
-                printf("vx = %f\n", (double)GL_ptcl_vx[ptcl_idx]);
-                printf("vy = %f\n", (double)GL_ptcl_vy[ptcl_idx]);
-                printf("vz = %f\n", (double)GL_ptcl_vz[ptcl_idx]);
-                printf("ax = %f\n", (double)GL_ptcl_ax[ptcl_idx]);
-                printf("ay = %f\n", (double)GL_ptcl_ay[ptcl_idx]);
-                printf("az = %f\n", (double)GL_ptcl_az[ptcl_idx]);
-                printf("index = %d\n", ptcl_idx);
+                printf("Error, Partícula %d, sale de la simulación at positions:\n", i);
+                printf("x = %f\n", (double)GL_ptcl_x[i]);
+                printf("y = %f\n", (double)GL_ptcl_y[i]);
+                printf("z = %f\n", (double)GL_ptcl_z[i]);
+                printf("vx = %f\n", (double)GL_ptcl_vx[i]);
+                printf("vy = %f\n", (double)GL_ptcl_vy[i]);
+                printf("vz = %f\n", (double)GL_ptcl_vz[i]);
+                printf("ax = %f\n", (double)GL_ptcl_ax[i]);
+                printf("ay = %f\n", (double)GL_ptcl_ay[i]);
+                printf("az = %f\n", (double)GL_ptcl_az[i]);
+                printf("index = %d\n", i);
 
                 return _FAILURE_;
             }

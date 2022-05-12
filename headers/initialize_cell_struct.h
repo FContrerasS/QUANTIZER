@@ -34,7 +34,6 @@ struct cell_struct
     int *ptr_ptcl;  // Indexes of the Particles in the cell
     int ptcl_cap;   //Maximum capacity in the number of particles in the cell
     int ptcl_size;  //Number of particles in the cell
-    int no_ptcl; // Number of particles
     vtype cell_mass;    // Cell mass
 };
 

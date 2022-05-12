@@ -338,7 +338,6 @@ static int fill_child_nodes(struct node *ptr_node)
 
     int ptcl_idx;
 
-    int cntr;   // Counter
     int pos_x;  // Distance between the real box and the minimal box when the last is localized in the middle of the real one
     int pos_y;
     int pos_z;
@@ -455,10 +454,6 @@ static int fill_child_nodes(struct node *ptr_node)
         ptr_ch->box_real_dim_y = 5 > (n_exp - 1) ? (ptr_ch->box_dim_y + 10) : (ptr_ch->box_dim_y + 2 * n_exp - 2);
         ptr_ch->box_real_dim_z = 5 > (n_exp - 1) ? (ptr_ch->box_dim_z + 10) : (ptr_ch->box_dim_z + 2 * n_exp - 2);
 
-        ptr_ch->box_real_dim_x_aux = ptr_ch->box_real_dim_x;
-        ptr_ch->box_real_dim_y_aux = ptr_ch->box_real_dim_y;
-        ptr_ch->box_real_dim_z_aux = ptr_ch->box_real_dim_z;
-
         // Translations between cell array and box
         pos_x = (ptr_ch->box_real_dim_x - ptr_ch->box_dim_x) / 2; // Half of the distance of the box side less the "minimal box" side
         ptr_ch->box_ts_x = ptr_ch->box_min_x - pos_x;             // Every cell in the level l in the box must be subtracted this value to obtain the box index
@@ -466,10 +461,6 @@ static int fill_child_nodes(struct node *ptr_node)
         ptr_ch->box_ts_y = ptr_ch->box_min_y - pos_y;
         pos_z = (ptr_ch->box_real_dim_z - ptr_ch->box_dim_z) / 2;
         ptr_ch->box_ts_z = ptr_ch->box_min_z - pos_z;
-
-        ptr_ch->box_ts_x_aux = ptr_ch->box_ts_x;
-        ptr_ch->box_ts_y_aux = ptr_ch->box_ts_y;
-        ptr_ch->box_ts_z_aux = ptr_ch->box_ts_z;
 
         // Filling the box status
         cap = ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y * ptr_ch->box_real_dim_z; // In general, the size of each side must be 3 times bigger than the same side of the "minimal box"
@@ -633,16 +624,16 @@ static int fill_child_nodes(struct node *ptr_node)
             }
         }
 
-        //** >>>>>>>>>>>>>>>>>>>>>
-
         //** >> Particles in the node **/
         //** >> Cell structure **/
         // Size and Capacity
 
         ptr_ch->ptr_cell_struct = (struct cell_struct *)malloc(ptr_ch->box_cap * sizeof(struct cell_struct));
+        ptr_ch->ptr_cell_struct_aux = (struct cell_struct *)malloc(ptr_ch->box_cap * sizeof(struct cell_struct));
         for (int j = 0; j < ptr_ch->box_cap; j++)
         {
             initialize_cell_struct(&(ptr_ch->ptr_cell_struct[j]));
+            initialize_cell_struct(&(ptr_ch->ptr_cell_struct_aux[j]));
         }
 
         for (int j = 0; j < ptr_node->ptr_zone_size[i]; j++)
@@ -668,7 +659,7 @@ static int fill_child_nodes(struct node *ptr_node)
                         {
                             box_idxNbr_ch = box_idx_ch + ii + jj * ptr_ch->box_real_dim_x + kk * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
                             cap = ptr_node->ptr_cell_struct[box_idx_node].ptcl_size;
-                            ptr_ch->ptr_cell_struct[box_idxNbr_ch].ptcl_cap;
+                            ptr_ch->ptr_cell_struct[box_idxNbr_ch].ptcl_cap = cap;
                             ptr_ch->ptr_cell_struct[box_idxNbr_ch].ptr_ptcl = (int *)malloc(cap * sizeof(int));
                         }
                     }
@@ -685,7 +676,6 @@ static int fill_child_nodes(struct node *ptr_node)
 
                     ptr_ch->ptr_cell_struct[box_idx_ptcl_ch].ptr_ptcl[ptr_ch->ptr_cell_struct[box_idx_ptcl_ch].ptcl_size] = ptcl_idx;
                     ptr_ch->ptr_cell_struct[box_idx_ptcl_ch].ptcl_size += 1;
-                    ptr_ch->ptr_cell_struct[box_idx_ptcl_ch].no_ptcl += 1;
                     ptr_ch->ptr_cell_struct[box_idx_ptcl_ch].cell_mass += GL_ptcl_mass[ptcl_idx]; 
                 }
             }
@@ -695,8 +685,6 @@ static int fill_child_nodes(struct node *ptr_node)
         {
             ptr_ch->local_mass += ptr_ch->ptr_cell_struct[j].cell_mass; // Local mass
         }
-
-        //** >>>>>>>>>>>>>>>>>>>>>
 
         //* Potential, Acceleration and density of the grid **/
         cap = (ptr_ch->box_real_dim_x + 1) * (ptr_ch->box_real_dim_y + 1) * (ptr_ch->box_real_dim_z + 1);

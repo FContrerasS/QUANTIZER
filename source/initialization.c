@@ -36,8 +36,9 @@ static void initializing_particle_flag_updating()
 	}
 }
 
-static void initializing_head_node()
+static int initializing_head_node()
 {
+	printf("hi\n");
 	struct node *ptr_head;
 	ptr_head = GL_ptr_tree;
 
@@ -124,16 +125,19 @@ static void initializing_head_node()
 	//** >> Particles in the node **/
 	//** >> Cell structure **/
 	// Size and Capacity
-	ptr_head->ptr_cell_struct = (struct cell_struct*)malloc(ptr_head->box_cap * sizeof(struct cell_struct));
+	printf("before cell struct\n");
+	ptr_head->ptr_cell_struct = (struct cell_struct *)malloc(ptr_head->box_cap * sizeof(struct cell_struct));
 	for (int j = 0; j < ptr_head->box_cap; j++)
 	{
 		initialize_cell_struct(&(ptr_head->ptr_cell_struct[j]));
 	}
 
+	printf("A\n");
 	for (int j = 0; j < GL_no_ptcl; j++)
 	{
+		printf("A1\n");
 		box_idx_ptcl = ptcl_idx_to_box_idx(ptr_head, j);
-
+		printf("A2\n");
 		//** >> Space checking of number of particles in the cell **/
 
 		if (space_check(&(ptr_head->ptr_cell_struct[box_idx_ptcl].ptcl_cap), ptr_head->ptr_cell_struct[box_idx_ptcl].ptcl_size, 4.0f, "p1i1", &(ptr_head->ptr_cell_struct[box_idx_ptcl].ptr_ptcl)) == _FAILURE_)
@@ -141,13 +145,15 @@ static void initializing_head_node()
 			printf("Error, in space_check function\n");
 			return _FAILURE_;
 		}
-
+		printf("A3\n");
 		ptr_head->ptr_cell_struct[box_idx_ptcl].ptr_ptcl[ptr_head->ptr_cell_struct[box_idx_ptcl].ptcl_size] = j;
+		printf("A31\n");
 		ptr_head->ptr_cell_struct[box_idx_ptcl].ptcl_size += 1;
-		ptr_head->ptr_cell_struct[box_idx_ptcl].no_ptcl += 1;
+		printf("A32\n");
 		ptr_head->ptr_cell_struct[box_idx_ptcl].cell_mass += GL_ptcl_mass[j];
+		printf("A33\n");
 	}
-
+	printf("B\n");
 	ptr_head->local_mass = total_mass;
 
 	//** >> Grid points **/
@@ -195,6 +201,8 @@ static void initializing_head_node()
 	//** >> Initial values for the potential and acceleration **/
 	initial_potential_and_acceleration_head(ptr_head);
 
+	return _SUCCESS_;
+
 } // end function initializing_main_node
 
 static void initializing_tentacles()
@@ -228,7 +236,11 @@ int initialization()
 
 	// struct node *GL_ptr_tree; // Head or Main node
 	//** >> Initializing the Head of the Tree **/
-	initializing_head_node();
+	if (initializing_head_node() == _FAILURE_)
+	{
+		printf("Error at function initializing_head_node()\n");
+		return _FAILURE_;
+	}
 
 	//** >> Initializing tentacles struct pointer **/
 	initializing_tentacles();

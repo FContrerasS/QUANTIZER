@@ -29,42 +29,57 @@
 static int computing_particles_updating_B(struct node *ptr_node, vtype dt, bool status)
 {
 
-    int no_ptcl; // Total number of particles in the node
-
     int ptcl_idx; // Particle grid_idx in the node
 
-    no_ptcl = ptr_node->ptcl_size;
+    int box_idx_x; // Box index in X direcction of the node cell
+    int box_idx_y; // Box index in Y direcction of the node cell
+    int box_idx_z; // Box index in Z direcction of the node cell
+    int box_idx;   // Box index of the node cell
 
     if (ptr_node->chn_size == 0)    
     {
-        for (int i = 0; i < no_ptcl; i++)
+        for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
         {
-            ptcl_idx = ptr_node->ptr_ptcl[i];
-            //** >> Updating the new velocity of the particle **/
-            GL_ptcl_vx[ptcl_idx] += GL_ptcl_ax[ptcl_idx] * dt / 2;
-            GL_ptcl_vy[ptcl_idx] += GL_ptcl_ay[ptcl_idx] * dt / 2;
-            GL_ptcl_vz[ptcl_idx] += GL_ptcl_az[ptcl_idx] * dt / 2;
+            box_idx_x = ptr_node->ptr_cell_idx_x[cell_idx] - ptr_node->box_ts_x;
+            box_idx_y = ptr_node->ptr_cell_idx_y[cell_idx] - ptr_node->box_ts_y;
+            box_idx_z = ptr_node->ptr_cell_idx_z[cell_idx] - ptr_node->box_ts_z;
+            box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+            for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
+            {
+                 ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
 
-            //** >> The status of the particle is changed from not updated to updated **/
-            GL_ptcl_updating_flag[ptcl_idx] = status;
-            
+                 //** >> Updating the new velocity of the particle **/
+                 GL_ptcl_vx[ptcl_idx] += GL_ptcl_ax[ptcl_idx] * dt / 2;
+                 GL_ptcl_vy[ptcl_idx] += GL_ptcl_ay[ptcl_idx] * dt / 2;
+                 GL_ptcl_vz[ptcl_idx] += GL_ptcl_az[ptcl_idx] * dt / 2;
+
+                 //** >> The status of the particle is changed from not updated to updated **/
+                 GL_ptcl_updating_flag[ptcl_idx] = status;
+            }
         }
     }
     else
     {
-        for (int i = 0; i < no_ptcl; i++)
+        for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
         {
-            ptcl_idx = ptr_node->ptr_ptcl[i];
-            //** >> Particle has not been updated yet
-            if (GL_ptcl_updating_flag[ptcl_idx] != status)
+            box_idx_x = ptr_node->ptr_cell_idx_x[cell_idx] - ptr_node->box_ts_x;
+            box_idx_y = ptr_node->ptr_cell_idx_y[cell_idx] - ptr_node->box_ts_y;
+            box_idx_z = ptr_node->ptr_cell_idx_z[cell_idx] - ptr_node->box_ts_z;
+            box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+            for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
             {
-                //** >> Updating the new velocity of the particle **/
-                GL_ptcl_vx[ptcl_idx] += GL_ptcl_ax[ptcl_idx] * dt / 2;
-                GL_ptcl_vy[ptcl_idx] += GL_ptcl_ay[ptcl_idx] * dt / 2;
-                GL_ptcl_vz[ptcl_idx] += GL_ptcl_az[ptcl_idx] * dt / 2;
+                ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
 
-                //** >> The status of the particle is changed from not updated to updated **/
-                GL_ptcl_updating_flag[ptcl_idx] = status;
+                if (GL_ptcl_updating_flag[ptcl_idx] != status)
+                {
+                    //** >> Updating the new velocity of the particle **/
+                    GL_ptcl_vx[ptcl_idx] += GL_ptcl_ax[ptcl_idx] * dt / 2;
+                    GL_ptcl_vy[ptcl_idx] += GL_ptcl_ay[ptcl_idx] * dt / 2;
+                    GL_ptcl_vz[ptcl_idx] += GL_ptcl_az[ptcl_idx] * dt / 2;
+
+                    //** >> The status of the particle is changed from not updated to updated **/
+                    GL_ptcl_updating_flag[ptcl_idx] = status;
+                }
             }
         }
     }
