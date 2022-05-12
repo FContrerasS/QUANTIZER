@@ -1,7 +1,7 @@
 /*
- * initialization.h
+ * ptcl_idx_to_box_idx.h
  *
- * Header file of the initialization.c source file
+ * Header file of the ptcl_idx_to_box_idx.c source file
  *
  * Felipe Contreras
  * felipe.contrerass@postgrado.uv.cl
@@ -24,14 +24,12 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __INICIALIZATION__
-#define __INICIALIZATION__
+#ifndef __PTCLIDXTOBOXIDX__
+#define __PTCLIDXTOBOXIDX__
 
 #include "common.h"
-#include "space_check.h"
-#include "initial_potential_and_acceleration_head.h"
 
-    int
-    initialization();
+int ptcl_idx_to_box_idx(struct node *ptr_node, int ptcl_idx);
 
 #endif
+

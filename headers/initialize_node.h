@@ -29,7 +29,7 @@
 
 #include "common.h"
 
-    struct node
+struct node
 {
     //** >> Global node properties **/
     int ID; // Node ID
@@ -41,11 +41,6 @@
     int *ptr_cell_idx_z; // Z index position of the cells in the node at level l
     int cell_cap;        // Maximum capacity of the array of cells in the node
     int cell_size;       // Number of existing cells in the node
-
-    //** >> Particles in the node **/
-    int *ptr_ptcl; // The size is completely related with the level of refinement, the total number of particles, the number of cells in the node, and the refinement criteria
-    int ptcl_cap;  // Maximum cap of the particles array in the node
-    int ptcl_size; // Number of existing particles in the node
 
     //** >> Boxes **/
     int *ptr_box;   // Box contaning the cells status of the minimal box cells and more
@@ -74,6 +69,19 @@
     int box_max_z;      // Already maximum box value index in the real local space at the dimension Z
     bool box_check_fit; // Check if the new box will fit in the old one
 
+    // //** >> Particles in the node **/
+    // int *ptr_ptcl; // The size is completely related with the level of refinement, the total number of particles, the number of cells in the node, and the refinement criteria
+    // int ptcl_cap;  // Maximum cap of the particles array in the node
+    // int ptcl_size; // Number of existing particles in the node
+    
+    //** >> Cell structure **/
+    struct cell_struct *ptr_cell_struct;
+
+    //** >> Refinement Criterion **/
+    //vtype *ptr_box_mass;     // Register of the mass in the cell to refinement criteria
+    //vtype *ptr_box_mass_aux; // Auxiliary mass box used to adapt the box mass
+    vtype local_mass;        // Total mass in the node
+
     //** >> Grid points **/
     int *ptr_grid_intr; // Indexes of the interior grid points of the block
     int *ptr_grid_bder; // Indexes of the border grid points of the block
@@ -83,11 +91,6 @@
     int grid_bder_size; // Number of existing grid border points in the block
 
     // Notes that the MIN and MAX values can change between diffents time-steps, but the Translation indexs always keep equal exept if there is a reallocation of the boxes
-
-    //** >> Refinement Criterion **/
-    vtype *ptr_box_mass; // Register of the mass in the cell to refinement criteria
-    vtype *ptr_box_mass_aux; // Auxiliary mass box used to adapt the box mass
-    vtype local_mass;    // Total mass in the node
 
     //* Potential, Acceleration and density of the grid **/
     vtype *ptr_pot; // Array with the potential of the node. It is of the same size than the real box grid points

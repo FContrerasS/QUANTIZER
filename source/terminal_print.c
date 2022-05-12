@@ -275,7 +275,7 @@ void terminal_print()
     printf("\n%sTOTAL = %.3e s%s\n", KMAG, TOTAL_TIME, KNRM);
 
     char Time_names_tree_adaptation[50][100] = {
-        "updating_box_mass",
+        "updating_cell_struct",
         "initialization_box_aux",
         "initialization_ref_aux",
         "fill_cell_ref",
@@ -298,8 +298,7 @@ void terminal_print()
         "update_chn_size",
         "updating_tentacles_max_lv",
         "free_pointers",
-        ""
-    };
+        ""};
 
     printf("\n\n");
     //** >> TREE ADAPTATION TIME **/

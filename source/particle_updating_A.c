@@ -26,45 +26,6 @@
 
 #include "particle_updating_A.h"
 
-static int ptcl_idx_to_box_idx(struct node *ptr_node, int ptcl_idx)
-{
-
-    int lv;      // Level of refinement
-
-    vtype pos_x; // Particle position in the grid level
-    vtype pos_y;
-    vtype pos_z;
-
-    int pos_x_floor; // floor of the particle position in the grid level
-    int pos_y_floor;
-    int pos_z_floor;
-
-    int box_idx_x; // Box index in X direcction
-    int box_idx_y; // Box index in Y direcction
-    int box_idx_z; // Box index in Z direcction
-    int box_idx;   // Box index
-
-    lv = ptr_node->lv;
-
-    //** >> Position of the particles in the grid level of the current node before updating**/
-    pos_x = GL_ptcl_x[ptcl_idx] * (1 << lv);
-    pos_y = GL_ptcl_y[ptcl_idx] * (1 << lv);
-    pos_z = GL_ptcl_z[ptcl_idx] * (1 << lv);
-
-    //** >> Floor of the particles positions in the grid level of the current node before updating**/
-    pos_x_floor = (int)pos_x;
-    pos_y_floor = (int)pos_y;
-    pos_z_floor = (int)pos_z;
-
-    //** >> Box index in the current node before updating **/
-    box_idx_x = pos_x_floor - ptr_node->box_ts_x;
-    box_idx_y = pos_y_floor - ptr_node->box_ts_y;
-    box_idx_z = pos_z_floor - ptr_node->box_ts_z;
-    box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
-
-    return box_idx;
-}
-
 static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool status)
 {
 

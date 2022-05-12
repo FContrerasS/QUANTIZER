@@ -41,6 +41,8 @@ static void initializing_head_node()
 	struct node *ptr_head;
 	ptr_head = GL_ptr_tree;
 
+	int box_idx_ptcl;
+
 	//** >> Basic values of the node **/
 	initialize_node(ptr_head);
 
@@ -69,14 +71,14 @@ static void initializing_head_node()
 	ptr_head->cell_cap = no_lmin_cell_pow3;
 	ptr_head->cell_size = no_lmin_cell_pow3;
 
-	//** >> Particles in the node **/
-	ptr_head->ptcl_cap = GL_no_ptcl;
-	ptr_head->ptcl_size = GL_no_ptcl;
-	ptr_head->ptr_ptcl = (int *)malloc(ptr_head->ptcl_cap * sizeof(int));
-	for (int i = 0; i < ptr_head->ptcl_size; i++)
-	{
-		ptr_head->ptr_ptcl[i] = i;
-	}
+	// //** >> Particles in the node **/
+	// ptr_head->ptcl_cap = GL_no_ptcl;
+	// ptr_head->ptcl_size = GL_no_ptcl;
+	// ptr_head->ptr_ptcl = (int *)malloc(ptr_head->ptcl_cap * sizeof(int));
+	// for (int i = 0; i < ptr_head->ptcl_size; i++)
+	// {
+	// 	ptr_head->ptr_ptcl[i] = i;
+	// }
 
 	//** >> Boxes **/
 	// Including border when particles goes out of the simulation and also because the n_exp parameter checking
@@ -117,6 +119,37 @@ static void initializing_head_node()
 	ptr_head->box_ts_y = -bder_os_sim;
 	ptr_head->box_ts_z = -bder_os_sim;
 
+	//** >>>>>>>>>>>>>>>>>>>>>
+
+	//** >> Particles in the node **/
+	//** >> Cell structure **/
+	// Size and Capacity
+	ptr_head->ptr_cell_struct = (struct cell_struct*)malloc(ptr_head->box_cap * sizeof(struct cell_struct));
+	for (int j = 0; j < ptr_head->box_cap; j++)
+	{
+		initialize_cell_struct(&(ptr_head->ptr_cell_struct[j]));
+	}
+
+	for (int j = 0; j < GL_no_ptcl; j++)
+	{
+		box_idx_ptcl = ptcl_idx_to_box_idx(ptr_head, j);
+
+		//** >> Space checking of number of particles in the cell **/
+
+		if (space_check(&(ptr_head->ptr_cell_struct[box_idx_ptcl].ptcl_cap), ptr_head->ptr_cell_struct[box_idx_ptcl].ptcl_size, 4.0f, "p1i1", &(ptr_head->ptr_cell_struct[box_idx_ptcl].ptr_ptcl)) == _FAILURE_)
+		{
+			printf("Error, in space_check function\n");
+			return _FAILURE_;
+		}
+
+		ptr_head->ptr_cell_struct[box_idx_ptcl].ptr_ptcl[ptr_head->ptr_cell_struct[box_idx_ptcl].ptcl_size] = j;
+		ptr_head->ptr_cell_struct[box_idx_ptcl].ptcl_size += 1;
+		ptr_head->ptr_cell_struct[box_idx_ptcl].no_ptcl += 1;
+		ptr_head->ptr_cell_struct[box_idx_ptcl].cell_mass += GL_ptcl_mass[j];
+	}
+
+	ptr_head->local_mass = total_mass;
+
 	//** >> Grid points **/
 	ptr_head->grid_intr_cap = (no_lmin_cell - 1) * (no_lmin_cell - 1) * (no_lmin_cell - 1);
 	ptr_head->grid_intr_size = 0;
@@ -149,13 +182,6 @@ static void initializing_head_node()
 		}
 	}
 
-	//** >> Refinement Criterion **/
-	// The default mass is 0
-	if (lmin < lmax)
-	{
-		ptr_head->ptr_box_mass = (vtype *)calloc(box_side_lmin_pow3, sizeof(vtype));
-	}
-	ptr_head->local_mass = total_mass;
 
 	//** >> Potential, Acceleration and density of the grid **/
 	int cap = (ptr_head->box_real_dim_x + 1) * (ptr_head->box_real_dim_y + 1) * (ptr_head->box_real_dim_z + 1);

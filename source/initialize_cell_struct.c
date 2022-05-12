@@ -1,7 +1,7 @@
 /*
- * initialization.h
+ * initialize_cell_struct.c
  *
- * Header file of the initialization.c source file
+ * Initialize basic parameters of a cell structure
  *
  * Felipe Contreras
  * felipe.contrerass@postgrado.uv.cl
@@ -24,14 +24,13 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __INICIALIZATION__
-#define __INICIALIZATION__
+#include "initialize_cell_struct.h"
 
-#include "common.h"
-#include "space_check.h"
-#include "initial_potential_and_acceleration_head.h"
-
-    int
-    initialization();
-
-#endif
+void initialize_cell_struct(struct cell_struct *ptr_cell_struct)
+{
+	ptr_cell_struct->ptr_ptcl = NULL;	 // Indexes of the Particles in the cell
+	ptr_cell_struct->ptcl_cap = 0;	 // Maximum capacity in the number of particles in the cell
+	ptr_cell_struct->ptcl_size = 0;	 // Number of particles in the cell
+	ptr_cell_struct->no_ptcl = 0;	 // Number of particles
+	ptr_cell_struct->cell_mass = 0;	 // Cell mass
+}

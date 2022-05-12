@@ -26,12 +26,12 @@
 
 #include "tree_adaptation.h"
 
-static void updating_box_mass(struct node *ptr_node)
+static void updating_cell_struct(struct node *ptr_node)
 {
 
     int no_chn; // Number of child nodes
     struct node *ptr_ch; //child node
-    vtype aux_box_mass; //Total mass in the 8 child cells
+    vtype aux_cell_mass; //Total mass in the 8 child cells
 
     int box_idx_x_ch; // Box index in X direcction of the child cell 
     int box_idx_y_ch; // Box index in Y direcction of the child cell
@@ -55,7 +55,12 @@ static void updating_box_mass(struct node *ptr_node)
             box_idx_y_ch = ptr_ch->ptr_cell_idx_y[j] - ptr_ch->box_ts_y;
             box_idx_z_ch = ptr_ch->ptr_cell_idx_z[j] - ptr_ch->box_ts_z;
 
-            aux_box_mass = 0;
+            box_idx_x_node = (ptr_ch->ptr_cell_idx_x[j] >> 1) - ptr_node->box_ts_x;
+            box_idx_y_node = (ptr_ch->ptr_cell_idx_y[j] >> 1) - ptr_node->box_ts_y;
+            box_idx_z_node = (ptr_ch->ptr_cell_idx_z[j] >> 1) - ptr_node->box_ts_z;
+            box_idx_node = box_idx_x_node + box_idx_y_node * ptr_node->box_real_dim_x + box_idx_z_node * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+
+            aux_cell_mass = 0;
 
             for (int kk = 0; kk < 2; kk++)
             {
@@ -64,10 +69,17 @@ static void updating_box_mass(struct node *ptr_node)
                     for (int ii = 0; ii < 2; ii++)
                     {
                         box_idx_ch = (box_idx_x_ch + ii) + (box_idx_y_ch + jj) * ptr_ch->box_real_dim_x + (box_idx_z_ch + kk) * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
-                        aux_box_mass += ptr_ch->ptr_box_mass[box_idx_ch];
+                        aux_cell_mass += ptr_ch->ptr_cell_struct[box_idx_ch].cell_mass;
+                        for()
+                        {
+
+                        }
                     }
                 }
             }
+
+            
+
             //** Re-defining the mass of the node cell corresponding to those 8 child cells
             box_idx_x_node = (ptr_ch->ptr_cell_idx_x[j] >> 1) - ptr_node->box_ts_x;
             box_idx_y_node = (ptr_ch->ptr_cell_idx_y[j] >> 1) - ptr_node->box_ts_y;
@@ -458,199 +470,6 @@ static int fill_zones_ref(struct node *ptr_node)
 } // End function fill_zones_ref
 
 int create_links(struct node *ptr_node, int **links_old_ord_old, int **links_new_ord_old, int **links_old_ord_new, int **links_new_ord_new, int *ptr_links_cap)
-{
-    struct node *ptr_ch; // child node
-
-    int cntr_links; // Counter the number of links between the new and old zones of refinement
-
-    int cntr_cell_ch;       // Counter the cells of the child node
-    int cntr_old_ref_zones; // total number of zones refined in the old box
-    int cntr_links_plus;    // Counte links
-    int cntr_link_elements; // Counter linked elements
-    bool check_link;        // Check if the element is linked
-
-    int box_value_new; // Value in the new box
-
-    bool create_link; // Decide if the link need to be created
-
-    int box_idx_x; // Box index at X direction
-    int box_idx_y; // Box index at Y direction
-    int box_idx_z; // Box index at Z direction
-    int box_idx;   // Box index
-
-    int aux_min;
-    int element_idx;
-    int aux_int;
-
-    //** >> Creating the links between old and new refinement zones IDs **/
-
-    cntr_links = 0;
-    cntr_old_ref_zones = 0;
-
-    //** >> Space checking of the capacity of links order arrays **/
-    if (space_check(ptr_links_cap, ptr_node->zones_size, 4.0f, "p4i1i1i1i1", links_old_ord_old, links_new_ord_old, links_old_ord_new, links_new_ord_new) == _FAILURE_)
-    {
-        printf("Error, in space_check function\n");
-        return _FAILURE_;
-    }
-
-    for (int i = 0; i < ptr_node->zones_size; i++)
-    {
-        (*links_new_ord_old)[i] = -1;
-        (*links_old_ord_old)[i] = -1;
-    }
-    while (cntr_links < ptr_node->zones_size && cntr_old_ref_zones < ptr_node->chn_size)
-    {
-        ptr_ch = ptr_node->pptr_chn[cntr_old_ref_zones];
-        cntr_cell_ch = 0;
-        while (cntr_cell_ch < ptr_ch->cell_size)
-        {
-            box_idx_x = (ptr_ch->ptr_cell_idx_x[cntr_cell_ch] >> 1) - ptr_node->box_ts_x;
-            box_idx_y = (ptr_ch->ptr_cell_idx_y[cntr_cell_ch] >> 1) - ptr_node->box_ts_y;
-            box_idx_z = (ptr_ch->ptr_cell_idx_z[cntr_cell_ch] >> 1) - ptr_node->box_ts_z;
-            box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
-            box_value_new = ptr_node->ptr_box_aux[box_idx];
-            if (box_value_new < 0) // The old cell no longer requires refinement
-            {
-                cntr_cell_ch += 8;
-            }
-            else
-            {
-                create_link = true;
-                for (int i = 0; i < cntr_links; i++)
-                {
-                    if (box_value_new == (*links_new_ord_old)[i]) // The link already exist
-                    {
-                        create_link = false;
-                        i = cntr_links;
-                        cntr_cell_ch += 8;
-                    }
-                }
-                if (create_link == true)
-                {
-                    (*links_new_ord_old)[cntr_links] = box_value_new;
-                    (*links_old_ord_old)[cntr_links] = cntr_old_ref_zones;
-                    cntr_links++;
-                    cntr_cell_ch = ptr_ch->cell_size; // Breiking the while cycle
-                }
-            }
-        } // End while cycle over the child node cells
-        cntr_old_ref_zones++;
-    } // End while cycle over all old refinement zones
-
-    if (cntr_links < ptr_node->zones_size)
-    {
-
-        //** >> Old links **/
-        if (cntr_links == ptr_node->chn_size)
-        {
-            for (int i = cntr_links; i < ptr_node->zones_size; i++)
-            {
-                (*links_old_ord_old)[i] = i;
-            }
-        }
-        else
-        {
-            cntr_link_elements = 0; // Counter linked elements
-            cntr_links_plus = 0;    // Counte links old
-
-            while (cntr_link_elements < cntr_links && cntr_links + cntr_links_plus < ptr_node->zones_size && cntr_links + cntr_links_plus < ptr_node->chn_size)
-            {
-                if (cntr_link_elements + cntr_links_plus == (*links_old_ord_old)[cntr_link_elements])
-                {
-                    cntr_link_elements++;
-                }
-                else
-                {
-                    (*links_old_ord_old)[cntr_links + cntr_links_plus] = cntr_link_elements + cntr_links_plus;
-                    cntr_links_plus++;
-                }
-            }
-
-            if (cntr_links + cntr_links_plus < ptr_node->zones_size)
-            {
-                for (int i = cntr_links + cntr_links_plus; i < ptr_node->zones_size; i++)
-                {
-                    (*links_old_ord_old)[i] = i;
-                }
-            }
-        }
-
-        //** >> New links **/
-        cntr_link_elements = -1;
-        for (int i = cntr_links; i < ptr_node->zones_size; i++)
-        {
-            check_link = true;
-            while (check_link == true)
-            {
-                check_link = false;
-                cntr_link_elements++;
-                for (int j = 0; j < cntr_links; j++)
-                {
-                    if ((*links_new_ord_old)[j] == cntr_link_elements)
-                    {
-                        check_link = true;
-                        j = cntr_links;
-                    }
-                }
-            }
-            (*links_new_ord_old)[i] = cntr_link_elements;
-        }
-    }
-
-    //** >> Ordering links arrays **/
-    //** >> Old order **/
-    cntr_links_plus = 0;
-    for (int i = 0; i < ptr_node->zones_size - 1; i++)
-    {
-        aux_min = ptr_node->chn_size + ptr_node->zones_size;
-        element_idx = -1;
-        cntr_link_elements = i;
-        while (aux_min > cntr_links_plus && cntr_link_elements < ptr_node->zones_size)
-        {
-            if (aux_min > (*links_old_ord_old)[cntr_link_elements])
-            {
-                aux_min = (*links_old_ord_old)[cntr_link_elements];
-                element_idx = cntr_link_elements;
-            }
-            cntr_link_elements++;
-        }
-
-        if ((*links_old_ord_old)[i] != aux_min)
-        {
-            //** >> Old **/
-            aux_int = (*links_old_ord_old)[i];
-            (*links_old_ord_old)[i] = aux_min;
-            (*links_old_ord_old)[element_idx] = aux_int;
-            //** >> New **/
-            aux_int = (*links_new_ord_old)[i];
-            (*links_new_ord_old)[i] = (*links_new_ord_old)[element_idx];
-            (*links_new_ord_old)[element_idx] = aux_int;
-        }
-        cntr_links_plus = aux_min + 1;
-    }
-
-    //** >> New order **/
-    for (int i = 0; i < ptr_node->zones_size; i++)
-    {
-        (*links_new_ord_new)[i] = i;
-    }
-    for (int i = 0; i < ptr_node->zones_size; i++)
-    {
-        for (int j = 0; j < ptr_node->zones_size; j++)
-        {
-            if ((*links_new_ord_old)[j] == i)
-            {
-                (*links_old_ord_new)[i] = (*links_old_ord_old)[j];
-                j = ptr_node->zones_size;
-            }
-        }
-    }
-
-    return _SUCCESS_;
-}
-
-int create_links_2(struct node *ptr_node, int **links_old_ord_old, int **links_new_ord_old, int **links_old_ord_new, int **links_new_ord_new, int *ptr_links_cap)
 {
     struct node *ptr_ch; // child node
 
@@ -2332,7 +2151,7 @@ int tree_adaptation()
                 //** Updating the box mass information **/
                 // printf("\n\nUpdating box mass\n\n");
                 aux_clock = clock();
-                updating_box_mass(ptr_node);
+                updating_cell_struct(ptr_node);
                 GL_times[30] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
                 //** Initialization of the box_aux **/
@@ -2372,7 +2191,7 @@ int tree_adaptation()
                 aux_clock = clock();
                 if(ptr_node->zones_size > 0)
                 {
-                    if (create_links_2(ptr_node, &links_old_ord_old, &links_new_ord_old, &links_old_ord_new, &links_new_ord_new, &links_cap) == _FAILURE_)
+                    if (create_links(ptr_node, &links_old_ord_old, &links_new_ord_old, &links_old_ord_new, &links_new_ord_new, &links_cap) == _FAILURE_)
                     {
                         printf("Error at function create_links()\n");
                         return _FAILURE_;

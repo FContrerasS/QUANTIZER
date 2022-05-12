@@ -1,7 +1,7 @@
 /*
  * common.h 
  *
- * Header file with the most commen parameters declared
+ * Header file with the most common parameters declared
  *
  * Felipe Contreras
  * felipe.contrerass@postgrado.uv.cl
@@ -57,7 +57,9 @@ typedef double vtype;
 
 
 //** Tree structure **/
+#include "initialize_cell_struct.h"
 #include "initialize_node.h"
+#include "ptcl_idx_to_box_idx.h"
 
 #define _SUCCESS_ 0 /* integer returned after successful call of a function */
 #define _FAILURE_ 1 /* integer returnd after failure in a function */
@@ -75,10 +77,10 @@ typedef double vtype;
 #define KCYN "\x1B[36m" // Cyan 
 #define KWHT "\x1B[37m" // White
 
-//Abbreviation
+    // Abbreviation
 
-//Constants
-extern vtype _User_BoxSize_; //kpc
+    // Constants
+    extern vtype _User_BoxSize_; // kpc
 extern vtype _PI_;
 extern vtype _Onesixth_;
 extern vtype _kpc_to_m_;

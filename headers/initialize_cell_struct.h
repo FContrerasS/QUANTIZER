@@ -1,7 +1,7 @@
 /*
- * initialization.h
+ * initialize_cell_structure.h
  *
- * Header file of the initialization.c source file
+ * Header file with the most initialize_cell_structure parameters declared
  *
  * Felipe Contreras
  * felipe.contrerass@postgrado.uv.cl
@@ -24,14 +24,20 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __INICIALIZATION__
-#define __INICIALIZATION__
+#ifndef __INITIALIZECELLSTRUCT__
+#define __INITIALIZECELLSTRUCT__
 
 #include "common.h"
-#include "space_check.h"
-#include "initial_potential_and_acceleration_head.h"
 
-    int
-    initialization();
+struct cell_struct
+{
+    int *ptr_ptcl;  // Indexes of the Particles in the cell
+    int ptcl_cap;   //Maximum capacity in the number of particles in the cell
+    int ptcl_size;  //Number of particles in the cell
+    int no_ptcl; // Number of particles
+    vtype cell_mass;    // Cell mass
+};
+
+void initialize_cell_struct(struct cell_struct *ptr_cell_struct);
 
 #endif
