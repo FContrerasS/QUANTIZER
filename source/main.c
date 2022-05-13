@@ -87,7 +87,7 @@ int main(int argc, char **argv) {
     GL_times[1] += (double) (clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 
 	//** >> INITIALIZATION **/
-	printf("Initialization\n");
+	// printf("Initialization\n");
 	GL_clock_begin = clock();
 	if (initialization() == _FAILURE_)
 	{
@@ -97,7 +97,7 @@ int main(int argc, char **argv) {
 	GL_times[2] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 
 	//** >> BUILDING INITIAL TREE **/
-	printf("Building initial Tree\n");
+	// printf("Building initial Tree\n");
 	GL_clock_begin = clock();
 	if (tree_construction() == _FAILURE_)
 	{
@@ -107,13 +107,13 @@ int main(int argc, char **argv) {
 	GL_times[3] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 
 	//** >> DENSITY COMPUTATION **/
-	printf("Initial density\n");
+	// printf("Initial density\n");
 	GL_clock_begin = clock();
 	grid_density();
 	GL_times[4] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 
 	//** >> POTENTIAL COMPUTATION **/
-	printf("Initial Potential\n");
+	// printf("Initial Potential\n");
 	GL_clock_begin = clock();
 	if (potential() == _FAILURE_)
 	{
@@ -123,7 +123,7 @@ int main(int argc, char **argv) {
 	GL_times[5] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 
 	//** >> GRID ACCELERATION **/
-	printf("Initial Grid acceleration\n");
+	// printf("Initial Grid acceleration\n");
 	GL_clock_begin = clock();
 	if (grid_acceleration() == _FAILURE_)
 	{
@@ -174,7 +174,7 @@ int main(int argc, char **argv) {
 		actualtime += dt; // Updating actual time
 
 		//** >> PARTICLE UPDATING A **/
-		printf("Particles Updating A\n");
+		// printf("Particles Updating A\n");
 		GL_clock_begin = clock();
 		if (particle_updating_A(dt) == _FAILURE_)
 		{
@@ -184,7 +184,7 @@ int main(int argc, char **argv) {
 		GL_times[9] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 
 		//** >> RESET **/
-		printf("Reset\n");
+		// printf("Reset\n");
 		GL_clock_begin = clock();
 		if (reset() == _FAILURE_)
 		{
@@ -193,7 +193,7 @@ int main(int argc, char **argv) {
 		}
 		GL_times[11] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 
-		printf("tree adaptation\n");
+		// printf("tree adaptation\n");
 		//** >> TREE ADAPTATION **/
 		GL_clock_begin = clock();
 		if (tree_adaptation() == _FAILURE_)
@@ -204,7 +204,7 @@ int main(int argc, char **argv) {
 		GL_times[10] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 
 		//** >> DENSITY COMPUTATION **/
-		printf("Density \n");
+		// printf("Density \n");
 		GL_clock_begin = clock();
 		grid_density();
 		GL_times[4] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;

@@ -47,83 +47,22 @@ static vtype timestep_computation_2(const struct node *ptr_node, bool status)
 
     mydt = _MAX_dt_;
 
-    //** >> Case no more child, the node is a leaf **/
-    if (ptr_node->chn_size == 0)
+    if(lmin < lmax)
     {
-        for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
+
+        //** >> Case no more child, the node is a leaf **/
+        if (ptr_node->chn_size == 0)
         {
-            box_idx_x = ptr_node->ptr_cell_idx_x[cell_idx] - ptr_node->box_ts_x;
-            box_idx_y = ptr_node->ptr_cell_idx_y[cell_idx] - ptr_node->box_ts_y;
-            box_idx_z = ptr_node->ptr_cell_idx_z[cell_idx] - ptr_node->box_ts_z;
-            box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
-            for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
+            for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
             {
-                ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
+                box_idx_x = ptr_node->ptr_cell_idx_x[cell_idx] - ptr_node->box_ts_x;
+                box_idx_y = ptr_node->ptr_cell_idx_y[cell_idx] - ptr_node->box_ts_y;
+                box_idx_z = ptr_node->ptr_cell_idx_z[cell_idx] - ptr_node->box_ts_z;
+                box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+                for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
+                {
+                    ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
 
-                //** >> x-axis
-                if (myabs(GL_ptcl_ax[ptcl_idx]) <= 1.0e-12)
-                {
-                    if (myabs(GL_ptcl_vx[ptcl_idx]) > 1.0e-12)
-                    {
-                        aux_dt = _CFL_ * H / myabs(GL_ptcl_vx[ptcl_idx]);
-                        mydt = mydt < aux_dt ? mydt : aux_dt;
-                    }
-                }
-                else
-                {
-                    aux_dt = (-myabs(GL_ptcl_vx[ptcl_idx]) + sqrt(GL_ptcl_vx[ptcl_idx] * GL_ptcl_vx[ptcl_idx] + 2 * myabs(GL_ptcl_ax[ptcl_idx]) * H * _CFL_)) / myabs(GL_ptcl_ax[ptcl_idx]);
-                    mydt = mydt < aux_dt ? mydt : aux_dt;
-                }
-
-                //** >> y-axis
-                if (myabs(GL_ptcl_ay[ptcl_idx]) <= 1.0e-12)
-                {
-                    if (myabs(GL_ptcl_vy[ptcl_idx]) > 1.0e-12)
-                    {
-                        aux_dt = _CFL_ * H / myabs(GL_ptcl_vy[ptcl_idx]);
-                        mydt = mydt < aux_dt ? mydt : aux_dt;
-                    }
-                }
-                else
-                {
-                    aux_dt = (-myabs(GL_ptcl_vy[ptcl_idx]) + sqrt(GL_ptcl_vy[ptcl_idx] * GL_ptcl_vy[ptcl_idx] + 2 * myabs(GL_ptcl_ay[ptcl_idx]) * H * _CFL_)) / myabs(GL_ptcl_ay[ptcl_idx]);
-                    mydt = mydt < aux_dt ? mydt : aux_dt;
-                }
-
-                //** >> z-axis
-                if (myabs(GL_ptcl_az[ptcl_idx]) <= 1.0e-12)
-                {
-                    if (myabs(GL_ptcl_vz[ptcl_idx]) > 1.0e-12)
-                    {
-                        aux_dt = _CFL_ * H / myabs(GL_ptcl_vz[ptcl_idx]);
-                        mydt = mydt < aux_dt ? mydt : aux_dt;
-                    }
-                }
-                else
-                {
-                    aux_dt = (-myabs(GL_ptcl_vz[ptcl_idx]) + sqrt(GL_ptcl_vz[ptcl_idx] * GL_ptcl_vz[ptcl_idx] + 2 * myabs(GL_ptcl_az[ptcl_idx]) * H * _CFL_)) / myabs(GL_ptcl_az[ptcl_idx]);
-                    mydt = mydt < aux_dt ? mydt : aux_dt;
-                }
-                //** >> The status of the particle is changed from not updated to updated **/
-                GL_ptcl_updating_flag[ptcl_idx] = status;
-            }
-        }
-    }
-    //** >> Case there are more children, the node is a branch **/
-    else
-    {
-        for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
-        {
-            box_idx_x = ptr_node->ptr_cell_idx_x[cell_idx] - ptr_node->box_ts_x;
-            box_idx_y = ptr_node->ptr_cell_idx_y[cell_idx] - ptr_node->box_ts_y;
-            box_idx_z = ptr_node->ptr_cell_idx_z[cell_idx] - ptr_node->box_ts_z;
-            box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
-            for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
-            {
-                ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
-
-                if (GL_ptcl_updating_flag[ptcl_idx] != status)
-                {
                     //** >> x-axis
                     if (myabs(GL_ptcl_ax[ptcl_idx]) <= 1.0e-12)
                     {
@@ -168,13 +107,130 @@ static vtype timestep_computation_2(const struct node *ptr_node, bool status)
                         aux_dt = (-myabs(GL_ptcl_vz[ptcl_idx]) + sqrt(GL_ptcl_vz[ptcl_idx] * GL_ptcl_vz[ptcl_idx] + 2 * myabs(GL_ptcl_az[ptcl_idx]) * H * _CFL_)) / myabs(GL_ptcl_az[ptcl_idx]);
                         mydt = mydt < aux_dt ? mydt : aux_dt;
                     }
-
                     //** >> The status of the particle is changed from not updated to updated **/
                     GL_ptcl_updating_flag[ptcl_idx] = status;
                 }
             }
         }
+        //** >> Case there are more children, the node is a branch **/
+        else
+        {
+            for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
+            {
+                box_idx_x = ptr_node->ptr_cell_idx_x[cell_idx] - ptr_node->box_ts_x;
+                box_idx_y = ptr_node->ptr_cell_idx_y[cell_idx] - ptr_node->box_ts_y;
+                box_idx_z = ptr_node->ptr_cell_idx_z[cell_idx] - ptr_node->box_ts_z;
+                box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+                for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
+                {
+                    ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
+
+                    if (GL_ptcl_updating_flag[ptcl_idx] != status)
+                    {
+                        //** >> x-axis
+                        if (myabs(GL_ptcl_ax[ptcl_idx]) <= 1.0e-12)
+                        {
+                            if (myabs(GL_ptcl_vx[ptcl_idx]) > 1.0e-12)
+                            {
+                                aux_dt = _CFL_ * H / myabs(GL_ptcl_vx[ptcl_idx]);
+                                mydt = mydt < aux_dt ? mydt : aux_dt;
+                            }
+                        }
+                        else
+                        {
+                            aux_dt = (-myabs(GL_ptcl_vx[ptcl_idx]) + sqrt(GL_ptcl_vx[ptcl_idx] * GL_ptcl_vx[ptcl_idx] + 2 * myabs(GL_ptcl_ax[ptcl_idx]) * H * _CFL_)) / myabs(GL_ptcl_ax[ptcl_idx]);
+                            mydt = mydt < aux_dt ? mydt : aux_dt;
+                        }
+
+                        //** >> y-axis
+                        if (myabs(GL_ptcl_ay[ptcl_idx]) <= 1.0e-12)
+                        {
+                            if (myabs(GL_ptcl_vy[ptcl_idx]) > 1.0e-12)
+                            {
+                                aux_dt = _CFL_ * H / myabs(GL_ptcl_vy[ptcl_idx]);
+                                mydt = mydt < aux_dt ? mydt : aux_dt;
+                            }
+                        }
+                        else
+                        {
+                            aux_dt = (-myabs(GL_ptcl_vy[ptcl_idx]) + sqrt(GL_ptcl_vy[ptcl_idx] * GL_ptcl_vy[ptcl_idx] + 2 * myabs(GL_ptcl_ay[ptcl_idx]) * H * _CFL_)) / myabs(GL_ptcl_ay[ptcl_idx]);
+                            mydt = mydt < aux_dt ? mydt : aux_dt;
+                        }
+
+                        //** >> z-axis
+                        if (myabs(GL_ptcl_az[ptcl_idx]) <= 1.0e-12)
+                        {
+                            if (myabs(GL_ptcl_vz[ptcl_idx]) > 1.0e-12)
+                            {
+                                aux_dt = _CFL_ * H / myabs(GL_ptcl_vz[ptcl_idx]);
+                                mydt = mydt < aux_dt ? mydt : aux_dt;
+                            }
+                        }
+                        else
+                        {
+                            aux_dt = (-myabs(GL_ptcl_vz[ptcl_idx]) + sqrt(GL_ptcl_vz[ptcl_idx] * GL_ptcl_vz[ptcl_idx] + 2 * myabs(GL_ptcl_az[ptcl_idx]) * H * _CFL_)) / myabs(GL_ptcl_az[ptcl_idx]);
+                            mydt = mydt < aux_dt ? mydt : aux_dt;
+                        }
+
+                        //** >> The status of the particle is changed from not updated to updated **/
+                        GL_ptcl_updating_flag[ptcl_idx] = status;
+                    }
+                }
+            }
+        }
     }
+    else // Case only 1 level of refinement, i.e. lmin = lmax
+    {
+        for (int i = 0; i < GL_no_ptcl; i++)
+        {
+
+            //** >> x-axis
+            if (myabs(GL_ptcl_ax[i]) <= 1.0e-12)
+            {
+                if (myabs(GL_ptcl_vx[i]) > 1.0e-12)
+                {
+                    aux_dt = _CFL_ * H / myabs(GL_ptcl_vx[i]);
+                    mydt = mydt < aux_dt ? mydt : aux_dt;
+                }
+            }
+            else
+            {
+                aux_dt = (-myabs(GL_ptcl_vx[i]) + sqrt(GL_ptcl_vx[i] * GL_ptcl_vx[i] + 2 * myabs(GL_ptcl_ax[i]) * H * _CFL_)) / myabs(GL_ptcl_ax[i]);
+                mydt = mydt < aux_dt ? mydt : aux_dt;
+            }
+
+            //** >> y-axis
+            if (myabs(GL_ptcl_ay[i]) <= 1.0e-12)
+            {
+                if (myabs(GL_ptcl_vy[i]) > 1.0e-12)
+                {
+                    aux_dt = _CFL_ * H / myabs(GL_ptcl_vy[i]);
+                    mydt = mydt < aux_dt ? mydt : aux_dt;
+                }
+            }
+            else
+            {
+                aux_dt = (-myabs(GL_ptcl_vy[i]) + sqrt(GL_ptcl_vy[i] * GL_ptcl_vy[i] + 2 * myabs(GL_ptcl_ay[i]) * H * _CFL_)) / myabs(GL_ptcl_ay[i]);
+                mydt = mydt < aux_dt ? mydt : aux_dt;
+            }
+
+            //** >> z-axis
+            if (myabs(GL_ptcl_az[i]) <= 1.0e-12)
+            {
+                if (myabs(GL_ptcl_vz[i]) > 1.0e-12)
+                {
+                    aux_dt = _CFL_ * H / myabs(GL_ptcl_vz[i]);
+                    mydt = mydt < aux_dt ? mydt : aux_dt;
+                }
+            }
+            else
+            {
+                aux_dt = (-myabs(GL_ptcl_vz[i]) + sqrt(GL_ptcl_vz[i] * GL_ptcl_vz[i] + 2 * myabs(GL_ptcl_az[i]) * H * _CFL_)) / myabs(GL_ptcl_az[i]);
+                mydt = mydt < aux_dt ? mydt : aux_dt;
+            }
+        }
+    }
+
 
     return mydt;
 }

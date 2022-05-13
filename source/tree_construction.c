@@ -325,9 +325,6 @@ static int fill_child_nodes(struct node *ptr_node)
     int box_idxNbr_i0_jm1_km1;  // Box index of the neighbor at x=0,y=-1,z=-1
     int box_idxNbr_im1_jm1_km1;  // Box index of the neighbor at x=-1,y=-1,z=-1
 
-    int box_idx_x_ptcl_ch;
-    int box_idx_y_ptcl_ch;
-    int box_idx_z_ptcl_ch;
     int box_idx_ptcl_ch;
 
     int box_grid_idx; // Box grid index
@@ -454,6 +451,10 @@ static int fill_child_nodes(struct node *ptr_node)
         ptr_ch->box_real_dim_y = 5 > (n_exp - 1) ? (ptr_ch->box_dim_y + 10) : (ptr_ch->box_dim_y + 2 * n_exp - 2);
         ptr_ch->box_real_dim_z = 5 > (n_exp - 1) ? (ptr_ch->box_dim_z + 10) : (ptr_ch->box_dim_z + 2 * n_exp - 2);
 
+        ptr_ch->box_real_dim_x_old = ptr_ch->box_real_dim_x;
+        ptr_ch->box_real_dim_y_old = ptr_ch->box_real_dim_y;
+        //ptr_ch->box_real_dim_z_old = ptr_ch->box_real_dim_z;
+
         // Translations between cell array and box
         pos_x = (ptr_ch->box_real_dim_x - ptr_ch->box_dim_x) / 2; // Half of the distance of the box side less the "minimal box" side
         ptr_ch->box_ts_x = ptr_ch->box_min_x - pos_x;             // Every cell in the level l in the box must be subtracted this value to obtain the box index
@@ -461,6 +462,10 @@ static int fill_child_nodes(struct node *ptr_node)
         ptr_ch->box_ts_y = ptr_ch->box_min_y - pos_y;
         pos_z = (ptr_ch->box_real_dim_z - ptr_ch->box_dim_z) / 2;
         ptr_ch->box_ts_z = ptr_ch->box_min_z - pos_z;
+
+        ptr_ch->box_ts_x_old = ptr_ch->box_ts_x;
+        ptr_ch->box_ts_y_old = ptr_ch->box_ts_y;
+        ptr_ch->box_ts_z_old = ptr_ch->box_ts_z;
 
         // Filling the box status
         cap = ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y * ptr_ch->box_real_dim_z; // In general, the size of each side must be 3 times bigger than the same side of the "minimal box"
@@ -629,11 +634,11 @@ static int fill_child_nodes(struct node *ptr_node)
         // Size and Capacity
 
         ptr_ch->ptr_cell_struct = (struct cell_struct *)malloc(ptr_ch->box_cap * sizeof(struct cell_struct));
-        ptr_ch->ptr_cell_struct_aux = (struct cell_struct *)malloc(ptr_ch->box_cap * sizeof(struct cell_struct));
+        ptr_ch->ptr_cell_struct_old = (struct cell_struct *)malloc(ptr_ch->box_cap * sizeof(struct cell_struct));
         for (int j = 0; j < ptr_ch->box_cap; j++)
         {
             initialize_cell_struct(&(ptr_ch->ptr_cell_struct[j]));
-            initialize_cell_struct(&(ptr_ch->ptr_cell_struct_aux[j]));
+            initialize_cell_struct(&(ptr_ch->ptr_cell_struct_old[j]));
         }
 
         for (int j = 0; j < ptr_node->ptr_zone_size[i]; j++)
@@ -669,21 +674,16 @@ static int fill_child_nodes(struct node *ptr_node)
                 for (int k = 0; k < ptr_node->ptr_cell_struct[box_idx_node].ptcl_size; k++)
                 {
                     ptcl_idx = ptr_node->ptr_cell_struct[box_idx_node].ptr_ptcl[k];
-                    box_idx_x_ptcl_ch = GL_ptcl_x[ptcl_idx] * (1 << (lv + 1)) - ptr_ch->box_ts_x;
-                    box_idx_y_ptcl_ch = GL_ptcl_y[ptcl_idx] * (1 << (lv + 1)) - ptr_ch->box_ts_y;
-                    box_idx_z_ptcl_ch = GL_ptcl_z[ptcl_idx] * (1 << (lv + 1)) - ptr_ch->box_ts_z;
-                    box_idx_ptcl_ch = box_idx_x_ptcl_ch + box_idx_y_ptcl_ch * ptr_ch->box_real_dim_x + box_idx_z_ptcl_ch * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
+
+                    box_idx_ptcl_ch = ptcl_idx_to_box_idx(ptr_ch, ptcl_idx);
 
                     ptr_ch->ptr_cell_struct[box_idx_ptcl_ch].ptr_ptcl[ptr_ch->ptr_cell_struct[box_idx_ptcl_ch].ptcl_size] = ptcl_idx;
                     ptr_ch->ptr_cell_struct[box_idx_ptcl_ch].ptcl_size += 1;
                     ptr_ch->ptr_cell_struct[box_idx_ptcl_ch].cell_mass += GL_ptcl_mass[ptcl_idx]; 
                 }
-            }
-        }
 
-        for (int j = 0; j < ptr_ch->box_cap; j++)
-        {
-            ptr_ch->local_mass += ptr_ch->ptr_cell_struct[j].cell_mass; // Local mass
+                ptr_ch->local_mass += ptr_node->ptr_cell_struct[box_idx_node].cell_mass; // Local mass
+            }
         }
 
         //* Potential, Acceleration and density of the grid **/

@@ -58,81 +58,22 @@ static void computing_particle_acceleration(const struct node *ptr_node, bool st
 
     lv = ptr_node->lv;
 
-    //** >> Case no more child, the node is a leaf **/
-    if (ptr_node->chn_size == 0)
+
+    if(lmin < lmax)
     {
-        for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
+        //** >> Case no more child, the node is a leaf **/
+        if (ptr_node->chn_size == 0)
         {
-            box_idx_x = ptr_node->ptr_cell_idx_x[cell_idx] - ptr_node->box_ts_x;
-            box_idx_y = ptr_node->ptr_cell_idx_y[cell_idx] - ptr_node->box_ts_y;
-            box_idx_z = ptr_node->ptr_cell_idx_z[cell_idx] - ptr_node->box_ts_z;
-            box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
-            for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
+            for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
             {
-                ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
-
-                //** >> Position of the particles in the grid level **/
-                pos_x = GL_ptcl_x[ptcl_idx] * (1 << lv);
-                pos_y = GL_ptcl_y[ptcl_idx] * (1 << lv);
-                pos_z = GL_ptcl_z[ptcl_idx] * (1 << lv);
-
-                //** >> Floor of the particles positions in the grid level **/
-                pos_x_floor = (int)pos_x;
-                pos_y_floor = (int)pos_y;
-                pos_z_floor = (int)pos_z;
-
-                //** >> Computing the weights of the nearest grid points of the particle **/
-                // Each for cyle yields 2 options: X or 1-X, where X =  pos_x - pos_x_floor
-                for (int kk = 0; kk < 2; kk++)
+                box_idx_x = ptr_node->ptr_cell_idx_x[cell_idx] - ptr_node->box_ts_x;
+                box_idx_y = ptr_node->ptr_cell_idx_y[cell_idx] - ptr_node->box_ts_y;
+                box_idx_z = ptr_node->ptr_cell_idx_z[cell_idx] - ptr_node->box_ts_z;
+                box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+                for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
                 {
-                    w_z = kk + (1 - 2 * kk) * (pos_z - pos_z_floor);
-                    for (int jj = 0; jj < 2; jj++)
-                    {
-                        w_y = jj + (1 - 2 * jj) * (pos_y - pos_y_floor);
-                        for (int ii = 0; ii < 2; ii++)
-                        {
-                            w_x = ii + (1 - 2 * ii) * (pos_x - pos_x_floor);
-                            w[kk * 4 + jj * 2 + ii] = (1 - w_x) * (1 - w_y) * (1 - w_z);
-                        }
-                    }
-                }
+                    ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
 
-                //** >> Particle density contributes to 8 enclosure grid points **/
-                for (int kk = 0; kk < 2; kk++)
-                {
-                    for (int jj = 0; jj < 2; jj++)
-                    {
-                        for (int ii = 0; ii < 2; ii++)
-                        {
-                            box_grid_idx_x = (pos_x_floor + ii) - ptr_node->box_ts_x;
-                            box_grid_idx_y = (pos_y_floor + jj) - ptr_node->box_ts_y;
-                            box_grid_idx_z = (pos_z_floor + kk) - ptr_node->box_ts_z;
-                            box_grid_idx = box_grid_idx_x + box_grid_idx_y * (ptr_node->box_real_dim_x + 1) + box_grid_idx_z * (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1);
-                            GL_ptcl_ax[ptcl_idx] += ptr_node->ptr_ax[box_grid_idx] * w[ii + 2 * jj + 4 * kk];
-                            GL_ptcl_ay[ptcl_idx] += ptr_node->ptr_ay[box_grid_idx] * w[ii + 2 * jj + 4 * kk];
-                            GL_ptcl_az[ptcl_idx] += ptr_node->ptr_az[box_grid_idx] * w[ii + 2 * jj + 4 * kk];
-                        }
-                    }
-                }
-                //** >> The status of the particle is changed from not updated to updated **/
-                GL_ptcl_updating_flag[ptcl_idx] = status;
-            }
-        }
-    }
-    //** >> Case there are more children, the node is a branch **/
-    else 
-    {
-        for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
-        {
-            box_idx_x = ptr_node->ptr_cell_idx_x[cell_idx] - ptr_node->box_ts_x;
-            box_idx_y = ptr_node->ptr_cell_idx_y[cell_idx] - ptr_node->box_ts_y;
-            box_idx_z = ptr_node->ptr_cell_idx_z[cell_idx] - ptr_node->box_ts_z;
-            box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
-            for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
-            {
-                ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
-                if (GL_ptcl_updating_flag[ptcl_idx] != status)
-                {
                     //** >> Position of the particles in the grid level **/
                     pos_x = GL_ptcl_x[ptcl_idx] * (1 << lv);
                     pos_y = GL_ptcl_y[ptcl_idx] * (1 << lv);
@@ -176,13 +117,126 @@ static void computing_particle_acceleration(const struct node *ptr_node, bool st
                             }
                         }
                     }
-
                     //** >> The status of the particle is changed from not updated to updated **/
                     GL_ptcl_updating_flag[ptcl_idx] = status;
                 }
             }
         }
+        //** >> Case there are more children, the node is a branch **/
+        else
+        {
+            for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
+            {
+                box_idx_x = ptr_node->ptr_cell_idx_x[cell_idx] - ptr_node->box_ts_x;
+                box_idx_y = ptr_node->ptr_cell_idx_y[cell_idx] - ptr_node->box_ts_y;
+                box_idx_z = ptr_node->ptr_cell_idx_z[cell_idx] - ptr_node->box_ts_z;
+                box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+                for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
+                {
+                    ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
+                    if (GL_ptcl_updating_flag[ptcl_idx] != status)
+                    {
+                        //** >> Position of the particles in the grid level **/
+                        pos_x = GL_ptcl_x[ptcl_idx] * (1 << lv);
+                        pos_y = GL_ptcl_y[ptcl_idx] * (1 << lv);
+                        pos_z = GL_ptcl_z[ptcl_idx] * (1 << lv);
+
+                        //** >> Floor of the particles positions in the grid level **/
+                        pos_x_floor = (int)pos_x;
+                        pos_y_floor = (int)pos_y;
+                        pos_z_floor = (int)pos_z;
+
+                        //** >> Computing the weights of the nearest grid points of the particle **/
+                        // Each for cyle yields 2 options: X or 1-X, where X =  pos_x - pos_x_floor
+                        for (int kk = 0; kk < 2; kk++)
+                        {
+                            w_z = kk + (1 - 2 * kk) * (pos_z - pos_z_floor);
+                            for (int jj = 0; jj < 2; jj++)
+                            {
+                                w_y = jj + (1 - 2 * jj) * (pos_y - pos_y_floor);
+                                for (int ii = 0; ii < 2; ii++)
+                                {
+                                    w_x = ii + (1 - 2 * ii) * (pos_x - pos_x_floor);
+                                    w[kk * 4 + jj * 2 + ii] = (1 - w_x) * (1 - w_y) * (1 - w_z);
+                                }
+                            }
+                        }
+
+                        //** >> Particle density contributes to 8 enclosure grid points **/
+                        for (int kk = 0; kk < 2; kk++)
+                        {
+                            for (int jj = 0; jj < 2; jj++)
+                            {
+                                for (int ii = 0; ii < 2; ii++)
+                                {
+                                    box_grid_idx_x = (pos_x_floor + ii) - ptr_node->box_ts_x;
+                                    box_grid_idx_y = (pos_y_floor + jj) - ptr_node->box_ts_y;
+                                    box_grid_idx_z = (pos_z_floor + kk) - ptr_node->box_ts_z;
+                                    box_grid_idx = box_grid_idx_x + box_grid_idx_y * (ptr_node->box_real_dim_x + 1) + box_grid_idx_z * (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1);
+                                    GL_ptcl_ax[ptcl_idx] += ptr_node->ptr_ax[box_grid_idx] * w[ii + 2 * jj + 4 * kk];
+                                    GL_ptcl_ay[ptcl_idx] += ptr_node->ptr_ay[box_grid_idx] * w[ii + 2 * jj + 4 * kk];
+                                    GL_ptcl_az[ptcl_idx] += ptr_node->ptr_az[box_grid_idx] * w[ii + 2 * jj + 4 * kk];
+                                }
+                            }
+                        }
+
+                        //** >> The status of the particle is changed from not updated to updated **/
+                        GL_ptcl_updating_flag[ptcl_idx] = status;
+                    }
+                }
+            }
+        }
     }
+    else    //Case only 1 lv of refinement
+    {
+        for (int i = 0; i < GL_no_ptcl; i++)
+        {
+            //** >> Position of the particles in the grid level **/
+            pos_x = GL_ptcl_x[i] * (1 << lv);
+            pos_y = GL_ptcl_y[i] * (1 << lv);
+            pos_z = GL_ptcl_z[i] * (1 << lv);
+
+            //** >> Floor of the particles positions in the grid level **/
+            pos_x_floor = (int)pos_x;
+            pos_y_floor = (int)pos_y;
+            pos_z_floor = (int)pos_z;
+
+            //** >> Computing the weights of the nearest grid points of the particle **/
+            // Each for cyle yields 2 options: X or 1-X, where X =  pos_x - pos_x_floor
+            for (int kk = 0; kk < 2; kk++)
+            {
+                w_z = kk + (1 - 2 * kk) * (pos_z - pos_z_floor);
+                for (int jj = 0; jj < 2; jj++)
+                {
+                    w_y = jj + (1 - 2 * jj) * (pos_y - pos_y_floor);
+                    for (int ii = 0; ii < 2; ii++)
+                    {
+                        w_x = ii + (1 - 2 * ii) * (pos_x - pos_x_floor);
+                        w[kk * 4 + jj * 2 + ii] = (1 - w_x) * (1 - w_y) * (1 - w_z);
+                    }
+                }
+            }
+
+            //** >> Particle density contributes to 8 enclosure grid points **/
+            for (int kk = 0; kk < 2; kk++)
+            {
+                for (int jj = 0; jj < 2; jj++)
+                {
+                    for (int ii = 0; ii < 2; ii++)
+                    {
+                        box_grid_idx_x = (pos_x_floor + ii) - ptr_node->box_ts_x;
+                        box_grid_idx_y = (pos_y_floor + jj) - ptr_node->box_ts_y;
+                        box_grid_idx_z = (pos_z_floor + kk) - ptr_node->box_ts_z;
+                        box_grid_idx = box_grid_idx_x + box_grid_idx_y * (ptr_node->box_real_dim_x + 1) + box_grid_idx_z * (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1);
+                        GL_ptcl_ax[i] += ptr_node->ptr_ax[box_grid_idx] * w[ii + 2 * jj + 4 * kk];
+                        GL_ptcl_ay[i] += ptr_node->ptr_ay[box_grid_idx] * w[ii + 2 * jj + 4 * kk];
+                        GL_ptcl_az[i] += ptr_node->ptr_az[box_grid_idx] * w[ii + 2 * jj + 4 * kk];
+                    }
+                }
+            }
+        }
+    }
+
 }
 
     int

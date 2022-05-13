@@ -333,7 +333,7 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
             }
         }
     }   //End if(lmin < lmax)
-    else // Case only 1 level, i.e. lmin = lmax
+    else // Case only 1 level of refinement, i.e. lmin = lmax
     {
         for (int i = 0; i < GL_no_ptcl; i++)
         {

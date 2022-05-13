@@ -53,11 +53,26 @@ static void computing_memory()
         {
             ptr_node = GL_tentacles[lv][i];
             TOTAL_MEMORY_CELDAS += 3 * ptr_node->cell_cap * sizeof(int);
-
-            TOTAL_MEMORY_CELL_STRUCT += ptr_node->box_cap * sizeof(struct cell_struct);
-            for (int j = 0; j < ptr_node->box_cap; j++)
+            
+            if(lmin < lmax)
             {
-                TOTAL_MEMORY_CELL_STRUCT += ptr_node->ptr_cell_struct[j].ptcl_cap * sizeof(int);
+                TOTAL_MEMORY_CELL_STRUCT += 2* ptr_node->box_cap * sizeof(struct cell_struct);
+                if (ptr_node->ptr_cell_struct != NULL)
+                {
+                    for (int j = 0; j < ptr_node->box_cap; j++)
+                    {
+                        TOTAL_MEMORY_CELL_STRUCT += ptr_node->ptr_cell_struct[j].ptcl_cap * sizeof(int);
+                    }
+                }
+
+                if (ptr_node->ptr_cell_struct_old != NULL)
+                {
+                    for (int j = 0; j < ptr_node->box_cap; j++)
+                    {
+                        TOTAL_MEMORY_CELL_STRUCT += ptr_node->ptr_cell_struct_old[j].ptcl_cap * sizeof(int);
+                    }     
+                }
+
             }
             TOTAL_MEMORY_CAJAS += 2 * ptr_node->box_cap * (sizeof(int) + sizeof(vtype)); //Boxes and mass boxes
             TOTAL_MEMORY_GRID_POINTS += 2 * (ptr_node->grid_bder_cap + ptr_node->grid_intr_cap) * sizeof(int); // Grid interior and border points
@@ -79,9 +94,24 @@ static void computing_memory()
     {
         TOTAL_MEMORY_STACK += 3 * ptr_node->cell_cap * sizeof(int);
         TOTAL_MEMORY_STACK += ptr_node->box_cap * sizeof(struct cell_struct);
-        for (int j = 0; j < ptr_node->box_cap; j++)
+        if(lmin < lmax)
         {
-            TOTAL_MEMORY_STACK += ptr_node->ptr_cell_struct[j].ptcl_cap * sizeof(int);
+            TOTAL_MEMORY_STACK += 2 * ptr_node->box_cap * sizeof(struct cell_struct);
+            if (ptr_node->ptr_cell_struct != NULL)
+            {
+                for (int j = 0; j < ptr_node->box_cap; j++)
+                {
+                    TOTAL_MEMORY_STACK += ptr_node->ptr_cell_struct[j].ptcl_cap * sizeof(int);
+                }
+            }
+
+            if (ptr_node->ptr_cell_struct_old != NULL)
+            {
+                for (int j = 0; j < ptr_node->box_cap; j++)
+                {
+                    TOTAL_MEMORY_STACK += ptr_node->ptr_cell_struct_old[j].ptcl_cap * sizeof(int);
+                }
+            }
         }
         TOTAL_MEMORY_STACK += 2 * ptr_node->box_cap * (sizeof(int) + sizeof(vtype));                       // Boxes and mass boxes
         TOTAL_MEMORY_STACK += 2 * (ptr_node->grid_bder_cap + ptr_node->grid_intr_cap) * sizeof(int);       // Grid interior and border points
@@ -135,6 +165,7 @@ void terminal_print()
         "Nodes",
         "Celdas",
         "Particulas",
+        "Cell struct",
         "Cajas",
         "Grid Points",
         "Grid Properties",
@@ -143,7 +174,7 @@ void terminal_print()
         "Memory Pool",
         };
 
-    for (int i = 0; i < 9; i++)
+    for (int i = 0; i < 10; i++)
     {
         if (i == max_memory_secction)
         {

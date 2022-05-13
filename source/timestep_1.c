@@ -49,60 +49,21 @@ static vtype timestep_computation_1(const struct node *ptr_node, bool status)
 
     myvmax = 0; // Minium velocity designated by the user
 
-    //** >> Case no more child, the node is a leaf **/
-    if (ptr_node->chn_size == 0)
+    if (lmin < lmax)
     {
-
-        for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
+        //** >> Case no more child, the node is a leaf **/
+        if (ptr_node->chn_size == 0)
         {
-            box_idx_x = ptr_node->ptr_cell_idx_x[cell_idx] - ptr_node->box_ts_x;
-            box_idx_y = ptr_node->ptr_cell_idx_y[cell_idx] - ptr_node->box_ts_y;
-            box_idx_z = ptr_node->ptr_cell_idx_z[cell_idx] - ptr_node->box_ts_z;
-            box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
-            for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
+
+            for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
             {
-                ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
-
-                //** >> Velocity at x-axis
-                aux_v_pow2 = GL_ptcl_vx[ptcl_idx] * GL_ptcl_vx[ptcl_idx];
-                if (myvmax < aux_v_pow2)
+                box_idx_x = ptr_node->ptr_cell_idx_x[cell_idx] - ptr_node->box_ts_x;
+                box_idx_y = ptr_node->ptr_cell_idx_y[cell_idx] - ptr_node->box_ts_y;
+                box_idx_z = ptr_node->ptr_cell_idx_z[cell_idx] - ptr_node->box_ts_z;
+                box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+                for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
                 {
-                    myvmax = aux_v_pow2;
-                }
-                //** >> Velocity at y-axis
-                aux_v_pow2 = GL_ptcl_vy[ptcl_idx] * GL_ptcl_vy[ptcl_idx];
-                if (myvmax < aux_v_pow2)
-                {
-                    myvmax = aux_v_pow2;
-                }
-                //** >> Velocity at z-axis
-                aux_v_pow2 = GL_ptcl_vz[ptcl_idx] * GL_ptcl_vz[ptcl_idx];
-                if (myvmax < aux_v_pow2)
-                {
-                    myvmax = aux_v_pow2;
-                }
-
-                //** >> The status of the particle is changed from not updated to updated **/
-                GL_ptcl_updating_flag[ptcl_idx] = status;
-            }
-        }
-    }
-    //** >> Case there are more children, the node is a branch **/
-    else
-    {
-
-        for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
-        {
-            box_idx_x = ptr_node->ptr_cell_idx_x[cell_idx] - ptr_node->box_ts_x;
-            box_idx_y = ptr_node->ptr_cell_idx_y[cell_idx] - ptr_node->box_ts_y;
-            box_idx_z = ptr_node->ptr_cell_idx_z[cell_idx] - ptr_node->box_ts_z;
-            box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
-            for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
-            {
-                ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
-
-                if (GL_ptcl_updating_flag[ptcl_idx] != status)
-                {
+                    ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
 
                     //** >> Velocity at x-axis
                     aux_v_pow2 = GL_ptcl_vx[ptcl_idx] * GL_ptcl_vx[ptcl_idx];
@@ -128,7 +89,75 @@ static vtype timestep_computation_1(const struct node *ptr_node, bool status)
                 }
             }
         }
+        //** >> Case there are more children, the node is a branch **/
+        else
+        {
+
+            for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
+            {
+                box_idx_x = ptr_node->ptr_cell_idx_x[cell_idx] - ptr_node->box_ts_x;
+                box_idx_y = ptr_node->ptr_cell_idx_y[cell_idx] - ptr_node->box_ts_y;
+                box_idx_z = ptr_node->ptr_cell_idx_z[cell_idx] - ptr_node->box_ts_z;
+                box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+                for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
+                {
+                    ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
+
+                    if (GL_ptcl_updating_flag[ptcl_idx] != status)
+                    {
+
+                        //** >> Velocity at x-axis
+                        aux_v_pow2 = GL_ptcl_vx[ptcl_idx] * GL_ptcl_vx[ptcl_idx];
+                        if (myvmax < aux_v_pow2)
+                        {
+                            myvmax = aux_v_pow2;
+                        }
+                        //** >> Velocity at y-axis
+                        aux_v_pow2 = GL_ptcl_vy[ptcl_idx] * GL_ptcl_vy[ptcl_idx];
+                        if (myvmax < aux_v_pow2)
+                        {
+                            myvmax = aux_v_pow2;
+                        }
+                        //** >> Velocity at z-axis
+                        aux_v_pow2 = GL_ptcl_vz[ptcl_idx] * GL_ptcl_vz[ptcl_idx];
+                        if (myvmax < aux_v_pow2)
+                        {
+                            myvmax = aux_v_pow2;
+                        }
+
+                        //** >> The status of the particle is changed from not updated to updated **/
+                        GL_ptcl_updating_flag[ptcl_idx] = status;
+                    }
+                }
+            }
+        }
     }
+    else // Case only 1 level of refinement, i.e. lmin = lmax
+    {
+        for (int i = 0; i < GL_no_ptcl; i++)
+        {
+            //** >> Velocity at x-axis
+            aux_v_pow2 = GL_ptcl_vx[i] * GL_ptcl_vx[i];
+            if (myvmax < aux_v_pow2)
+            {
+                myvmax = aux_v_pow2;
+            }
+            //** >> Velocity at y-axis
+            aux_v_pow2 = GL_ptcl_vy[i] * GL_ptcl_vy[i];
+            if (myvmax < aux_v_pow2)
+            {
+                myvmax = aux_v_pow2;
+            }
+            //** >> Velocity at z-axis
+            aux_v_pow2 = GL_ptcl_vz[i] * GL_ptcl_vz[i];
+            if (myvmax < aux_v_pow2)
+            {
+                myvmax = aux_v_pow2;
+            }
+        }
+    }
+
+
 
     myvmax = sqrt(myvmax);
 

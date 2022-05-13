@@ -125,30 +125,33 @@ static int initializing_head_node()
 	//** >> Particles in the node **/
 	//** >> Cell structure **/
 	// Size and Capacity
-	ptr_head->ptr_cell_struct = (struct cell_struct *)malloc(ptr_head->box_cap * sizeof(struct cell_struct));
-	for (int j = 0; j < ptr_head->box_cap; j++)
+
+	if(lmin < lmax)
 	{
-		initialize_cell_struct(&(ptr_head->ptr_cell_struct[j]));
-	}
-
-	for (int j = 0; j < GL_no_ptcl; j++)
-	{
-		box_idx_ptcl = ptcl_idx_to_box_idx(ptr_head, j);
-
-		//** >> Space checking of number of particles in the cell **/
-
-		if (space_check(&(ptr_head->ptr_cell_struct[box_idx_ptcl].ptcl_cap), ptr_head->ptr_cell_struct[box_idx_ptcl].ptcl_size + 1, 4.0f, "p1i1", &(ptr_head->ptr_cell_struct[box_idx_ptcl].ptr_ptcl)) == _FAILURE_)
+		ptr_head->ptr_cell_struct = (struct cell_struct *)malloc(ptr_head->box_cap * sizeof(struct cell_struct));
+		for (int j = 0; j < ptr_head->box_cap; j++)
 		{
-			printf("Error, in space_check function\n");
-			return _FAILURE_;
+			initialize_cell_struct(&(ptr_head->ptr_cell_struct[j]));
 		}
 
-		ptr_head->ptr_cell_struct[box_idx_ptcl].ptr_ptcl[ptr_head->ptr_cell_struct[box_idx_ptcl].ptcl_size] = j;
+		for (int j = 0; j < GL_no_ptcl; j++)
+		{
+			box_idx_ptcl = ptcl_idx_to_box_idx(ptr_head, j);
 
-		ptr_head->ptr_cell_struct[box_idx_ptcl].ptcl_size += 1;
+			//** >> Space checking of number of particles in the cell **/
 
-		ptr_head->ptr_cell_struct[box_idx_ptcl].cell_mass += GL_ptcl_mass[j];
+			if (space_check(&(ptr_head->ptr_cell_struct[box_idx_ptcl].ptcl_cap), ptr_head->ptr_cell_struct[box_idx_ptcl].ptcl_size + 1, 4.0f, "p1i1", &(ptr_head->ptr_cell_struct[box_idx_ptcl].ptr_ptcl)) == _FAILURE_)
+			{
+				printf("Error, in space_check function\n");
+				return _FAILURE_;
+			}
 
+			ptr_head->ptr_cell_struct[box_idx_ptcl].ptr_ptcl[ptr_head->ptr_cell_struct[box_idx_ptcl].ptcl_size] = j;
+
+			ptr_head->ptr_cell_struct[box_idx_ptcl].ptcl_size += 1;
+
+			ptr_head->ptr_cell_struct[box_idx_ptcl].cell_mass += GL_ptcl_mass[j];
+		}
 	}
 
 	ptr_head->local_mass = total_mass;
