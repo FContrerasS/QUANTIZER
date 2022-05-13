@@ -26,56 +26,6 @@
 
 #include "tree_adaptation.h"
 
-void check_error(struct node *ptr_node)
-{
-
-    int box_idx_x_ch;
-    int box_idx_y_ch;
-    int box_idx_z_ch;
-    int box_idx_ch;
-
-    int box_idx_x_node;
-    int box_idx_y_node;
-    int box_idx_z_node;
-    int box_idx_node;
-
-    struct node *ptr_ch;
-    //Children
-    for(int i = 0; i< ptr_node->chn_size; i++)
-    {
-        ptr_ch = ptr_node->pptr_chn[i];
-        for (int cell_idx = 0; cell_idx < ptr_ch->cell_size; cell_idx++)
-        {
-            box_idx_x_ch = ptr_ch->ptr_cell_idx_x[cell_idx] - ptr_ch->box_ts_x;
-            box_idx_y_ch = ptr_ch->ptr_cell_idx_y[cell_idx] - ptr_ch->box_ts_y;
-            box_idx_z_ch = ptr_ch->ptr_cell_idx_z[cell_idx] - ptr_ch->box_ts_z;
-            box_idx_ch = box_idx_x_ch + box_idx_y_ch * ptr_ch->box_real_dim_x + box_idx_z_ch * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
-
-            if (ptr_ch->ptr_cell_struct[box_idx_ch].cell_mass != ptr_ch->ptr_cell_struct[box_idx_ch].ptcl_size * 100.0)
-            {
-                printf("Error, child, box_idx = %d\n", box_idx_ch);
-                printf("lv = %d, ID = %d, ptcl_size = %d, cell_mass = %f\n", ptr_ch->lv, ptr_ch->ID, ptr_ch->ptr_cell_struct[box_idx_ch].ptcl_size, ptr_ch->ptr_cell_struct[box_idx_ch].cell_mass);
-            }
-        }
-    }
-
-    //Parent node
-
-    for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
-    {
-        box_idx_x_node = ptr_node->ptr_cell_idx_x[cell_idx] - ptr_node->box_ts_x;
-        box_idx_y_node = ptr_node->ptr_cell_idx_y[cell_idx] - ptr_node->box_ts_y;
-        box_idx_z_node = ptr_node->ptr_cell_idx_z[cell_idx] - ptr_node->box_ts_z;
-        box_idx_node = box_idx_x_node + box_idx_y_node * ptr_node->box_real_dim_x + box_idx_z_node * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
-
-        if (ptr_node->ptr_cell_struct[box_idx_node].cell_mass != ptr_node->ptr_cell_struct[box_idx_node].ptcl_size * 100.0)
-        {
-            printf("Error, parent, box_idx = %d\n", box_idx_node);
-            printf("lv = %d, ID = %d, ptcl_size = %d, cell_mass = %f\n", ptr_node->lv, ptr_node->ID, ptr_node->ptr_cell_struct[box_idx_node].ptcl_size, ptr_node->ptr_cell_struct[box_idx_node].cell_mass);
-        }
-    }
-}
-
 static int updating_cell_struct(struct node *ptr_node)
 {
 
@@ -543,7 +493,7 @@ static int fill_zones_ref(struct node *ptr_node)
     return _SUCCESS_;
 } // End function fill_zones_ref
 
-int create_links(struct node *ptr_node, int **links_old_ord_old, int **links_new_ord_old, int **links_old_ord_new, int **links_new_ord_new, int *ptr_links_cap)
+static int create_links(struct node *ptr_node, int **links_old_ord_old, int **links_new_ord_old, int **links_old_ord_new, int **links_new_ord_new, int *ptr_links_cap)
 {
     struct node *ptr_ch; // child node
 
@@ -1921,15 +1871,6 @@ static int reorganization_grandchild_node(struct node *ptr_node)
     return _SUCCESS_;
 }
 
-static void moved_unused_child_node_to_memory_pool(struct node *ptr_node)
-{
-    //** >> Putting unused child nodes to the stack of memory pool **/
-    for (int i = ptr_node->zones_size; i < ptr_node->chn_size; i++)
-    {
-        add_node_to_stack(ptr_node->pptr_chn[i]);
-    }
-}
-
 static void updating_ref_zones_grandchildren(struct node *ptr_node)
 {
     struct node *ptr_ch;
@@ -2100,6 +2041,15 @@ static int update_child_grid_points (struct node *ptr_node)
     return _SUCCESS_;
 }
 
+static void moved_unused_child_node_to_memory_pool(struct node *ptr_node)
+{
+    //** >> Putting unused child nodes to the stack of memory pool **/
+    for (int i = ptr_node->zones_size; i < ptr_node->chn_size; i++)
+    {
+        add_node_to_stack(ptr_node->pptr_chn[i]);
+    }
+}
+
 static void exchange_box_aux_to_box(struct node *ptr_node)
 {
     int *ptr_aux;
@@ -2188,8 +2138,6 @@ int tree_adaptation()
 
                 // printf("lv = %d, pt = %d, chn_size = %d\n", ptr_node->lv, i, ptr_node->chn_size);
 
-                check_error(ptr_node);
-
                 //** Updating the box mass information **/
                 // printf("\n\nupdating_cell_struct\n\n");
                 aux_clock = clock();
@@ -2200,23 +2148,17 @@ int tree_adaptation()
                 }
                 GL_times[30] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
-                check_error(ptr_node);
-
                 //** Initialization of the box_aux **/
                 // printf("\n\nInitialization box aux\n\n");
                 aux_clock = clock();
                 initialization_box_aux(ptr_node);
                 GL_times[31] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
-                check_error(ptr_node);
-
                 //** Initialization of the auiliary refinement arrays**/
                 // printf("\n\nInitialization ref aux\n\n\n");
                 aux_clock = clock();
                 initialization_ref_aux(ptr_node);
                 GL_times[32] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
-
-                check_error(ptr_node);
 
                 //** >> Filling the refinement cells array **/
                 // printf("\n\nFill cell ref\n\n\n");
@@ -2228,8 +2170,6 @@ int tree_adaptation()
                 }
                 GL_times[33] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
-                check_error(ptr_node);
-
                 //** >> Filling the different zones of refinement **/
                 // printf("\n\nFill zones ref\n\n");
                 aux_clock = clock();
@@ -2240,121 +2180,121 @@ int tree_adaptation()
                 }
                 GL_times[34] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
-                check_error(ptr_node);
-
-                //** >> Create links **/
-                // printf("\n\nCreate links\n\n");
-                aux_clock = clock();
-                if(ptr_node->zones_size > 0)
+                if (ptr_node->zones_size > 0)
                 {
+                    //** >> Create links **/
+                    // printf("\n\nCreate links\n\n");
+                    aux_clock = clock();
                     if (create_links(ptr_node, &links_old_ord_old, &links_new_ord_old, &links_old_ord_new, &links_new_ord_new, &links_cap) == _FAILURE_)
                     {
                         printf("Error at function create_links()\n");
                         return _FAILURE_;
                     }
-                }
-                GL_times[36] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+                    GL_times[36] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
-                check_error(ptr_node);
-
-                //** >> Removing cells that no longer require refinement **/
-                // printf("\n\nRemoving cells nolonger requiere refinement\n\n");
-                aux_clock = clock();
-                if (0 < ptr_node->zones_size && 0 < ptr_node->chn_size)
-                {
-                    remov_cells_nolonger_require_refinement(ptr_node, links_old_ord_old, links_new_ord_old);
-                }
-                GL_times[37] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
-
-                check_error(ptr_node);
-
-                //** >> Adapting child boxes to the new space **/
-                // printf("\n\nAdapt child box\n\n");
-                aux_clock = clock();
-                if (0 < ptr_node->zones_size && 0 < ptr_node->chn_size)
-                {
-                    if (adapt_child_box_and_cells(ptr_node, links_old_ord_old, links_new_ord_old) == _FAILURE_)
+                    aux_clock = clock();
+                    if (ptr_node->chn_size > 0)
                     {
-                        printf("Error at function adapt_child_box()\n");
-                        return _FAILURE_;
+                        //** >> Removing cells that no longer require refinement **/
+                        // printf("\n\nRemoving cells nolonger requiere refinement\n\n");
+                        remov_cells_nolonger_require_refinement(ptr_node, links_old_ord_old, links_new_ord_old);
                     }
-                }
-                GL_times[38] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+                    GL_times[37] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
-                //** >> Creating and defining new children nodes for excess in refinement zones and and linking them to the parent node ptr_node **/
-                // printf("\n\nCreate new child nodes\n\n");
-                aux_clock = clock();
-                if (ptr_node->zones_size > ptr_node->chn_size)
-                {
-
-                    if (create_new_child_nodes(ptr_node, links_old_ord_old, links_new_ord_old) == _FAILURE_)
+                    //** >> Adapting child boxes to the new space **/
+                    // printf("\n\nAdapt child box\n\n");
+                    aux_clock = clock();
+                    if (ptr_node->chn_size > 0)
                     {
-                        printf("Error, in new_child_nodes function\n");
-                        return _FAILURE_;
+                        if (adapt_child_box_and_cells(ptr_node, links_old_ord_old, links_new_ord_old) == _FAILURE_)
+                        {
+                            printf("Error at function adapt_child_box()\n");
+                            return _FAILURE_;
+                        }
                     }
-                }
-                GL_times[39] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+                    GL_times[38] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
-                //** >> Adapting the information from old child nodes to new child nodes **/
-                // printf("\n\nMoving old child to new child\n\n");
-                aux_clock = clock();
-                if (0 < ptr_node->zones_size && 0 < ptr_node->chn_size)
-                {
-                    if (moving_old_child_to_new_child(ptr_node, links_old_ord_old, links_new_ord_old, links_old_ord_new, links_new_ord_new) == _FAILURE_)
+                    //** >> Creating and defining new children nodes for excess in refinement zones and and linking them to the parent node ptr_node **/
+                    // printf("\n\nCreate new child nodes\n\n");
+                    aux_clock = clock();
+                    if (ptr_node->zones_size > ptr_node->chn_size)
                     {
-                        printf("Error at function moving_old_child_to_new_child()\n");
-                        return _FAILURE_;
+
+                        if (create_new_child_nodes(ptr_node, links_old_ord_old, links_new_ord_old) == _FAILURE_)
+                        {
+                            printf("Error, in new_child_nodes function\n");
+                            return _FAILURE_;
+                        }
                     }
-                }
-                GL_times[40] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+                    GL_times[39] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
-                check_error(ptr_node);
+                    //** >> Adapting the information from old child nodes to new child nodes **/
+                    // printf("\n\nMoving old child to new child\n\n");
+                    aux_clock = clock();
+                    if (ptr_node->chn_size > 0)
+                    {
+                        if (moving_old_child_to_new_child(ptr_node, links_old_ord_old, links_new_ord_old, links_old_ord_new, links_new_ord_new) == _FAILURE_)
+                        {
+                            printf("Error at function moving_old_child_to_new_child()\n");
+                            return _FAILURE_;
+                        }
+                    }
+                    GL_times[40] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
-                //** >> Moving new zones of refienemnt information to all child nodes **/
-                // printf("\n\nMoving new zones to new child\n\n");
-                aux_clock = clock();
-                if (0 < ptr_node->zones_size)
-                {
+                    //** >> Moving new zones of refienemnt information to all child nodes **/
+                    // printf("\n\nMoving new zones to new child\n\n");
+                    aux_clock = clock();
                     if (moving_new_zones_to_new_child(ptr_node, links_old_ord_new) == _FAILURE_)
                     {
                         printf("Error at function moving_new_zones_to_new_child()\n");
                         return _FAILURE_;
                     }
-                }
-                GL_times[41] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+                    GL_times[41] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
-                check_error(ptr_node);
-
-                //** >> Update border of the child boxes **//
-                // printf("\n\nUpdate border child boxes\n\n");
-                aux_clock = clock();
-                if (ptr_node->zones_size > 0)
-                {
+                    //** >> Update border of the child boxes **//
+                    // printf("\n\nUpdate border child boxes\n\n");
+                    aux_clock = clock();
                     update_border_child_boxes(ptr_node, links_old_ord_old);
-                }
-                GL_times[42] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+                    GL_times[42] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
-                //** >> Reorganization child nodes **/
-                // printf("\n\nReorganization child nodes\n\n");
-                aux_clock = clock();
-                if (ptr_node->zones_size > 0)
-                {
+                    //** >> Reorganization child nodes **/
+                    // printf("\n\nReorganization child nodes\n\n");
+                    aux_clock = clock();
                     reorganization_child_node(ptr_node, links_old_ord_old, links_new_ord_old, links_old_ord_new);
-                }
-                GL_times[43] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+                    GL_times[43] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
-                //** >> Reorganization grandchild nodes **/
-                // printf("\n\nReorganization grandchild nodes\n\n");
-                aux_clock = clock();
-                if (ptr_node->zones_size > 0 && ptr_node->chn_size > 0 && lv < no_lvs)
-                {
-                    if (reorganization_grandchild_node(ptr_node) == _FAILURE_)
+                    //** >> Reorganization grandchild nodes **/
+                    // printf("\n\nReorganization grandchild nodes\n\n");
+                    aux_clock = clock();
+                    if (ptr_node->chn_size > 0 && lv < no_lvs)
                     {
-                        printf("Error at function reorganization_grandchild_node()\n");
+                        if (reorganization_grandchild_node(ptr_node) == _FAILURE_)
+                        {
+                            printf("Error at function reorganization_grandchild_node()\n");
+                            return _FAILURE_;
+                        }
+                    }
+                    GL_times[44] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+                    //** >> Updating refinement zones of the grandchildren **/
+                    // printf("\n\nUpdating refinement zones of the grandchildren\n\n");
+                    aux_clock = clock();
+                    if (ptr_node->chn_size > 0 && lv < no_lvs)
+                    {
+                        updating_ref_zones_grandchildren(ptr_node);
+                    }
+                    GL_times[46] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+                    //** >> Updating children grid points **/
+                    // printf("\n\nUpdating children grid points\n\n");
+                    aux_clock = clock();
+                    if (update_child_grid_points(ptr_node) == _FAILURE_)
+                    {
+                        printf("Error at function update_child_grid_points()\n");
                         return _FAILURE_;
                     }
+                    GL_times[47] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
                 }
-                GL_times[44] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
                 //** >> Moved Unused child node to the stack of memory pool **/
                 // printf("\n\nMoved Unused child node to the stack of memory pool\n\n");
@@ -2365,27 +2305,6 @@ int tree_adaptation()
                 }
                 GL_times[45] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
-                //** >> Updating refinement zones of the grandchildren **/
-                // printf("\n\nUpdating refinement zones of the grandchildren\n\n");
-                aux_clock = clock();
-                if (ptr_node->zones_size > 0 && ptr_node->chn_size > 0 && lv < no_lvs)
-                {
-                    updating_ref_zones_grandchildren(ptr_node);
-                }
-                GL_times[46] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
-
-                //** >> Updating children grid points **/
-                // printf("\n\nUpdating children grid points\n\n");
-                aux_clock = clock();
-                if (ptr_node->zones_size > 0)
-                {
-                    if (update_child_grid_points(ptr_node) == _FAILURE_)
-                    {
-                        printf("Error at function update_child_grid_points()\n");
-                        return _FAILURE_;
-                    }
-                }
-                GL_times[47] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
                 //** >> Exchange between auiliary box and box **/
                 // printf("\n\nExchange between auiliary box and box\n\n");
@@ -2431,5 +2350,5 @@ int tree_adaptation()
         GL_times[52] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
     }
 
-        return _SUCCESS_;
+    return _SUCCESS_;
 }

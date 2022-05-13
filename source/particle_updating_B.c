@@ -36,8 +36,6 @@ static int computing_particles_updating_B(struct node *ptr_node, vtype dt, bool 
     int box_idx_z; // Box index in Z direcction of the node cell
     int box_idx;   // Box index of the node cell
 
-    clock_t aux_clock;
-
     if(lmin < lmax)
     {
         if (ptr_node->chn_size == 0)
