@@ -38,7 +38,7 @@ static void initializing_particle_flag_updating()
 
 static int initializing_head_node()
 {
-	printf("hi\n");
+
 	struct node *ptr_head;
 	ptr_head = GL_ptr_tree;
 
@@ -115,7 +115,7 @@ static int initializing_head_node()
 	ptr_head->box_real_dim_x = box_side_lmin;
 	ptr_head->box_real_dim_y = box_side_lmin;
 	ptr_head->box_real_dim_z = box_side_lmin;
-	ptr_head->box_cap = ptr_head->box_real_dim_x * ptr_head->box_real_dim_y * ptr_head->box_real_dim_z;
+	ptr_head->box_cap = box_side_lmin_pow3;
 	ptr_head->box_ts_x = -bder_os_sim;
 	ptr_head->box_ts_y = -bder_os_sim;
 	ptr_head->box_ts_z = -bder_os_sim;
@@ -125,35 +125,32 @@ static int initializing_head_node()
 	//** >> Particles in the node **/
 	//** >> Cell structure **/
 	// Size and Capacity
-	printf("before cell struct\n");
 	ptr_head->ptr_cell_struct = (struct cell_struct *)malloc(ptr_head->box_cap * sizeof(struct cell_struct));
 	for (int j = 0; j < ptr_head->box_cap; j++)
 	{
 		initialize_cell_struct(&(ptr_head->ptr_cell_struct[j]));
 	}
 
-	printf("A\n");
 	for (int j = 0; j < GL_no_ptcl; j++)
 	{
-		printf("A1\n");
 		box_idx_ptcl = ptcl_idx_to_box_idx(ptr_head, j);
-		printf("A2\n");
+
 		//** >> Space checking of number of particles in the cell **/
 
-		if (space_check(&(ptr_head->ptr_cell_struct[box_idx_ptcl].ptcl_cap), ptr_head->ptr_cell_struct[box_idx_ptcl].ptcl_size, 4.0f, "p1i1", &(ptr_head->ptr_cell_struct[box_idx_ptcl].ptr_ptcl)) == _FAILURE_)
+		if (space_check(&(ptr_head->ptr_cell_struct[box_idx_ptcl].ptcl_cap), ptr_head->ptr_cell_struct[box_idx_ptcl].ptcl_size + 1, 4.0f, "p1i1", &(ptr_head->ptr_cell_struct[box_idx_ptcl].ptr_ptcl)) == _FAILURE_)
 		{
 			printf("Error, in space_check function\n");
 			return _FAILURE_;
 		}
-		printf("A3\n");
+
 		ptr_head->ptr_cell_struct[box_idx_ptcl].ptr_ptcl[ptr_head->ptr_cell_struct[box_idx_ptcl].ptcl_size] = j;
-		printf("A31\n");
+
 		ptr_head->ptr_cell_struct[box_idx_ptcl].ptcl_size += 1;
-		printf("A32\n");
+
 		ptr_head->ptr_cell_struct[box_idx_ptcl].cell_mass += GL_ptcl_mass[j];
-		printf("A33\n");
+
 	}
-	printf("B\n");
+
 	ptr_head->local_mass = total_mass;
 
 	//** >> Grid points **/

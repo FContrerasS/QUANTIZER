@@ -76,7 +76,7 @@ int space_check(int *ptr_cap, int size, float increase, const char *format, ...)
                     ptr_aux = (int *)realloc(*pptr_int, (*ptr_cap) * sizeof(int));
                     if (ptr_aux == NULL)
                     {
-                        printf("Error in the realocation of ptr_int");
+                        printf("Error in the realocation of ptr_int\n");
                         return _FAILURE_;
                     }
                     else
@@ -104,7 +104,7 @@ int space_check(int *ptr_cap, int size, float increase, const char *format, ...)
                     pptr_aux = (int **)realloc(*ppptr_int, (*ptr_cap) * sizeof(int *));
                     if (pptr_aux == NULL)
                     {
-                        printf("Error in the realocation of ppptr_int");
+                        printf("Error in the realocation of ppptr_int\n");
                         return _FAILURE_;
                     }
                     else
@@ -132,7 +132,7 @@ int space_check(int *ptr_cap, int size, float increase, const char *format, ...)
                     ptr_aux = (vtype *)realloc(*pptr_vtype, (*ptr_cap) * sizeof(vtype));
                     if (ptr_aux == NULL)
                     {
-                        printf("Error in the realocation of ptr_vtype");
+                        printf("Error in the realocation of ptr_vtype\n");
                         return _FAILURE_;
                     }
                     else
@@ -160,7 +160,7 @@ int space_check(int *ptr_cap, int size, float increase, const char *format, ...)
                     pptr_aux = (vtype **)realloc(*ppptr_vtype, (*ptr_cap) * sizeof(vtype *));
                     if (pptr_aux == NULL)
                     {
-                        printf("Error in the realocation of pptr_vtype");
+                        printf("Error in the realocation of pptr_vtype\n");
                         return _FAILURE_;
                     }
                     else
@@ -188,7 +188,7 @@ int space_check(int *ptr_cap, int size, float increase, const char *format, ...)
                     ptr_aux = (struct node *)realloc(*pptr_node, (*ptr_cap) * sizeof(struct node));
                     if (ptr_aux == NULL)
                     {
-                        printf("Error in the realocation of ptr_node");
+                        printf("Error in the realocation of ptr_node\n");
                         return _FAILURE_;
                     }
                     else
@@ -212,7 +212,7 @@ int space_check(int *ptr_cap, int size, float increase, const char *format, ...)
                     pptr_aux = (struct node **)realloc( (*ppptr_node), (*ptr_cap) * sizeof(struct node *));
                     if (pptr_aux == NULL)
                     {
-                        printf("Error in the realocation of pptr_node");
+                        printf("Error in the realocation of pptr_node\n");
                         return _FAILURE_;
                     }
                     else
@@ -240,7 +240,7 @@ int space_check(int *ptr_cap, int size, float increase, const char *format, ...)
                     ptr_aux = (struct cell_struct *)realloc(*pptr_cell, (*ptr_cap) * sizeof(struct cell_struct));
                     if (ptr_aux == NULL)
                     {
-                        printf("Error in the realocation of ptr_cell");
+                        printf("Error in the realocation of ptr_cell\n");
                         return _FAILURE_;
                     }
                     else
