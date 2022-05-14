@@ -84,7 +84,7 @@ static int initializing_head_node()
 	//** >> Boxes **/
 	// Including border when particles goes out of the simulation and also because the n_exp parameter checking
 	ptr_head->ptr_box = (int *)malloc(box_side_lmin_pow3 * sizeof(int));
-	ptr_head->ptr_box_aux = (int *)malloc(box_side_lmin_pow3 * sizeof(int));
+	ptr_head->ptr_box_old = (int *)malloc(box_side_lmin_pow3 * sizeof(int));
 	int box_idx; // Index in the box
 	for (int k = 0; k < box_side_lmin; k++)
 	{

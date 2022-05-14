@@ -472,7 +472,7 @@ static int fill_child_nodes(struct node *ptr_node)
         ptr_ch->box_cap = cap;
         size = ptr_ch->cell_size; // Number of cells in the block
         ptr_ch->ptr_box = (int *)malloc(cap * sizeof(int));
-        ptr_ch->ptr_box_aux = (int *)malloc(cap * sizeof(int));
+        ptr_ch->ptr_box_old = (int *)malloc(cap * sizeof(int));
         // Putting the value of NO-EXIST (-4) in every box index
         for (int j = 0; j < cap; j++)
         {

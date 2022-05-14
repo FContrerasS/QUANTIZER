@@ -44,7 +44,7 @@ struct node
 
     //** >> Boxes **/
     int *ptr_box;   // Box contaning the cells status of the minimal box cells and more
-    int *ptr_box_aux;   // Auxiliary box contaning used to adatp the box to a new time-step
+    int *ptr_box_old;   // Auxiliary box contaning used to adatp the box to a new time-step
     int box_cap;        // Maximum capacity of the box
     int box_real_dim_x; // Real dimension X of the box
     int box_real_dim_y; // Real dimension Y of the box

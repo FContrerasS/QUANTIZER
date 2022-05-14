@@ -159,7 +159,7 @@ void terminal_print()
         max_memory_secction = Total_memory[max_memory_secction] > Total_memory[i] ? max_memory_secction : i;
     }
 
-    printf("\n\n%sMEMORY INITIAL TREE [MB]:%s\n\n", KRED, KNRM);
+    printf("\n\n%sMEMORY [MB]:%s\n\n", KRED, KNRM);
 
     char Memory_names[50][100] = {
         "Nodes",
@@ -316,7 +316,7 @@ void terminal_print()
 
     char Time_names_tree_adaptation[50][100] = {
         "updating_cell_struct",
-        "initialization_box_aux",
+        "initialization_node_boxes",
         "initialization_ref_aux",
         "fill_cell_ref",
         "fill_zones_ref",
