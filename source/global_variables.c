@@ -166,7 +166,7 @@ static void init_global_user_params()
     Maxdt = 3.0 * _Mgyear_;
     meanmass = 100;
     total_mass = GL_no_ptcl * meanmass;
-    fr_output = 40;
+    fr_output = 10000000;
     MaxIterations = 100000;
     no_grid_pow2 = no_grid * no_grid;
     no_grid_pow3 = no_grid * no_grid * no_grid;

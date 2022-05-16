@@ -802,6 +802,8 @@ static void remov_cells_nolonger_require_refinement(struct node *ptr_node, const
 static int adapt_child_box_and_cells(struct node *ptr_node, const int *links_old_ord_old, const int *links_new_ord_old)
 {
     struct node *ptr_ch;
+    
+    struct cell_struct cell_struct_aux;
 
     int box_idx_x_ch_old; // Box index in X direcction of the child cell
     int box_idx_y_ch_old; // Box index in Y direcction of the child cell
@@ -971,21 +973,27 @@ static int adapt_child_box_and_cells(struct node *ptr_node, const int *links_old
                     box_idx_z_ch_old = ptr_ch->ptr_cell_idx_z[cell_idx] - ptr_ch->box_ts_z_old;
                     box_idx_ch_old = box_idx_x_ch_old + box_idx_y_ch_old * ptr_ch->box_real_dim_x_old + box_idx_z_ch_old * ptr_ch->box_real_dim_x_old * ptr_ch->box_real_dim_y_old;
 
-                    //** >> Transfer from cell structure to auxiliary cell structure
-                    ptr_ch->ptr_cell_struct_old[box_idx_ch_old].cell_mass = ptr_ch->ptr_cell_struct[box_idx_ch_old].cell_mass;
-                    ptr_ch->ptr_cell_struct_old[box_idx_ch_old].ptcl_size = ptr_ch->ptr_cell_struct[box_idx_ch_old].ptcl_size;
-                    
-                    //** >> Space checking of cell structure particles
-                    if (space_check(&(ptr_ch->ptr_cell_struct_old[box_idx_ch_old].ptcl_cap), ptr_ch->ptr_cell_struct_old[box_idx_ch_old].ptcl_size, 2.0f, "p1i1", &(ptr_ch->ptr_cell_struct_old[box_idx_ch_old].ptr_ptcl)) == _FAILURE_)
-                    {
-                        printf("Error, in space_check function\n");
-                        return _FAILURE_;
-                    }
 
-                    for (int j = 0; j < ptr_ch->ptr_cell_struct_old[box_idx_ch_old].ptcl_size; j++)
-                    {
-                        ptr_ch->ptr_cell_struct_old[box_idx_ch_old].ptr_ptcl[j] = ptr_ch->ptr_cell_struct[box_idx_ch_old].ptr_ptcl[j];
-                    }
+                    cell_struct_aux = ptr_ch->ptr_cell_struct_old[box_idx_ch_old];
+                    ptr_ch->ptr_cell_struct_old[box_idx_ch_old] = ptr_ch->ptr_cell_struct[box_idx_ch_old];
+                    ptr_ch->ptr_cell_struct[box_idx_ch_old] = cell_struct_aux;
+
+                    //** >> Transfer from cell structure to auxiliary cell structure*/
+                    
+/*                    ptr_ch->ptr_cell_struct_old[box_idx_ch_old].cell_mass = ptr_ch->ptr_cell_struct[box_idx_ch_old].cell_mass;*/
+/*                    ptr_ch->ptr_cell_struct_old[box_idx_ch_old].ptcl_size = ptr_ch->ptr_cell_struct[box_idx_ch_old].ptcl_size;*/
+/*                                          */
+                    //** >> Space checking of cell structure particles*/
+/*                    if (space_check(&(ptr_ch->ptr_cell_struct_old[box_idx_ch_old].ptcl_cap), ptr_ch->ptr_cell_struct_old[box_idx_ch_old].ptcl_size, 2.0f, "p1i1", &(ptr_ch->ptr_cell_struct_old[box_idx_ch_old].ptr_ptcl)) == _FAILURE_)*/
+/*                    {*/
+/*                        printf("Error, in space_check function\n");*/
+/*                        return _FAILURE_;*/
+/*                    }*/
+
+/*                    for (int j = 0; j < ptr_ch->ptr_cell_struct_old[box_idx_ch_old].ptcl_size; j++)*/
+/*                    {*/
+/*                        ptr_ch->ptr_cell_struct_old[box_idx_ch_old].ptr_ptcl[j] = ptr_ch->ptr_cell_struct[box_idx_ch_old].ptr_ptcl[j];*/
+/*                    }*/
                 }
 
                 size = ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y * ptr_ch->box_real_dim_z;
@@ -998,11 +1006,15 @@ static int adapt_child_box_and_cells(struct node *ptr_node, const int *links_old
                 }
 
                 //** Initializing new cell struct **/
-                for (int j = 0; j < ptr_ch->box_cap; j++)
-                {
-                    ptr_ch->ptr_cell_struct[j].ptcl_size = 0;
-                    ptr_ch->ptr_cell_struct[j].cell_mass = 0;
-                }
+/*                for (int j = 0; j < ptr_ch->box_cap; j++)*/
+/*                {*/
+/*                    if(ptr_ch->ptr_cell_struct[j].ptcl_size != 0 || ptr_ch->ptr_cell_struct[j].cell_mass != 0)*/
+/*                    {*/
+/*                      printf("\nError, en ptr_cell struct masa = 0, por lo que la estructura vieja aun contiene informacion\n");*/
+/*                    }*/
+/*                    //ptr_ch->ptr_cell_struct[j].ptcl_size = 0;*/
+/*                    //ptr_ch->ptr_cell_struct[j].cell_mass = 0;*/
+/*                }*/
 
                 // for (int cell_idx = 0; cell_idx < ptr_ch->cell_size; cell_idx++)
                 // {
@@ -1101,7 +1113,7 @@ static int create_new_child_nodes(struct node *ptr_node, const int *links_old_or
         ptr_ch->lv = ptr_node->lv + 1;
         //** >> Cells in the node **/
         size = 8 * ptr_node->ptr_zone_size[links_new_ord_old[i]];
-        ptr_ch->cell_size = 0;
+        //ptr_ch->cell_size = 0;
 
         //** >> Space checking of cells indexes of the child node
         if (space_check(&(ptr_ch->cell_cap), size, 2.0f, "p3i1i1i1", &(ptr_ch->ptr_cell_idx_x), &(ptr_ch->ptr_cell_idx_y), &(ptr_ch->ptr_cell_idx_z)) == _FAILURE_)
@@ -1112,12 +1124,12 @@ static int create_new_child_nodes(struct node *ptr_node, const int *links_old_or
 
         //** >> Boxes **/
         // MIN and MAX cell indexes values of the node.
-        ptr_ch->box_min_x = INT_MAX;
-        ptr_ch->box_min_y = INT_MAX;
-        ptr_ch->box_min_z = INT_MAX;
-        ptr_ch->box_max_x = 0;
-        ptr_ch->box_max_y = 0;
-        ptr_ch->box_max_z = 0;
+/*        ptr_ch->box_min_x = INT_MAX;*/
+/*        ptr_ch->box_min_y = INT_MAX;*/
+/*        ptr_ch->box_min_z = INT_MAX;*/
+/*        ptr_ch->box_max_x = 0;*/
+/*        ptr_ch->box_max_y = 0;*/
+/*        ptr_ch->box_max_z = 0;*/
 
         for (int j = 0; j < ptr_node->ptr_zone_size[links_new_ord_old[i]]; j++)
         {
@@ -1174,7 +1186,7 @@ static int create_new_child_nodes(struct node *ptr_node, const int *links_old_or
         pos_z = (ptr_ch->box_real_dim_z - ptr_ch->box_dim_z) / 2;
         ptr_ch->box_ts_z = ptr_ch->box_min_z - pos_z;
 
-        ptr_ch->box_check_fit = true;
+        //ptr_ch->box_check_fit = true;
 
         // Filling the boxes
         size = ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y * ptr_ch->box_real_dim_z;
@@ -1193,16 +1205,16 @@ static int create_new_child_nodes(struct node *ptr_node, const int *links_old_or
 
         //** >> Particles in the node **/
         //** >> Cell structure **/
-        for(int j = 0; j< ptr_ch->box_cap; j++)
-        {
-            ptr_ch->ptr_cell_struct[j].cell_mass = 0;
-            ptr_ch->ptr_cell_struct[j].ptcl_size = 0;
-        }
-        ptr_ch->local_mass = 0;
+/*        for(int j = 0; j< ptr_ch->box_cap; j++)*/
+/*        {*/
+/*            ptr_ch->ptr_cell_struct[j].cell_mass = 0;*/
+/*            ptr_ch->ptr_cell_struct[j].ptcl_size = 0;*/
+/*        }*/
+/*        ptr_ch->local_mass = 0;*/
 
         //** >> Grid points **/
-        ptr_ch->grid_intr_size = 0;
-        ptr_ch->grid_bder_size = 0;
+        //ptr_ch->grid_intr_size = 0;
+        //ptr_ch->grid_bder_size = 0;
 
         //** >> Potential, acceleration and density of the grid **/
         size = (ptr_ch->box_real_dim_x + 1) * (ptr_ch->box_real_dim_y + 1) * (ptr_ch->box_real_dim_z + 1);
@@ -1214,27 +1226,27 @@ static int create_new_child_nodes(struct node *ptr_node, const int *links_old_or
         }
 
         //** >> Reset grid properties **/
-        for (int j = 0; j < size; j++)
-        {
-            //ptr_ch->ptr_pot[j] = 0;
-            //ptr_ch->ptr_ax[j] = 0;
-            //ptr_ch->ptr_ay[j] = 0;
-            //ptr_ch->ptr_az[j] = 0;
-            ptr_ch->ptr_d[j] = 0;
-        }
+/*        for (int j = 0; j < size; j++)*/
+/*        {*/
+/*            //ptr_ch->ptr_pot[j] = 0;*/
+/*            //ptr_ch->ptr_ax[j] = 0;*/
+/*            //ptr_ch->ptr_ay[j] = 0;*/
+/*            //ptr_ch->ptr_az[j] = 0;*/
+/*            ptr_ch->ptr_d[j] = 0;*/
+/*        }*/
 
         //** >> Tree structure **/
-        ptr_ch->chn_size = 0;
+        //ptr_ch->chn_size = 0;
         ptr_ch->ptr_pt = ptr_node;
         ptr_node->pptr_chn[i] = ptr_ch;
 
         //** >> Auxililary arrays to go from old box to new box **/
-        ptr_ch->cell_ref_size = 0;
-        for (int j = 0; j < ptr_ch->zones_size; j++)
-        {
-            ptr_ch->ptr_zone_size[j] = 0;
-        }
-        ptr_ch->zones_size = 0;
+        //ptr_ch->cell_ref_size = 0;
+/*        for (int j = 0; j < ptr_ch->zones_size; j++)*/
+/*        {*/
+/*            ptr_ch->ptr_zone_size[j] = 0;*/
+/*        }*/
+/*        ptr_ch->zones_size = 0;*/
     }
     return _SUCCESS_;
 }
@@ -1243,6 +1255,10 @@ static int moving_old_child_to_new_child(struct node *ptr_node, const int *links
 {
     struct node *ptr_ch_A;
     struct node *ptr_ch_B;
+    
+    struct cell_struct cell_struct_aux;
+    
+    
     int no_cells_ch_A; // Total number of cells in the child node A
     int no_cells_ch_B; // Total number of cells in the child node A
 
@@ -1350,22 +1366,41 @@ static int moving_old_child_to_new_child(struct node *ptr_node, const int *links
                                 {
                                     box_idxNbr_ch_A = box_idx_ch_A + ii + jj * ptr_ch_A->box_real_dim_x + kk * ptr_ch_A->box_real_dim_x * ptr_ch_A->box_real_dim_y;
                                     box_idxNbr_ch_B = box_idx_ch_B + ii + jj * ptr_ch_B->box_real_dim_x + kk * ptr_ch_B->box_real_dim_x * ptr_ch_B->box_real_dim_y;
-                                    ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].cell_mass = ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].cell_mass;
-                                    ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptcl_size = ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].ptcl_size;
-                                    //** >> Space checking of cell structure particles
-                                    if (space_check(&(ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptcl_cap), ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptcl_size , 2.0f, "p1i1", &(ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptr_ptcl)) == _FAILURE_)
-                                    {
-                                        printf("Error, in space_check function\n");
-                                        return _FAILURE_;
-                                    }
-                                    for (int j = 0; j < ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptcl_size; j++)
-                                    {
-                                        ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptr_ptcl[j] = ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].ptr_ptcl[j];
-                                    }
-                                    ptr_ch_B->local_mass += ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].cell_mass;
-                                    ptr_ch_A->local_mass -= ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].cell_mass;
-                                    ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].cell_mass = 0;
-                                    ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].ptcl_size = 0;
+                                    
+                                    cell_struct_aux = ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B];
+                                    ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B] = ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A];
+                                    ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A] = cell_struct_aux;
+                                    
+                                    
+                                    
+                                    
+/*                                    ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].cell_mass = ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].cell_mass;*/
+/*                                    ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptcl_size = ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].ptcl_size;*/
+                                    //** >> Space checking of cell structure particles*/
+/*                                    if (space_check(&(ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptcl_cap), ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptcl_size , 2.0f, "p1i1", &(ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptr_ptcl)) == _FAILURE_)*/
+/*                                    {*/
+/*                                        printf("Error, in space_check function\n");*/
+/*                                        return _FAILURE_;*/
+/*                                    }*/
+/*                                    for (int j = 0; j < ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptcl_size; j++)*/
+/*                                    {*/
+/*                                        ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptr_ptcl[j] = ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].ptr_ptcl[j];*/
+/*                                    }*/
+/*                                    */
+/*                                    */
+/*                                    ptr_ch_B->local_mass += ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].cell_mass;*/
+/*                                    ptr_ch_A->local_mass -= ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].cell_mass;*/
+                                    
+                                    
+                                    ptr_ch_B->local_mass += ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].cell_mass;
+                                    ptr_ch_A->local_mass -= ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].cell_mass;
+                                    //** >> No estoy seguro de que inicializar en 0 la masa y ptcl size de A sea necesario
+/*                                    if(ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].cell_mass != 0 || ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].ptcl_size != 0)*/
+/*                                    {*/
+/*                                      printf("\nError, masa del children, linea 1400 esta errada\n");*/
+/*                                    }*/
+                                    //ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].cell_mass = 0;
+                                    //ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].ptcl_size = 0;
                                 }
                             }
                         }
@@ -1411,18 +1446,28 @@ static int moving_old_child_to_new_child(struct node *ptr_node, const int *links
                                         box_idxNbr_ch_A_old = box_idx_ch_A_old + ii + jj * ptr_ch_A->box_real_dim_x_old + kk * ptr_ch_A->box_real_dim_x_old * ptr_ch_A->box_real_dim_y_old;
                                         ptr_ch_A->ptr_box[box_idxNbr_ch_A] = -3; // Putting the status of EXIST (-3) in the child node cell
 
-                                        ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].ptcl_size = ptr_ch_A->ptr_cell_struct_old[box_idxNbr_ch_A_old].ptcl_size;
-                                        ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].cell_mass = ptr_ch_A->ptr_cell_struct_old[box_idxNbr_ch_A_old].cell_mass;
-                                        //** >> Space checking of cell structure particles
-                                        if (space_check(&(ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].ptcl_cap), ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].ptcl_size, 2.0f, "p1i1", &(ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].ptr_ptcl)) == _FAILURE_)
-                                        {
-                                            printf("Error, in space_check function\n");
-                                            return _FAILURE_;
-                                        }
-                                        for (int j = 0; j < ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].ptcl_size; j++)
-                                        {
-                                            ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].ptr_ptcl[j] = ptr_ch_A->ptr_cell_struct_old[box_idxNbr_ch_A_old].ptr_ptcl[j];
-                                        }
+
+                                        cell_struct_aux = ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A];
+                                        ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A] = ptr_ch_A->ptr_cell_struct_old[box_idxNbr_ch_A_old];
+                                        ptr_ch_A->ptr_cell_struct_old[box_idxNbr_ch_A_old] = cell_struct_aux;
+
+/*                                        if(ptr_ch_A->ptr_cell_struct_old[box_idxNbr_ch_A_old].cell_mass != 0 || ptr_ch_A->ptr_cell_struct_old[box_idxNbr_ch_A_old].ptcl_size != 0)*/
+/*                                        {*/
+/*                                          printf("\nError, masa del children, linea 1456 esta errada\n");*/
+/*                                        }*/
+
+/*                                        ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].ptcl_size = ptr_ch_A->ptr_cell_struct_old[box_idxNbr_ch_A_old].ptcl_size;*/
+/*                                        ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].cell_mass = ptr_ch_A->ptr_cell_struct_old[box_idxNbr_ch_A_old].cell_mass;*/
+                                        //** >> Space checking of cell structure particles*/
+/*                                        if (space_check(&(ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].ptcl_cap), ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].ptcl_size, 2.0f, "p1i1", &(ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].ptr_ptcl)) == _FAILURE_)*/
+/*                                        {*/
+/*                                            printf("Error, in space_check function\n");*/
+/*                                            return _FAILURE_;*/
+/*                                        }*/
+/*                                        for (int j = 0; j < ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].ptcl_size; j++)*/
+/*                                        {*/
+/*                                            ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].ptr_ptcl[j] = ptr_ch_A->ptr_cell_struct_old[box_idxNbr_ch_A_old].ptr_ptcl[j];*/
+/*                                        }*/
                                     }
                                 }
                             }
@@ -1477,23 +1522,33 @@ static int moving_old_child_to_new_child(struct node *ptr_node, const int *links
                                     box_idxNbr_ch_A_old = box_idx_ch_A_old + ii + jj * ptr_ch_A->box_real_dim_x_old + kk * ptr_ch_A->box_real_dim_x_old * ptr_ch_A->box_real_dim_y_old;
                                     box_idxNbr_ch_B = box_idx_ch_B + ii + jj * ptr_ch_B->box_real_dim_x + kk * ptr_ch_B->box_real_dim_x * ptr_ch_B->box_real_dim_y;
 
-                                    ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].cell_mass = ptr_ch_A->ptr_cell_struct_old[box_idxNbr_ch_A_old].cell_mass;
-                                    ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptcl_size = ptr_ch_A->ptr_cell_struct_old[box_idxNbr_ch_A_old].ptcl_size;
+                                    cell_struct_aux = ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B];
+                                    ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B] = ptr_ch_A->ptr_cell_struct_old[box_idxNbr_ch_A_old];
+                                    ptr_ch_A->ptr_cell_struct_old[box_idxNbr_ch_A_old] = cell_struct_aux;
 
-                                    //** >> Space checking of cell structure particles
-                                    if (space_check(&(ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptcl_cap), ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptcl_size, 2.0f, "p1i1", &(ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptr_ptcl)) == _FAILURE_)
-                                    {
-                                        printf("Error, in space_check function\n");
-                                        return _FAILURE_;
-                                    }
 
-                                    for (int j = 0; j < ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptcl_size; j++)
-                                    {
-                                        ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptr_ptcl[j] = ptr_ch_A->ptr_cell_struct_old[box_idxNbr_ch_A_old].ptr_ptcl[j];
-                                    }
+/*                                    ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].cell_mass = ptr_ch_A->ptr_cell_struct_old[box_idxNbr_ch_A_old].cell_mass;*/
+/*                                    ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptcl_size = ptr_ch_A->ptr_cell_struct_old[box_idxNbr_ch_A_old].ptcl_size;*/
 
-                                    ptr_ch_B->local_mass += ptr_ch_A->ptr_cell_struct_old[box_idxNbr_ch_A_old].cell_mass;
-                                    ptr_ch_A->local_mass -= ptr_ch_A->ptr_cell_struct_old[box_idxNbr_ch_A_old].cell_mass;
+                                    //** >> Space checking of cell structure particles*/
+/*                                    if (space_check(&(ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptcl_cap), ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptcl_size, 2.0f, "p1i1", &(ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptr_ptcl)) == _FAILURE_)*/
+/*                                    {*/
+/*                                        printf("Error, in space_check function\n");*/
+/*                                        return _FAILURE_;*/
+/*                                    }*/
+
+/*                                    for (int j = 0; j < ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptcl_size; j++)*/
+/*                                    {*/
+/*                                        ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptr_ptcl[j] = ptr_ch_A->ptr_cell_struct_old[box_idxNbr_ch_A_old].ptr_ptcl[j];*/
+/*                                    }*/
+
+                                    ptr_ch_B->local_mass += ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].cell_mass;
+                                    ptr_ch_A->local_mass -= ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].cell_mass;
+                                    //** >> No estoy seguro de que inicializar en 0 la masa y ptcl size de A sea necesario
+/*                                    if(ptr_ch_A->ptr_cell_struct_old[box_idxNbr_ch_A_old].cell_mass != 0 || ptr_ch_A->ptr_cell_struct_old[box_idxNbr_ch_A_old].ptcl_size != 0)*/
+/*                                    {*/
+/*                                      printf("\nError, masa del children, linea 1547 esta errada\n");*/
+/*                                    }*/
                                     // ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].cell_mass = 0;
                                     // ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].ptcl_size = 0;
                                 }
@@ -1548,11 +1603,12 @@ static int moving_old_child_to_new_child(struct node *ptr_node, const int *links
                     {
                         for (int ii = 0; ii < 2; ii++)
                         {
+                         // Moving from child A to child B
                             aux_const = ii + jj * 2 + kk * 4;
                             ptr_ch_B->ptr_cell_idx_x[no_cells_ch_B + aux_const] = ptr_ch_A->ptr_cell_idx_x[cell_idx + aux_const];
                             ptr_ch_B->ptr_cell_idx_y[no_cells_ch_B + aux_const] = ptr_ch_A->ptr_cell_idx_y[cell_idx + aux_const];
                             ptr_ch_B->ptr_cell_idx_z[no_cells_ch_B + aux_const] = ptr_ch_A->ptr_cell_idx_z[cell_idx + aux_const];
-
+                                    
                             // Updating the box status of child node B
                             box_idxNbr_ch_B = box_idx_ch_B + ii + jj * ptr_ch_B->box_real_dim_x + kk * ptr_ch_B->box_real_dim_x * ptr_ch_B->box_real_dim_y;
                             ptr_ch_B->ptr_box[box_idx_ch_B] = -3; // Putting the status of EXIST (-3) in the child node cell
@@ -1571,28 +1627,40 @@ static int moving_old_child_to_new_child(struct node *ptr_node, const int *links
                             box_idxNbr_ch_A = box_idx_ch_A + ii + jj * ptr_ch_A->box_real_dim_x + kk * ptr_ch_A->box_real_dim_x * ptr_ch_A->box_real_dim_y;
                             box_idxNbr_ch_B = box_idx_ch_B + ii + jj * ptr_ch_B->box_real_dim_x + kk * ptr_ch_B->box_real_dim_x * ptr_ch_B->box_real_dim_y;
 
-                            ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].cell_mass = ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].cell_mass;
-                            ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptcl_size = ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].ptcl_size;
 
-                            //** >> Space checking of cell structure particles
-                            if (space_check(&(ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptcl_cap), ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptcl_size, 2.0f, "p1i1", &(ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptr_ptcl)) == _FAILURE_)
-                            {
-                                printf("Error, in space_check function\n");
-                                return _FAILURE_;
-                            }
+                            cell_struct_aux = ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B];
+                            ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B] = ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A];
+                            ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A] = cell_struct_aux;
 
-                            for (int j = 0; j < ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptcl_size; j++)
-                            {
-                                ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptr_ptcl[j] = ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].ptr_ptcl[j];
-                            }
 
-                            ptr_ch_B->local_mass += ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].cell_mass;
+/*                            ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].cell_mass = ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].cell_mass;*/
+/*                            ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptcl_size = ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].ptcl_size;*/
+
+                            //** >> Space checking of cell structure particles*/
+/*                            if (space_check(&(ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptcl_cap), ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptcl_size, 2.0f, "p1i1", &(ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptr_ptcl)) == _FAILURE_)*/
+/*                            {*/
+/*                                printf("Error, in space_check function\n");*/
+/*                                return _FAILURE_;*/
+/*                            }*/
+
+/*                            for (int j = 0; j < ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptcl_size; j++)*/
+/*                            {*/
+/*                                ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptr_ptcl[j] = ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].ptr_ptcl[j];*/
+/*                            }*/
+
+                            ptr_ch_B->local_mass += ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].cell_mass;
+                            
+/*                            if(ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].ptcl_size != 0 || ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A].cell_mass != 0)*/
+/*                            {*/
+/*                              printf("\nError, masa del children, linea 1651 esta errada\n");*/
+/*                            }*/
+                            
                         }
                     }
                 }
-                
             }
         }
+        ptr_ch_A->cell_size = no_cells_ch_A;
     }
     return _SUCCESS_;
 }
@@ -2119,6 +2187,9 @@ int tree_adaptation()
         int no_pts; // Number of parents in the cycle
         int no_lvs; // Number of level of refinement to adapt
 
+
+        aux_clock = clock();
+        
         int *links_old_ord_old; // Storing the old zone of refinement id using old order
         int *links_new_ord_old; // Storing the new zone of refinement id using old order
         int *links_old_ord_new; // Storing the old zone of refinement id using new order
@@ -2130,6 +2201,8 @@ int tree_adaptation()
         links_new_ord_old = (int *) malloc (links_cap * sizeof(int));
         links_old_ord_new = (int *) malloc (links_cap * sizeof(int));
         links_new_ord_new = (int *) malloc (links_cap * sizeof(int));
+
+        GL_times[52] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
         no_lvs = GL_tentacles_level_max < (lmax - lmin) ? GL_tentacles_level_max : (GL_tentacles_level_max - 1);
 

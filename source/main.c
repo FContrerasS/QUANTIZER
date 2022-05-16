@@ -204,7 +204,7 @@ int main(int argc, char **argv) {
 		GL_times[10] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 
 		//** >> DENSITY COMPUTATION **/
-		// printf("Density \n");
+		//printf("Density \n");
 		GL_clock_begin = clock();
 		grid_density();
 		GL_times[4] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;

@@ -337,7 +337,7 @@ void terminal_print()
         "tentacles_updating",
         "update_chn_size",
         "updating_tentacles_max_lv",
-        "free_pointers",
+        "Creation_and_free_links_pointers",
         ""};
 
     printf("\n\n");
