@@ -156,8 +156,8 @@ static void init_global_constants()
 static void init_global_user_params()
 {
     BoxSize = 1.0L;
-    lmin = 5;     //Coarset level of refinement
-    lmax = lmin + 5;  //Finest level of refinement
+    lmin = 7;     //Coarset level of refinement
+    lmax = lmin + 0;  //Finest level of refinement
     no_lmin_cell = 1 << lmin; // Number of cells in the lmin level of refinement
     no_lmin_cell_pow2 = no_lmin_cell * no_lmin_cell;
     no_lmin_cell_pow3 = no_lmin_cell * no_lmin_cell * no_lmin_cell;
@@ -166,7 +166,7 @@ static void init_global_user_params()
     Maxdt = 3.0 * _Mgyear_;
     meanmass = 100;
     total_mass = GL_no_ptcl * meanmass;
-    fr_output = 40;
+    fr_output = 5;
     MaxIterations = 1000000;
     no_grid_pow2 = no_grid * no_grid;
     no_grid_pow3 = no_grid * no_grid * no_grid;

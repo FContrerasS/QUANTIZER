@@ -178,11 +178,11 @@ void terminal_print()
     {
         if (i == max_memory_secction)
         {
-            printf("%s%s = %f%s\n", KCYN, Memory_names[i], Total_memory[i] / 1000000, KNRM);
+            printf("%s%s = %f ~ %.1f %% %s\n", KCYN, Memory_names[i], Total_memory[i] / 1000000,Total_memory[i] * 100 /sum  , KNRM);
         }
         else
         {
-            printf("%s = %f\n", Memory_names[i], Total_memory[i] / 1000000);
+            printf("%s = %f ~ %.1f %%\n", Memory_names[i], Total_memory[i] / 1000000,Total_memory[i] * 100 /sum);
         }
     }
 
@@ -241,11 +241,11 @@ void terminal_print()
     {
         if (i == MAX_TIME_SECCTION)
         {
-            printf("%s%s = %1.3e%s\n", KCYN, Time_names[i], GL_times[i], KNRM);
+            printf("%s%s = %1.2e ~ %.1f %% %s\n", KCYN, Time_names[i], GL_times[i], GL_times[i] * 100 / TOTAL_TIME, KNRM);
         }
         else
         {
-            printf("%s = %1.3e\n", Time_names[i], GL_times[i]);
+            printf("%s = %1.2e ~ %.1f %%\n", Time_names[i], GL_times[i], GL_times[i] * 100 / TOTAL_TIME);
         }
     }
     //** Potential times **/
@@ -256,11 +256,11 @@ void terminal_print()
         {
             if (MAX_TIME_SECCTION_POTENTIAL == i)
             {
-                printf("%s%s = %1.3e%s\n", KYEL, Time_names_potential[i-20], GL_times[i], KNRM);
+                printf("%s%s = %1.2e ~ %.1f %% %s\n", KYEL, Time_names_potential[i-20], GL_times[i], GL_times[i] * 100 / TOTAL_TIME, KNRM);
             }
             else
             {
-                printf("%s = %1.3e\n", Time_names_potential[i-20], GL_times[i]);
+                printf("%s = %1.2e ~ %.1f %%\n", Time_names_potential[i-20], GL_times[i] , GL_times[i] * 100 / TOTAL_TIME);
             }
         }
     }
@@ -268,7 +268,7 @@ void terminal_print()
     {
         for (int i = 20; i < 26; i++)
         {
-            printf("%s = %1.3e\n", Time_names_potential[i-20], GL_times[i]);
+            printf("%s = %1.2e ~ %.1f %%\n", Time_names_potential[i-20], GL_times[i], GL_times[i] * 100 / TOTAL_TIME);
         }
     }
 
@@ -283,32 +283,32 @@ void terminal_print()
     {
         if (i == MAX_TIME_SECCTION)
         {
-            printf("%s%s = %1.3e%s\n", KCYN, Time_names[i], GL_times[i], KNRM);
+            printf("%s%s = %1.2e ~ %.1f %% %s\n", KCYN, Time_names[i], GL_times[i], GL_times[i] * 100 / TOTAL_TIME ,KNRM);
         }
         else
         {
-            printf("%s = %1.3e\n", Time_names[i], GL_times[i]);
+            printf("%s = %1.2e ~ %.1f %%\n", Time_names[i], GL_times[i], GL_times[i] * 100 / TOTAL_TIME );
         }
     }
 
     //** >> Output Time **/
     if (18 == MAX_TIME_SECCTION)
     {
-        printf("%sOutput Main Parameters  = %1.3e%s\n", KCYN, GL_times[18], KNRM);
+        printf("%sOutput Main Parameters  = %1.2e ~ %.1f %% %s\n", KCYN, GL_times[18],GL_times[18] * 100 / TOTAL_TIME, KNRM);
     }
     else
     {
-        printf("Output Main Parameters = %.3e\n", GL_times[18]);
+        printf("Output Main Parameters = %.2e ~ %.1f %%\n", GL_times[18],GL_times[18] * 100 / TOTAL_TIME);
     }
 
     //** >> Output Time **/
     if (19 == MAX_TIME_SECCTION)
     {
-        printf("%sOutput Snapshots = %1.3e%s\n", KCYN, GL_times[19], KNRM);
+        printf("%sOutput Snapshots = %.2e ~ %.1f %% %s\n", KCYN, GL_times[19],GL_times[19] * 100 / TOTAL_TIME, KNRM);
     }
     else
     {
-        printf("Output Snapshots = %.3e\n", GL_times[19]);
+        printf("Output Snapshots = %.2e ~ %.1f %%\n", GL_times[19],GL_times[19] * 100 / TOTAL_TIME);
     }
 
     //** >> Total time **/
@@ -342,10 +342,10 @@ void terminal_print()
 
     printf("\n\n");
     //** >> TREE ADAPTATION TIME **/
-    printf("\n\nTREE ADAPTATION TIME\n\n");
+    printf("\n\nTREE ADAPTATION TIME [s], Percentage over tree adaptation time\n\n");
     for (int i = 30; i < 53; i++)
     {
-        printf("%d: %s = %1.3e\n",i-30, Time_names_tree_adaptation[i - 30], GL_times[i]);
+        printf("%d: %s = %1.2e ~ %.1f %%\n",i-30, Time_names_tree_adaptation[i - 30], GL_times[i],GL_times[i] * 100 / GL_times[10]);
     }
     printf("\n\n");
 }
