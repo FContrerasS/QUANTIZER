@@ -26,7 +26,7 @@
 
 #include "timestep_1.h"
 
-static vtype timestep_computation_1(const struct node *ptr_node, bool status)
+static vtype timestep_computation_1(const struct node *ptr_node)
 {
     int lv;      // Level of refinement
 
@@ -61,6 +61,7 @@ static vtype timestep_computation_1(const struct node *ptr_node, bool status)
                 box_idx_y = ptr_node->ptr_cell_idx_y[cell_idx] - ptr_node->box_ts_y;
                 box_idx_z = ptr_node->ptr_cell_idx_z[cell_idx] - ptr_node->box_ts_z;
                 box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+                
                 for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
                 {
                     ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
@@ -83,9 +84,6 @@ static vtype timestep_computation_1(const struct node *ptr_node, bool status)
                     {
                         myvmax = aux_v_pow2;
                     }
-
-                    //** >> The status of the particle is changed from not updated to updated **/
-                    GL_ptcl_updating_flag[ptcl_idx] = status;
                 }
             }
         }
@@ -99,12 +97,12 @@ static vtype timestep_computation_1(const struct node *ptr_node, bool status)
                 box_idx_y = ptr_node->ptr_cell_idx_y[cell_idx] - ptr_node->box_ts_y;
                 box_idx_z = ptr_node->ptr_cell_idx_z[cell_idx] - ptr_node->box_ts_z;
                 box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
-                for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
-                {
-                    ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
 
-                    if (GL_ptcl_updating_flag[ptcl_idx] != status)
+                if (ptr_node->ptr_box[box_idx] < 0)
+                {
+                    for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
                     {
+                        ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
 
                         //** >> Velocity at x-axis
                         aux_v_pow2 = GL_ptcl_vx[ptcl_idx] * GL_ptcl_vx[ptcl_idx];
@@ -124,9 +122,6 @@ static vtype timestep_computation_1(const struct node *ptr_node, bool status)
                         {
                             myvmax = aux_v_pow2;
                         }
-
-                        //** >> The status of the particle is changed from not updated to updated **/
-                        GL_ptcl_updating_flag[ptcl_idx] = status;
                     }
                 }
             }
@@ -157,8 +152,6 @@ static vtype timestep_computation_1(const struct node *ptr_node, bool status)
         }
     }
 
-
-
     myvmax = sqrt(myvmax);
 
     mydt = myvmax < (_CFL_ * H / _MAX_dt_) ? _MAX_dt_ : (_CFL_ * H / myvmax);
@@ -170,10 +163,6 @@ int timestep_1(vtype *ptr_dt)
 {
 
     //** >> Time-step computing **/
-
-    bool status; // Boolean value for the updating particles
-
-    status = !GL_ptcl_updating_flag[0];
 
     vtype dt_min; // minimum dt
     vtype aux_dt; // Auxiliary time
@@ -190,7 +179,7 @@ int timestep_1(vtype *ptr_dt)
             //ptr_node = GL_tentacles[lv][i];
 
             //** >> Computing the time step of the node
-            aux_dt = timestep_computation_1(GL_tentacles[lv][i], status);
+            aux_dt = timestep_computation_1(GL_tentacles[lv][i]);
 
             if (dt_min > aux_dt)
             {

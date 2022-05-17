@@ -26,7 +26,7 @@
 
 #include "particle_acceleration.h"
 
-static void computing_particle_acceleration(const struct node *ptr_node, bool status)
+static void computing_particle_acceleration(const struct node *ptr_node)
 {
     int lv;      // Level of refinement
 
@@ -117,8 +117,6 @@ static void computing_particle_acceleration(const struct node *ptr_node, bool st
                             }
                         }
                     }
-                    //** >> The status of the particle is changed from not updated to updated **/
-                    GL_ptcl_updating_flag[ptcl_idx] = status;
                 }
             }
         }
@@ -131,11 +129,13 @@ static void computing_particle_acceleration(const struct node *ptr_node, bool st
                 box_idx_y = ptr_node->ptr_cell_idx_y[cell_idx] - ptr_node->box_ts_y;
                 box_idx_z = ptr_node->ptr_cell_idx_z[cell_idx] - ptr_node->box_ts_z;
                 box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
-                for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
+
+                if (ptr_node->ptr_box[box_idx] < 0)
                 {
-                    ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
-                    if (GL_ptcl_updating_flag[ptcl_idx] != status)
+                    for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
                     {
+                        ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
+
                         //** >> Position of the particles in the grid level **/
                         pos_x = GL_ptcl_x[ptcl_idx] * (1 << lv);
                         pos_y = GL_ptcl_y[ptcl_idx] * (1 << lv);
@@ -179,11 +179,9 @@ static void computing_particle_acceleration(const struct node *ptr_node, bool st
                                 }
                             }
                         }
-
-                        //** >> The status of the particle is changed from not updated to updated **/
-                        GL_ptcl_updating_flag[ptcl_idx] = status;
                     }
                 }
+
             }
         }
     }
@@ -244,11 +242,8 @@ static void computing_particle_acceleration(const struct node *ptr_node, bool st
 {
 
     //** >> Particle acceleration **/
-    bool status; // Boolean value for the updating particles
 
     // number of parents of the level = GL_tentacles_size[lv]
-
-    status = !GL_ptcl_updating_flag[0];
 
     for (int lv = GL_tentacles_level_max; lv > -1; lv--)
     {
@@ -257,7 +252,7 @@ static void computing_particle_acceleration(const struct node *ptr_node, bool st
         {
             // ptr_node = GL_tentacles[lv][i];
 
-            computing_particle_acceleration(GL_tentacles[lv][i], status);
+            computing_particle_acceleration(GL_tentacles[lv][i]);
         }
     }
 

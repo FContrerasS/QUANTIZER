@@ -117,62 +117,37 @@ static int updating_cell_struct(struct node *ptr_node)
 static void initialization_node_boxes(struct node *ptr_node)
 {
 
-    int cap; // Maximum amount of cells in the box
-    int size; // Number of cells in the node
+    struct node *ptr_ch;
 
-    int box_idx_x; // Box index in X direcction
-    int box_idx_y; // Box index in Y direcction
-    int box_idx_z; // Box index in Z direcction
-    int box_idx;   // Box index
-    int box_idxNbr; // Box index in the neigborhood
+    int cap;  // Maximum amount of cells in the box
 
-    int *ptr_aux;
+    int box_idx_x_node;  // Box index in X direcction
+    int box_idx_y_node;  // Box index in Y direcction
+    int box_idx_z_node;  // Box index in Z direcction
+    int box_idx_node;    // Box index
 
-    ptr_aux = ptr_node->ptr_box;
-    ptr_node->ptr_box = ptr_node->ptr_box_old;
-    ptr_node->ptr_box_old = ptr_aux;
+    //int *ptr_aux;
 
-    // Filling the box status
+    // ptr_aux = ptr_node->ptr_box;
+    // ptr_node->ptr_box = ptr_node->ptr_box_old;
+    // ptr_node->ptr_box_old = ptr_aux;
+
     cap = ptr_node->box_real_dim_x * ptr_node->box_real_dim_y * ptr_node->box_real_dim_z; // In general, the size of each side must be 3 times bigger than the same side of the "minimal box"
-    size = ptr_node->cell_size;                                                                 // Number of cells in the block
-    // Putting the value of NO-EXIST (-4) in every box index
-    for (int i = 0; i < cap; i++)
-    {
-        ptr_node->ptr_box[i] = -4;
-    }
-    // Changing from NO-EXIST (-4) to EXIST (-3) to all cells in the block of the child node
-    for (int i = 0; i < size; i++)
-    {
-        box_idx_x = ptr_node->ptr_cell_idx_x[i] - ptr_node->box_ts_x;
-        box_idx_y = ptr_node->ptr_cell_idx_y[i] - ptr_node->box_ts_y;
-        box_idx_z = ptr_node->ptr_cell_idx_z[i] - ptr_node->box_ts_z;
-        box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
-        ptr_node->ptr_box[box_idx] = -3;
-    }
-    // Changing the EXIST (-3) TO BORDER (-2) to all border cells in the block
-    for (int i = 0; i < size; i++)
-    {
-        box_idx_x = ptr_node->ptr_cell_idx_x[i] - ptr_node->box_ts_x;
-        box_idx_y = ptr_node->ptr_cell_idx_y[i] - ptr_node->box_ts_y;
-        box_idx_z = ptr_node->ptr_cell_idx_z[i] - ptr_node->box_ts_z;
-        box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
 
-        for (int kk = -1; kk < 2; kk++)
+
+    memcpy(ptr_node->ptr_box_old, ptr_node->ptr_box, cap * sizeof(int));
+
+    for(int i = 0; i < ptr_node->chn_size; i++)
+    {
+        ptr_ch = ptr_node->pptr_chn[i];
+
+        for (int j = 0; j < ptr_ch->cell_size; j+=8)
         {
-            for (int jj = -1; jj < 2; jj++)
-            {
-                for (int ii = -1; ii < 2; ii++)
-                {
-                    box_idxNbr = box_idx + ii + jj * ptr_node->box_real_dim_x + kk * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
-                    if (ptr_node->ptr_box[box_idxNbr] == -4) // Border cells are those such that at least on of their first neighbors are NO-EXIST cells.
-                    {
-                        ptr_node->ptr_box[box_idx] = -2;
-                        ii = 2;
-                        jj = 2;
-                        kk = 2;
-                    }
-                }
-            }
+            box_idx_x_node = (ptr_ch->ptr_cell_idx_x[j] >> 1) - ptr_node->box_ts_x;
+            box_idx_y_node = (ptr_ch->ptr_cell_idx_y[j] >> 1) - ptr_node->box_ts_y;
+            box_idx_z_node = (ptr_ch->ptr_cell_idx_z[j] >> 1) - ptr_node->box_ts_z;
+            box_idx_node = box_idx_x_node + box_idx_y_node * ptr_node->box_real_dim_x + box_idx_z_node * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+            ptr_node->ptr_box[box_idx_node] = -3;
         }
     }
 }
@@ -2215,7 +2190,7 @@ int tree_adaptation()
             {
                 ptr_node = GL_tentacles[lv][i];
 
-                // printf("lv = %d, pt = %d, chn_size = %d\n", ptr_node->lv, i, ptr_node->chn_size);
+                //printf("lv = %d, pt = %d, chn_size = %d\n", ptr_node->lv, i, ptr_node->chn_size);
 
                 //** Updating the box mass information **/
                 // printf("\n\nupdating_cell_struct\n\n");
