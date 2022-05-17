@@ -32,15 +32,17 @@ static bool interior_grid_point(const struct node *ptr_node, int i)
 
 	check = true;
 
-	int box_idx_x;
-	int box_idx_y;
-	int box_idx_z;
+	// int box_idx_x;
+	// int box_idx_y;
+	// int box_idx_z;
 	int box_idx;
 
-	box_idx_x = ptr_node->ptr_cell_idx_x[i] - ptr_node->box_ts_x;
-	box_idx_y = ptr_node->ptr_cell_idx_y[i] - ptr_node->box_ts_y;
-	box_idx_z = ptr_node->ptr_cell_idx_z[i] - ptr_node->box_ts_z;
-	box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+	box_idx = ptr_node->ptr_box_idx[i];
+
+	// box_idx_x = ptr_node->ptr_cell_idx_x[i] - ptr_node->box_ts_x;
+	// box_idx_y = ptr_node->ptr_cell_idx_y[i] - ptr_node->box_ts_y;
+	// box_idx_z = ptr_node->ptr_cell_idx_z[i] - ptr_node->box_ts_z;
+	// box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
 
 	//** Checking the nearest 3 neighbors of face
 	if (ptr_node->ptr_box[box_idx - 1] < -3)

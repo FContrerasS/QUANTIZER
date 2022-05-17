@@ -39,6 +39,8 @@ struct node
     int *ptr_cell_idx_x; // X index position of the cells in the node at level l
     int *ptr_cell_idx_y; // Y index position of the cells in the node at level l
     int *ptr_cell_idx_z; // Z index position of the cells in the node at level l
+    int *ptr_box_idx;
+
     int cell_cap;        // Maximum capacity of the array of cells in the node
     int cell_size;       // Number of existing cells in the node
 

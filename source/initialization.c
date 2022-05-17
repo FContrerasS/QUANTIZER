@@ -44,33 +44,16 @@ static int initializing_head_node()
 
 	int box_idx_ptcl;
 
+	int box_idx_x;
+	int box_idx_y;
+	int box_idx_z;
+
 	//** >> Basic values of the node **/
 	initialize_node(ptr_head);
 
 	//** >> Global node properties **/
 	ptr_head->ID = 0;
 	ptr_head->lv = lmin;
-
-	//** >> Cells in the node **/
-	ptr_head->ptr_cell_idx_x = (int *)malloc(no_lmin_cell_pow3 * sizeof(int));
-	ptr_head->ptr_cell_idx_y = (int *)malloc(no_lmin_cell_pow3 * sizeof(int));
-	ptr_head->ptr_cell_idx_z = (int *)malloc(no_lmin_cell_pow3 * sizeof(int));
-	int idx;
-	for (int k = 0; k < no_lmin_cell; k++)
-	{
-		for (int j = 0; j < no_lmin_cell; j++)
-		{
-			for (int i = 0; i < no_lmin_cell; i++)
-			{
-				idx = i + j * no_lmin_cell + k * no_lmin_cell_pow2;
-				ptr_head->ptr_cell_idx_x[idx] = i;
-				ptr_head->ptr_cell_idx_y[idx] = j;
-				ptr_head->ptr_cell_idx_z[idx] = k;
-			}
-		}
-	}
-	ptr_head->cell_cap = no_lmin_cell_pow3;
-	ptr_head->cell_size = no_lmin_cell_pow3;
 
 	// //** >> Particles in the node **/
 	// ptr_head->ptcl_cap = GL_no_ptcl;
@@ -119,6 +102,33 @@ static int initializing_head_node()
 	ptr_head->box_ts_x = -bder_os_sim;
 	ptr_head->box_ts_y = -bder_os_sim;
 	ptr_head->box_ts_z = -bder_os_sim;
+
+	//** >> Cells in the node **/
+	ptr_head->ptr_cell_idx_x = (int *)malloc(no_lmin_cell_pow3 * sizeof(int));
+	ptr_head->ptr_cell_idx_y = (int *)malloc(no_lmin_cell_pow3 * sizeof(int));
+	ptr_head->ptr_cell_idx_z = (int *)malloc(no_lmin_cell_pow3 * sizeof(int));
+	ptr_head->ptr_box_idx = (int *)malloc(no_lmin_cell_pow3 * sizeof(int));
+	
+	int idx;
+	for (int k = 0; k < no_lmin_cell; k++)
+	{
+		for (int j = 0; j < no_lmin_cell; j++)
+		{
+			for (int i = 0; i < no_lmin_cell; i++)
+			{
+				idx = i + j * no_lmin_cell + k * no_lmin_cell_pow2;
+				ptr_head->ptr_cell_idx_x[idx] = i;
+				ptr_head->ptr_cell_idx_y[idx] = j;
+				ptr_head->ptr_cell_idx_z[idx] = k;
+				box_idx_x = i - ptr_head->box_ts_x;
+				box_idx_y = j - ptr_head->box_ts_y;
+				box_idx_z = k - ptr_head->box_ts_z;
+				ptr_head->ptr_box_idx[idx] = box_idx_x + box_idx_y * ptr_head->box_real_dim_x + box_idx_z * ptr_head->box_real_dim_x * ptr_head->box_real_dim_y;
+			}
+		}
+	}
+	ptr_head->cell_cap = no_lmin_cell_pow3;
+	ptr_head->cell_size = no_lmin_cell_pow3;
 
 	//** >>>>>>>>>>>>>>>>>>>>>
 

@@ -30,19 +30,20 @@
 void re_initialize_node(struct node *ptr_node)
 {
 
-  int box_idx_x_node;
-  int box_idx_y_node;
-  int box_idx_z_node;
+//   int box_idx_x_node;
+//   int box_idx_y_node;
+//   int box_idx_z_node;
   int box_idx_node;
 
   for(int i = 0; i < ptr_node->cell_size; i++)
   {
-    box_idx_x_node = ptr_node->ptr_cell_idx_x[i] - ptr_node->box_ts_x;
-    box_idx_y_node = ptr_node->ptr_cell_idx_y[i] - ptr_node->box_ts_y;
-    box_idx_z_node = ptr_node->ptr_cell_idx_z[i] - ptr_node->box_ts_z;
-    box_idx_node = box_idx_x_node + box_idx_y_node * ptr_node->box_real_dim_x + box_idx_z_node * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
-    ptr_node->ptr_cell_struct[box_idx_node].cell_mass = 0;
-    ptr_node->ptr_cell_struct[box_idx_node].ptcl_size = 0;
+	box_idx_node = ptr_node->ptr_box_idx[i];
+	//   box_idx_x_node = ptr_node->ptr_cell_idx_x[i] - ptr_node->box_ts_x;
+	//   box_idx_y_node = ptr_node->ptr_cell_idx_y[i] - ptr_node->box_ts_y;
+	//   box_idx_z_node = ptr_node->ptr_cell_idx_z[i] - ptr_node->box_ts_z;
+	//   box_idx_node = box_idx_x_node + box_idx_y_node * ptr_node->box_real_dim_x + box_idx_z_node * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+	ptr_node->ptr_cell_struct[box_idx_node].cell_mass = 0;
+	ptr_node->ptr_cell_struct[box_idx_node].ptcl_size = 0;
   }
 
 /*  for(int j = 0; j < ptr_node->box_cap; j++)*/

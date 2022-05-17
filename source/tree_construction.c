@@ -32,9 +32,9 @@ static int fill_cell_ref(struct node *ptr_node)
        
     int size;                         // Size of the refinement cells array
 
-    int box_idx_x;  // Box index in X direcction
-    int box_idx_y;  // Box index in Y direcction
-    int box_idx_z;  // Box index in Z direcction
+    // int box_idx_x;  // Box index in X direcction
+    // int box_idx_y;  // Box index in Y direcction
+    // int box_idx_z;  // Box index in Z direcction
     int box_idx;    // Box index
     int box_idxNbr; // Box index in the neigborhood
     // int cell_idx; // The cell index is simply i of the for loop
@@ -46,10 +46,11 @@ static int fill_cell_ref(struct node *ptr_node)
     size = 0; // Initial size of the cell refined array must be 0
     for (int i = 0; i < ptr_node->cell_size; i++)
     {
-        box_idx_x = ptr_node->ptr_cell_idx_x[i] - ptr_node->box_ts_x;
-        box_idx_y = ptr_node->ptr_cell_idx_y[i] - ptr_node->box_ts_y;
-        box_idx_z = ptr_node->ptr_cell_idx_z[i] - ptr_node->box_ts_z;
-        box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+        box_idx = ptr_node->ptr_box_idx[i];
+        // box_idx_x = ptr_node->ptr_cell_idx_x[i] - ptr_node->box_ts_x;
+        // box_idx_y = ptr_node->ptr_cell_idx_y[i] - ptr_node->box_ts_y;
+        // box_idx_z = ptr_node->ptr_cell_idx_z[i] - ptr_node->box_ts_z;
+        // box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
 
         // Refinement criterion in the box_mass in no border box points
         if (ptr_node->ptr_box[box_idx] != -2 && ptr_node->ptr_cell_struct[box_idx].cell_mass >= ref_criterion_mass) // No border (-2)
@@ -97,10 +98,11 @@ static int fill_cell_ref(struct node *ptr_node)
     cntr = 0; // Counter for the position in the cell refined array
     for (int i = 0; i < ptr_node->cell_size; i++)
     {
-        box_idx_x = ptr_node->ptr_cell_idx_x[i] - ptr_node->box_ts_x;
-        box_idx_y = ptr_node->ptr_cell_idx_y[i] - ptr_node->box_ts_y;
-        box_idx_z = ptr_node->ptr_cell_idx_z[i] - ptr_node->box_ts_z;
-        box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+        box_idx = ptr_node->ptr_box_idx[i];
+        // box_idx_x = ptr_node->ptr_cell_idx_x[i] - ptr_node->box_ts_x;
+        // box_idx_y = ptr_node->ptr_cell_idx_y[i] - ptr_node->box_ts_y;
+        // box_idx_z = ptr_node->ptr_cell_idx_z[i] - ptr_node->box_ts_z;
+        // box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
 
         if (ptr_node->ptr_box[box_idx] == -1) // Cell require refinement
         {
@@ -124,9 +126,9 @@ static int fill_zones_ref(struct node *ptr_node)
     int zone_idx_max; // Maximum id of the zone. It is equal to to the capacity in the number of zones
     int zone_idx;     // Index of the zone
 
-    int box_idx_x;    // Box index in X direcction
-    int box_idx_y;    // Box index in Y direcction
-    int box_idx_z;    // Box index in Z direcction
+    // int box_idx_x;    // Box index in X direcction
+    // int box_idx_y;    // Box index in Y direcction
+    // int box_idx_z;    // Box index in Z direcction
     int box_idx;      // Box index
 
     int box_idxNbr_x_plus;  // Box index in the neigborhood on the right
@@ -159,10 +161,11 @@ static int fill_zones_ref(struct node *ptr_node)
     {
         // Notes that the initiality we inspect the elements in the refined cell array until an element has been found that is not found in any of the current refinement zones
         cell_idx = ptr_node->ptr_cell_ref[cell_ref_idx]; // Index of the cells array in the node
-        box_idx_x = ptr_node->ptr_cell_idx_x[cell_idx] - ptr_node->box_ts_x;
-        box_idx_y = ptr_node->ptr_cell_idx_y[cell_idx] - ptr_node->box_ts_y;
-        box_idx_z = ptr_node->ptr_cell_idx_z[cell_idx] - ptr_node->box_ts_z;
-        box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+        box_idx = ptr_node->ptr_box_idx[cell_idx];
+        // box_idx_x = ptr_node->ptr_cell_idx_x[cell_idx] - ptr_node->box_ts_x;
+        // box_idx_y = ptr_node->ptr_cell_idx_y[cell_idx] - ptr_node->box_ts_y;
+        // box_idx_z = ptr_node->ptr_cell_idx_z[cell_idx] - ptr_node->box_ts_z;
+        // box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
 
         if (ptr_node->ptr_box[box_idx] == -1) // A cell without zone has been founded
         {
@@ -280,10 +283,11 @@ static int fill_zones_ref(struct node *ptr_node)
     for (int i = 0; i < ptr_node->cell_ref_size; i++)
     {
         cell_idx = ptr_node->ptr_cell_ref[i];
-        box_idx_x = ptr_node->ptr_cell_idx_x[cell_idx] - ptr_node->box_ts_x;
-        box_idx_y = ptr_node->ptr_cell_idx_y[cell_idx] - ptr_node->box_ts_y;
-        box_idx_z = ptr_node->ptr_cell_idx_z[cell_idx] - ptr_node->box_ts_z;
-        box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+        box_idx = ptr_node->ptr_box_idx[cell_idx];
+        // box_idx_x = ptr_node->ptr_cell_idx_x[cell_idx] - ptr_node->box_ts_x;
+        // box_idx_y = ptr_node->ptr_cell_idx_y[cell_idx] - ptr_node->box_ts_y;
+        // box_idx_z = ptr_node->ptr_cell_idx_z[cell_idx] - ptr_node->box_ts_z;
+        // box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
         zone_idx = ptr_node->ptr_box[box_idx];
         cntr = ptr_node->ptr_aux_idx[zone_idx];          // Counter the element in the zone "zone_idx"
         ptr_node->pptr_zones[zone_idx][cntr] = cell_idx; // Adding the index of the cell array in the block to the zone
@@ -311,9 +315,9 @@ static int fill_child_nodes(struct node *ptr_node)
     int box_idx_ch;    // Box index
     int box_idxNbr; // Box index in the neigborhood
 
-    int box_idx_x_node;  // Box index in X direcction
-    int box_idx_y_node;  // Box index in Y direcction
-    int box_idx_z_node;  // Box index in Z direcction
+    // int box_idx_x_node;  // Box index in X direcction
+    // int box_idx_y_node;  // Box index in Y direcction
+    // int box_idx_z_node;  // Box index in Z direcction
     int box_idx_node;    // Box index
 
     int box_idxNbr_i0_j0_k0;  // Box index at x=0,y=0,z=0
@@ -372,35 +376,6 @@ static int fill_child_nodes(struct node *ptr_node)
         //** >> Global prperties **/
         ptr_ch->ID = i;
         ptr_ch->lv = lv + 1;
-
-        //** >> Cells in the node **/
-        cap = 2 * 8 * pt_cells_no; // Capacity is the double of total child cells
-        ptr_ch->cell_cap = cap;
-        size = 8 * pt_cells_no;
-        ptr_ch->cell_size = size;
-        ptr_ch->ptr_cell_idx_x = (int *)malloc(ptr_ch->cell_cap * sizeof(int));
-        ptr_ch->ptr_cell_idx_y = (int *)malloc(ptr_ch->cell_cap * sizeof(int));
-        ptr_ch->ptr_cell_idx_z = (int *)malloc(ptr_ch->cell_cap * sizeof(int));
-
-        for (int j = 0; j < pt_cells_no; j++)
-        {
-            aux_idx_x = ptr_node->ptr_cell_idx_x[ptr_node_cells[j]] * 2;
-            aux_idx_y = ptr_node->ptr_cell_idx_y[ptr_node_cells[j]] * 2;
-            aux_idx_z = ptr_node->ptr_cell_idx_z[ptr_node_cells[j]] * 2;
-            for (int kk = 0; kk < 2; kk++)
-            {
-                for (int jj = 0; jj < 2; jj++)
-                {
-                    for (int ii = 0; ii < 2; ii++)
-                    {
-                        cell_idx = ii + jj * 2 + kk * 4 + j * 8; // Child cell index
-                        ptr_ch->ptr_cell_idx_x[cell_idx] = aux_idx_x + ii;
-                        ptr_ch->ptr_cell_idx_y[cell_idx] = aux_idx_y + jj;
-                        ptr_ch->ptr_cell_idx_z[cell_idx] = aux_idx_z + kk;
-                    }
-                }
-            }
-        }
 
         //** >> Boxes **/
         // MIN and MAX cell indexes values of the node.
@@ -467,6 +442,40 @@ static int fill_child_nodes(struct node *ptr_node)
         ptr_ch->box_ts_y_old = ptr_ch->box_ts_y;
         ptr_ch->box_ts_z_old = ptr_ch->box_ts_z;
 
+        //** >> Cells in the node **/
+        cap = 2 * 8 * pt_cells_no; // Capacity is the double of total child cells
+        ptr_ch->cell_cap = cap;
+        size = 8 * pt_cells_no;
+        ptr_ch->cell_size = size;
+        ptr_ch->ptr_cell_idx_x = (int *)malloc(ptr_ch->cell_cap * sizeof(int));
+        ptr_ch->ptr_cell_idx_y = (int *)malloc(ptr_ch->cell_cap * sizeof(int));
+        ptr_ch->ptr_cell_idx_z = (int *)malloc(ptr_ch->cell_cap * sizeof(int));
+        ptr_ch->ptr_box_idx = (int *)malloc(ptr_ch->cell_cap * sizeof(int));
+
+        for (int j = 0; j < pt_cells_no; j++)
+        {
+            aux_idx_x = ptr_node->ptr_cell_idx_x[ptr_node_cells[j]] * 2;
+            aux_idx_y = ptr_node->ptr_cell_idx_y[ptr_node_cells[j]] * 2;
+            aux_idx_z = ptr_node->ptr_cell_idx_z[ptr_node_cells[j]] * 2;
+            for (int kk = 0; kk < 2; kk++)
+            {
+                for (int jj = 0; jj < 2; jj++)
+                {
+                    for (int ii = 0; ii < 2; ii++)
+                    {
+                        cell_idx = ii + jj * 2 + kk * 4 + j * 8; // Child cell index
+                        ptr_ch->ptr_cell_idx_x[cell_idx] = aux_idx_x + ii;
+                        ptr_ch->ptr_cell_idx_y[cell_idx] = aux_idx_y + jj;
+                        ptr_ch->ptr_cell_idx_z[cell_idx] = aux_idx_z + kk;
+                        box_idx_x_ch = ptr_ch->ptr_cell_idx_x[cell_idx] - ptr_ch->box_ts_x;
+                        box_idx_y_ch = ptr_ch->ptr_cell_idx_y[cell_idx] - ptr_ch->box_ts_y;
+                        box_idx_z_ch = ptr_ch->ptr_cell_idx_z[cell_idx] - ptr_ch->box_ts_z;
+                        ptr_ch->ptr_box_idx[cell_idx] = box_idx_x_ch + box_idx_y_ch * ptr_ch->box_real_dim_x + box_idx_z_ch * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
+                    }
+                }
+            }
+        }
+
         // Filling the box status
         cap = ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y * ptr_ch->box_real_dim_z; // In general, the size of each side must be 3 times bigger than the same side of the "minimal box"
         ptr_ch->box_cap = cap;
@@ -481,19 +490,21 @@ static int fill_child_nodes(struct node *ptr_node)
         // Changing from NO-EXIST (-4) to EXIST (-3) to all cells in the block of the child node
         for (int j = 0; j < size; j++)
         {
-            box_idx_x_ch = ptr_ch->ptr_cell_idx_x[j] - ptr_ch->box_ts_x;
-            box_idx_y_ch = ptr_ch->ptr_cell_idx_y[j] - ptr_ch->box_ts_y;
-            box_idx_z_ch = ptr_ch->ptr_cell_idx_z[j] - ptr_ch->box_ts_z;
-            box_idx_ch = box_idx_x_ch + box_idx_y_ch * ptr_ch->box_real_dim_x + box_idx_z_ch * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
+            box_idx_ch = ptr_ch->ptr_box_idx[j];
+            // box_idx_x_ch = ptr_ch->ptr_cell_idx_x[j] - ptr_ch->box_ts_x;
+            // box_idx_y_ch = ptr_ch->ptr_cell_idx_y[j] - ptr_ch->box_ts_y;
+            // box_idx_z_ch = ptr_ch->ptr_cell_idx_z[j] - ptr_ch->box_ts_z;
+            // box_idx_ch = box_idx_x_ch + box_idx_y_ch * ptr_ch->box_real_dim_x + box_idx_z_ch * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
             ptr_ch->ptr_box[box_idx_ch] = -3;
         }
         // Changing the EXIST (-3) TO BORDER (-2) to all border cells in the block
         for (int j = 0; j < size; j++)
         {
-            box_idx_x_ch = ptr_ch->ptr_cell_idx_x[j] - ptr_ch->box_ts_x;
-            box_idx_y_ch = ptr_ch->ptr_cell_idx_y[j] - ptr_ch->box_ts_y;
-            box_idx_z_ch = ptr_ch->ptr_cell_idx_z[j] - ptr_ch->box_ts_z;
-            box_idx_ch = box_idx_x_ch + box_idx_y_ch * ptr_ch->box_real_dim_x + box_idx_z_ch * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
+            box_idx_ch = ptr_ch->ptr_box_idx[j];
+            // box_idx_x_ch = ptr_ch->ptr_cell_idx_x[j] - ptr_ch->box_ts_x;
+            // box_idx_y_ch = ptr_ch->ptr_cell_idx_y[j] - ptr_ch->box_ts_y;
+            // box_idx_z_ch = ptr_ch->ptr_cell_idx_z[j] - ptr_ch->box_ts_z;
+            // box_idx_ch = box_idx_x_ch + box_idx_y_ch * ptr_ch->box_real_dim_x + box_idx_z_ch * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
 
             for (int kk = -1; kk < 2; kk++)
             {
@@ -643,10 +654,11 @@ static int fill_child_nodes(struct node *ptr_node)
 
         for (int j = 0; j < ptr_node->ptr_zone_size[i]; j++)
         {
-            box_idx_x_node = ptr_node->ptr_cell_idx_x[ptr_node->pptr_zones[i][j]] - ptr_node->box_ts_x;
-            box_idx_y_node = ptr_node->ptr_cell_idx_y[ptr_node->pptr_zones[i][j]] - ptr_node->box_ts_y;
-            box_idx_z_node = ptr_node->ptr_cell_idx_z[ptr_node->pptr_zones[i][j]] - ptr_node->box_ts_z;
-            box_idx_node = box_idx_x_node + box_idx_y_node * ptr_node->box_real_dim_x + box_idx_z_node * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+            box_idx_node = ptr_node->ptr_box_idx[ptr_node->pptr_zones[i][j]];
+            // box_idx_x_node = ptr_node->ptr_cell_idx_x[ptr_node->pptr_zones[i][j]] - ptr_node->box_ts_x;
+            // box_idx_y_node = ptr_node->ptr_cell_idx_y[ptr_node->pptr_zones[i][j]] - ptr_node->box_ts_y;
+            // box_idx_z_node = ptr_node->ptr_cell_idx_z[ptr_node->pptr_zones[i][j]] - ptr_node->box_ts_z;
+            // box_idx_node = box_idx_x_node + box_idx_y_node * ptr_node->box_real_dim_x + box_idx_z_node * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
             if (ptr_node->ptr_cell_struct[box_idx_node].ptcl_size > 0)
             {
 

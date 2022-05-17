@@ -52,7 +52,7 @@ static void computing_memory()
         for (int i = 0; i < no_pts; i++)
         {
             ptr_node = GL_tentacles[lv][i];
-            TOTAL_MEMORY_CELDAS += 3 * ptr_node->cell_cap * sizeof(int);
+            TOTAL_MEMORY_CELDAS += 4 * ptr_node->cell_cap * sizeof(int);
             
             if(lmin < lmax)
             {
@@ -92,7 +92,7 @@ static void computing_memory()
     ptr_node = GL_pool_node_start;
     while(ptr_node != NULL)
     {
-        TOTAL_MEMORY_STACK += 3 * ptr_node->cell_cap * sizeof(int);
+        TOTAL_MEMORY_STACK += 4 * ptr_node->cell_cap * sizeof(int);
         TOTAL_MEMORY_STACK += ptr_node->box_cap * sizeof(struct cell_struct);
         if(lmin < lmax)
         {

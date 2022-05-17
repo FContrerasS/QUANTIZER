@@ -36,6 +36,7 @@ void initialize_node(struct node *ptr_node)
 	ptr_node->ptr_cell_idx_x = NULL; // X index of the cells in the node
 	ptr_node->ptr_cell_idx_y = NULL; // Y index of the cells in the node
 	ptr_node->ptr_cell_idx_z = NULL; // Z index of the cells in the node
+	ptr_node->ptr_box_idx = NULL;
 	ptr_node->cell_cap = 0;			 // Maximum capacity of the array of cells in the node
 	ptr_node->cell_size = 0;		 // Number of existing cells in the node
 

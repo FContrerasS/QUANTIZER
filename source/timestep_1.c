@@ -34,9 +34,9 @@ static vtype timestep_computation_1(const struct node *ptr_node)
 
     vtype H;
 
-    int box_idx_x; // Box index in X direcction of the node cell
-    int box_idx_y; // Box index in Y direcction of the node cell
-    int box_idx_z; // Box index in Z direcction of the node cell
+    // int box_idx_x; // Box index in X direcction of the node cell
+    // int box_idx_y; // Box index in Y direcction of the node cell
+    // int box_idx_z; // Box index in Z direcction of the node cell
     int box_idx;   // Box index of the node cell
 
     int ptcl_idx; // Particle grid_idx in the node
@@ -57,10 +57,11 @@ static vtype timestep_computation_1(const struct node *ptr_node)
 
             for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
             {
-                box_idx_x = ptr_node->ptr_cell_idx_x[cell_idx] - ptr_node->box_ts_x;
-                box_idx_y = ptr_node->ptr_cell_idx_y[cell_idx] - ptr_node->box_ts_y;
-                box_idx_z = ptr_node->ptr_cell_idx_z[cell_idx] - ptr_node->box_ts_z;
-                box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+                box_idx = ptr_node->ptr_box_idx[cell_idx];
+                // box_idx_x = ptr_node->ptr_cell_idx_x[cell_idx] - ptr_node->box_ts_x;
+                // box_idx_y = ptr_node->ptr_cell_idx_y[cell_idx] - ptr_node->box_ts_y;
+                // box_idx_z = ptr_node->ptr_cell_idx_z[cell_idx] - ptr_node->box_ts_z;
+                // box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
                 
                 for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
                 {
@@ -93,10 +94,11 @@ static vtype timestep_computation_1(const struct node *ptr_node)
 
             for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
             {
-                box_idx_x = ptr_node->ptr_cell_idx_x[cell_idx] - ptr_node->box_ts_x;
-                box_idx_y = ptr_node->ptr_cell_idx_y[cell_idx] - ptr_node->box_ts_y;
-                box_idx_z = ptr_node->ptr_cell_idx_z[cell_idx] - ptr_node->box_ts_z;
-                box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+                box_idx = ptr_node->ptr_box_idx[cell_idx];
+                // box_idx_x = ptr_node->ptr_cell_idx_x[cell_idx] - ptr_node->box_ts_x;
+                // box_idx_y = ptr_node->ptr_cell_idx_y[cell_idx] - ptr_node->box_ts_y;
+                // box_idx_z = ptr_node->ptr_cell_idx_z[cell_idx] - ptr_node->box_ts_z;
+                // box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
 
                 if (ptr_node->ptr_box[box_idx] < 0)
                 {
