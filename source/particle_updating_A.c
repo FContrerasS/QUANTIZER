@@ -35,10 +35,6 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
     struct node *ptr_node_pt; // parent node of the node ptr_node
     struct node *ptr_node_sib; // sibling node of the node ptr_node
 
-    // int box_idx_x_node; // Box index in X direcction of the node cell
-    // int box_idx_y_node; // Box index in Y direcction of the node cell
-    // int box_idx_z_node; // Box index in Z direcction of the node cell
-
     int ptcl_idx; // Particle grid_idx in the node
 
     int zone_idx; // Index of the refinement zone
@@ -57,10 +53,6 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
             for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
             {
                 box_idx_node_old = ptr_node->ptr_box_idx[cell_idx];
-                // box_idx_x_node = ptr_node->ptr_cell_idx_x[cell_idx] - ptr_node->box_ts_x;
-                // box_idx_y_node = ptr_node->ptr_cell_idx_y[cell_idx] - ptr_node->box_ts_y;
-                // box_idx_z_node = ptr_node->ptr_cell_idx_z[cell_idx] - ptr_node->box_ts_z;
-                // box_idx_node_old = box_idx_x_node + box_idx_y_node * ptr_node->box_real_dim_x + box_idx_z_node * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
 
                 no_ptcl = ptr_node->ptr_cell_struct[box_idx_node_old].ptcl_size;
                 for (int j = 0; j < no_ptcl; j++)
@@ -187,10 +179,6 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
             for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
             {
                 box_idx_node_old = ptr_node->ptr_box_idx[cell_idx];
-                // box_idx_x_node = ptr_node->ptr_cell_idx_x[cell_idx] - ptr_node->box_ts_x;
-                // box_idx_y_node = ptr_node->ptr_cell_idx_y[cell_idx] - ptr_node->box_ts_y;
-                // box_idx_z_node = ptr_node->ptr_cell_idx_z[cell_idx] - ptr_node->box_ts_z;
-                // box_idx_node_old = box_idx_x_node + box_idx_y_node * ptr_node->box_real_dim_x + box_idx_z_node * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
 
                 if(ptr_node->ptr_box[box_idx_node_old] < 0)
                 {

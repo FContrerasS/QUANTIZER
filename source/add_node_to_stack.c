@@ -28,14 +28,10 @@
 
 void add_node_to_stack(struct node *ptr_node)
 {
-
-	
-
 	if (GL_pool_node_end == NULL)
 	{
 		GL_pool_node_start = ptr_node;
 		GL_pool_node_end = ptr_node;
-		//ptr_node->ptr_pt = NULL;
 	}
 	else
 	{

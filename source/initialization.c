@@ -55,15 +55,6 @@ static int initializing_head_node()
 	ptr_head->ID = 0;
 	ptr_head->lv = lmin;
 
-	// //** >> Particles in the node **/
-	// ptr_head->ptcl_cap = GL_no_ptcl;
-	// ptr_head->ptcl_size = GL_no_ptcl;
-	// ptr_head->ptr_ptcl = (int *)malloc(ptr_head->ptcl_cap * sizeof(int));
-	// for (int i = 0; i < ptr_head->ptcl_size; i++)
-	// {
-	// 	ptr_head->ptr_ptcl[i] = i;
-	// }
-
 	//** >> Boxes **/
 	// Including border when particles goes out of the simulation and also because the n_exp parameter checking
 	ptr_head->ptr_box = (int *)malloc(box_side_lmin_pow3 * sizeof(int));
@@ -130,12 +121,7 @@ static int initializing_head_node()
 	ptr_head->cell_cap = no_lmin_cell_pow3;
 	ptr_head->cell_size = no_lmin_cell_pow3;
 
-	//** >>>>>>>>>>>>>>>>>>>>>
-
-	//** >> Particles in the node **/
-	//** >> Cell structure **/
-	// Size and Capacity
-
+	//** >> Struct of cells (Particles and cell mass)
 	if(lmin < lmax)
 	{
 		ptr_head->ptr_cell_struct = (struct cell_struct *)malloc(ptr_head->box_cap * sizeof(struct cell_struct));
@@ -164,6 +150,7 @@ static int initializing_head_node()
 		}
 	}
 
+	//** >> Total mass in the node
 	ptr_head->local_mass = total_mass;
 
 	//** >> Grid points **/

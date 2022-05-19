@@ -30,10 +30,6 @@ static int computing_particles_updating_B(struct node *ptr_node, vtype dt)
 {
 
     int ptcl_idx; // Particle grid_idx in the node
-
-    // int box_idx_x; // Box index in X direcction of the node cell
-    // int box_idx_y; // Box index in Y direcction of the node cell
-    // int box_idx_z; // Box index in Z direcction of the node cell
     int box_idx;   // Box index of the node cell
 
     if(lmin < lmax)
@@ -43,10 +39,6 @@ static int computing_particles_updating_B(struct node *ptr_node, vtype dt)
             for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
             {
                 box_idx = ptr_node->ptr_box_idx[cell_idx];
-                // box_idx_x = ptr_node->ptr_cell_idx_x[cell_idx] - ptr_node->box_ts_x;
-                // box_idx_y = ptr_node->ptr_cell_idx_y[cell_idx] - ptr_node->box_ts_y;
-                // box_idx_z = ptr_node->ptr_cell_idx_z[cell_idx] - ptr_node->box_ts_z;
-                // box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
 
                 for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
                 {
@@ -64,10 +56,6 @@ static int computing_particles_updating_B(struct node *ptr_node, vtype dt)
             for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
             {
                 box_idx = ptr_node->ptr_box_idx[cell_idx];
-                // box_idx_x = ptr_node->ptr_cell_idx_x[cell_idx] - ptr_node->box_ts_x;
-                // box_idx_y = ptr_node->ptr_cell_idx_y[cell_idx] - ptr_node->box_ts_y;
-                // box_idx_z = ptr_node->ptr_cell_idx_z[cell_idx] - ptr_node->box_ts_z;
-                // box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
                 
                 if(ptr_node->ptr_box[box_idx] < 0)
                 {
@@ -87,17 +75,12 @@ static int computing_particles_updating_B(struct node *ptr_node, vtype dt)
     {
         for (int i = 0; i < GL_no_ptcl; i++)
         {
-
             //** >> Updating the new velocity of the particle **/
             GL_ptcl_vx[i] += GL_ptcl_ax[i] * dt / 2;
             GL_ptcl_vy[i] += GL_ptcl_ay[i] * dt / 2;
             GL_ptcl_vz[i] += GL_ptcl_az[i] * dt / 2;
-
-
         }
     }
-
-
 
     return _SUCCESS_;
 }

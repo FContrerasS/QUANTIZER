@@ -35,15 +35,6 @@ struct node
     int ID; // Node ID
     int lv;  // Level of refinement
 
-    //** >> Cells in the node **/
-    int *ptr_cell_idx_x; // X index position of the cells in the node at level l
-    int *ptr_cell_idx_y; // Y index position of the cells in the node at level l
-    int *ptr_cell_idx_z; // Z index position of the cells in the node at level l
-    int *ptr_box_idx;
-
-    int cell_cap;        // Maximum capacity of the array of cells in the node
-    int cell_size;       // Number of existing cells in the node
-
     //** >> Boxes **/
     int *ptr_box;   // Box contaning the cells status of the minimal box cells and more
     int *ptr_box_old;   // Auxiliary box contaning used to adatp the box to a new time-step
@@ -71,18 +62,19 @@ struct node
     int box_max_z;      // Already maximum box value index in the real local space at the dimension Z
     bool box_check_fit; // Check if the new box will fit in the old one
 
-    // //** >> Particles in the node **/
-    // int *ptr_ptcl; // The size is completely related with the level of refinement, the total number of particles, the number of cells in the node, and the refinement criteria
-    // int ptcl_cap;  // Maximum cap of the particles array in the node
-    // int ptcl_size; // Number of existing particles in the node
-    
-    //** >> Cell structure **/
+    //** >> Cells in the node **/
+    int *ptr_cell_idx_x; // X index position of the cells in the node at level l
+    int *ptr_cell_idx_y; // Y index position of the cells in the node at level l
+    int *ptr_cell_idx_z; // Z index position of the cells in the node at level l
+    int *ptr_box_idx;
+    int cell_cap;  // Maximum capacity of the array of cells in the node
+    int cell_size; // Number of existing cells in the node
+
+    //** >> Struct of cells (Particles and cell mass)
     struct cell_struct *ptr_cell_struct;
     struct cell_struct *ptr_cell_struct_old;
 
-    //** >> Refinement Criterion **/
-    //vtype *ptr_box_mass;     // Register of the mass in the cell to refinement criteria
-    //vtype *ptr_box_mass_aux; // Auxiliary mass box used to adapt the box mass
+    //** >> Total mass in the node
     vtype local_mass;        // Total mass in the node
 
     //** >> Grid points **/
@@ -92,8 +84,6 @@ struct node
     int grid_bder_cap;  // Maximum cap of the grid border points array of the block
     int grid_intr_size; // Number of existing grid interior points in the block
     int grid_bder_size; // Number of existing grid border points in the block
-
-    // Notes that the MIN and MAX values can change between diffents time-steps, but the Translation indexs always keep equal exept if there is a reallocation of the boxes
 
     //* Potential, Acceleration and density of the grid **/
     vtype *ptr_pot; // Array with the potential of the node. It is of the same size than the real box grid points

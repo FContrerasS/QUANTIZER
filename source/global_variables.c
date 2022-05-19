@@ -27,7 +27,7 @@
 #include "global_variables.h"
 
     // Constants
-    vtype _User_BoxSize_; //** >> User box size **/
+vtype _User_BoxSize_; //** >> User box size **/
 vtype _PI_;
 vtype _Onesixth_;
 vtype _kpc_to_m_;
@@ -166,8 +166,8 @@ static void init_global_user_params()
     Maxdt = 3.0 * _Mgyear_;
     meanmass = 100;
     total_mass = GL_no_ptcl * meanmass;
-    fr_output = 100000;
-    MaxIterations = 10000;
+    fr_output = 10000000;
+    MaxIterations = 1000000;
     no_grid_pow2 = no_grid * no_grid;
     no_grid_pow3 = no_grid * no_grid * no_grid;
 

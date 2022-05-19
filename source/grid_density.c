@@ -35,9 +35,6 @@ static void computing_grid_density(struct node *ptr_node)
     int box_grid_idx_z;
     int box_grid_idx; // Grid box grid_idx
 
-    // int box_idx_x; // Box index in X direcction of the node cell
-    // int box_idx_y; // Box index in Y direcction of the node cell
-    // int box_idx_z; // Box index in Z direcction of the node cell
     int box_idx;   // Box index of the node cell
 
     int ptcl_idx; // Particle grid_idx in the node
