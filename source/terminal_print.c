@@ -83,8 +83,8 @@ static void computing_memory()
                 TOTAL_MEMORY_AUX += ptr_node->ptr_zone_cap[j] * sizeof(int);
             }
             TOTAL_MEMORY_AUX += ptr_node->aux_idx_cap * sizeof(int);
-            
-        }
+            TOTAL_MEMORY_AUX += 4 * ptr_node->links_cap * sizeof(int);
+                }
         TOTAL_MEMORY_NODES += no_pts * sizeof(struct node);
     }
 
@@ -323,7 +323,7 @@ void terminal_print()
         "create_links",
         "create_links_2",
         "remov_cells_nolonger_require_refinement",
-        "adapt_child_box_and_cells",
+        "adapt_child_nodes",
         "create_new_child_nodes",
         "moving_old_child_to_new_child",
         "moving_new_zones_to_new_child",

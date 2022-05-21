@@ -111,6 +111,13 @@ struct node
 
     int *ptr_aux_idx; // Auxiliary array, is used in the initial tree structure to save the index of the boxes elements and other
     int aux_idx_cap;
+
+    //** >> Links in Tree adaptation **/
+    int *ptr_links_old_ord_old;
+    int *ptr_links_new_ord_old;
+    int *ptr_links_old_ord_new;
+    int *ptr_links_new_ord_new;
+    int links_cap;
 };
 
 

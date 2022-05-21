@@ -108,4 +108,11 @@ void initialize_node(struct node *ptr_node)
 
 	ptr_node->ptr_aux_idx = NULL; // Auxiliary array, is used in the initial tree structure to save the index of the boxes elements and other
 	ptr_node->aux_idx_cap = 0;
+
+	//** >> Links in Tree adaptation **/
+	ptr_node->ptr_links_old_ord_old = NULL;
+	ptr_node->ptr_links_new_ord_old = NULL;
+	ptr_node->ptr_links_old_ord_new = NULL;
+	ptr_node->ptr_links_new_ord_new = NULL;
+	ptr_node->links_cap = 0;
 }
