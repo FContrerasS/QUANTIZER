@@ -34,8 +34,11 @@ static int fill_cell_ref(struct node *ptr_node)
 
     int cell_ref_idx = 0; // Index of the position in the cell refined array
 
+    int box_real_dim_X_node = ptr_node->box_real_dim_x;
+    int box_real_dim_X_times_Y_node = ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+
     //** >> Adding the infomation about size of the ptr_cell_ref array **/
-    ptr_node->cell_ref_cap =  ptr_node->cell_size;
+    ptr_node->cell_ref_cap = ptr_node->cell_size;
     ptr_node->ptr_cell_ref = (int *)malloc(ptr_node->cell_ref_cap * sizeof(int));
 
     //** >> Changing the box status from EXIST (-3) to REFINEMENT REQUIRED (-1) **/
@@ -60,7 +63,7 @@ static int fill_cell_ref(struct node *ptr_node)
                 {
                     for (int ii = -n_exp; ii < n_exp + 1; ii++)
                     {
-                        box_idxNbr_node = box_idx_node + ii + jj * ptr_node->box_real_dim_x + kk * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+                        box_idxNbr_node = box_idx_node + ii + jj * box_real_dim_X_node + kk * box_real_dim_X_times_Y_node;
                         //** >> Asking if the neighboring cell has not been changed yet **/
                         // The border (-2) of the simulation can be added
                         if (ptr_node->ptr_box[box_idxNbr_node] == -3 || ptr_node->ptr_box[box_idxNbr_node] == -2) // Cell has not been added yet
@@ -78,10 +81,10 @@ static int fill_cell_ref(struct node *ptr_node)
     //** >> Adding the infomation about size of the ptr_cell_ref array **/
     ptr_node->cell_ref_size = cell_ref_idx;
     ptr_node->cell_ref_cap = 2.0 * cell_ref_idx;
-    ptr_node->ptr_cell_ref = (int *) malloc(ptr_node->cell_ref_cap * sizeof(int));
+    ptr_node->ptr_cell_ref = (int *)malloc(ptr_node->cell_ref_cap * sizeof(int));
 
     //** >> Adding cells refined to the array ptr_cell_ref **/
-    cell_ref_idx = 0; 
+    cell_ref_idx = 0;
     for (int i = 0; i < ptr_node->cell_size; i++)
     {
         box_idx_node = ptr_node->ptr_box_idx[i];
@@ -100,15 +103,15 @@ static int fill_zones_ref(struct node *ptr_node)
 {
 
     //** >> Filling the auxiliary diferent refinement zones **/
-    int cntr_cell_add_all_zones = 0;     // Counter Number of cells added to any refinement zone
-    int cntr_cell_add;  // Counter number of cells added per inspection
-    int cntr_insp;     // Numer of inspected cells in the zone
+    int cntr_cell_add_all_zones = 0; // Counter Number of cells added to any refinement zone
+    int cntr_cell_add;               // Counter number of cells added per inspection
+    int cntr_insp;                   // Numer of inspected cells in the zone
 
-    int zone_size;    // Number of cells in the zone
+    int zone_size;                          // Number of cells in the zone
     int zone_idx_max = ptr_node->zones_cap; // Maximum id of the zone. It is equal to to the capacity in the number of zones
-    int zone_idx = 0;     // Index of the zone. Initialized at zone 0
+    int zone_idx = 0;                       // Index of the zone. Initialized at zone 0
 
-    int box_idx_node;      // Box index
+    int box_idx_node; // Box index
 
     int box_idxNbr_x_plus;  // Box index in the neigborhood on the right
     int box_idxNbr_x_minus; // Box index in the neigborhood on the left
@@ -117,8 +120,11 @@ static int fill_zones_ref(struct node *ptr_node)
     int box_idxNbr_z_plus;  // Box index in the neigborhood up
     int box_idxNbr_z_minus; // Box index in the neigborhood down
 
-    int cell_idx;     // The cell index is simply i of the for loop
+    int cell_idx;         // The cell index is simply i of the for loop
     int cell_ref_idx = 0; // The index in the cell refined array ptr_cell_ref
+
+    int box_real_dim_X_node = ptr_node->box_real_dim_x;
+    int box_real_dim_X_times_Y_node = ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
 
     // The auxiliary array ptr_aux_idx will be used to store the box indexes of the zone
 
@@ -148,11 +154,11 @@ static int fill_zones_ref(struct node *ptr_node)
             //** >>  Changing the box status from REFINEMENT REQUIRED (-1) to the refinement zone ID (>= 0) **/
             ptr_node->ptr_box[box_idx_node] = zone_idx;
 
-            zone_size++; // +1 to the number of cells in the zone
+            zone_size++;               // +1 to the number of cells in the zone
             cntr_cell_add_all_zones++; // +1 to the number of cells added in total
 
             //** >> Building of the zone of ID = zone_idx **/
-            cntr_insp = 0;                                                                // Counter for the number of elements inspectioned in the current zone array
+            cntr_insp = 0;                                                                     // Counter for the number of elements inspectioned in the current zone array
             while (zone_size > cntr_insp && ptr_node->cell_ref_size > cntr_cell_add_all_zones) // The cycle ends when all the elements of the zone have been inspected or when the number of cells refined is equal to the total number of cells added.
             {
                 // Note that the number of elements in the zone increases if the neighbors of the inspected cell must be added to the zone
@@ -162,58 +168,58 @@ static int fill_zones_ref(struct node *ptr_node)
 
                 box_idxNbr_x_plus = box_idx_node + 1;
                 box_idxNbr_x_minus = box_idx_node - 1;
-                box_idxNbr_y_plus = box_idx_node + ptr_node->box_real_dim_x;
-                box_idxNbr_y_minus = box_idx_node - ptr_node->box_real_dim_x;
-                box_idxNbr_z_plus = box_idx_node + ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
-                box_idxNbr_z_minus = box_idx_node - ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+                box_idxNbr_y_plus = box_idx_node + box_real_dim_X_node;
+                box_idxNbr_y_minus = box_idx_node - box_real_dim_X_node;
+                box_idxNbr_z_plus = box_idx_node + box_real_dim_X_times_Y_node;
+                box_idxNbr_z_minus = box_idx_node - box_real_dim_X_times_Y_node;
 
                 //** Checking the nearest 6 neighbors of face
                 // First neighbor
                 if (ptr_node->ptr_box[box_idxNbr_x_plus] == -1)
                 {
                     ptr_node->ptr_aux_idx[zone_size + cntr_cell_add] = box_idxNbr_x_plus; // Including the neighboring element of the box to the auxiliary array
-                    ptr_node->ptr_box[box_idxNbr_x_plus] = zone_idx;          // Changing the box status from REFINEMENT REQUIRED (-1) to the refinement zone ID (>= 0)
-                    cntr_cell_add++;                                          // +1 to the number of cells added in the current inspection
+                    ptr_node->ptr_box[box_idxNbr_x_plus] = zone_idx;                      // Changing the box status from REFINEMENT REQUIRED (-1) to the refinement zone ID (>= 0)
+                    cntr_cell_add++;                                                      // +1 to the number of cells added in the current inspection
                 }
                 // Second neighbor
                 if (ptr_node->ptr_box[box_idxNbr_x_minus] == -1)
                 {
                     ptr_node->ptr_aux_idx[zone_size + cntr_cell_add] = box_idxNbr_x_minus; // Including the neighboring element of the box to the auxiliary array
-                    ptr_node->ptr_box[box_idxNbr_x_minus] = zone_idx;          // Changing the box status from REFINEMENT REQUIRED (-1) to the refinement zone ID (>= 0)
-                    cntr_cell_add++;                                           // +1 to the number of cells added in the current inspection
+                    ptr_node->ptr_box[box_idxNbr_x_minus] = zone_idx;                      // Changing the box status from REFINEMENT REQUIRED (-1) to the refinement zone ID (>= 0)
+                    cntr_cell_add++;                                                       // +1 to the number of cells added in the current inspection
                 }
                 // Third neighbor
                 if (ptr_node->ptr_box[box_idxNbr_y_plus] == -1)
                 {
                     ptr_node->ptr_aux_idx[zone_size + cntr_cell_add] = box_idxNbr_y_plus; // Including the neighboring element of the box to the auxiliary array
-                    ptr_node->ptr_box[box_idxNbr_y_plus] = zone_idx;          // Changing the box status from REFINEMENT REQUIRED (-1) to the refinement zone ID (>= 0)
-                    cntr_cell_add++;                                          // +1 to the number of cells added in the current inspection
+                    ptr_node->ptr_box[box_idxNbr_y_plus] = zone_idx;                      // Changing the box status from REFINEMENT REQUIRED (-1) to the refinement zone ID (>= 0)
+                    cntr_cell_add++;                                                      // +1 to the number of cells added in the current inspection
                 }
                 // Fourth neighbor
                 if (ptr_node->ptr_box[box_idxNbr_y_minus] == -1)
                 {
                     ptr_node->ptr_aux_idx[zone_size + cntr_cell_add] = box_idxNbr_y_minus; // Including the neighboring element of the box to the auxiliary array
-                    ptr_node->ptr_box[box_idxNbr_y_minus] = zone_idx;          // Changing the box status from REFINEMENT REQUIRED (-1) to the refinement zone ID (>= 0)
-                    cntr_cell_add++;                                           // +1 to the number of cells added in the current inspection
+                    ptr_node->ptr_box[box_idxNbr_y_minus] = zone_idx;                      // Changing the box status from REFINEMENT REQUIRED (-1) to the refinement zone ID (>= 0)
+                    cntr_cell_add++;                                                       // +1 to the number of cells added in the current inspection
                 }
                 // Fifth neighbor
                 if (ptr_node->ptr_box[box_idxNbr_z_plus] == -1)
                 {
                     ptr_node->ptr_aux_idx[zone_size + cntr_cell_add] = box_idxNbr_z_plus; // Including the neighboring element of the box to the auxiliary array
-                    ptr_node->ptr_box[box_idxNbr_z_plus] = zone_idx;          // Changing the box status from REFINEMENT REQUIRED (-1) to the refinement zone ID (>= 0)
-                    cntr_cell_add++;                                          // +1 to the number of cells added in the current inspection
+                    ptr_node->ptr_box[box_idxNbr_z_plus] = zone_idx;                      // Changing the box status from REFINEMENT REQUIRED (-1) to the refinement zone ID (>= 0)
+                    cntr_cell_add++;                                                      // +1 to the number of cells added in the current inspection
                 }
                 // Sixth neighbor
                 if (ptr_node->ptr_box[box_idxNbr_z_minus] == -1)
                 {
                     ptr_node->ptr_aux_idx[zone_size + cntr_cell_add] = box_idxNbr_z_minus; // Including the neighboring element of the box to the auxiliary array
-                    ptr_node->ptr_box[box_idxNbr_z_minus] = zone_idx;          // Changing the box status from REFINEMENT REQUIRED (-1) to the refinement zone ID (>= 0)
-                    cntr_cell_add++;                                           // +1 to the number of cells added in the current inspection
+                    ptr_node->ptr_box[box_idxNbr_z_minus] = zone_idx;                      // Changing the box status from REFINEMENT REQUIRED (-1) to the refinement zone ID (>= 0)
+                    cntr_cell_add++;                                                       // +1 to the number of cells added in the current inspection
                 }
-                zone_size += cntr_cell_add;       // Increasing the number of cells in the zone
+                zone_size += cntr_cell_add;               // Increasing the number of cells in the zone
                 cntr_cell_add_all_zones += cntr_cell_add; // Increasing the number of cells added to the zones
                 cntr_insp++;                              // Increasing the number of inspections
-            }// End while cycle, now the box contains the the information about all cells of the zone "zone_idx"
+            }                                             // End while cycle, now the box contains the the information about all cells of the zone "zone_idx"
 
             //** >> Space checking of refinement zones arrays, refinement capacity array and refinement size array **/
             if (zone_idx_max < zone_idx + 1)
@@ -256,9 +262,9 @@ static int fill_zones_ref(struct node *ptr_node)
         cell_idx = ptr_node->ptr_cell_ref[i];
         box_idx_node = ptr_node->ptr_box_idx[cell_idx];
         zone_idx = ptr_node->ptr_box[box_idx_node];
-        cntr_cell_add = ptr_node->ptr_aux_idx[zone_idx]; // Counter the element in the zone "zone_idx"
+        cntr_cell_add = ptr_node->ptr_aux_idx[zone_idx];          // Counter the element in the zone "zone_idx"
         ptr_node->pptr_zones[zone_idx][cntr_cell_add] = cell_idx; // Adding the index of the cell array in the block to the zone
-        ptr_node->ptr_aux_idx[zone_idx] += 1;            // Counter the number of elements added in the zone "zone_idx"
+        ptr_node->ptr_aux_idx[zone_idx] += 1;                     // Counter the number of elements added in the zone "zone_idx"
     }
 
     return _SUCCESS_;
@@ -279,19 +285,18 @@ static int fill_child_nodes(struct node *ptr_node)
     int box_idx_z_ch;  // Box index in Z direcction of child node
     int box_idx_ch;    // Box index
     int box_idxNbr_ch; // Box index of the neighboring child cell
-    
 
-    int box_idx_node;    // Box index
-    int box_idxNbr;      // Box index of the neighboring node cell
+    int box_idx_node; // Box index
+    int box_idxNbr;   // Box index of the neighboring node cell
 
-    int box_idxNbr_i0_j0_k0_ch;  // Box index at x=0,y=0,z=0
-    int box_idxNbr_im1_j0_k0_ch; // Box index of the neighbor at x=-1,y=0,z=0
-    int box_idxNbr_i0_jm1_k0_ch; // Box index of the neighbor at x=0,y=-1,z=0
-    int box_idxNbr_im1_jm1_k0_ch; // Box index of the neighbor at x=-1,y=-1,z=0
-    int box_idxNbr_i0_j0_km1_ch; // Box index of the neighbor at x=0,y=0,z=-1
-    int box_idxNbr_im1_j0_km1_ch;   // Box index of the neighbor at x=-1,y=0,z=-1
+    int box_idxNbr_i0_j0_k0_ch;    // Box index at x=0,y=0,z=0
+    int box_idxNbr_im1_j0_k0_ch;   // Box index of the neighbor at x=-1,y=0,z=0
+    int box_idxNbr_i0_jm1_k0_ch;   // Box index of the neighbor at x=0,y=-1,z=0
+    int box_idxNbr_im1_jm1_k0_ch;  // Box index of the neighbor at x=-1,y=-1,z=0
+    int box_idxNbr_i0_j0_km1_ch;   // Box index of the neighbor at x=0,y=0,z=-1
+    int box_idxNbr_im1_j0_km1_ch;  // Box index of the neighbor at x=-1,y=0,z=-1
     int box_idxNbr_i0_jm1_km1_ch;  // Box index of the neighbor at x=0,y=-1,z=-1
-    int box_idxNbr_im1_jm1_km1_ch;  // Box index of the neighbor at x=-1,y=-1,z=-1
+    int box_idxNbr_im1_jm1_km1_ch; // Box index of the neighbor at x=-1,y=-1,z=-1
 
     int box_idx_ptcl_ch;
 
@@ -302,7 +307,7 @@ static int fill_child_nodes(struct node *ptr_node)
 
     int ptcl_idx;
 
-    int pos_x;  // Distance between the real box and the minimal box when the last is localized in the middle of the real one
+    int pos_x; // Distance between the real box and the minimal box when the last is localized in the middle of the real one
     int pos_y;
     int pos_z;
 
@@ -311,11 +316,17 @@ static int fill_child_nodes(struct node *ptr_node)
 
     int lv = ptr_node->lv;
 
+    int box_real_dim_X_ch;
+    int box_real_dim_X_times_Y_ch;
+
+    int grid_box_real_dim_X_ch;
+    int grid_box_real_dim_X_times_Y_ch;
+
     //** >> Creating child nodes in parent node **/
     ptr_node->chn_cap = ptr_node->zones_cap; // Same amount than refinement zones
     ptr_node->chn_size = ptr_node->zones_size;
 
-    if(ptr_node->chn_cap > 0)
+    if (ptr_node->chn_cap > 0)
     {
         ptr_node->pptr_chn = (struct node **)malloc(ptr_node->chn_cap * sizeof(struct node *)); // Allocating children pointers
     }
@@ -387,7 +398,7 @@ static int fill_child_nodes(struct node *ptr_node)
 
         ptr_ch->box_real_dim_x_old = ptr_ch->box_real_dim_x;
         ptr_ch->box_real_dim_y_old = ptr_ch->box_real_dim_y;
-        //ptr_ch->box_real_dim_z_old = ptr_ch->box_real_dim_z;
+        // ptr_ch->box_real_dim_z_old = ptr_ch->box_real_dim_z;
 
         // Translations between cell array and box
         pos_x = (ptr_ch->box_real_dim_x - ptr_ch->box_dim_x) / 2; // Half of the distance of the box side less the "minimal box" side
@@ -411,13 +422,15 @@ static int fill_child_nodes(struct node *ptr_node)
         ptr_ch->ptr_cell_idx_z = (int *)malloc(ptr_ch->cell_cap * sizeof(int));
         ptr_ch->ptr_box_idx = (int *)malloc(ptr_ch->cell_cap * sizeof(int));
 
+        box_real_dim_X_ch = ptr_ch->box_real_dim_x;
+        box_real_dim_X_times_Y_ch = ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
         for (int j = 0; j < ptr_node->ptr_zone_size[zone_idx]; j++)
         {
             aux_idx_x = ptr_node->ptr_cell_idx_x[ptr_node->pptr_zones[zone_idx][j]] * 2;
             aux_idx_y = ptr_node->ptr_cell_idx_y[ptr_node->pptr_zones[zone_idx][j]] * 2;
             aux_idx_z = ptr_node->ptr_cell_idx_z[ptr_node->pptr_zones[zone_idx][j]] * 2;
 
-            box_idx_ch = (aux_idx_x - ptr_ch->box_ts_x) + (aux_idx_y - ptr_ch->box_ts_y) * ptr_ch->box_real_dim_x + (aux_idx_z - ptr_ch->box_ts_z) * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
+            box_idx_ch = (aux_idx_x - ptr_ch->box_ts_x) + (aux_idx_y - ptr_ch->box_ts_y) * box_real_dim_X_ch + (aux_idx_z - ptr_ch->box_ts_z) * box_real_dim_X_times_Y_ch;
             for (int kk = 0; kk < 2; kk++)
             {
                 for (int jj = 0; jj < 2; jj++)
@@ -428,7 +441,7 @@ static int fill_child_nodes(struct node *ptr_node)
                         ptr_ch->ptr_cell_idx_x[cell_idx] = aux_idx_x + ii;
                         ptr_ch->ptr_cell_idx_y[cell_idx] = aux_idx_y + jj;
                         ptr_ch->ptr_cell_idx_z[cell_idx] = aux_idx_z + kk;
-                        ptr_ch->ptr_box_idx[cell_idx] = box_idx_ch + ii + jj * ptr_ch->box_real_dim_x + kk * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
+                        ptr_ch->ptr_box_idx[cell_idx] = box_idx_ch + ii + jj * box_real_dim_X_ch + kk * box_real_dim_X_times_Y_ch;
                     }
                 }
             }
@@ -451,6 +464,7 @@ static int fill_child_nodes(struct node *ptr_node)
             ptr_ch->ptr_box[box_idx_ch] = -3;
         }
         // Changing the EXIST (-3) TO BORDER (-2) to all border cells in the block
+
         for (int j = 0; j < ptr_ch->cell_size; j++)
         {
             box_idx_ch = ptr_ch->ptr_box_idx[j];
@@ -461,7 +475,7 @@ static int fill_child_nodes(struct node *ptr_node)
                 {
                     for (int ii = -1; ii < 2; ii++)
                     {
-                        box_idxNbr = box_idx_ch + ii + jj * ptr_ch->box_real_dim_x + kk * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
+                        box_idxNbr = box_idx_ch + ii + jj * box_real_dim_X_ch + kk * box_real_dim_X_times_Y_ch;
                         if (ptr_ch->ptr_box[box_idxNbr] == -4) // Border cells are those such that at least on of their first neighbors are NO-EXIST cells.
                         {
                             ptr_ch->ptr_box[box_idx_ch] = -2;
@@ -499,7 +513,7 @@ static int fill_child_nodes(struct node *ptr_node)
                 box_idx_x_ch = ptr_node->ptr_cell_idx_x[ptr_node->pptr_zones[zone_idx][j]] * 2 - ptr_ch->box_ts_x;
                 box_idx_y_ch = ptr_node->ptr_cell_idx_y[ptr_node->pptr_zones[zone_idx][j]] * 2 - ptr_ch->box_ts_y;
                 box_idx_z_ch = ptr_node->ptr_cell_idx_z[ptr_node->pptr_zones[zone_idx][j]] * 2 - ptr_ch->box_ts_z;
-                box_idx_ch = box_idx_x_ch + box_idx_y_ch * ptr_ch->box_real_dim_x + box_idx_z_ch * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
+                box_idx_ch = box_idx_x_ch + box_idx_y_ch * box_real_dim_X_ch + box_idx_z_ch * box_real_dim_X_times_Y_ch;
 
                 for (int kk = 0; kk < 2; kk++)
                 {
@@ -507,7 +521,7 @@ static int fill_child_nodes(struct node *ptr_node)
                     {
                         for (int ii = 0; ii < 2; ii++)
                         {
-                            box_idxNbr_ch = box_idx_ch + ii + jj * ptr_ch->box_real_dim_x + kk * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
+                            box_idxNbr_ch = box_idx_ch + ii + jj * box_real_dim_X_ch + kk * box_real_dim_X_times_Y_ch;
                             cap = ptr_node->ptr_cell_struct[box_idx_node].ptcl_size;
                             ptr_ch->ptr_cell_struct[box_idxNbr_ch].ptcl_cap = cap;
                             ptr_ch->ptr_cell_struct[box_idxNbr_ch].ptr_ptcl = (int *)malloc(cap * sizeof(int));
@@ -540,7 +554,8 @@ static int fill_child_nodes(struct node *ptr_node)
         ptr_ch->ptr_grid_intr = (int *)malloc(ptr_ch->grid_intr_cap * sizeof(int));
 
         //** >> Grid points **/
-        //** >> Grid points **/
+        grid_box_real_dim_X_ch = ptr_ch->box_real_dim_x + 1;
+        grid_box_real_dim_X_times_Y_ch = (ptr_ch->box_real_dim_x + 1) * (ptr_ch->box_real_dim_y + 1);
         for (int kk = ptr_ch->box_min_z - ptr_ch->box_ts_z; kk < ptr_ch->box_max_z - ptr_ch->box_ts_z + 2; kk++)
         {
             for (int jj = ptr_ch->box_min_y - ptr_ch->box_ts_y; jj < ptr_ch->box_max_y - ptr_ch->box_ts_y + 2; jj++)
@@ -558,12 +573,12 @@ static int fill_child_nodes(struct node *ptr_node)
                     {
                         box_idxNbr_i0_j0_k0_ch = box_idx_ch;
                         box_idxNbr_im1_j0_k0_ch = box_idx_ch - 1;
-                        box_idxNbr_i0_jm1_k0_ch = box_idx_ch - ptr_ch->box_real_dim_x;
-                        box_idxNbr_im1_jm1_k0_ch = box_idx_ch - 1 - ptr_ch->box_real_dim_x;
-                        box_idxNbr_i0_j0_km1_ch = box_idx_ch - ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
-                        box_idxNbr_im1_j0_km1_ch = box_idx_ch - 1 - ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
-                        box_idxNbr_i0_jm1_km1_ch = box_idx_ch - ptr_ch->box_real_dim_x - ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
-                        box_idxNbr_im1_jm1_km1_ch = box_idx_ch - 1 - ptr_ch->box_real_dim_x - ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
+                        box_idxNbr_i0_jm1_k0_ch = box_idx_ch - box_real_dim_X_ch;
+                        box_idxNbr_im1_jm1_k0_ch = box_idx_ch - 1 - box_real_dim_X_ch;
+                        box_idxNbr_i0_j0_km1_ch = box_idx_ch - box_real_dim_X_times_Y_ch;
+                        box_idxNbr_im1_j0_km1_ch = box_idx_ch - 1 - box_real_dim_X_times_Y_ch;
+                        box_idxNbr_i0_jm1_km1_ch = box_idx_ch - box_real_dim_X_ch - box_real_dim_X_times_Y_ch;
+                        box_idxNbr_im1_jm1_km1_ch = box_idx_ch - 1 - box_real_dim_X_ch - box_real_dim_X_times_Y_ch;
 
                         grid_point_exist = false;
                         // //** >> The grid point exist **/
@@ -747,7 +762,7 @@ static int fill_child_nodes(struct node *ptr_node)
                     }
                     if (grid_point_exist == true)
                     {
-                        box_grid_idx_ch = ii + jj * (ptr_ch->box_real_dim_x + 1) + kk * (ptr_ch->box_real_dim_x + 1) * (ptr_ch->box_real_dim_y + 1);
+                        box_grid_idx_ch = ii + jj * grid_box_real_dim_X_ch + kk * grid_box_real_dim_X_times_Y_ch;
                         //** >> Adding the grid point **/
 
                         //** >> Border grid point**/
@@ -775,14 +790,14 @@ static int fill_child_nodes(struct node *ptr_node)
         cap = (ptr_ch->box_real_dim_x + 1) * (ptr_ch->box_real_dim_y + 1) * (ptr_ch->box_real_dim_z + 1);
         ptr_ch->grid_properties_cap = cap;
         ptr_ch->ptr_pot = (vtype *)calloc(cap, sizeof(vtype));
-        ptr_ch->ptr_ax = (vtype *)calloc(cap , sizeof(vtype));
+        ptr_ch->ptr_ax = (vtype *)calloc(cap, sizeof(vtype));
         ptr_ch->ptr_ay = (vtype *)calloc(cap, sizeof(vtype));
         ptr_ch->ptr_az = (vtype *)calloc(cap, sizeof(vtype));
         ptr_ch->ptr_d = (vtype *)calloc(cap, sizeof(vtype));
 
         //** >> Tree structure **/
         ptr_node->pptr_chn[zone_idx] = ptr_ch; // Parent node pointing to child node i
-        ptr_ch->ptr_pt = ptr_node;      // Child node i pointig to parent node
+        ptr_ch->ptr_pt = ptr_node;             // Child node i pointig to parent node
 
     } // End filling child nodes
 
@@ -809,7 +824,7 @@ static int fill_tentacles(const struct node *ptr_node)
 
     //** Increasing the number of structs in the level lv **/
     GL_tentacles_size[lv] = size;
-    
+
     //** >> Increasing the deepth of levels of the tentacles **/
     if (GL_tentacles_level_max < lv)
     {
@@ -857,7 +872,7 @@ int tree_construction()
                     printf("Error at function create_child_nodes()\n");
                     return _FAILURE_;
                 }
-            
+
                 //** >> Filling Tentacles for the next cycle at level of refinement
                 if (fill_tentacles(ptr_node) == _FAILURE_)
                 {

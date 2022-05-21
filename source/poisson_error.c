@@ -26,93 +26,103 @@
 
 #include "poisson_error.h"
 
-static bool interior_grid_point(const struct node *ptr_node, int i)
-{
-	bool check = true;
+// static bool interior_grid_point(const struct node *ptr_node, int i)
+// {
+// 	bool check = true;
 
-	int box_idx = ptr_node->ptr_box_idx[i];
+// 	int box_idx = ptr_node->ptr_box_idx[i];
 
-	//** Checking the nearest 3 neighbors of face
-	if (ptr_node->ptr_box[box_idx - 1] < -3)
-	{
-		check = false;
-	}
-	else if (ptr_node->ptr_box[box_idx - ptr_node->box_real_dim_x] < -3)
-	{
-		check = false;
-	}
-	else if (ptr_node->ptr_box[box_idx - ptr_node->box_real_dim_x * ptr_node->box_real_dim_y] < -3)
-	{
-		check = false;
-	}
+// 	//** Checking the nearest 3 neighbors of face
+// 	if (ptr_node->ptr_box[box_idx - 1] < -3)
+// 	{
+// 		check = false;
+// 	}
+// 	else if (ptr_node->ptr_box[box_idx - ptr_node->box_real_dim_x] < -3)
+// 	{
+// 		check = false;
+// 	}
+// 	else if (ptr_node->ptr_box[box_idx - ptr_node->box_real_dim_x * ptr_node->box_real_dim_y] < -3)
+// 	{
+// 		check = false;
+// 	}
 
-	return check;
-}
+// 	return check;
+// }
 
 static bool poisson_error_mehod_0(const struct node *ptr_node)
 {
-/* 	The condition used is option 1 (default one), and it
-   uses the root mean square. In general, the error in the grid of the Poisson
-   equation solution is computed as follows:
+	/* 	The condition used is option 1 (default one), and it
+	   uses the root mean square. In general, the error in the grid of the Poisson
+	   equation solution is computed as follows:
 
-   error = Sqrt[ 1/Ng^3 * Sum[{( density_i - Laplacian(pot_i) )/rhomean }^2 ] ]
+	   error = Sqrt[ 1/Ng^3 * Sum[{( density_i - Laplacian(pot_i) )/rhomean }^2 ] ]
 
-   The criterion is accepted when the error is less than the threshold. See the
-   _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ parameter in
-   Precision_Parameters.h. Note that error is an adimensional variable. */
+	   The criterion is accepted when the error is less than the threshold. See the
+	   _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ parameter in
+	   Precision_Parameters.h. Note that error is an adimensional variable. */
 
 	vtype error; // Error of the potential solution
 	vtype diff;	 // Diference between the Laplacian of the potential solution and the density
 
-	vtype H;
-	vtype one_over_H_pow_2;
-
 	bool check; // Check if the grid point is an interior grid point
 
-	int size; // Number of cells in the node
 	int cntr; // Counter of the number of interior grid points
+
+	int box_idx;
 
 	int box_grid_idx_x;
 	int box_grid_idx_y;
 	int box_grid_idx_z;
 	int box_grid_idx;
 
-	vtype rhomean_times_4piG;
+	vtype H = 1.0L / (1 << ptr_node->lv);
+	vtype one_over_H_pow_2 = 1.0L / (H * H);
+	int size = ptr_node->cell_size; // Number of cells in the node
 
-	H = 1.0L / (1 << ptr_node->lv);
-	one_over_H_pow_2 = 1.0L / (H * H);
-	size = ptr_node->cell_size;
-
-	rhomean_times_4piG = 4 * _G_ * _PI_ * ptr_node->local_mass / (size * H * H * H);
+	vtype rhomean_times_4piG = 4 * _G_ * _PI_ * ptr_node->local_mass / (size * H * H * H);
 
 	error = 0;
 	cntr = 0;
-	
+
+	int box_real_dim_X = ptr_node->box_real_dim_x;
+	int box_real_dim_X_times_Y = ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+
+	int grid_box_real_dim_X = ptr_node->box_real_dim_x + 1;
+	int grid_box_real_dim_X_times_Y = (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1);
+
 	// Computing the root mean square normalized to the mean density rhomean
 	for (int i = 0; i < size; i++)
 	{
 		//** >> Checking if the grid point is a interior grid point **/
-		check = interior_grid_point(ptr_node,i);
+
+		//** Checking the nearest 3 neighbors of face
+		box_idx = ptr_node->ptr_box_idx[i];
+		check = true;
+		if (ptr_node->ptr_box[box_idx - 1] < -3)
+		{
+			check = false;
+		}
+		else if (ptr_node->ptr_box[box_idx - box_real_dim_X] < -3)
+		{
+			check = false;
+		}
+		else if (ptr_node->ptr_box[box_idx - box_real_dim_X_times_Y] < -3)
+		{
+			check = false;
+		}
+		// check = interior_grid_point(ptr_node,i);
+
 		if (check == true)
 		{
 			box_grid_idx_x = ptr_node->ptr_cell_idx_x[i] - ptr_node->box_ts_x;
 			box_grid_idx_y = ptr_node->ptr_cell_idx_y[i] - ptr_node->box_ts_y;
 			box_grid_idx_z = ptr_node->ptr_cell_idx_z[i] - ptr_node->box_ts_z;
-			box_grid_idx = box_grid_idx_x + box_grid_idx_y * (ptr_node->box_real_dim_x + 1) + box_grid_idx_z * (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1);
+			box_grid_idx = box_grid_idx_x + box_grid_idx_y * grid_box_real_dim_X + box_grid_idx_z * grid_box_real_dim_X_times_Y;
 
-			diff = ptr_node->ptr_d[box_grid_idx] + one_over_H_pow_2 * 
-			(
-			6.0 * ptr_node->ptr_pot[box_grid_idx] 
-			- ptr_node->ptr_pot[box_grid_idx + 1] 
-			- ptr_node->ptr_pot[box_grid_idx - 1] 
-			- ptr_node->ptr_pot[box_grid_idx + (ptr_node->box_real_dim_x + 1)] 
-			- ptr_node->ptr_pot[box_grid_idx - (ptr_node->box_real_dim_x + 1)]  
-			- ptr_node->ptr_pot[box_grid_idx + (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1) ] 
-			- ptr_node->ptr_pot[box_grid_idx - (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1) ] 
-			);
+			diff = ptr_node->ptr_d[box_grid_idx] + one_over_H_pow_2 *
+													   (6.0 * ptr_node->ptr_pot[box_grid_idx] - ptr_node->ptr_pot[box_grid_idx + 1] - ptr_node->ptr_pot[box_grid_idx - 1] - ptr_node->ptr_pot[box_grid_idx + grid_box_real_dim_X] - ptr_node->ptr_pot[box_grid_idx - grid_box_real_dim_X] - ptr_node->ptr_pot[box_grid_idx + grid_box_real_dim_X_times_Y] - ptr_node->ptr_pot[box_grid_idx - grid_box_real_dim_X_times_Y]);
 			error += diff * diff;
 			cntr++;
-			
 		}
 	}
 
@@ -133,26 +143,22 @@ static bool poisson_error_mehod_0(const struct node *ptr_node)
 static bool poisson_error_mehod_1(const struct node *ptr_node)
 {
 
-/*    This module is responsible for checking the condition for the solution of the
-   Poisson equation. The condition used is option 2, and it is the absolute
-   error between the density and the laplacian for each grid point. In general,
-   the error in each grid point of the Poisson equation solution is computed as
-   follows:
+	/*    This module is responsible for checking the condition for the solution of the
+	   Poisson equation. The condition used is option 2, and it is the absolute
+	   error between the density and the laplacian for each grid point. In general,
+	   the error in each grid point of the Poisson equation solution is computed as
+	   follows:
 
-   error_i =  |density_i - Laplacian(pot_i)| /rhomean
+	   error_i =  |density_i - Laplacian(pot_i)| /rhomean
 
-   The criterion is accepted only if all errors in the grid points are less than
-   the threshold. See the _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ parameter in
-   Precision_Parameters.h. Note that error is an adimensional variable. */
+	   The criterion is accepted only if all errors in the grid points are less than
+	   the threshold. See the _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ parameter in
+	   Precision_Parameters.h. Note that error is an adimensional variable. */
 
 	vtype error; // Error of the potential solution
 
-	vtype H;
-	vtype one_over_H_pow_2;
-
 	bool check; // Check if the grid point is an interior grid point
 
-	int size; // Number of cells in the node
 	int cntr; // Counter of the number of interior grid points
 
 	int box_grid_idx_x;
@@ -160,39 +166,54 @@ static bool poisson_error_mehod_1(const struct node *ptr_node)
 	int box_grid_idx_z;
 	int box_grid_idx;
 
-	vtype rhomean_times_4piG;
+	int box_idx;
 
-	H = 1.0L / (1 << ptr_node->lv);
-	one_over_H_pow_2 = 1.0L / (H * H);
-	size = ptr_node->cell_size;
+	vtype H = 1.0L / (1 << ptr_node->lv);
+	vtype one_over_H_pow_2 = 1.0L / (H * H);
+	int size = ptr_node->cell_size; // Number of cells in the node
 
-	rhomean_times_4piG = 4 * _G_ * _PI_ * ptr_node->local_mass / (size * H * H * H);
+	vtype rhomean_times_4piG = 4 * _G_ * _PI_ * ptr_node->local_mass / (size * H * H * H);
 
 	error = 0;
 	cntr = 0;
+
+	int box_real_dim_X = ptr_node->box_real_dim_x;
+	int box_real_dim_X_times_Y = ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+
+	int grid_box_real_dim_X = ptr_node->box_real_dim_x + 1;
+	int grid_box_real_dim_X_times_Y = (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1);
 
 	// Computing the root mean square normalized to the mean density rhomean
 	for (int i = 0; i < size; i++)
 	{
 		//** >> Checking if the grid point is a interior grid point **/
-		check = interior_grid_point(ptr_node, i);
+
+		//** Checking the nearest 3 neighbors of face
+		box_idx = ptr_node->ptr_box_idx[i];
+		check = true;
+		if (ptr_node->ptr_box[box_idx - 1] < -3)
+		{
+			check = false;
+		}
+		else if (ptr_node->ptr_box[box_idx - box_real_dim_X] < -3)
+		{
+			check = false;
+		}
+		else if (ptr_node->ptr_box[box_idx - box_real_dim_X_times_Y] < -3)
+		{
+			check = false;
+		}
+		// check = interior_grid_point(ptr_node,i);
+
 		if (check == true)
 		{
 			box_grid_idx_x = ptr_node->ptr_cell_idx_x[i] - ptr_node->box_ts_x;
 			box_grid_idx_y = ptr_node->ptr_cell_idx_y[i] - ptr_node->box_ts_y;
 			box_grid_idx_z = ptr_node->ptr_cell_idx_z[i] - ptr_node->box_ts_z;
-			box_grid_idx = box_grid_idx_x + box_grid_idx_y * (ptr_node->box_real_dim_x + 1) + box_grid_idx_z * (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1);
+			box_grid_idx = box_grid_idx_x + box_grid_idx_y * grid_box_real_dim_X + box_grid_idx_z * grid_box_real_dim_X_times_Y;
 
 			error = ptr_node->ptr_d[box_grid_idx] + one_over_H_pow_2 *
-			(
-			6.0 * ptr_node->ptr_pot[box_grid_idx] 
-			- ptr_node->ptr_pot[box_grid_idx + 1] 
-			- ptr_node->ptr_pot[box_grid_idx - 1] 
-			- ptr_node->ptr_pot[box_grid_idx + (ptr_node->box_real_dim_x + 1)] 
-			- ptr_node->ptr_pot[box_grid_idx - (ptr_node->box_real_dim_x + 1)] 
-			- ptr_node->ptr_pot[box_grid_idx + (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1)] 
-			- ptr_node->ptr_pot[box_grid_idx - (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1)]
-			);
+														(6.0 * ptr_node->ptr_pot[box_grid_idx] - ptr_node->ptr_pot[box_grid_idx + 1] - ptr_node->ptr_pot[box_grid_idx - 1] - ptr_node->ptr_pot[box_grid_idx + grid_box_real_dim_X] - ptr_node->ptr_pot[box_grid_idx - grid_box_real_dim_X] - ptr_node->ptr_pot[box_grid_idx + grid_box_real_dim_X_times_Y] - ptr_node->ptr_pot[box_grid_idx - grid_box_real_dim_X_times_Y]);
 
 			error = myabs(error) / rhomean_times_4piG;
 			cntr++;
@@ -224,12 +245,8 @@ static bool poisson_error_mehod_2(const struct node *ptr_node)
 	vtype error; // Error of the potential solution
 	vtype diff;	 // Diference between the Laplacian of the potential solution and the density
 
-	vtype H;
-	vtype one_over_H_pow_2;
-
 	bool check; // Check if the grid point is an interior grid point
 
-	int size; // Number of cells in the node
 	int cntr; // Counter of the number of interior grid points
 
 	int box_grid_idx_x;
@@ -237,31 +254,54 @@ static bool poisson_error_mehod_2(const struct node *ptr_node)
 	int box_grid_idx_z;
 	int box_grid_idx;
 
-	vtype rhomean_times_4piG;
+	int box_idx;
 
-	H = 1.0L / (1 << ptr_node->lv);
-	one_over_H_pow_2 = 1.0L / (H * H);
-	size = ptr_node->cell_size;
+	vtype H = 1.0L / (1 << ptr_node->lv);
+	vtype one_over_H_pow_2 = 1.0L / (H * H);
+	int size = ptr_node->cell_size; // Number of cells in the node
 
-	rhomean_times_4piG = 4 * _G_ * _PI_ * ptr_node->local_mass / (size * H * H * H);
+	vtype rhomean_times_4piG = 4 * _G_ * _PI_ * ptr_node->local_mass / (size * H * H * H);
 
 	error = 0;
 	cntr = 0;
+
+	int box_real_dim_X = ptr_node->box_real_dim_x;
+	int box_real_dim_X_times_Y = ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+
+	int grid_box_real_dim_X = ptr_node->box_real_dim_x + 1;
+	int grid_box_real_dim_X_times_Y = (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1);
 
 	// Computing the root mean square normalized to the mean density rhomean
 	for (int i = 0; i < size; i++)
 	{
 		//** >> Checking if the grid point is a interior grid point **/
-		check = interior_grid_point(ptr_node, i);
+
+		//** Checking the nearest 3 neighbors of face
+		box_idx = ptr_node->ptr_box_idx[i];
+		check = true;
+		if (ptr_node->ptr_box[box_idx - 1] < -3)
+		{
+			check = false;
+		}
+		else if (ptr_node->ptr_box[box_idx - box_real_dim_X] < -3)
+		{
+			check = false;
+		}
+		else if (ptr_node->ptr_box[box_idx - box_real_dim_X_times_Y] < -3)
+		{
+			check = false;
+		}
+		// check = interior_grid_point(ptr_node,i);
+
 		if (check == true)
 		{
 			box_grid_idx_x = ptr_node->ptr_cell_idx_x[i] - ptr_node->box_ts_x;
 			box_grid_idx_y = ptr_node->ptr_cell_idx_y[i] - ptr_node->box_ts_y;
 			box_grid_idx_z = ptr_node->ptr_cell_idx_z[i] - ptr_node->box_ts_z;
-			box_grid_idx = box_grid_idx_x + box_grid_idx_y * (ptr_node->box_real_dim_x + 1) + box_grid_idx_z * (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1);
+			box_grid_idx = box_grid_idx_x + box_grid_idx_y * grid_box_real_dim_X + box_grid_idx_z * grid_box_real_dim_X_times_Y;
 
 			diff = ptr_node->ptr_d[box_grid_idx] + one_over_H_pow_2 *
-													   (6.0 * ptr_node->ptr_pot[box_grid_idx] - ptr_node->ptr_pot[box_grid_idx + 1] - ptr_node->ptr_pot[box_grid_idx - 1] - ptr_node->ptr_pot[box_grid_idx + (ptr_node->box_real_dim_x + 1)] - ptr_node->ptr_pot[box_grid_idx - (ptr_node->box_real_dim_x + 1)] - ptr_node->ptr_pot[box_grid_idx + (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1)] - ptr_node->ptr_pot[box_grid_idx - (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1)]);
+													   (6.0 * ptr_node->ptr_pot[box_grid_idx] - ptr_node->ptr_pot[box_grid_idx + 1] - ptr_node->ptr_pot[box_grid_idx - 1] - ptr_node->ptr_pot[box_grid_idx + grid_box_real_dim_X] - ptr_node->ptr_pot[box_grid_idx - grid_box_real_dim_X] - ptr_node->ptr_pot[box_grid_idx + grid_box_real_dim_X_times_Y] - ptr_node->ptr_pot[box_grid_idx - grid_box_real_dim_X_times_Y]);
 			error += diff * diff;
 			cntr++;
 		}
