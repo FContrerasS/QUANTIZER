@@ -44,6 +44,8 @@ void check_error(struct node *ptr_node)
     int aux_int_2_ch;
     int aux_int_2_node = ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
 
+    int ptcl_idx;
+
     // Check ptr_box_idx
     // Children:
 
@@ -94,7 +96,7 @@ void check_error(struct node *ptr_node)
             if (ptr_ch->ptr_cell_struct[box_idx_ch].cell_mass != ptr_ch->ptr_cell_struct[box_idx_ch].ptcl_size * 100.0 || ptr_ch->ptr_cell_struct[box_idx_ch].ptcl_size < 0)
             {
                 printf("Error, child, box_idx = %d\n", box_idx_ch);
-                printf("lv = %d, ID = %d, ptcl_size = %d, cell_mass = %f\n", ptr_ch->lv, ptr_ch->ID, ptr_ch->ptr_cell_struct[box_idx_ch].ptcl_size, ptr_ch->ptr_cell_struct[box_idx_ch].cell_mass);
+                printf("lv = %d, ID = %d, ptcl_size = %d, cell_mass = %f\n", ptr_ch->lv, ptr_ch->ID, ptr_ch->ptr_cell_struct[box_idx_ch].ptcl_size, (double)ptr_ch->ptr_cell_struct[box_idx_ch].cell_mass);
             }
         }
     }
@@ -111,7 +113,42 @@ void check_error(struct node *ptr_node)
         if (ptr_node->ptr_cell_struct[box_idx_node].cell_mass != ptr_node->ptr_cell_struct[box_idx_node].ptcl_size * 100.0 || ptr_node->ptr_cell_struct[box_idx_node].ptcl_size < 0)
         {
             printf("Error, parent, box_idx = %d\n", box_idx_node);
-            printf("lv = %d, ID = %d, ptcl_size = %d, cell_mass = %f\n", ptr_node->lv, ptr_node->ID, ptr_node->ptr_cell_struct[box_idx_node].ptcl_size, ptr_node->ptr_cell_struct[box_idx_node].cell_mass);
+            printf("lv = %d, ID = %d, ptcl_size = %d, cell_mass = %f\n", ptr_node->lv, ptr_node->ID, ptr_node->ptr_cell_struct[box_idx_node].ptcl_size, (double) ptr_node->ptr_cell_struct[box_idx_node].cell_mass );
+        }
+    }
+
+    //Particles are in the right cell
+    // Children
+    for (int i = 0; i < ptr_node->chn_size; i++)
+    {
+        ptr_ch = ptr_node->pptr_chn[i];
+        aux_int_2_ch = ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
+        for (int cell_idx = 0; cell_idx < ptr_ch->cell_size; cell_idx++)
+        {
+            box_idx_ch = ptr_ch->ptr_box_idx[cell_idx];
+            for (int j = 0; j < ptr_ch->ptr_cell_struct[box_idx_ch].ptcl_size; j++)
+            {
+                ptcl_idx = ptr_ch->ptr_cell_struct[box_idx_ch].ptr_ptcl[j];
+                if (box_idx_ch != ptcl_idx_to_box_idx(ptr_ch,ptcl_idx))
+                {
+                    printf("Error, child, particle is out of the cell\n");
+                }
+            }
+        }
+    }
+
+    // Parent
+    aux_int_2_node = ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+    for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
+    {
+        box_idx_node = ptr_node->ptr_box_idx[cell_idx];
+        for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx_node].ptcl_size; j++)
+        {
+            ptcl_idx = ptr_node->ptr_cell_struct[box_idx_node].ptr_ptcl[j];
+            if (box_idx_node != ptcl_idx_to_box_idx(ptr_node, ptcl_idx))
+            {
+                printf("Error, Parent, particle is out of the cell\n");
+            }
         }
     }
 
@@ -137,7 +174,7 @@ void check_error(struct node *ptr_node)
         if (aux_mass1 != aux_mass2 || aux_mass1 != ptr_ch->local_mass)
         {
             printf("\nError, Child local mass diferente a mass en caja\n ");
-            printf("cell mass = %f, box mass = %f, local mass = %f\n", aux_mass1, aux_mass2, ptr_ch->local_mass);
+            printf("cell mass = %f, box mass = %f, local mass = %f\n", (double) aux_mass1, (double) aux_mass2, (double) ptr_ch->local_mass);
         }
     }
 
@@ -157,7 +194,7 @@ void check_error(struct node *ptr_node)
     if (aux_mass1 != aux_mass2 || aux_mass1 != ptr_node->local_mass)
     {
         printf("\nError, Parent local mass diferente a mass en caja\n ");
-        printf("cell mass = %f, box mass = %f, local mass = %f\n", aux_mass1, aux_mass2, ptr_node->local_mass);
+        printf("cell mass = %f, box mass = %f, local mass = %f\n", (double)aux_mass1, (double) aux_mass2, (double)ptr_node->local_mass);
     }
 
     // Boxes:
@@ -286,7 +323,7 @@ void check_error(struct node *ptr_node)
         if (ptr_node->local_mass != GL_no_ptcl * 100.0)
         {
             printf("Error, Head lv, diferent mass\n");
-            printf("local mass = %f\n", ptr_node->local_mass);
+            printf("local mass = %f\n", (double)ptr_node->local_mass);
         }
 
         if (GL_tentacles_size[0] != 1)

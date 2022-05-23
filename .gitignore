@@ -17,3 +17,5 @@ plummer_testing.py
 *.c~
 *.exe
 *.log
+*.linux
+
