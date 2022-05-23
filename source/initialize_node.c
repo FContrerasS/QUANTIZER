@@ -70,13 +70,22 @@ void initialize_node(struct node *ptr_node)
 	//** >> Struct of cells (Particles and cell mass)
 	ptr_node->ptr_cell_struct = NULL;
 	ptr_node->ptr_cell_struct_old = NULL;
+	ptr_node->cell_struct_old_cap = 0;
 
 	//** >> Total mass in the node **/
 	ptr_node->local_mass = 0; 
 
 	//** >> Grid points **/
-    ptr_node->ptr_grid_intr = NULL;  // Indexes of the interior grid points of the block
-    ptr_node->ptr_grid_bder = NULL;    // Indexes of the border grid points of the block
+	ptr_node->ptr_intr_grid_cell_idx_x = NULL; // X index of the interior grid point
+	ptr_node->ptr_intr_grid_cell_idx_y = NULL; // Y index position of the cells in the node at level l
+	ptr_node->ptr_intr_grid_cell_idx_z = NULL; // Z index position of the cells in the node at level l
+	ptr_node->ptr_intr_grid_idx = NULL;	  // Indexes of the interior grid points of the block
+
+	ptr_node->ptr_bder_grid_cell_idx_x = NULL;		 // X index of the interior grid point
+	ptr_node->ptr_bder_grid_cell_idx_y = NULL;		 // Y index position of the cells in the node at level l
+	ptr_node->ptr_bder_grid_cell_idx_z = NULL;		 // Z index position of the cells in the node at level l
+	ptr_node->ptr_bder_grid_idx = NULL;
+	// Indexes of the interior grid points of the block
     ptr_node->grid_intr_cap = 0;   // Maximum cap of the grid interior points array of the block
     ptr_node->grid_bder_cap = 0; // Maximum cap of the grid border points array of the block
     ptr_node->grid_intr_size = 0; // Number of existing grid interior points in the block

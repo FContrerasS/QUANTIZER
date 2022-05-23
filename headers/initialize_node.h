@@ -73,13 +73,22 @@ struct node
     //** >> Struct of cells (Particles and cell mass)
     struct cell_struct *ptr_cell_struct;
     struct cell_struct *ptr_cell_struct_old;
+    int cell_struct_old_cap;
 
     //** >> Total mass in the node
     vtype local_mass;        // Total mass in the node
 
     //** >> Grid points **/
-    int *ptr_grid_intr; // Indexes of the interior grid points of the block
-    int *ptr_grid_bder; // Indexes of the border grid points of the block
+    int *ptr_intr_grid_cell_idx_x; // X index of the interior grid point 
+    int *ptr_intr_grid_cell_idx_y; // Y index position of the cells in the node at level l
+    int *ptr_intr_grid_cell_idx_z; // Z index position of the cells in the node at level l
+    int *ptr_intr_grid_idx;   // Indexes of the interior grid points of the block
+
+    int *ptr_bder_grid_cell_idx_x; // X index of the interior grid point
+    int *ptr_bder_grid_cell_idx_y; // Y index position of the cells in the node at level l
+    int *ptr_bder_grid_cell_idx_z; // Z index position of the cells in the node at level l
+    int *ptr_bder_grid_idx;       // Indexes of the interior grid points of the block
+
     int grid_intr_cap;  // Maximum cap of the grid interior points array of the block
     int grid_bder_cap;  // Maximum cap of the grid border points array of the block
     int grid_intr_size; // Number of existing grid interior points in the block

@@ -56,7 +56,8 @@ static void computing_memory()
             
             if(lmin < lmax)
             {
-                TOTAL_MEMORY_CELL_STRUCT += 2* ptr_node->box_cap * sizeof(struct cell_struct);
+                TOTAL_MEMORY_CELL_STRUCT += ptr_node->box_cap * sizeof(struct cell_struct);
+                TOTAL_MEMORY_CELL_STRUCT += ptr_node->cell_struct_old_cap * sizeof(struct cell_struct);
                 if (ptr_node->ptr_cell_struct != NULL)
                 {
                     for (int j = 0; j < ptr_node->box_cap; j++)
@@ -67,7 +68,7 @@ static void computing_memory()
 
                 if (ptr_node->ptr_cell_struct_old != NULL)
                 {
-                    for (int j = 0; j < ptr_node->box_cap; j++)
+                    for (int j = 0; j < ptr_node->cell_struct_old_cap; j++)
                     {
                         TOTAL_MEMORY_CELL_STRUCT += ptr_node->ptr_cell_struct_old[j].ptcl_cap * sizeof(int);
                     }     
@@ -75,7 +76,15 @@ static void computing_memory()
 
             }
             TOTAL_MEMORY_CAJAS += 2 * ptr_node->box_cap * (sizeof(int) + sizeof(vtype)); //Boxes and mass boxes
-            TOTAL_MEMORY_GRID_POINTS += 2 * (ptr_node->grid_bder_cap + ptr_node->grid_intr_cap) * sizeof(int); // Grid interior and border points
+            if(lv != 0)
+            {
+                TOTAL_MEMORY_GRID_POINTS += 4 * (ptr_node->grid_bder_cap + ptr_node->grid_intr_cap) * sizeof(int); // Grid interior and border points
+            }
+            else
+            {
+                TOTAL_MEMORY_GRID_POINTS += (ptr_node->grid_bder_cap + ptr_node->grid_intr_cap) * sizeof(int); // Grid interior and border points
+            }
+            
             TOTAL_MEMORY_GRID_PROPERTIES += 5 * ptr_node->grid_properties_cap * sizeof(vtype); // Grid properties, accelerations, potential and density
             TOTAL_MEMORY_AUX += ptr_node->zones_cap * sizeof(int *) + ptr_node->cell_ref_cap * sizeof(int);
             for (int j = 0; j < ptr_node->zones_cap;j++)
@@ -94,27 +103,27 @@ static void computing_memory()
     {
         TOTAL_MEMORY_STACK += 4 * ptr_node->cell_cap * sizeof(int);
         TOTAL_MEMORY_STACK += ptr_node->box_cap * sizeof(struct cell_struct);
-        if(lmin < lmax)
-        {
-            TOTAL_MEMORY_STACK += 2 * ptr_node->box_cap * sizeof(struct cell_struct);
-            if (ptr_node->ptr_cell_struct != NULL)
-            {
-                for (int j = 0; j < ptr_node->box_cap; j++)
-                {
-                    TOTAL_MEMORY_STACK += ptr_node->ptr_cell_struct[j].ptcl_cap * sizeof(int);
-                }
-            }
 
-            if (ptr_node->ptr_cell_struct_old != NULL)
+        TOTAL_MEMORY_STACK += ptr_node->box_cap * sizeof(struct cell_struct);
+        TOTAL_MEMORY_STACK += ptr_node->cell_struct_old_cap * sizeof(struct cell_struct);
+        if (ptr_node->ptr_cell_struct != NULL)
+        {
+            for (int j = 0; j < ptr_node->box_cap; j++)
             {
-                for (int j = 0; j < ptr_node->box_cap; j++)
-                {
-                    TOTAL_MEMORY_STACK += ptr_node->ptr_cell_struct_old[j].ptcl_cap * sizeof(int);
-                }
+                TOTAL_MEMORY_STACK += ptr_node->ptr_cell_struct[j].ptcl_cap * sizeof(int);
             }
         }
+
+        if (ptr_node->ptr_cell_struct_old != NULL)
+        {
+            for (int j = 0; j < ptr_node->cell_struct_old_cap; j++)
+            {
+                TOTAL_MEMORY_STACK += ptr_node->ptr_cell_struct_old[j].ptcl_cap * sizeof(int);
+            }
+        }
+
         TOTAL_MEMORY_STACK += 2 * ptr_node->box_cap * (sizeof(int) + sizeof(vtype));                       // Boxes and mass boxes
-        TOTAL_MEMORY_STACK += 2 * (ptr_node->grid_bder_cap + ptr_node->grid_intr_cap) * sizeof(int);       // Grid interior and border points
+        TOTAL_MEMORY_STACK += 4 * (ptr_node->grid_bder_cap + ptr_node->grid_intr_cap) * sizeof(int);       // Grid interior and border points
         TOTAL_MEMORY_STACK += 5 * ptr_node->grid_properties_cap * sizeof(vtype);                           // Grid properties, accelerations, potential and density
         TOTAL_MEMORY_STACK += ptr_node->zones_cap * sizeof(int *) + ptr_node->cell_ref_cap * sizeof(int);
         for (int j = 0; j < ptr_node->zones_cap; j++)

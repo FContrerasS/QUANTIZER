@@ -158,8 +158,8 @@ static int initializing_head_node()
 	ptr_head->grid_intr_size = 0;
 	ptr_head->grid_bder_cap = (no_lmin_cell + 1) * (no_lmin_cell + 1) * (no_lmin_cell + 1) - ptr_head->grid_intr_cap;
 	ptr_head->grid_bder_size = 0;
-	ptr_head->ptr_grid_intr = (int *)malloc(ptr_head->grid_intr_cap * sizeof(int));
-	ptr_head->ptr_grid_bder = (int *)malloc(ptr_head->grid_bder_cap * sizeof(int));
+	ptr_head->ptr_intr_grid_idx = (int *)malloc(ptr_head->grid_intr_cap * sizeof(int));
+	ptr_head->ptr_bder_grid_idx = (int *)malloc(ptr_head->grid_bder_cap * sizeof(int));
 	int box_grid_idx; // Index in the box grid point
 	//** Filling grid points indexes **/
 	for (int k = bder_os_sim; k < box_side_lmin + 1 - bder_os_sim; k++)
@@ -172,13 +172,13 @@ static int initializing_head_node()
 				//** >> Border grid point **/
 				if (i == bder_os_sim || i == box_side_lmin - bder_os_sim || j == bder_os_sim || j == box_side_lmin - bder_os_sim || k == bder_os_sim || k == box_side_lmin - bder_os_sim)
 				{
-					ptr_head->ptr_grid_bder[ptr_head->grid_bder_size] = box_grid_idx;
+					ptr_head->ptr_bder_grid_idx[ptr_head->grid_bder_size] = box_grid_idx;
 					ptr_head->grid_bder_size += 1; // Increasing the border grid points
 				}
 				//** >> Interior grid point **/
 				else
 				{
-					ptr_head->ptr_grid_intr[ptr_head->grid_intr_size] = box_grid_idx;
+					ptr_head->ptr_intr_grid_idx[ptr_head->grid_intr_size] = box_grid_idx;
 					ptr_head->grid_intr_size += 1; // Increasing the interior grid points
 				}
 			}

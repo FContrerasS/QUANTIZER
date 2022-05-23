@@ -492,11 +492,11 @@ static int fill_child_nodes(struct node *ptr_node)
         //** >> Total mass in the node **/
 
         ptr_ch->ptr_cell_struct = (struct cell_struct *)malloc(ptr_ch->box_cap * sizeof(struct cell_struct));
-        ptr_ch->ptr_cell_struct_old = (struct cell_struct *)malloc(ptr_ch->box_cap * sizeof(struct cell_struct));
+        //ptr_ch->ptr_cell_struct_old = (struct cell_struct *)malloc(ptr_ch->box_cap * sizeof(struct cell_struct));
         for (int j = 0; j < ptr_ch->box_cap; j++)
         {
             initialize_cell_struct(&(ptr_ch->ptr_cell_struct[j]));
-            initialize_cell_struct(&(ptr_ch->ptr_cell_struct_old[j]));
+            //initialize_cell_struct(&(ptr_ch->ptr_cell_struct_old[j]));
         }
 
         for (int j = 0; j < ptr_node->ptr_zone_size[zone_idx]; j++)
@@ -548,10 +548,16 @@ static int fill_child_nodes(struct node *ptr_node)
         size = ptr_ch->cell_size / 8 * 18 + 9; // 27 * N - 9 * (N-1)
 
         //** >> Space checking of border grid points array**/
-        ptr_ch->grid_bder_cap = 2 * size;
         ptr_ch->grid_intr_cap = 2 * size;
-        ptr_ch->ptr_grid_bder = (int *)malloc(ptr_ch->grid_bder_cap * sizeof(int));
-        ptr_ch->ptr_grid_intr = (int *)malloc(ptr_ch->grid_intr_cap * sizeof(int));
+        ptr_ch->grid_bder_cap = 2 * size;
+        ptr_ch->ptr_intr_grid_cell_idx_x = (int *)malloc(ptr_ch->grid_intr_cap * sizeof(int));
+        ptr_ch->ptr_intr_grid_cell_idx_y = (int *)malloc(ptr_ch->grid_intr_cap * sizeof(int));
+        ptr_ch->ptr_intr_grid_cell_idx_z = (int *)malloc(ptr_ch->grid_intr_cap * sizeof(int));
+        ptr_ch->ptr_intr_grid_idx = (int *)malloc(ptr_ch->grid_intr_cap * sizeof(int));
+        ptr_ch->ptr_bder_grid_cell_idx_x = (int *)malloc(ptr_ch->grid_bder_cap * sizeof(int));
+        ptr_ch->ptr_bder_grid_cell_idx_y = (int *)malloc(ptr_ch->grid_bder_cap * sizeof(int));
+        ptr_ch->ptr_bder_grid_cell_idx_z = (int *)malloc(ptr_ch->grid_bder_cap * sizeof(int));
+        ptr_ch->ptr_bder_grid_idx = (int *)malloc(ptr_ch->grid_bder_cap * sizeof(int));
 
         //** >> Grid points **/
         grid_box_real_dim_X_ch = ptr_ch->box_real_dim_x + 1;
@@ -768,9 +774,11 @@ static int fill_child_nodes(struct node *ptr_node)
                         //** >> Border grid point**/
                         if (is_bder_grid_point == true)
                         {
-
                             //** >> Adding the grid point to the border array **/
-                            ptr_ch->ptr_grid_bder[ptr_ch->grid_bder_size] = box_grid_idx_ch;
+                            ptr_ch->ptr_bder_grid_cell_idx_x[ptr_ch->grid_bder_size] = ii + ptr_ch->box_ts_x;
+                            ptr_ch->ptr_bder_grid_cell_idx_y[ptr_ch->grid_bder_size] = jj + ptr_ch->box_ts_y;
+                            ptr_ch->ptr_bder_grid_cell_idx_z[ptr_ch->grid_bder_size] = kk + ptr_ch->box_ts_z;
+                            ptr_ch->ptr_bder_grid_idx[ptr_ch->grid_bder_size] = box_grid_idx_ch;
                             ptr_ch->grid_bder_size += 1; // Increasing the number of border grid points in the array
                         }
                         //** Interior grid point **/
@@ -778,7 +786,10 @@ static int fill_child_nodes(struct node *ptr_node)
                         {
 
                             //** >> Adding the grid point to the interior array **/
-                            ptr_ch->ptr_grid_intr[ptr_ch->grid_intr_size] = box_grid_idx_ch;
+                            ptr_ch->ptr_intr_grid_cell_idx_x[ptr_ch->grid_intr_size] = ii + ptr_ch->box_ts_x;
+                            ptr_ch->ptr_intr_grid_cell_idx_y[ptr_ch->grid_intr_size] = jj + ptr_ch->box_ts_y;
+                            ptr_ch->ptr_intr_grid_cell_idx_z[ptr_ch->grid_intr_size] = kk + ptr_ch->box_ts_z;
+                            ptr_ch->ptr_intr_grid_idx[ptr_ch->grid_intr_size] = box_grid_idx_ch;
                             ptr_ch->grid_intr_size += 1; // Increasing the number of interior grid points in the array
                         }
                     }
