@@ -158,17 +158,43 @@ int output_snapshots(const vtype *energies, vtype actualtime, int snapshot)
 
 	vtype _one_over_User_sqrt_BoxSize_ = 1.0L / sqrt(_User_BoxSize_);
 
-	// Returning to user units 
+	vtype *GL_ptcl_x_conversion;
+	vtype *GL_ptcl_y_conversion;
+	vtype *GL_ptcl_z_conversion;
+	vtype *GL_ptcl_vx_conversion;
+	vtype *GL_ptcl_vy_conversion;
+	vtype *GL_ptcl_vz_conversion;
+
+	GL_ptcl_x_conversion = (vtype *)malloc(GL_no_ptcl * sizeof(vtype));
+	GL_ptcl_y_conversion = (vtype *)malloc(GL_no_ptcl * sizeof(vtype));
+	GL_ptcl_z_conversion = (vtype *)malloc(GL_no_ptcl * sizeof(vtype));
+	GL_ptcl_vx_conversion = (vtype *)malloc(GL_no_ptcl * sizeof(vtype));
+	GL_ptcl_vy_conversion = (vtype *)malloc(GL_no_ptcl * sizeof(vtype));
+	GL_ptcl_vz_conversion = (vtype *)malloc(GL_no_ptcl * sizeof(vtype));
+
+	// Returning to user units
 	for (int i = 0; i < GL_no_ptcl; i++)
 	{
-		GL_ptcl_x[i] = (GL_ptcl_x[i] - 0.5) * _User_BoxSize_;
-		GL_ptcl_y[i] = (GL_ptcl_y[i] - 0.5) * _User_BoxSize_;
-		GL_ptcl_z[i] = (GL_ptcl_z[i] - 0.5) * _User_BoxSize_;
+		GL_ptcl_x_conversion[i] = (GL_ptcl_x[i] - 0.5) * _User_BoxSize_;
+		GL_ptcl_y_conversion[i] = (GL_ptcl_y[i] - 0.5) * _User_BoxSize_;
+		GL_ptcl_z_conversion[i] = (GL_ptcl_z[i] - 0.5) * _User_BoxSize_;
 
-		GL_ptcl_vx[i] *= _one_over_User_sqrt_BoxSize_;
-		GL_ptcl_vy[i] *= _one_over_User_sqrt_BoxSize_;
-		GL_ptcl_vz[i] *= _one_over_User_sqrt_BoxSize_;
+		GL_ptcl_vx_conversion[i] = GL_ptcl_vx[i] * _one_over_User_sqrt_BoxSize_;
+		GL_ptcl_vy_conversion[i] = GL_ptcl_vy[i] * _one_over_User_sqrt_BoxSize_;
+		GL_ptcl_vz_conversion[i] = GL_ptcl_vz[i] * _one_over_User_sqrt_BoxSize_;
 	}
+
+	// // Returning to user units 
+	// for (int i = 0; i < GL_no_ptcl; i++)
+	// {
+	// 	GL_ptcl_x[i] = (GL_ptcl_x[i] - 0.5) * _User_BoxSize_;
+	// 	GL_ptcl_y[i] = (GL_ptcl_y[i] - 0.5) * _User_BoxSize_;
+	// 	GL_ptcl_z[i] = (GL_ptcl_z[i] - 0.5) * _User_BoxSize_;
+
+	// 	GL_ptcl_vx[i] *= _one_over_User_sqrt_BoxSize_;
+	// 	GL_ptcl_vy[i] *= _one_over_User_sqrt_BoxSize_;
+	// 	GL_ptcl_vz[i] *= _one_over_User_sqrt_BoxSize_;
+	// }
 
 	sprintf(snapshot_name, "%s%d.bin", file_data_name, snapshot);
 
@@ -182,27 +208,35 @@ int output_snapshots(const vtype *energies, vtype actualtime, int snapshot)
 	}
 
 	fwrite(GL_ptcl_mass, size, 1, file);
-	fwrite(GL_ptcl_x, size, 1, file);
-	fwrite(GL_ptcl_y, size, 1, file);
-	fwrite(GL_ptcl_z, size, 1, file);
-	fwrite(GL_ptcl_vx, size, 1, file);
-	fwrite(GL_ptcl_vy, size, 1, file);
-	fwrite(GL_ptcl_vz, size, 1, file);
+	fwrite(GL_ptcl_x_conversion, size, 1, file);
+	fwrite(GL_ptcl_y_conversion, size, 1, file);
+	fwrite(GL_ptcl_z_conversion, size, 1, file);
+	fwrite(GL_ptcl_vx_conversion, size, 1, file);
+	fwrite(GL_ptcl_vy_conversion, size, 1, file);
+	fwrite(GL_ptcl_vz_conversion, size, 1, file);
 	fwrite(energies, 3 * sizeof(vtype),1,file);
 	fwrite(&time_Megayear, sizeof(vtype), 1, file);
 	fclose(file);
 
 	// Returning to code units
-	for (int i = 0; i < GL_no_ptcl; i++)
-	{
-		GL_ptcl_x[i] = GL_ptcl_x[i] / _User_BoxSize_ + 0.5;
-		GL_ptcl_y[i] = GL_ptcl_y[i] / _User_BoxSize_ + 0.5;
-		GL_ptcl_z[i] = GL_ptcl_z[i] / _User_BoxSize_ + 0.5;
-		
-		GL_ptcl_vx[i] /= _one_over_User_sqrt_BoxSize_;
-		GL_ptcl_vy[i] /= _one_over_User_sqrt_BoxSize_;
-		GL_ptcl_vz[i] /= _one_over_User_sqrt_BoxSize_;
-	}
+	// for (int i = 0; i < GL_no_ptcl; i++)
+	// {
+	//     GL_ptcl_x[i] = GL_ptcl_x[i] / _User_BoxSize_ + 0.5;
+	//     GL_ptcl_y[i] = GL_ptcl_y[i] / _User_BoxSize_ + 0.5;
+	//     GL_ptcl_z[i] = GL_ptcl_z[i] / _User_BoxSize_ + 0.5;
+
+	//     GL_ptcl_vx[i] /= _one_over_User_sqrt_BoxSize_;
+	//     GL_ptcl_vy[i] /= _one_over_User_sqrt_BoxSize_;
+	//     GL_ptcl_vz[i] /= _one_over_User_sqrt_BoxSize_;
+	// }
+
+	// Free memory
+	free(GL_ptcl_x_conversion);
+	free(GL_ptcl_y_conversion);
+	free(GL_ptcl_z_conversion);
+	free(GL_ptcl_vx_conversion);
+	free(GL_ptcl_vy_conversion);
+	free(GL_ptcl_vz_conversion);
 
 	return _SUCCESS_;
 }

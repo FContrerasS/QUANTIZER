@@ -38,30 +38,57 @@ void observables(vtype *energies)
     vtype particle_v_pow_2;                   // Particle velocity to the power of 2
 
     vtype _one_over_User_sqrt_BoxSize_ = 1.0L / sqrt(_User_BoxSize_);
+
+    vtype *GL_ptcl_x_conversion;
+    vtype *GL_ptcl_y_conversion;
+    vtype *GL_ptcl_z_conversion;
+    vtype *GL_ptcl_vx_conversion;
+    vtype *GL_ptcl_vy_conversion;
+    vtype *GL_ptcl_vz_conversion;
+
+    GL_ptcl_x_conversion = (vtype *)malloc(GL_no_ptcl * sizeof(vtype));
+    GL_ptcl_y_conversion = (vtype *)malloc(GL_no_ptcl * sizeof(vtype));
+    GL_ptcl_z_conversion = (vtype *)malloc(GL_no_ptcl * sizeof(vtype));
+    GL_ptcl_vx_conversion = (vtype *)malloc(GL_no_ptcl * sizeof(vtype));
+    GL_ptcl_vy_conversion = (vtype *)malloc(GL_no_ptcl * sizeof(vtype));
+    GL_ptcl_vz_conversion = (vtype *)malloc(GL_no_ptcl * sizeof(vtype));
+
     // Returning to user units
     for (int i = 0; i < GL_no_ptcl; i++)
     {
-        GL_ptcl_x[i] = (GL_ptcl_x[i] - 0.5) * _User_BoxSize_;
-        GL_ptcl_y[i] = (GL_ptcl_y[i] - 0.5) * _User_BoxSize_;
-        GL_ptcl_z[i] = (GL_ptcl_z[i] - 0.5) * _User_BoxSize_;
+        GL_ptcl_x_conversion[i] = (GL_ptcl_x[i] - 0.5) * _User_BoxSize_;
+        GL_ptcl_y_conversion[i] = (GL_ptcl_y[i] - 0.5) * _User_BoxSize_;
+        GL_ptcl_z_conversion[i] = (GL_ptcl_z[i] - 0.5) * _User_BoxSize_;
 
-        GL_ptcl_vx[i] *= _one_over_User_sqrt_BoxSize_;
-        GL_ptcl_vy[i] *= _one_over_User_sqrt_BoxSize_;
-        GL_ptcl_vz[i] *= _one_over_User_sqrt_BoxSize_;
+        GL_ptcl_vx_conversion[i] = GL_ptcl_vx[i] * _one_over_User_sqrt_BoxSize_;
+        GL_ptcl_vy_conversion[i] = GL_ptcl_vy[i] * _one_over_User_sqrt_BoxSize_;
+        GL_ptcl_vz_conversion[i] = GL_ptcl_vz[i] * _one_over_User_sqrt_BoxSize_;
     }
+
+    // // Returning to user units
+    // for (int i = 0; i < GL_no_ptcl; i++)
+    // {
+    // 	GL_ptcl_x[i] = (GL_ptcl_x[i] - 0.5) * _User_BoxSize_;
+    // 	GL_ptcl_y[i] = (GL_ptcl_y[i] - 0.5) * _User_BoxSize_;
+    // 	GL_ptcl_z[i] = (GL_ptcl_z[i] - 0.5) * _User_BoxSize_;
+
+    // 	GL_ptcl_vx[i] *= _one_over_User_sqrt_BoxSize_;
+    // 	GL_ptcl_vy[i] *= _one_over_User_sqrt_BoxSize_;
+    // 	GL_ptcl_vz[i] *= _one_over_User_sqrt_BoxSize_;
+    // }
 
     for (int i = 0; i < GL_no_ptcl; i++)
     {
         // Kinetic Energy
-        particle_v_pow_2 = GL_ptcl_vx[i] * GL_ptcl_vx[i] + GL_ptcl_vy[i] * GL_ptcl_vy[i] + GL_ptcl_vz[i] * GL_ptcl_vz[i];
+        particle_v_pow_2 = GL_ptcl_vx_conversion[i] * GL_ptcl_vx_conversion[i] + GL_ptcl_vy_conversion[i] * GL_ptcl_vy_conversion[i] + GL_ptcl_vz_conversion[i] * GL_ptcl_vz_conversion[i];
         // Adding Kinetic energy of the particle
         energies[0] += GL_ptcl_mass[i] * particle_v_pow_2;
         for (int j = 0; j < i; j++)
         {
             // Potential energy
-            distance_x = GL_ptcl_x[i] - GL_ptcl_x[j];
-            distance_y = GL_ptcl_y[i] - GL_ptcl_y[j];
-            distance_z = GL_ptcl_z[i] - GL_ptcl_z[j];
+            distance_x = GL_ptcl_x_conversion[i] - GL_ptcl_x_conversion[j];
+            distance_y = GL_ptcl_y_conversion[i] - GL_ptcl_y_conversion[j];
+            distance_z = GL_ptcl_z_conversion[i] - GL_ptcl_z_conversion[j];
             distance = distance_x * distance_x + distance_y * distance_y + distance_z * distance_z;
             distance = sqrt(distance);
             // Checking minimal distance accepted
@@ -78,14 +105,22 @@ void observables(vtype *energies)
     energies[2] = energies[0] + energies[1];
 
     // Returning to code units
-    for (int i = 0; i < GL_no_ptcl; i++)
-    {
-        GL_ptcl_x[i] = GL_ptcl_x[i] / _User_BoxSize_ + 0.5;
-        GL_ptcl_y[i] = GL_ptcl_y[i] / _User_BoxSize_ + 0.5;
-        GL_ptcl_z[i] = GL_ptcl_z[i] / _User_BoxSize_ + 0.5;
+    // for (int i = 0; i < GL_no_ptcl; i++)
+    // {
+    //     GL_ptcl_x[i] = GL_ptcl_x[i] / _User_BoxSize_ + 0.5;
+    //     GL_ptcl_y[i] = GL_ptcl_y[i] / _User_BoxSize_ + 0.5;
+    //     GL_ptcl_z[i] = GL_ptcl_z[i] / _User_BoxSize_ + 0.5;
 
-        GL_ptcl_vx[i] /= _one_over_User_sqrt_BoxSize_;
-        GL_ptcl_vy[i] /= _one_over_User_sqrt_BoxSize_;
-        GL_ptcl_vz[i] /= _one_over_User_sqrt_BoxSize_;
-    }
+    //     GL_ptcl_vx[i] /= _one_over_User_sqrt_BoxSize_;
+    //     GL_ptcl_vy[i] /= _one_over_User_sqrt_BoxSize_;
+    //     GL_ptcl_vz[i] /= _one_over_User_sqrt_BoxSize_;
+    // }
+
+    //Free memory
+    free(GL_ptcl_x_conversion);
+    free(GL_ptcl_y_conversion);
+    free(GL_ptcl_z_conversion);
+    free(GL_ptcl_vx_conversion);
+    free(GL_ptcl_vy_conversion);
+    free(GL_ptcl_vz_conversion);
 }

@@ -26,7 +26,7 @@
 
 #include "terminal_print.h"
 
-static void computing_memory()
+static int computing_memory()
 {
 
     int no_pts;
@@ -98,9 +98,11 @@ static void computing_memory()
     }
 
     //Stack of memory pool
+    int cntr_nodes_memory_pool = 0;
     ptr_node = GL_pool_node_start;
     while(ptr_node != NULL)
     {
+        cntr_nodes_memory_pool++;
         TOTAL_MEMORY_STACK += 4 * ptr_node->cell_cap * sizeof(int);
         TOTAL_MEMORY_STACK += ptr_node->box_cap * sizeof(struct cell_struct);
 
@@ -141,13 +143,14 @@ static void computing_memory()
             ptr_node = ptr_node->ptr_pt;
         }
     }
-    
+
+    return cntr_nodes_memory_pool;
 }
 
 void terminal_print()
 {
-
-    computing_memory();
+    int cntr_nodes_memory_pool;
+    cntr_nodes_memory_pool = computing_memory();
 
     double sum = TOTAL_MEMORY_NODES + TOTAL_MEMORY_CELDAS + TOTAL_MEMORY_PARTICLES + TOTAL_MEMORY_CELL_STRUCT + TOTAL_MEMORY_CAJAS + TOTAL_MEMORY_GRID_POINTS + TOTAL_MEMORY_GRID_PROPERTIES + TOTAL_MEMORY_AUX + TOTAL_MEMORY_TENTACLES + TOTAL_MEMORY_STACK;
     int max_memory_secction = 0;
@@ -194,6 +197,7 @@ void terminal_print()
             printf("%s = %f ~ %.1f %%\n", Memory_names[i], Total_memory[i] / 1000000,Total_memory[i] * 100 /sum);
         }
     }
+    printf("Nodes in memory pool = %d\n", cntr_nodes_memory_pool);
 
     printf("\n%sTOTAL = %f MB%s\n\n", KMAG, sum / 1000000, KNRM);
 
