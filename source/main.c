@@ -242,11 +242,7 @@ int main(int argc, char **argv) {
 		//** >> PARTICLE UPDATING B **/
 		// printf("Particle Updating B\n");
 		GL_clock_begin = clock();
-		if (particle_updating_B(dt) == _FAILURE_)
-		{
-			printf("\n\n Error running particle_updating_B() function\n\n");
-			return _FAILURE_;
-		}
+		particle_updating_B(dt);
 		GL_times[12] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 
 		//** >> OUPUT SNAPSHOTS **/

@@ -29,7 +29,6 @@
 
 #include "common.h"
 
-    int
-    particle_updating_B(vtype dt);
+void particle_updating_B(vtype dt);
 
 #endif

@@ -26,24 +26,53 @@
 
 #include "particle_updating_B.h"
 
-static int computing_particles_updating_B(struct node *ptr_node, vtype dt)
+static void computing_particles_updating_B_HEAD_ONLY(struct node *ptr_node, vtype dt)
+{
+
+    for (int i = 0; i < GL_no_ptcl; i++)
+    {
+        //** >> Updating the new velocity of the particle **/
+        GL_ptcl_vx[i] += GL_ptcl_ax[i] * dt / 2;
+        GL_ptcl_vy[i] += GL_ptcl_ay[i] * dt / 2;
+        GL_ptcl_vz[i] += GL_ptcl_az[i] * dt / 2;
+    }
+    
+}
+
+static void computing_particles_updating_B(struct node *ptr_node, vtype dt)
 {
 
     int ptcl_idx; // Particle grid_idx in the node
-    int box_idx;   // Box index of the node cell
+    int box_idx;  // Box index of the node cell
 
-    if(lmin < lmax)
+    if (ptr_node->chn_size == 0)
     {
-        if (ptr_node->chn_size == 0)
+        for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
         {
-            for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
-            {
-                box_idx = ptr_node->ptr_box_idx[cell_idx];
+            box_idx = ptr_node->ptr_box_idx[cell_idx];
 
+            for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
+            {
+                ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
+
+                //** >> Updating the new velocity of the particle **/
+                GL_ptcl_vx[ptcl_idx] += GL_ptcl_ax[ptcl_idx] * dt / 2;
+                GL_ptcl_vy[ptcl_idx] += GL_ptcl_ay[ptcl_idx] * dt / 2;
+                GL_ptcl_vz[ptcl_idx] += GL_ptcl_az[ptcl_idx] * dt / 2;
+            }
+        }
+    }
+    else
+    {
+        for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
+        {
+            box_idx = ptr_node->ptr_box_idx[cell_idx];
+
+            if (ptr_node->ptr_box[box_idx] < 0)
+            {
                 for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
                 {
                     ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
-
                     //** >> Updating the new velocity of the particle **/
                     GL_ptcl_vx[ptcl_idx] += GL_ptcl_ax[ptcl_idx] * dt / 2;
                     GL_ptcl_vy[ptcl_idx] += GL_ptcl_ay[ptcl_idx] * dt / 2;
@@ -51,42 +80,11 @@ static int computing_particles_updating_B(struct node *ptr_node, vtype dt)
                 }
             }
         }
-        else
-        {
-            for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
-            {
-                box_idx = ptr_node->ptr_box_idx[cell_idx];
-                
-                if(ptr_node->ptr_box[box_idx] < 0)
-                {
-                    for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
-                    {
-                        ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
-                        //** >> Updating the new velocity of the particle **/
-                        GL_ptcl_vx[ptcl_idx] += GL_ptcl_ax[ptcl_idx] * dt / 2;
-                        GL_ptcl_vy[ptcl_idx] += GL_ptcl_ay[ptcl_idx] * dt / 2;
-                        GL_ptcl_vz[ptcl_idx] += GL_ptcl_az[ptcl_idx] * dt / 2;
-                    }
-                }   
-            }
-        }
     }
-    else // Case only 1 level of refinement, i.e. lmin = lmax
-    {
-        for (int i = 0; i < GL_no_ptcl; i++)
-        {
-            //** >> Updating the new velocity of the particle **/
-            GL_ptcl_vx[i] += GL_ptcl_ax[i] * dt / 2;
-            GL_ptcl_vy[i] += GL_ptcl_ay[i] * dt / 2;
-            GL_ptcl_vz[i] += GL_ptcl_az[i] * dt / 2;
-        }
-    }
-
-    return _SUCCESS_;
 }
 
 
-int particle_updating_B(vtype dt)
+void particle_updating_B(vtype dt)
 {
 
     // Velocity are updated by a "Corrector step"
@@ -95,20 +93,22 @@ int particle_updating_B(vtype dt)
 
     // number of parents of the level = GL_tentacles_size[lv]
 
-    for (int lv = GL_tentacles_level_max; lv > -1; lv--)
+    if(lmin < lmax)
     {
-        //** >> For cycle over parent nodes **/
-        for (int i = 0; i < GL_tentacles_size[lv]; i++)
-        {
-            //ptr_node = GL_tentacles[lv][i];
 
-            if (computing_particles_updating_B(GL_tentacles[lv][i], dt) == _FAILURE_)
+        for (int lv = GL_tentacles_level_max; lv > -1; lv--)
+        {
+            //** >> For cycle over parent nodes **/
+            for (int i = 0; i < GL_tentacles_size[lv]; i++)
             {
-                printf("Error at function computing_particles_updating_A()\n");
-                return _FAILURE_;
+                // ptr_node = GL_tentacles[lv][i];
+                computing_particles_updating_B(GL_tentacles[lv][i], dt);
             }
         }
     }
+    else
+    {
+        computing_particles_updating_B_HEAD_ONLY(GL_tentacles[0][0], dt);
+    }
 
-    return _SUCCESS_;
 }

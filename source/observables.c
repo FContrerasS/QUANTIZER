@@ -123,4 +123,6 @@ void observables(vtype *energies)
     free(GL_ptcl_vx_conversion);
     free(GL_ptcl_vy_conversion);
     free(GL_ptcl_vz_conversion);
+
+
 }

@@ -2348,13 +2348,6 @@ static int update_child_grid_points(struct node *ptr_node)
                         //** >> Border grid point**/
                         if (is_bder_grid_point == true)
                         {
-                            // //** >> Space checking of border grid points array**/
-                            // if (space_check(&(ptr_ch->grid_bder_cap), ptr_ch->grid_bder_size + 1, 2.0f, "p1i1", &(ptr_ch->ptr_grid_bder)) == _FAILURE_)
-                            // {
-                            //     printf("Error, in space_check function\n");
-                            //     return _FAILURE_;
-                            // }
-
                             //** >> Adding the grid point to the border array **/
                             ptr_ch->ptr_bder_grid_cell_idx_x[ptr_ch->grid_bder_size] = ii + ptr_ch->box_ts_x;
                             ptr_ch->ptr_bder_grid_cell_idx_y[ptr_ch->grid_bder_size] = jj + ptr_ch->box_ts_y;
@@ -2365,13 +2358,6 @@ static int update_child_grid_points(struct node *ptr_node)
                         //** Interior grid point **/
                         else
                         {
-                            // //** >> Space checking of interior grid points array**/
-                            // if (space_check(&(ptr_ch->grid_intr_cap), ptr_ch->grid_intr_size + 1, 2.0f, "p1i1", &(ptr_ch->ptr_grid_intr)) == _FAILURE_)
-                            // {
-                            //     printf("Error, in space_check function\n");
-                            //     return _FAILURE_;
-                            // }
-
                             //** >> Adding the grid point to the interior array **/
                             ptr_ch->ptr_intr_grid_cell_idx_x[ptr_ch->grid_intr_size] = ii + ptr_ch->box_ts_x;
                             ptr_ch->ptr_intr_grid_cell_idx_y[ptr_ch->grid_intr_size] = jj + ptr_ch->box_ts_y;
