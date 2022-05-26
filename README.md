@@ -5,9 +5,9 @@ A new code for N-body/Hydrodynamics simulations in astrophysics
 
 Author: Felipe Contreras (felipe.contrerass@postgrado.uv.cl).
 
-Date: 2022-04-13.
+Date: 2022-05-26.
 
-Code version: beta-v0.0.3.
+Code version: beta-v1.0.0
 
 #############################################################################################
 
