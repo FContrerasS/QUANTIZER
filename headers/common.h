@@ -1,7 +1,7 @@
 /*
  * common.h 
  *
- * Header file with the most commen parameters declared
+ * Header file with the most common parameters declared
  *
  * Felipe Contreras
  * felipe.contrerass@postgrado.uv.cl
@@ -46,24 +46,26 @@ typedef float vtype;
 typedef double vtype;
 #define myabs fabs
 #elif _VTYPE_ == 3
-typedef long float vtype;
-#define myabs fabsfl
+typedef long double vtype;
+#define myabs fabsl
 #else
 typedef double vtype;
 #define myabs fabs
 #endif
 
-
-
-
-//** Tree structure **/
-#include "initialize_node.h"
-
 #define _SUCCESS_ 0 /* integer returned after successful call of a function */
 #define _FAILURE_ 1 /* integer returnd after failure in a function */
 
-#define _TRUE_ 1 /* integer associated to true statement */
+#define _TRUE_ 1  /* integer associated to true statement */
 #define _FALSE_ 0 /* integer associated to false statement */
+
+//** Tree structure **/
+#include "initialize_cell_struct.h"
+#include "initialize_node.h"
+#include "ptcl_idx_to_box_idx.h"
+
+
+
 
 //** >> Terminal Colors **/
 #define KNRM "\x1B[0m" // Normal
@@ -75,10 +77,10 @@ typedef double vtype;
 #define KCYN "\x1B[36m" // Cyan 
 #define KWHT "\x1B[37m" // White
 
-//Abbreviation
+    // Abbreviation
 
-//Constants
-extern vtype _User_BoxSize_; //kpc
+    // Constants
+    extern vtype _User_BoxSize_; // kpc
 extern vtype _PI_;
 extern vtype _Onesixth_;
 extern vtype _kpc_to_m_;
@@ -143,11 +145,14 @@ extern bool *GL_ptcl_updating_flag;
 extern struct node *GL_ptr_tree;
 
 //** >> Tentacles pointer **/
-extern struct node ***GL_tentacles_old; // Array of arrays of pointers. Organized first by levels, then by pointers
-extern struct node ***GL_tentacles_new;
+extern struct node ***GL_tentacles; // Array of arrays of pointers. Organized first by levels, then by pointers
 extern int *GL_tentacles_cap;   // Capacity of pointers in each level
 extern int *GL_tentacles_size; // Number of pointers in each level
 extern int GL_tentacles_level_max; // Maximum level of refinement of the tentacles
+
+//** >> Pool of nodes **/
+extern struct node *GL_pool_node_start;
+extern struct node *GL_pool_node_end;
 
 //** >> Outputs **/
 extern char file_data_name[1000];
@@ -172,10 +177,14 @@ extern vtype _Min_Particle_Distance_For_Energy_Computation_;
 // MEMORY
 extern double TOTAL_MEMORY_NODES;
 extern double TOTAL_MEMORY_CELDAS;
-extern double TOTAL_MEMORY_PARTICULAS;
+extern double TOTAL_MEMORY_PARTICLES;
+extern double TOTAL_MEMORY_CELL_STRUCT;
 extern double TOTAL_MEMORY_CAJAS;
+extern double TOTAL_MEMORY_GRID_POINTS;
+extern double TOTAL_MEMORY_GRID_PROPERTIES;
 extern double TOTAL_MEMORY_AUX;
 extern double TOTAL_MEMORY_TENTACLES;
 extern double TOTAL_MEMORY_OTROS;
+extern double TOTAL_MEMORY_STACK;
 
 #endif

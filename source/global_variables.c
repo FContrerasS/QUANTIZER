@@ -27,7 +27,7 @@
 #include "global_variables.h"
 
     // Constants
-    vtype _User_BoxSize_; //** >> User box size **/
+vtype _User_BoxSize_; //** >> User box size **/
 vtype _PI_;
 vtype _Onesixth_;
 vtype _kpc_to_m_;
@@ -102,11 +102,14 @@ bool *GL_ptcl_updating_flag;  // Particle updating state
 struct node *GL_ptr_tree; // Pointer to the tree head or  coarsest level
 
 //** >> Tentacles struct pointer **/
-struct node ***GL_tentacles_old;
-struct node ***GL_tentacles_new;
+struct node ***GL_tentacles;
 int *GL_tentacles_cap;      // Capacity of pointers in each level
 int *GL_tentacles_size;     // Number of pointers in each level
 int GL_tentacles_level_max; // Maximum level of refinement of the tentacles
+
+//** >> Initializing Pool node list **/
+struct node *GL_pool_node_start = NULL;
+struct node *GL_pool_node_end = NULL;
 
 //** >> Border of the simulation box **/
 int bder_os_sim;        // Border outside the simulation box
@@ -128,11 +131,14 @@ double *GL_times;
 //** >> MEMORY **/
 double TOTAL_MEMORY_NODES;
 double TOTAL_MEMORY_CELDAS;
-double TOTAL_MEMORY_PARTICULAS;
+double TOTAL_MEMORY_PARTICLES;
+double TOTAL_MEMORY_CELL_STRUCT;
 double TOTAL_MEMORY_CAJAS;
+double TOTAL_MEMORY_GRID_POINTS;
+double TOTAL_MEMORY_GRID_PROPERTIES;
 double TOTAL_MEMORY_AUX;
 double TOTAL_MEMORY_TENTACLES;
-double TOTAL_MEMORY_OTROS;
+double TOTAL_MEMORY_STACK;
 
 static void init_global_constants()
 {
@@ -151,17 +157,17 @@ static void init_global_user_params()
 {
     BoxSize = 1.0L;
     lmin = 5;     //Coarset level of refinement
-    lmax = lmin + 2;  //Finest level of refinement
+    lmax = lmin + 5;  //Finest level of refinement
     no_lmin_cell = 1 << lmin; // Number of cells in the lmin level of refinement
     no_lmin_cell_pow2 = no_lmin_cell * no_lmin_cell;
     no_lmin_cell_pow3 = no_lmin_cell * no_lmin_cell * no_lmin_cell;
     no_grid = no_lmin_cell + 1;
     GL_no_ptcl = 10000;
-    Maxdt = 3 * _Mgyear_;
+    Maxdt = 3.0 * _Mgyear_;
     meanmass = 100;
     total_mass = GL_no_ptcl * meanmass;
-    fr_output = 5;
-    MaxIterations = 100000;
+    fr_output = 1000000;
+    MaxIterations = 1000000;
     no_grid_pow2 = no_grid * no_grid;
     no_grid_pow3 = no_grid * no_grid * no_grid;
 
@@ -169,8 +175,8 @@ static void init_global_user_params()
 
 static void init_global_ref_crit()
 {
-    ref_criterion_mass = meanmass * 7;
-    n_exp = 1;
+    ref_criterion_mass = meanmass * 2;
+    n_exp = 1;  //n_exp = 0 is corrupted because particles can move between more than 1 level of refinement
     _CFL_ = 0.5; // CFL criteria 0.5
     _MAX_dt_ = 6.7e-6;
 }
@@ -236,7 +242,7 @@ static void init_tree_head()
 
 static void init_global_border_sim_box()
 {
-    bder_os_sim = 1 > n_exp-1 ? 1 : n_exp-1; // Border outside the simulation box
+    bder_os_sim = 1 > (n_exp-1) ? 1 : (n_exp-1); // Border outside the simulation box
     box_side_lmin = no_lmin_cell + 2 * bder_os_sim; // Side of the coarsest box
     box_side_lmin_pow2 = box_side_lmin * box_side_lmin;
     box_side_lmin_pow3 = box_side_lmin * box_side_lmin * box_side_lmin;
@@ -255,18 +261,21 @@ static void init_global_folder_params()
 
 static void init_global_timer()
 {
-    GL_times = (double *)calloc(50 , sizeof(double));
+    GL_times = (double *)calloc(100 , sizeof(double));
 }
 
 static void init_global_memory()
 {
     TOTAL_MEMORY_NODES = 0;
     TOTAL_MEMORY_CELDAS = 0;
-    TOTAL_MEMORY_PARTICULAS = 0;
+    TOTAL_MEMORY_PARTICLES = 0;
+    TOTAL_MEMORY_CELL_STRUCT = 0;
     TOTAL_MEMORY_CAJAS = 0;
+    TOTAL_MEMORY_GRID_POINTS = 0;
+    TOTAL_MEMORY_GRID_PROPERTIES = 0;
     TOTAL_MEMORY_AUX = 0;
     TOTAL_MEMORY_TENTACLES = 0;
-    TOTAL_MEMORY_OTROS = 0;
+    TOTAL_MEMORY_STACK = 0;
 }
 
 void global_variables()

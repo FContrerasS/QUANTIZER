@@ -313,7 +313,7 @@ static int compute_potential_head_node(struct node *ptr_node_pt)
 {
 	int lv;
 
-	lv = ptr_node_pt->l;
+	lv = ptr_node_pt->lv;
 
 	if(lv == lmin)
 	{
@@ -385,9 +385,7 @@ static int compute_potential_head_node(struct node *ptr_node_pt)
 int potential_head_node()
 {
 
-	struct node *ptr_node_pt;
-
-	ptr_node_pt = GL_ptr_tree;
+	struct node *ptr_node_pt = GL_ptr_tree;
 
 	//** >> Coarsest potential **/
 	if(compute_potential_head_node(ptr_node_pt) == _FAILURE_)

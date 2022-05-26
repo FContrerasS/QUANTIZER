@@ -28,6 +28,7 @@
 #define __INICIALIZATION__
 
 #include "common.h"
+#include "space_check.h"
 #include "initial_potential_and_acceleration_head.h"
 
     int

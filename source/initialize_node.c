@@ -30,52 +30,66 @@ void initialize_node(struct node *ptr_node)
 {
 	//** >> Global node properties **/
 	ptr_node->ID = -1; // Node ID
-	ptr_node->l = -1;  // Level of refinement
-
-	//** >> Cells in the node **/
-	ptr_node->ptr_cell_idx_x = NULL; // X index of the cells in the node
-	ptr_node->ptr_cell_idx_y = NULL; // Y index of the cells in the node
-	ptr_node->ptr_cell_idx_z = NULL; // Z index of the cells in the node
-	ptr_node->cell_cap = 0;			 // Maximum capacity of the array of cells in the node
-	ptr_node->cell_size = 0;		 // Number of existing cells in the node
-
-	//** >> Particles in the node **/
-	ptr_node->ptr_ptcl = NULL;	   // The size is completely related with the level of refinement, the total number of particles, the number of cells in the node, and the refinement criteria
-	ptr_node->ptcl_cap = 0;		   // Maximum cap of the particles array in the node
-	ptr_node->ptcl_size = 0;	   // Number of existing particles in the node
+	ptr_node->lv = -1;  // Level of refinement
 
 	//** >> Boxes **/
-	ptr_node->ptr_box_old = NULL;  // Old box contaning the already cells status of the minimal box cells and more
-	ptr_node->ptr_box_new = NULL;  // New box contaning the already cells status of the minimal box cells and more
+	ptr_node->ptr_box = NULL;	   // Box contaning the cells status of the minimal box cells and more
+	ptr_node->ptr_box_old = NULL;  // Auxiliary box contaning used to adatp the box to a new time-step
+	ptr_node->box_cap = 0;	//Maximum capacity of the box
 	ptr_node->box_real_dim_x = 0;  // Real dimension X of the box
 	ptr_node->box_real_dim_y = 0;  // Real dimension Y of the box
 	ptr_node->box_real_dim_z = 0;  // Real dimension Z of the box
+	ptr_node->box_real_dim_x_old = 0;  // Auxiliary real dimension X of the box
+	ptr_node->box_real_dim_y_old = 0;  // Auxiliary real dimension Y of the box
+	//ptr_node->box_real_dim_z_old = 0;  // Auxiliary real dimension Z of the box
 	ptr_node->box_dim_x = 0;	   // Dimension X of the box (new and old)
 	ptr_node->box_dim_y = 0;	   // Dimension Y of the box (new and old)
 	ptr_node->box_dim_z = 0;	   // Dimension Z of the box (new and old)
 	ptr_node->box_ts_x = 0;		   // Index translation from real local index cell to box index at dimension X
 	ptr_node->box_ts_y = 0;		   // Index translation from real local index cell to box index at dimension Y
 	ptr_node->box_ts_z = 0;		   // Index translation from real local index cell to box index at dimension Z
+	ptr_node->box_ts_x_old = 0;		   // Auxiliary index translation from real local index cell to box index at dimension X
+	ptr_node->box_ts_y_old = 0;		   // Auxiliary index translation from real local index cell to box index at dimension Y
+	ptr_node->box_ts_z_old = 0;		   // Auxiliary index translation from real local index cell to box index at dimension Z
 	ptr_node->box_min_x = INT_MAX; // Already minimal box value index in the real local space at the dimension X
 	ptr_node->box_min_y = INT_MAX; // Already minimal box value index in the real local space at the dimension Y
 	ptr_node->box_min_z = INT_MAX; // Already minimal box value index in the real local space at the dimension Z
 	ptr_node->box_max_x = 0;	   // Already maximum box value index in the real local space at the dimension X
 	ptr_node->box_max_y = 0;	   // Already maximum box value index in the real local space at the dimension Y
 	ptr_node->box_max_z = 0;	   // Already maximum box value index in the real local space at the dimension Z
+	ptr_node->box_check_fit = true; // Check if the new box will fit in the old one
 
-    //** >> Grid points **/
-    ptr_node->ptr_grid_intr = NULL;  // Indexes of the interior grid points of the block
-    ptr_node->ptr_grid_bder = NULL;    // Indexes of the border grid points of the block
+	//** >> Cells in the node **/
+	ptr_node->ptr_cell_idx_x = NULL; // X index of the cells in the node
+	ptr_node->ptr_cell_idx_y = NULL; // Y index of the cells in the node
+	ptr_node->ptr_cell_idx_z = NULL; // Z index of the cells in the node
+	ptr_node->ptr_box_idx = NULL;
+	ptr_node->cell_cap = 0;	 // Maximum capacity of the array of cells in the node
+	ptr_node->cell_size = 0; // Number of existing cells in the node
+
+	//** >> Struct of cells (Particles and cell mass)
+	ptr_node->ptr_cell_struct = NULL;
+	ptr_node->ptr_cell_struct_old = NULL;
+	ptr_node->cell_struct_old_cap = 0;
+
+	//** >> Total mass in the node **/
+	ptr_node->local_mass = 0; 
+
+	//** >> Grid points **/
+	ptr_node->ptr_intr_grid_cell_idx_x = NULL; // X index of the interior grid point
+	ptr_node->ptr_intr_grid_cell_idx_y = NULL; // Y index position of the cells in the node at level l
+	ptr_node->ptr_intr_grid_cell_idx_z = NULL; // Z index position of the cells in the node at level l
+	ptr_node->ptr_intr_grid_idx = NULL;	  // Indexes of the interior grid points of the block
+
+	ptr_node->ptr_bder_grid_cell_idx_x = NULL;		 // X index of the interior grid point
+	ptr_node->ptr_bder_grid_cell_idx_y = NULL;		 // Y index position of the cells in the node at level l
+	ptr_node->ptr_bder_grid_cell_idx_z = NULL;		 // Z index position of the cells in the node at level l
+	ptr_node->ptr_bder_grid_idx = NULL;
+	// Indexes of the interior grid points of the block
     ptr_node->grid_intr_cap = 0;   // Maximum cap of the grid interior points array of the block
     ptr_node->grid_bder_cap = 0; // Maximum cap of the grid border points array of the block
     ptr_node->grid_intr_size = 0; // Number of existing grid interior points in the block
     ptr_node->grid_bder_size = 0; // Number of existing grid border points in the block
-
-	// Notes that the MIN and MAX values can change between diffents time-steps, but the Translation indexs always keep equal exept if there is a reallocation of the boxes
-
-	//** >> Refinement Criterion **/
-	ptr_node->ptr_box_mass = NULL; // Register of the mass in the cell to refinement criteria
-	ptr_node->local_mass = 0;	   // Total mass in the node
 
 	//** >> Potential, acceleration and density of the grid **/
 	ptr_node->ptr_pot = NULL; // Array with the potential of the node. It is of the same size than the real box grid points
@@ -83,6 +97,7 @@ void initialize_node(struct node *ptr_node)
 	ptr_node->ptr_ay = NULL;	  // Same as potential but with the acceleration
 	ptr_node->ptr_az = NULL;	  // Same as potential but with the acceleration
 	ptr_node->ptr_d = NULL;	  // Array with the density grid of the node.
+	ptr_node->grid_properties_cap = 0; // Maximum cap of the grid properties
 
 	//** >> Tree structure **/
 	ptr_node->pptr_chn = NULL; // Pointer to children pointers
@@ -102,4 +117,11 @@ void initialize_node(struct node *ptr_node)
 
 	ptr_node->ptr_aux_idx = NULL; // Auxiliary array, is used in the initial tree structure to save the index of the boxes elements and other
 	ptr_node->aux_idx_cap = 0;
+
+	//** >> Links in Tree adaptation **/
+	ptr_node->ptr_links_old_ord_old = NULL;
+	ptr_node->ptr_links_new_ord_old = NULL;
+	ptr_node->ptr_links_old_ord_new = NULL;
+	ptr_node->ptr_links_new_ord_new = NULL;
+	ptr_node->links_cap = 0;
 }

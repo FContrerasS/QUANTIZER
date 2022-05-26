@@ -26,81 +26,89 @@
 
 #include "particle_updating_B.h"
 
-static int computing_particles_updating_B(struct node *ptr_node, vtype dt, bool status)
+static void computing_particles_updating_B_HEAD_ONLY(struct node *ptr_node, vtype dt)
 {
 
-    int no_ptcl; // Total number of particles in the node
+    for (int i = 0; i < GL_no_ptcl; i++)
+    {
+        //** >> Updating the new velocity of the particle **/
+        GL_ptcl_vx[i] += GL_ptcl_ax[i] * dt / 2;
+        GL_ptcl_vy[i] += GL_ptcl_ay[i] * dt / 2;
+        GL_ptcl_vz[i] += GL_ptcl_az[i] * dt / 2;
+    }
+    
+}
+
+static void computing_particles_updating_B(struct node *ptr_node, vtype dt)
+{
 
     int ptcl_idx; // Particle grid_idx in the node
+    int box_idx;  // Box index of the node cell
 
-    no_ptcl = ptr_node->ptcl_size;
-
-    if (ptr_node->chn_size == 0)    
+    if (ptr_node->chn_size == 0)
     {
-        for (int i = 0; i < no_ptcl; i++)
+        for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
         {
-            ptcl_idx = ptr_node->ptr_ptcl[i];
-            //** >> Updating the new velocity of the particle **/
-            GL_ptcl_vx[ptcl_idx] += GL_ptcl_ax[ptcl_idx] * dt / 2;
-            GL_ptcl_vy[ptcl_idx] += GL_ptcl_ay[ptcl_idx] * dt / 2;
-            GL_ptcl_vz[ptcl_idx] += GL_ptcl_az[ptcl_idx] * dt / 2;
+            box_idx = ptr_node->ptr_box_idx[cell_idx];
 
-            //** >> The status of the particle is changed from not updated to updated **/
-            GL_ptcl_updating_flag[ptcl_idx] = status;
-            
-        }
-    }
-    else
-    {
-        for (int i = 0; i < no_ptcl; i++)
-        {
-            ptcl_idx = ptr_node->ptr_ptcl[i];
-            //** >> Particle has not been updated yet
-            if (GL_ptcl_updating_flag[ptcl_idx] != status)
+            for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
             {
+                ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
+
                 //** >> Updating the new velocity of the particle **/
                 GL_ptcl_vx[ptcl_idx] += GL_ptcl_ax[ptcl_idx] * dt / 2;
                 GL_ptcl_vy[ptcl_idx] += GL_ptcl_ay[ptcl_idx] * dt / 2;
                 GL_ptcl_vz[ptcl_idx] += GL_ptcl_az[ptcl_idx] * dt / 2;
-
-                //** >> The status of the particle is changed from not updated to updated **/
-                GL_ptcl_updating_flag[ptcl_idx] = status;
             }
         }
     }
+    else
+    {
+        for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
+        {
+            box_idx = ptr_node->ptr_box_idx[cell_idx];
 
-    return _SUCCESS_;
+            if (ptr_node->ptr_box[box_idx] < 0)
+            {
+                for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
+                {
+                    ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
+                    //** >> Updating the new velocity of the particle **/
+                    GL_ptcl_vx[ptcl_idx] += GL_ptcl_ax[ptcl_idx] * dt / 2;
+                    GL_ptcl_vy[ptcl_idx] += GL_ptcl_ay[ptcl_idx] * dt / 2;
+                    GL_ptcl_vz[ptcl_idx] += GL_ptcl_az[ptcl_idx] * dt / 2;
+                }
+            }
+        }
+    }
 }
 
 
-int particle_updating_B(vtype dt)
+void particle_updating_B(vtype dt)
 {
 
     // Velocity are updated by a "Corrector step"
 
     //** >> Particle updating A **/
 
-    struct node *ptr_node;
-    bool status;    // Boolean value for the updating particles
+    // number of parents of the level = GL_tentacles_size[lv]
 
-    int no_pts; // Number of parents in the cycle
-    status = !GL_ptcl_updating_flag[0];
-
-    for (int lv = GL_tentacles_level_max; lv > -1; lv--)
+    if(lmin < lmax)
     {
-        no_pts = GL_tentacles_size[lv];
-        //** >> For cycle over parent nodes **/
-        for (int i = 0; i < no_pts; i++)
-        {
-            ptr_node = GL_tentacles_old[lv][i];
 
-            if (computing_particles_updating_B(ptr_node, dt, status) == _FAILURE_)
+        for (int lv = GL_tentacles_level_max; lv > -1; lv--)
+        {
+            //** >> For cycle over parent nodes **/
+            for (int i = 0; i < GL_tentacles_size[lv]; i++)
             {
-                printf("Error at function computing_particles_updating_A()\n");
-                return _FAILURE_;
+                // ptr_node = GL_tentacles[lv][i];
+                computing_particles_updating_B(GL_tentacles[lv][i], dt);
             }
         }
     }
+    else
+    {
+        computing_particles_updating_B_HEAD_ONLY(GL_tentacles[0][0], dt);
+    }
 
-    return _SUCCESS_;
 }

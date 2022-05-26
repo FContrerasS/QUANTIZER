@@ -29,56 +29,70 @@
 
 #include "common.h"
 
-    struct node
+struct node
 {
     //** >> Global node properties **/
     int ID; // Node ID
-    int l;  // Level of refinement
-
-    //** >> Cells in the node **/
-    int *ptr_cell_idx_x; // X index position of the cells in the node at level l
-    int *ptr_cell_idx_y; // Y index position of the cells in the node at level l
-    int *ptr_cell_idx_z; // Z index position of the cells in the node at level l
-    int cell_cap;        // Maximum capacity of the array of cells in the node
-    int cell_size;       // Number of existing cells in the node
-
-    //** >> Particles in the node **/
-    int *ptr_ptcl; // The size is completely related with the level of refinement, the total number of particles, the number of cells in the node, and the refinement criteria
-    int ptcl_cap;  // Maximum cap of the particles array in the node
-    int ptcl_size; // Number of existing particles in the node
+    int lv;  // Level of refinement
 
     //** >> Boxes **/
-    int *ptr_box_old;   // Old box contaning the already cells status of the minimal box cells and more
-    int *ptr_box_new;   // New box contaning the already cells status of the minimal box cells and more
+    int *ptr_box;   // Box contaning the cells status of the minimal box cells and more
+    int *ptr_box_old;   // Auxiliary box contaning used to adatp the box to a new time-step
+    int box_cap;        // Maximum capacity of the box
     int box_real_dim_x; // Real dimension X of the box
     int box_real_dim_y; // Real dimension Y of the box
     int box_real_dim_z; // Real dimension Z of the box
+    int box_real_dim_x_old; // Auxiliary real dimension X of the box
+    int box_real_dim_y_old; // Auxiliary real dimension X of the box
+    //int box_real_dim_z_old; // Auxiliary real dimension X of the box
     int box_dim_x;      // Dimension X of the box (new and old)
     int box_dim_y;      // Dimension Y of the box (new and old)
     int box_dim_z;      // Dimension Z of the box (new and old)
     int box_ts_x;       // Index translation from real local index cell to box index at dimension X
     int box_ts_y;       // Index translation from real local index cell to box index at dimension Y
     int box_ts_z;       // Index translation from real local index cell to box index at dimension Z
+    int box_ts_x_old;       // Auxiliary index translation from real local index cell to box index at dimension X
+    int box_ts_y_old;       // Auxiliary ndex translation from real local index cell to box index at dimension Y
+    int box_ts_z_old;       // Auxiliary ndex translation from real local index cell to box index at dimension Z
     int box_min_x;      // Already minimal box value index in the real local space at the dimension X
     int box_min_y;      // Already minimal box value index in the real local space at the dimension Y
     int box_min_z;      // Already minimal box value index in the real local space at the dimension Z
     int box_max_x;      // Already maximum box value index in the real local space at the dimension X
     int box_max_y;      // Already maximum box value index in the real local space at the dimension Y
     int box_max_z;      // Already maximum box value index in the real local space at the dimension Z
+    bool box_check_fit; // Check if the new box will fit in the old one
+
+    //** >> Cells in the node **/
+    int *ptr_cell_idx_x; // X index position of the cells in the node at level l
+    int *ptr_cell_idx_y; // Y index position of the cells in the node at level l
+    int *ptr_cell_idx_z; // Z index position of the cells in the node at level l
+    int *ptr_box_idx;
+    int cell_cap;  // Maximum capacity of the array of cells in the node
+    int cell_size; // Number of existing cells in the node
+
+    //** >> Struct of cells (Particles and cell mass)
+    struct cell_struct *ptr_cell_struct;
+    struct cell_struct *ptr_cell_struct_old;
+    int cell_struct_old_cap;
+
+    //** >> Total mass in the node
+    vtype local_mass;        // Total mass in the node
 
     //** >> Grid points **/
-    int *ptr_grid_intr; // Indexes of the interior grid points of the block
-    int *ptr_grid_bder; // Indexes of the border grid points of the block
+    int *ptr_intr_grid_cell_idx_x; // X index of the interior grid point 
+    int *ptr_intr_grid_cell_idx_y; // Y index position of the cells in the node at level l
+    int *ptr_intr_grid_cell_idx_z; // Z index position of the cells in the node at level l
+    int *ptr_intr_grid_idx;   // Indexes of the interior grid points of the block
+
+    int *ptr_bder_grid_cell_idx_x; // X index of the interior grid point
+    int *ptr_bder_grid_cell_idx_y; // Y index position of the cells in the node at level l
+    int *ptr_bder_grid_cell_idx_z; // Z index position of the cells in the node at level l
+    int *ptr_bder_grid_idx;       // Indexes of the interior grid points of the block
+
     int grid_intr_cap;  // Maximum cap of the grid interior points array of the block
     int grid_bder_cap;  // Maximum cap of the grid border points array of the block
     int grid_intr_size; // Number of existing grid interior points in the block
     int grid_bder_size; // Number of existing grid border points in the block
-
-    // Notes that the MIN and MAX values can change between diffents time-steps, but the Translation indexs always keep equal exept if there is a reallocation of the boxes
-
-    //** >> Refinement Criterion **/
-    vtype *ptr_box_mass; // Register of the mass in the cell to refinement criteria
-    vtype local_mass;    // Total mass in the node
 
     //* Potential, Acceleration and density of the grid **/
     vtype *ptr_pot; // Array with the potential of the node. It is of the same size than the real box grid points
@@ -86,6 +100,7 @@
     vtype *ptr_ay;  // Same as potential but with the acceleration
     vtype *ptr_az;  // Same as potential but with the acceleration
     vtype *ptr_d;   // Array with the density grid of the node.
+    int grid_properties_cap;   // Maximum cap of the grid properties
 
     //** >> Tree structure **/
     struct node **pptr_chn; // Pointer to children pointers
@@ -105,7 +120,16 @@
 
     int *ptr_aux_idx; // Auxiliary array, is used in the initial tree structure to save the index of the boxes elements and other
     int aux_idx_cap;
+
+    //** >> Links in Tree adaptation **/
+    int *ptr_links_old_ord_old;
+    int *ptr_links_new_ord_old;
+    int *ptr_links_old_ord_new;
+    int *ptr_links_new_ord_new;
+    int links_cap;
 };
+
+
 
 void initialize_node(struct node *ptr_head);
 

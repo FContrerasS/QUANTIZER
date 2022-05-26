@@ -16,3 +16,6 @@ Future_implementations.txt
 plummer_testing.py
 *.c~
 *.exe
+*.log
+*.linux
+

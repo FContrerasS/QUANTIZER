@@ -1,7 +1,7 @@
 /*
- * main.h
+ * add_node_to_stack.c
  *
- * Header file of the main.c source file
+ * Add the node to the stack of memory pool
  *
  * Felipe Contreras
  * felipe.contrerass@postgrado.uv.cl
@@ -24,38 +24,18 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __MAIN__
-#define __MAIN__
+#include "add_node_to_stack.h"
 
-//** >> Code Modules **/
-#include "common.h"
-#include "global_variables.h"
-#include "input.h"
-#include "initialization.h"
-#include "tree_construction.h"
-#include "grid_density.h"
-#include "potential.h"
-#include "potential_head_node.h"
-#include "poisson_error.h"
-#include "grid_acceleration.h"
-#include "particle_acceleration.h"
-#include "timestep_1.h"
-#include "timestep_2.h"
-#include "particle_updating_A.h"
-#include "particle_updating_B.h"
-#include "observables.h"
-#include "reset.h"
-#include "tree_adaptation.h"
-
-#include "output_main_parameters.h"
-#include "output_snapshots.h"
-
-
-
-#include "terminal_print.h"
-
-
-
-
-#endif
-
+void add_node_to_stack(struct node *ptr_node)
+{
+	if (GL_pool_node_end == NULL)
+	{
+		GL_pool_node_start = ptr_node;
+		GL_pool_node_end = ptr_node;
+	}
+	else
+	{
+		GL_pool_node_end->ptr_pt = ptr_node;
+		GL_pool_node_end = ptr_node;
+	}
+}
