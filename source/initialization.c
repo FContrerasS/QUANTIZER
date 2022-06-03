@@ -26,6 +26,19 @@
 
 #include "initialization.h"
 
+static void initializing_global_parameters()
+{
+
+	total_mass = 0;
+
+	for(int i = 0; i< GL_no_ptcl; i++)
+	{
+		total_mass += GL_ptcl_mass[i];
+	}
+
+	meanmass = total_mass / GL_no_ptcl;
+}
+
 static void initializing_particle_flag_updating()
 {
 	GL_ptcl_updating_flag = (bool *)malloc(GL_no_ptcl * sizeof(bool));
@@ -227,6 +240,9 @@ static void initializing_tentacles()
 
 int initialization()
 {
+
+	//** >> Initializing global parameters **/
+	initializing_global_parameters();
 
 	//** >> Particle updating flag initialization **/
 	initializing_particle_flag_updating();

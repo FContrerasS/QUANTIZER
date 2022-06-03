@@ -19,3 +19,6 @@ plummer_testing.py
 *.log
 *.linux
 
+galaxies_IC_high_ptcl.txt
+galaxies_IC_low_ptcl.txt
+

@@ -109,6 +109,7 @@ extern int no_grid_pow3;
 
 //** >> Refinement criteria parameters **/
 extern vtype ref_criterion_mass;
+extern int ref_criterion_ptcl;
 extern int n_exp;
 extern vtype _CFL_; // CFL criteria 0.5
 extern vtype _MAX_dt_;

@@ -47,7 +47,7 @@ static int fill_cell_ref(struct node *ptr_node)
         box_idx_node = ptr_node->ptr_box_idx[i];
 
         // Refinement criterion in the box_mass in no border box points
-        if (ptr_node->ptr_cell_struct[box_idx_node].cell_mass >= ref_criterion_mass && ptr_node->ptr_box[box_idx_node] != -2) // No border (-2)
+        if ((ptr_node->ptr_cell_struct[box_idx_node].cell_mass >= ref_criterion_mass || ptr_node->ptr_cell_struct[box_idx_node].ptcl_size >= ref_criterion_ptcl) && ptr_node->ptr_box[box_idx_node] != -2) // No border (-2)
         {
             if (ptr_node->ptr_box[box_idx_node] == -3) // Cell has not been added yet
             {

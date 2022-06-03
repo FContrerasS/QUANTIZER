@@ -26,12 +26,82 @@
 
 #include "input.h"
 
+int input_galaxies_merger()
+{
+
+    printf("Input by galaxies merger\n");
+
+    
+    // char input_name[100] = "../source/initial_conditions/"
+    //                        "galaxies_IC_low_ptcl.txt";
+
+    char input_name[100] = "../source/initial_conditions/"
+                           "galaxies_IC_high_ptcl.txt";
+
+    FILE *file = NULL;
+    file = fopen(input_name, "r");
+    if (file == NULL)
+    {
+        printf("Error opening galaxies file!\n");
+        exit(EXIT_FAILURE);
+    }
+
+// #if _VTYPE_ == 1
+//     char aux[3] = "%f";
+// #elif _VTYPE_ == 2
+//     char aux[4] = "%lf";
+// #elif _VTYPE_ == 3
+//     char aux[4] = "%Lf";
+// #else
+//     char aux[4] = "%lf";
+// #endif
+
+    char aux[3] = "%lf";
+
+    for (int i = 0; i < GL_no_ptcl; i++)
+    {
+        // GL_ptcl_mass[i] = 100; // Total mass over number of particles
+        if (fscanf(file, aux, &GL_ptcl_x[i]) == 0)
+        {
+            printf("\nERROR: Fail to read the position x at galaxies file\n");
+        }
+        if (fscanf(file, aux, &GL_ptcl_y[i]) == 0)
+        {
+            printf("\nERROR: Fail to read the position y at galaxies file\n");
+        }
+        if (fscanf(file, aux, &GL_ptcl_z[i]) == 0)
+        {
+            printf("\nERROR: Fail to read the position z at galaxies file\n");
+        }
+        if (fscanf(file, aux, &GL_ptcl_vx[i]) == 0)
+        {
+            printf("\nERROR: Fail to read the velocity x at galaxies file\n");
+        }
+        if (fscanf(file, aux, &GL_ptcl_vy[i]) == 0)
+        {
+            printf("\nERROR: Fail to read the velocity y at galaxies file\n");
+        }
+        if (fscanf(file, aux, &GL_ptcl_vz[i]) == 0)
+        {
+            printf("\nERROR: Fail to read the velocity z at galaxies file\n");
+        }
+        if (fscanf(file, aux, &GL_ptcl_mass[i]) == 0)
+        {
+            printf("\nERROR: Fail to read the mass at galaxies file\n");
+        }
+    }
+    fclose(file);
+
+
+    return _SUCCESS_;
+}
+
 int input_plummer_model()
 {
 
     printf("Input by plummer\n");
     // char input_name[100] = "../source/initial_conditions/"
-    //                              "ultima_esperanza.txt"; 
+    //                        "plummer_center_moved.txt";
 
     char input_name[100] = "../source/initial_conditions//"
                            "Plummer_Np(10000)_BoxSize(0.1)_Mass(1000000).txt";
@@ -137,9 +207,15 @@ static int input_code_units()
     input()
 {
 
-    if (input_plummer_model() == _FAILURE_)
+    // if (input_plummer_model() == _FAILURE_)
+    // {
+    //     printf("\n\n Error running input_plummer_model function\n\n");
+    //     return _FAILURE_;
+    // }
+
+    if (input_galaxies_merger() == _FAILURE_)
     {
-        printf("\n\n Error running input_plummer_model function\n\n");
+        printf("\n\n Error running input_galaxies_merger function\n\n");
         return _FAILURE_;
     }
 
@@ -154,6 +230,8 @@ static int input_code_units()
         printf("\n\n Error running input_codedimensions function\n\n");
         return _FAILURE_;
     }
+
+    
 
     return _SUCCESS_;
 }
