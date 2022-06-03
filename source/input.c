@@ -32,11 +32,11 @@ int input_galaxies_merger()
     printf("Input by galaxies merger\n");
 
     
-    // char input_name[100] = "../source/initial_conditions/"
-    //                        "galaxies_IC_low_ptcl.txt";
-
     char input_name[100] = "../source/initial_conditions/"
-                           "galaxies_IC_high_ptcl.txt";
+                           "galaxies_IC_low_ptcl.txt";
+
+    // char input_name[100] = "../source/initial_conditions/"
+    //                        "galaxies_IC_high_ptcl.txt";
 
     FILE *file = NULL;
     file = fopen(input_name, "r");
@@ -207,17 +207,17 @@ static int input_code_units()
     input()
 {
 
-    // if (input_plummer_model() == _FAILURE_)
-    // {
-    //     printf("\n\n Error running input_plummer_model function\n\n");
-    //     return _FAILURE_;
-    // }
-
-    if (input_galaxies_merger() == _FAILURE_)
+    if (input_plummer_model() == _FAILURE_)
     {
-        printf("\n\n Error running input_galaxies_merger function\n\n");
+        printf("\n\n Error running input_plummer_model function\n\n");
         return _FAILURE_;
     }
+
+    // if (input_galaxies_merger() == _FAILURE_)
+    // {
+    //     printf("\n\n Error running input_galaxies_merger function\n\n");
+    //     return _FAILURE_;
+    // }
 
 /*     if (input_particle_initialization() == _FAILURE_)
     {

@@ -144,8 +144,8 @@ double TOTAL_MEMORY_STACK;
 static void init_global_constants()
 {
     //Constants
-    _User_BoxSize_ = 700.0L; //kpc
-    //_User_BoxSize_ = 0.1L; //kpc
+    //_User_BoxSize_ = 700.0L; //kpc
+    _User_BoxSize_ = 0.1L; //kpc
     _PI_ = 3.14159265358979323846L;
     _Onesixth_ = 1.0L / 6.0L;
     _kpc_to_m_ = 3.08568e19L;
@@ -159,18 +159,18 @@ static void init_global_user_params()
 {
     BoxSize = 1.0L;
     lmin = 5;     //Coarset level of refinement
-    lmax = lmin + 12;  //Finest level of refinement
+    lmax = lmin + 0;  //Finest level of refinement
     no_lmin_cell = 1 << lmin; // Number of cells in the lmin level of refinement
     no_lmin_cell_pow2 = no_lmin_cell * no_lmin_cell;
     no_lmin_cell_pow3 = no_lmin_cell * no_lmin_cell * no_lmin_cell;
     no_grid = no_lmin_cell + 1;
-    GL_no_ptcl = 2995865; // 2995865; // 299586
-    //GL_no_ptcl = 10000;
-    Maxdt = 10.0 * _Mgyear_;
+    //GL_no_ptcl = 299586; // 2995865; // 299586
+    GL_no_ptcl = 100;
+    Maxdt = 3.0 * _Mgyear_;
     //meanmass = 100; //Currently only used on input.c
     // total_mass = GL_no_ptcl * meanmass;
     // total_mass = 0;
-    fr_output = 7;
+    fr_output = 1000000000;
     MaxIterations = 10000000;
     no_grid_pow2 = no_grid * no_grid;
     no_grid_pow3 = no_grid * no_grid * no_grid;
@@ -179,8 +179,8 @@ static void init_global_user_params()
 
 static void init_global_ref_crit()
 {
-    ref_criterion_mass = 1.0e100; // meanmass * 7;
-    ref_criterion_ptcl = 7;
+    ref_criterion_mass = 700; //1.0e100; // meanmass * 7;
+    ref_criterion_ptcl = 1;
     n_exp = 1;   // n_exp = 0 is corrupted because particles can move between more than 1 level of refinement
     _CFL_ = 0.5; // CFL criteria 0.5
     _MAX_dt_ = _Mgyear_ *0.01;
@@ -202,7 +202,7 @@ static void init_global_poisson_params()
     vtype _w_SOR_: The overrelaxation parameter
 */
     _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_ = 1000;
-    _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ = (1.5e-8);
+    _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ = (1.5e-10);
     check_poisson_error_method = 0; 
     multigrid = 0; 
     solver = 0; 

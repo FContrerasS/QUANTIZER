@@ -413,17 +413,9 @@ int potential()
         {
             free(pptr_red_black[0]); // Free red
         }
-        else
-        {
-            printf("Error, pptr_red_black[0] = NULL\n");
-        }
         if (pptr_red_black[1] != NULL)
         {
             free(pptr_red_black[1]); // Free black
-        }
-        else
-        {
-            printf("Error, pptr_red_black[1] = NULL\n");
         }
         free(pptr_red_black);     // Free red and black
         free(ptr_red_black_cap);  // Free capacity of red and black

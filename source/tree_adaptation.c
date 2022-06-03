@@ -2443,7 +2443,7 @@ int tree_adaptation()
             {
                 ptr_node = GL_tentacles[lv][i];
 
-                // printf("lv = %d, pt = %d, chn_size = %d\n", ptr_node->lv, i, ptr_node->chn_size);
+                //printf("lv = %d, pt = %d, chn_size = %d\n", ptr_node->lv, i, ptr_node->chn_size);
 
                 //** Updating the box mass information **/
                 // printf("\n\nupdating_cell_struct\n\n");
@@ -2455,7 +2455,7 @@ int tree_adaptation()
                 }
                 GL_times[30] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
-                //check_error(ptr_node);
+                check_error(ptr_node);
 
                 //** Initialization of node boxes **/
                 // printf("\n\ninitialization_node_boxes\n\n");
@@ -2624,7 +2624,7 @@ int tree_adaptation()
                 moved_unused_child_node_to_memory_pool(ptr_node);
                 GL_times[47] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
-                //check_error(ptr_node);
+                check_error(ptr_node);
             }
         }
 
