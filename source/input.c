@@ -38,6 +38,12 @@ int input_galaxies_merger()
     // char input_name[100] = "../source/initial_conditions/"
     //                        "galaxies_IC_high_ptcl.txt";
 
+    // char input_name[100] = "../source/initial_conditions/"
+    //                        "galaxy1_alone.txt";
+
+    // char input_name[100] = "../source/initial_conditions/"
+    //                        "galaxy_merger_model_2.txt";
+
     FILE *file = NULL;
     file = fopen(input_name, "r");
     if (file == NULL)
@@ -46,17 +52,17 @@ int input_galaxies_merger()
         exit(EXIT_FAILURE);
     }
 
-// #if _VTYPE_ == 1
-//     char aux[3] = "%f";
-// #elif _VTYPE_ == 2
-//     char aux[4] = "%lf";
-// #elif _VTYPE_ == 3
-//     char aux[4] = "%Lf";
-// #else
-//     char aux[4] = "%lf";
-// #endif
+#if _VTYPE_ == 1
+    char aux[3] = "%f";
+#elif _VTYPE_ == 2
+    char aux[4] = "%lf";
+#elif _VTYPE_ == 3
+    char aux[4] = "%Lf";
+#else
+    char aux[4] = "%lf";
+#endif
 
-    char aux[3] = "%lf";
+    //char aux[3] = "%lf";
 
     for (int i = 0; i < GL_no_ptcl; i++)
     {
@@ -168,9 +174,9 @@ int input_particle_initialization()
     for (int i = 0; i < GL_no_ptcl; i++)
     {
         GL_ptcl_mass[i] = meanmass; // at solar mass;
-        GL_ptcl_x[i] = ((vtype)rand() / RAND_MAX - 0.5) * maxdistance;
-        GL_ptcl_y[i] = ((vtype)rand() / RAND_MAX - 0.5) * maxdistance;
-        GL_ptcl_z[i] = ((vtype)rand() / RAND_MAX - 0.5) * maxdistance;
+        GL_ptcl_x[i] = ((vtype)rand() / RAND_MAX - 0.5L) * maxdistance;
+        GL_ptcl_y[i] = ((vtype)rand() / RAND_MAX - 0.5L) * maxdistance;
+        GL_ptcl_z[i] = ((vtype)rand() / RAND_MAX - 0.5L) * maxdistance;
 
         GL_ptcl_vx[i] = 0.0;
         GL_ptcl_vy[i] = 0.0;
@@ -188,9 +194,9 @@ static int input_code_units()
 {
     for (int i = 0; i < GL_no_ptcl; i++)
     {
-        GL_ptcl_x[i] = GL_ptcl_x[i] / _User_BoxSize_ + 0.5;
-        GL_ptcl_y[i] = GL_ptcl_y[i] / _User_BoxSize_ + 0.5;
-        GL_ptcl_z[i] = GL_ptcl_z[i] / _User_BoxSize_ + 0.5;
+        GL_ptcl_x[i] = GL_ptcl_x[i] / _User_BoxSize_ + 0.5L;
+        GL_ptcl_y[i] = GL_ptcl_y[i] / _User_BoxSize_ + 0.5L;
+        GL_ptcl_z[i] = GL_ptcl_z[i] / _User_BoxSize_ + 0.5L;
         
         GL_ptcl_vx[i] = GL_ptcl_vx[i] * sqrt(_User_BoxSize_);
         GL_ptcl_vy[i] = GL_ptcl_vy[i] * sqrt(_User_BoxSize_);
@@ -203,8 +209,7 @@ static int input_code_units()
     return _SUCCESS_;
 }
 
-    int
-    input()
+int input()
 {
 
     if (input_plummer_model() == _FAILURE_)
@@ -230,8 +235,6 @@ static int input_code_units()
         printf("\n\n Error running input_codedimensions function\n\n");
         return _FAILURE_;
     }
-
-    
 
     return _SUCCESS_;
 }

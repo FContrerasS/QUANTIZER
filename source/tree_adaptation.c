@@ -383,7 +383,7 @@ static int updating_cell_struct(struct node *ptr_node)
             ptr_node->ptr_cell_struct[box_idx_node].ptcl_size = aux_no_ptcl;
 
             //** >> Space checking of the capacity of the number of particles in the cell **/
-            if (space_check(&(ptr_node->ptr_cell_struct[box_idx_node].ptcl_cap), aux_no_ptcl, 4.0f, "p1i1", &(ptr_node->ptr_cell_struct[box_idx_node].ptr_ptcl)) == _FAILURE_)
+            if (space_check(&(ptr_node->ptr_cell_struct[box_idx_node].ptcl_cap), aux_no_ptcl, 1.0f, "p1i1", &(ptr_node->ptr_cell_struct[box_idx_node].ptr_ptcl)) == _FAILURE_)
             {
                 printf("Error, in space_check function\n");
                 return _FAILURE_;
@@ -554,7 +554,7 @@ static int fill_cell_ref(struct node *ptr_node)
     }
 
     //** >> Space checking of the capacity of the refined cells **/
-    if (space_check(&(ptr_node->cell_ref_cap), size, 2.0f, "p1i1", &(ptr_node->ptr_cell_ref)) == _FAILURE_)
+    if (space_check(&(ptr_node->cell_ref_cap), size, 1.0f, "p1i1", &(ptr_node->ptr_cell_ref)) == _FAILURE_)
     {
         printf("Error, in space_check function\n");
         return _FAILURE_;
@@ -611,7 +611,7 @@ static int fill_zones_ref(struct node *ptr_node)
     //** >> Space checking of auxiliary array ptr_aux_idx **/
     // The size will always be bigger or equal than the number of refined cells
 
-    if (space_check(&(ptr_node->aux_idx_cap), ptr_node->cell_ref_cap, 2.0f, "p1i1", &(ptr_node->ptr_aux_idx)) == _FAILURE_)
+    if (space_check(&(ptr_node->aux_idx_cap), ptr_node->cell_ref_cap, 1.0f, "p1i1", &(ptr_node->ptr_aux_idx)) == _FAILURE_)
     {
         printf("Error, in space_check function\n");
         return _FAILURE_;
@@ -774,7 +774,7 @@ static int create_links(struct node *ptr_node)
     int cntr_links = 0; // Counter the number of links between the new and old zones of refinement
 
     //** >> Space checking of the capacity of links order arrays **/
-    if (space_check(&(ptr_node->links_cap), ptr_node->zones_size, 4.0f, "p4i1i1i1i1", &(ptr_node->ptr_links_old_ord_old), &(ptr_node->ptr_links_new_ord_old), &(ptr_node->ptr_links_old_ord_new), &(ptr_node->ptr_links_new_ord_new)) == _FAILURE_)
+    if (space_check(&(ptr_node->links_cap), ptr_node->zones_size, 2.0f, "p4i1i1i1i1", &(ptr_node->ptr_links_old_ord_old), &(ptr_node->ptr_links_new_ord_old), &(ptr_node->ptr_links_old_ord_new), &(ptr_node->ptr_links_new_ord_new)) == _FAILURE_)
     {
         printf("Error, in space_check function\n");
         return _FAILURE_;
@@ -1111,7 +1111,7 @@ static int adapt_child_nodes(struct node *ptr_node)
             size = 8 * ptr_node->ptr_zone_size[new_zone_idx] + ptr_ch->cell_size;
 
             //** >> Space checking of cells indexes of the child node
-            if (space_check(&(ptr_ch->cell_cap), size, 2.0f, "p4i1i1i1i1", &(ptr_ch->ptr_cell_idx_x), &(ptr_ch->ptr_cell_idx_y), &(ptr_ch->ptr_cell_idx_z), &(ptr_ch->ptr_box_idx)) == _FAILURE_)
+            if (space_check(&(ptr_ch->cell_cap), size, 1.0f, "p4i1i1i1i1", &(ptr_ch->ptr_cell_idx_x), &(ptr_ch->ptr_cell_idx_y), &(ptr_ch->ptr_cell_idx_z), &(ptr_ch->ptr_box_idx)) == _FAILURE_)
             {
                 printf("Error, in space_check function\n");
                 return _FAILURE_;
@@ -1332,7 +1332,7 @@ static int create_new_child_nodes(struct node *ptr_node)
         size = 8 * ptr_node->ptr_zone_size[ptr_node->ptr_links_new_ord_old[i]];
 
         //** >> Space checking of cells indexes of the child node
-        if (space_check(&(ptr_ch->cell_cap), size, 2.0f, "p4i1i1i1i1", &(ptr_ch->ptr_cell_idx_x), &(ptr_ch->ptr_cell_idx_y), &(ptr_ch->ptr_cell_idx_z), &(ptr_ch->ptr_box_idx)) == _FAILURE_)
+        if (space_check(&(ptr_ch->cell_cap), size, 1.0f, "p4i1i1i1i1", &(ptr_ch->ptr_cell_idx_x), &(ptr_ch->ptr_cell_idx_y), &(ptr_ch->ptr_cell_idx_z), &(ptr_ch->ptr_box_idx)) == _FAILURE_)
         {
             printf("Error, in space_check function\n");
             return _FAILURE_;
@@ -2122,14 +2122,14 @@ static int update_child_grid_points(struct node *ptr_node)
         size = ptr_ch->cell_size / 8 * 18 + 9; // 27 * N - 9 * (N-1)
 
         //** >> Space checking of border grid points array**/
-        if (space_check(&(ptr_ch->grid_bder_cap), size, 2.0f, "p4i1i1i1i1", &(ptr_ch->ptr_bder_grid_cell_idx_x), &(ptr_ch->ptr_bder_grid_cell_idx_y), &(ptr_ch->ptr_bder_grid_cell_idx_z), &(ptr_ch->ptr_bder_grid_idx)) == _FAILURE_)
+        if (space_check(&(ptr_ch->grid_bder_cap), size, 1.0f, "p4i1i1i1i1", &(ptr_ch->ptr_bder_grid_cell_idx_x), &(ptr_ch->ptr_bder_grid_cell_idx_y), &(ptr_ch->ptr_bder_grid_cell_idx_z), &(ptr_ch->ptr_bder_grid_idx)) == _FAILURE_)
         {
             printf("Error, in space_check function\n");
             return _FAILURE_;
         }
 
         //** >> Space checking of interior grid points array**/
-        if (space_check(&(ptr_ch->grid_intr_cap), size, 2.0f, "p4i1i1i1i1", &(ptr_ch->ptr_intr_grid_cell_idx_x), &(ptr_ch->ptr_intr_grid_cell_idx_y), &(ptr_ch->ptr_intr_grid_cell_idx_z), &(ptr_ch->ptr_intr_grid_idx)) == _FAILURE_)
+        if (space_check(&(ptr_ch->grid_intr_cap), size, 1.0f, "p4i1i1i1i1", &(ptr_ch->ptr_intr_grid_cell_idx_x), &(ptr_ch->ptr_intr_grid_cell_idx_y), &(ptr_ch->ptr_intr_grid_cell_idx_z), &(ptr_ch->ptr_intr_grid_idx)) == _FAILURE_)
         {
             printf("Error, in space_check function\n");
             return _FAILURE_;
@@ -2455,7 +2455,7 @@ int tree_adaptation()
                 }
                 GL_times[30] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
-                check_error(ptr_node);
+                //check_error(ptr_node);
 
                 //** Initialization of node boxes **/
                 // printf("\n\ninitialization_node_boxes\n\n");
@@ -2624,7 +2624,7 @@ int tree_adaptation()
                 moved_unused_child_node_to_memory_pool(ptr_node);
                 GL_times[47] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
-                check_error(ptr_node);
+                //check_error(ptr_node);
             }
         }
 

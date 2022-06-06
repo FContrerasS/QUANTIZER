@@ -4,6 +4,7 @@ Animations/
 Images/
 output/
 tests/
+Galaxy_merger_data/
 .vscode/
 
 # Text Files
@@ -13,8 +14,8 @@ Future_implementations.txt
 # Others
 
 *.o
-plummer_testing.py
-3D_Visualization.py
+*.py
+*.txt
 *.c~
 *.exe
 *.log

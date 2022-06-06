@@ -171,10 +171,6 @@ extern int box_side_lmin; // Side of the coarsest box
 extern int box_side_lmin_pow2;
 extern int box_side_lmin_pow3;
 
-//** >> OBSERVABLES **/
-extern vtype _Min_Particle_Distance_For_Energy_Computation_;
-
-
 // MEMORY
 extern double TOTAL_MEMORY_NODES;
 extern double TOTAL_MEMORY_CELDAS;

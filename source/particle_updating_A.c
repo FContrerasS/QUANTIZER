@@ -148,7 +148,7 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
                                 box_idx_sib = ptcl_idx_to_box_idx(ptr_node_sib, ptcl_idx);
 
                                 //** >> Space checking of the particle capacity in the sibling node **/
-                                if (space_check(&(ptr_node_sib->ptr_cell_struct[box_idx_sib].ptcl_cap), ptr_node_sib->ptr_cell_struct[box_idx_sib].ptcl_size + 1, 2.0f, "p1i1", &(ptr_node_sib->ptr_cell_struct[box_idx_sib].ptr_ptcl)) == _FAILURE_)
+                                if (space_check(&(ptr_node_sib->ptr_cell_struct[box_idx_sib].ptcl_cap), ptr_node_sib->ptr_cell_struct[box_idx_sib].ptcl_size + 1, 1.0f, "p1i1", &(ptr_node_sib->ptr_cell_struct[box_idx_sib].ptr_ptcl)) == _FAILURE_)
                                 {
                                     printf("Error, in space_check function\n");
                                     return _FAILURE_;
@@ -164,7 +164,7 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
                             else
                             {
                                 //** >> Space checking of the particle capacity in the sibling cell node **/
-                                if (space_check(&(ptr_node_pt->ptr_cell_struct[box_idx_pt].ptcl_cap), ptr_node_pt->ptr_cell_struct[box_idx_pt].ptcl_size + 1, 2.0f, "p1i1", &(ptr_node_pt->ptr_cell_struct[box_idx_pt].ptr_ptcl)) == _FAILURE_)
+                                if (space_check(&(ptr_node_pt->ptr_cell_struct[box_idx_pt].ptcl_cap), ptr_node_pt->ptr_cell_struct[box_idx_pt].ptcl_size + 1, 1.0f, "p1i1", &(ptr_node_pt->ptr_cell_struct[box_idx_pt].ptr_ptcl)) == _FAILURE_)
                                 {
                                     printf("Error, in space_check function\n");
                                     return _FAILURE_;
@@ -182,7 +182,7 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
                         else
                         {
                             //** >> Space checking of the particle capacity in the sibling cell **/
-                            if (space_check(&(ptr_node->ptr_cell_struct[box_idx_node_new].ptcl_cap), ptr_node->ptr_cell_struct[box_idx_node_new].ptcl_size + 1, 2.0f, "p1i1", &(ptr_node->ptr_cell_struct[box_idx_node_new].ptr_ptcl)) == _FAILURE_)
+                            if (space_check(&(ptr_node->ptr_cell_struct[box_idx_node_new].ptcl_cap), ptr_node->ptr_cell_struct[box_idx_node_new].ptcl_size + 1, 1.0f, "p1i1", &(ptr_node->ptr_cell_struct[box_idx_node_new].ptr_ptcl)) == _FAILURE_)
                             {
                                 printf("Error, in space_check function\n");
                                 return _FAILURE_;
@@ -270,7 +270,7 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
                                 box_idx_ch = ptcl_idx_to_box_idx(ptr_node_ch, ptcl_idx);
 
                                 //** >> Space checking of the particle capacity in the child node cell **/
-                                if (space_check(&(ptr_node_ch->ptr_cell_struct[box_idx_ch].ptcl_cap), ptr_node_ch->ptr_cell_struct[box_idx_ch].ptcl_size + 1, 2.0f, "p1i1", &(ptr_node_ch->ptr_cell_struct[box_idx_ch].ptr_ptcl)) == _FAILURE_)
+                                if (space_check(&(ptr_node_ch->ptr_cell_struct[box_idx_ch].ptcl_cap), ptr_node_ch->ptr_cell_struct[box_idx_ch].ptcl_size + 1, 1.0f, "p1i1", &(ptr_node_ch->ptr_cell_struct[box_idx_ch].ptr_ptcl)) == _FAILURE_)
                                 {
                                     printf("Error, in space_check function\n");
                                     return _FAILURE_;
@@ -298,7 +298,7 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
                                     box_idx_sib = ptcl_idx_to_box_idx(ptr_node_sib, ptcl_idx);
 
                                     //** >> Space checking of the particle capacity in the sibling node **/
-                                    if (space_check(&(ptr_node_sib->ptr_cell_struct[box_idx_sib].ptcl_cap), ptr_node_sib->ptr_cell_struct[box_idx_sib].ptcl_size + 1, 2.0f, "p1i1", &(ptr_node_sib->ptr_cell_struct[box_idx_sib].ptr_ptcl)) == _FAILURE_)
+                                    if (space_check(&(ptr_node_sib->ptr_cell_struct[box_idx_sib].ptcl_cap), ptr_node_sib->ptr_cell_struct[box_idx_sib].ptcl_size + 1, 1.0f, "p1i1", &(ptr_node_sib->ptr_cell_struct[box_idx_sib].ptr_ptcl)) == _FAILURE_)
                                     {
                                         printf("Error, in space_check function\n");
                                         return _FAILURE_;
@@ -314,7 +314,7 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
                                 else
                                 {
                                     //** >> Space checking of the particle capacity in the sibling cell node **/
-                                    if (space_check(&(ptr_node_pt->ptr_cell_struct[box_idx_pt].ptcl_cap), ptr_node_pt->ptr_cell_struct[box_idx_pt].ptcl_size + 1, 2.0f, "p1i1", &(ptr_node_pt->ptr_cell_struct[box_idx_pt].ptr_ptcl)) == _FAILURE_)
+                                    if (space_check(&(ptr_node_pt->ptr_cell_struct[box_idx_pt].ptcl_cap), ptr_node_pt->ptr_cell_struct[box_idx_pt].ptcl_size + 1, 1.0f, "p1i1", &(ptr_node_pt->ptr_cell_struct[box_idx_pt].ptr_ptcl)) == _FAILURE_)
                                     {
                                         printf("Error, in space_check function\n");
                                         return _FAILURE_;
@@ -332,7 +332,7 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
                             else
                             {
                                 //** >> Space checking of the particle capacity in the sibling cell **/
-                                if (space_check(&(ptr_node->ptr_cell_struct[box_idx_node_new].ptcl_cap), ptr_node->ptr_cell_struct[box_idx_node_new].ptcl_size + 1, 2.0f, "p1i1", &(ptr_node->ptr_cell_struct[box_idx_node_new].ptr_ptcl)) == _FAILURE_)
+                                if (space_check(&(ptr_node->ptr_cell_struct[box_idx_node_new].ptcl_cap), ptr_node->ptr_cell_struct[box_idx_node_new].ptcl_size + 1, 1.0f, "p1i1", &(ptr_node->ptr_cell_struct[box_idx_node_new].ptr_ptcl)) == _FAILURE_)
                                 {
                                     printf("Error, in space_check function\n");
                                     return _FAILURE_;
