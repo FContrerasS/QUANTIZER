@@ -264,7 +264,7 @@ static int potential_branch_node(int **pptr_red_black, const int *ptr_red_black_
             box_grid_idxNbr_z_minus = box_grid_idx - grid_box_real_dim_X_times_Y_node;
 
             aux_pot = 1.0L / 6.0L * (-H_pow2 * ptr_node->ptr_d[box_grid_idx] + ptr_node->ptr_pot[box_grid_idxNbr_x_plus] + ptr_node->ptr_pot[box_grid_idxNbr_x_minus] + ptr_node->ptr_pot[box_grid_idxNbr_y_plus] + ptr_node->ptr_pot[box_grid_idxNbr_y_minus] + ptr_node->ptr_pot[box_grid_idxNbr_z_plus] + ptr_node->ptr_pot[box_grid_idxNbr_z_minus]);
-            ptr_node->ptr_pot[box_grid_idx] = _w_SOR_ * aux_pot + (1 - _w_SOR_) * ptr_node->ptr_pot[box_grid_idx];
+            ptr_node->ptr_pot[box_grid_idx] = _w_SOR_ * aux_pot + (1.0 - _w_SOR_) * ptr_node->ptr_pot[box_grid_idx];
         }
 
         //** >> Cycle over black points **/
@@ -279,12 +279,282 @@ static int potential_branch_node(int **pptr_red_black, const int *ptr_red_black_
             box_grid_idxNbr_z_minus = box_grid_idx - grid_box_real_dim_X_times_Y_node;
 
             aux_pot = 1.0L / 6.0L * (-H_pow2 * ptr_node->ptr_d[box_grid_idx] + ptr_node->ptr_pot[box_grid_idxNbr_x_plus] + ptr_node->ptr_pot[box_grid_idxNbr_x_minus] + ptr_node->ptr_pot[box_grid_idxNbr_y_plus] + ptr_node->ptr_pot[box_grid_idxNbr_y_minus] + ptr_node->ptr_pot[box_grid_idxNbr_z_plus] + ptr_node->ptr_pot[box_grid_idxNbr_z_minus]);
-            ptr_node->ptr_pot[box_grid_idx] = _w_SOR_ * aux_pot + (1 - _w_SOR_) * ptr_node->ptr_pot[box_grid_idx];
+            ptr_node->ptr_pot[box_grid_idx] = _w_SOR_ * aux_pot + (1.0 - _w_SOR_) * ptr_node->ptr_pot[box_grid_idx];
         }
     }
 
     return _SUCCESS_;
 }
+
+const int conjugate_gradient_branch(struct node *ptr_node)
+{
+
+    int box_grid_idx;
+
+    vtype H = 1.0L / (1 << ptr_node->lv);
+    vtype one_over_H_pow_2 = 1.0L / (H * H);
+    int size = (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1) * (ptr_node->box_real_dim_z + 1);
+
+    vtype *r, *p, *Ap;
+    r = (vtype *)calloc(size, sizeof(vtype));
+    p = (vtype *)malloc(size * sizeof(vtype));
+    Ap = (vtype *)malloc(size * sizeof(vtype));
+
+    vtype alpha, rsold, rsnew;
+
+    int grid_box_real_dim_X = ptr_node->box_real_dim_x + 1;
+    int grid_box_real_dim_X_times_Y = (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1);
+
+    vtype rhomean_times_4piG = 4 * _G_ * _PI_ * ptr_node->local_mass / (ptr_node->cell_size * H * H * H);
+    vtype aux_tol = ptr_node->grid_intr_size * (_ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ * rhomean_times_4piG) * (_ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ * rhomean_times_4piG); // sqrt(total_resid)/N/rhobar < error_tol
+
+    // Computing r
+    for (int i = 0; i < ptr_node->grid_intr_size; i++)
+    {
+        box_grid_idx = ptr_node->ptr_intr_grid_idx[i];
+        r[box_grid_idx] = ptr_node->ptr_d[box_grid_idx] + one_over_H_pow_2 *
+                                                              (6.0 * ptr_node->ptr_pot[box_grid_idx] - ptr_node->ptr_pot[box_grid_idx + 1] - ptr_node->ptr_pot[box_grid_idx - 1] - ptr_node->ptr_pot[box_grid_idx + grid_box_real_dim_X] - ptr_node->ptr_pot[box_grid_idx - grid_box_real_dim_X] - ptr_node->ptr_pot[box_grid_idx + grid_box_real_dim_X_times_Y] - ptr_node->ptr_pot[box_grid_idx - grid_box_real_dim_X_times_Y]);
+    }
+
+    // Copy r to p
+    memcpy(p, r, size * sizeof(vtype));
+
+    // Computing rsold
+    rsold = 0;
+    for (int i = 0; i < ptr_node->grid_intr_size; i++)
+    {
+        box_grid_idx = ptr_node->ptr_intr_grid_idx[i];
+        rsold += r[box_grid_idx] * r[box_grid_idx];
+    }
+
+    if (rsold < aux_tol)
+    {
+        free(r);
+        free(p);
+        free(Ap);
+        return _SUCCESS_;
+    }
+
+    int cycle_size = size < _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_ ? size : _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_;
+    // For cycle over mutually conjugate vectors p
+    for (int i = 0; i < cycle_size; i++)
+    {
+
+        // Computing Ap
+        for (int j = 0; j < ptr_node->grid_intr_size; j++)
+        {
+            box_grid_idx = ptr_node->ptr_intr_grid_idx[j];
+            Ap[box_grid_idx] = -one_over_H_pow_2 * (6.0 * p[box_grid_idx] - p[box_grid_idx + 1] - p[box_grid_idx - 1] - p[box_grid_idx + grid_box_real_dim_X] - p[box_grid_idx - grid_box_real_dim_X] - p[box_grid_idx + grid_box_real_dim_X_times_Y] - p[box_grid_idx - grid_box_real_dim_X_times_Y]);
+        }
+
+        // Computing alpha
+        alpha = 0;
+        for (int j = 0; j < ptr_node->grid_intr_size; j++)
+        {
+            box_grid_idx = ptr_node->ptr_intr_grid_idx[j];
+            alpha += p[box_grid_idx] * Ap[box_grid_idx];
+        }
+
+        alpha = rsold / alpha;
+
+        // New solution
+        for (int j = 0; j < ptr_node->grid_intr_size; j++)
+        {
+            box_grid_idx = ptr_node->ptr_intr_grid_idx[j];
+            ptr_node->ptr_pot[box_grid_idx] += alpha * p[box_grid_idx];
+        }
+
+        // New rest
+        for (int j = 0; j < ptr_node->grid_intr_size; j++)
+        {
+            box_grid_idx = ptr_node->ptr_intr_grid_idx[j];
+            r[box_grid_idx] -= alpha * Ap[box_grid_idx];
+        }
+
+        // Computing rsnew
+        rsnew = 0;
+        for (int j = 0; j < ptr_node->grid_intr_size; j++)
+        {
+            box_grid_idx = ptr_node->ptr_intr_grid_idx[j];
+            rsnew += r[box_grid_idx] * r[box_grid_idx];
+        }
+
+        // Breaking cycle if tolerance is reached
+        if (rsnew < aux_tol)
+        {
+            free(r);
+            free(p);
+            free(Ap);
+            return _SUCCESS_;
+        }
+
+        // Updating p
+        for (int j = 0; j < ptr_node->grid_intr_size; j++)
+        {
+            box_grid_idx = ptr_node->ptr_intr_grid_idx[j];
+            p[box_grid_idx] = r[box_grid_idx] + rsnew / rsold * p[box_grid_idx];
+        }
+
+        // Updating rsold
+        rsold = rsnew;
+    }
+
+    free(r);
+    free(p);
+    free(Ap);
+    return _FAILURE_;
+}
+
+// int potential()
+// {
+//     int iter;
+//     bool check;
+
+//     clock_t aux_clock;
+
+//     //**>> POTENTIAL HEAD NODE **/
+//     if (potential_head_node() == _FAILURE_)
+//     {
+//         printf("\n\n Error running potential_head_node() function \n\n ");
+//         return _FAILURE_;
+//     }
+
+//     //** >> POTENTIAL BRANCH NODES **/
+//     if (lmin < lmax)
+//     {
+//         struct node *ptr_node;
+//         struct node *ptr_ch;
+
+//         int no_pts; // Number of parents in the cycle
+
+//         if (branch_pot_method == 0)
+//         {
+//             int **pptr_red_black;
+//             int *ptr_red_black_cap;
+//             int *ptr_red_black_size;
+
+//             // Red and Black arrays contain the index element of the box grid of the potential
+//             pptr_red_black = (int **)malloc(2 * sizeof(int *));
+//             pptr_red_black[0] = NULL;
+//             pptr_red_black[1] = NULL;
+//             ptr_red_black_cap = (int *)malloc(2 * sizeof(int));
+//             ptr_red_black_cap[0] = 0;
+//             ptr_red_black_cap[1] = 0;
+//             ptr_red_black_size = (int *)malloc(2 * sizeof(int));
+//             ptr_red_black_size[0] = 0;
+//             ptr_red_black_size[1] = 0;
+
+//             for (int lv = 0; lv < GL_tentacles_level_max; lv++)
+//             {
+//                 no_pts = GL_tentacles_size[lv];
+
+//                 //** >> For cycle over parent nodes **/
+//                 for (int i = 0; i < no_pts; i++)
+//                 {
+//                     ptr_node = GL_tentacles[lv][i];
+//                     for (int j = 0; j < ptr_node->chn_size; j++)
+//                     {
+//                         ptr_ch = ptr_node->pptr_chn[j];
+//                         //** >> Transfer the potential from parent to child nodes **/
+//                         aux_clock = clock();
+//                         initial_potential(ptr_node, ptr_ch);
+//                         GL_times[22] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+//                         //** >> Computing the potential in the child node **/
+//                         aux_clock = clock();
+//                         if (fill_red_and_black(pptr_red_black, ptr_red_black_cap, ptr_red_black_size, ptr_ch) == _FAILURE_)
+//                         {
+//                             printf("Error at function fill_red_and_black()\n");
+//                             return _FAILURE_;
+//                         }
+//                         GL_times[23] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+//                         //** >> CHEKING ERROR SOLUTION CONDITION **/
+//                         aux_clock = clock();
+//                         check = poisson_error(ptr_ch);
+//                         GL_times[25] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+//                         iter = 0;
+//                         while (iter < _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_ && check == false)
+//                         {
+//                             iter = iter + 1;
+
+//                             //** >> Computing the potential in the child node **/
+//                             aux_clock = clock();
+//                             if (potential_branch_node(pptr_red_black, ptr_red_black_size, ptr_ch) == _FAILURE_)
+//                             {
+//                                 printf("Error at function potential_branch_node()\n");
+//                                 return _FAILURE_;
+//                             }
+//                             GL_times[24] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+//                             //** >> CHEKING ERROR SOLUTION CONDITION **/
+//                             aux_clock = clock();
+//                             check = poisson_error(ptr_ch);
+//                             GL_times[25] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+//                         }
+//                         if (iter == _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_)
+//                         {
+//                             printf("\nERROR: The precision was not reached in the branch node. Too many SOR Iterations, plz choose a lower precision than %1.3e\n", (double)_ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_);
+//                             return _FAILURE_;
+//                         }
+//                     } // End cycle over number of children
+//                 }     // End cycle over number of parents
+//             }
+
+//             //** >> Free pointers **/
+//             if (pptr_red_black[0] != NULL)
+//             {
+//                 free(pptr_red_black[0]); // Free red
+//             }
+//             if (pptr_red_black[1] != NULL)
+//             {
+//                 free(pptr_red_black[1]); // Free black
+//             }
+//             free(pptr_red_black);     // Free red and black
+//             free(ptr_red_black_cap);  // Free capacity of red and black
+//             free(ptr_red_black_size); // Free size of red and black
+//         }
+//         else if (branch_pot_method == 1)
+//         {
+
+//             for (int lv = 0; lv < GL_tentacles_level_max; lv++)
+//             {
+//                 no_pts = GL_tentacles_size[lv];
+
+//                 //** >> For cycle over parent nodes **/
+//                 for (int i = 0; i < no_pts; i++)
+//                 {
+//                     ptr_node = GL_tentacles[lv][i];
+//                     for (int j = 0; j < ptr_node->chn_size; j++)
+//                     {
+//                         ptr_ch = ptr_node->pptr_chn[j];
+
+//                         //** >> Transfer the potential from parent to child nodes **/
+//                         aux_clock = clock();
+//                         initial_potential(ptr_node, ptr_ch);
+//                         GL_times[22] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+//                         aux_clock = clock();
+//                         if (conjugate_gradient_branch(ptr_ch) == _FAILURE_)
+//                         {
+//                             printf("Error at function conjugate_gradient_branch()\n");
+//                             return _FAILURE_;
+//                         }
+//                         GL_times[24] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+//                     }
+//                 }
+//             } 
+//         }
+//         else
+//         {
+//             printf("Error, the Branch potential method is equal to %d\n", branch_pot_method);
+//             return _FAILURE_;
+//         }
+//     }
+
+//     return _SUCCESS_;
+// }
 
 int potential()
 {
@@ -294,36 +564,9 @@ int potential()
     clock_t aux_clock;
 
     //**>> POTENTIAL HEAD NODE **/
-
-    //** >> CHEKING ERROR SOLUTION CONDITION **/
-    aux_clock = clock();
-    check = poisson_error(GL_ptr_tree);
-    GL_times[21] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
-
-    //** >> SOLVING POISSON EQUATION **/
-    iter = 0;
-    while (iter < _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_ && check == false)
+    if (potential_head_node() == _FAILURE_)
     {
-        iter = iter + 1;
-
-        //** >> INITIAL POTENTIAL COMPUTATION **/
-        aux_clock = clock();
-        if (potential_head_node() == _FAILURE_)
-        {
-            printf("\n\n Error running potential_head_node() function \n\n ");
-            return _FAILURE_;
-        }
-        GL_times[20] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
-
-        //** >> CHEKING ERROR SOLUTION CONDITION **/
-        aux_clock = clock();
-        check = poisson_error(GL_ptr_tree);
-        GL_times[21] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
-    }
-
-    if (iter == _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_)
-    {
-        printf("\nERROR: The precision was not reached in the parent node. Too many Multigrid Iterations, plz choose a lower precision than %1.3e\n", (double)_ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_);
+        printf("\n\n Error running potential_head_node() function \n\n ");
         return _FAILURE_;
     }
 
@@ -366,44 +609,59 @@ int potential()
                     initial_potential(ptr_node, ptr_ch);
                     GL_times[22] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
-                    //** >> Computing the potential in the child node **/
-                    aux_clock = clock();
-                    if (fill_red_and_black(pptr_red_black, ptr_red_black_cap, ptr_red_black_size, ptr_ch) == _FAILURE_)
+                    if (ptr_ch->cell_size  < 0)
                     {
-                        printf("Error at function fill_red_and_black()\n");
-                        return _FAILURE_;
-                    }
-                    GL_times[23] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
-
-                    //** >> CHEKING ERROR SOLUTION CONDITION **/
-                    aux_clock = clock();
-                    check = poisson_error(ptr_ch);
-                    GL_times[25] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
-
-                    iter = 0;
-                    while (iter < _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_ && check == false)
-                    {
-                        iter = iter + 1;
-
-                        //** >> Computing the potential in the child node **/
                         aux_clock = clock();
-                        if (potential_branch_node(pptr_red_black, ptr_red_black_size, ptr_ch) == _FAILURE_)
+                        if (conjugate_gradient_branch(ptr_ch) == _FAILURE_)
                         {
-                            printf("Error at function potential_branch_node()\n");
+                            printf("Error at function conjugate_gradient_branch()\n");
                             return _FAILURE_;
                         }
                         GL_times[24] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+                    }
+                    else
+                    {
+                        //** >> Computing the potential in the child node **/
+                        aux_clock = clock();
+                        if (fill_red_and_black(pptr_red_black, ptr_red_black_cap, ptr_red_black_size, ptr_ch) == _FAILURE_)
+                        {
+                            printf("Error at function fill_red_and_black()\n");
+                            return _FAILURE_;
+                        }
+                        GL_times[23] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
                         //** >> CHEKING ERROR SOLUTION CONDITION **/
                         aux_clock = clock();
                         check = poisson_error(ptr_ch);
                         GL_times[25] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+                        iter = 0;
+                        while (iter < _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_ && check == false)
+                        {
+                            iter = iter + 1;
+
+                            //** >> Computing the potential in the child node **/
+                            aux_clock = clock();
+                            if (potential_branch_node(pptr_red_black, ptr_red_black_size, ptr_ch) == _FAILURE_)
+                            {
+                                printf("Error at function potential_branch_node()\n");
+                                return _FAILURE_;
+                            }
+                            GL_times[24] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+                            //** >> CHEKING ERROR SOLUTION CONDITION **/
+                            aux_clock = clock();
+                            check = poisson_error(ptr_ch);
+                            GL_times[25] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+                        }
+                        if (iter == _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_)
+                        {
+                            printf("\nERROR: The precision was not reached in the branch node. Too many SOR Iterations, plz choose a lower precision than %1.3e\n", (double)_ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_);
+                            return _FAILURE_;
+                        }
                     }
-                    if (iter == _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_)
-                    {
-                        printf("\nERROR: The precision was not reached in the branch node. Too many SOR Iterations, plz choose a lower precision than %1.3e\n", (double)_ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_);
-                        return _FAILURE_;
-                    }
+
+
                 } // End cycle over number of children
             }     // End cycle over number of parents
         }

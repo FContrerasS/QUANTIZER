@@ -28,8 +28,8 @@
 #define __POTHEADCOMP__
 
 #include "common.h"
+#include "poisson_error.h"
 
-    int
-    potential_head_node();
+int potential_head_node();
 
 #endif

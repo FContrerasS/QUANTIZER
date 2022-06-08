@@ -116,7 +116,7 @@ static void gauss_saidel(vtype *phi, const vtype *rho, int gridsize, int iter_ma
 {
 
 	vtype H_pow2 = (1.0L / (gridsize - 1)) * (1.0L / (gridsize - 1));
-
+	vtype aux_pot;
 	int grid_idx;
 
 	int gridsize_pow_2 = gridsize * gridsize;
@@ -133,7 +133,8 @@ static void gauss_saidel(vtype *phi, const vtype *rho, int gridsize, int iter_ma
 				for (int i = 1; i < C1; i++)
 				{
 					grid_idx = k + j + i;
-					phi[grid_idx] = _Onesixth_ * (-H_pow2 * rho[grid_idx] + phi[grid_idx + 1] + phi[grid_idx - 1] + phi[grid_idx + gridsize] + phi[grid_idx - gridsize] + phi[grid_idx + gridsize_pow_2] + phi[grid_idx - gridsize_pow_2]);
+					aux_pot = _Onesixth_ * (-H_pow2 * rho[grid_idx] + phi[grid_idx + 1] + phi[grid_idx - 1] + phi[grid_idx + gridsize] + phi[grid_idx - gridsize] + phi[grid_idx + gridsize_pow_2] + phi[grid_idx - gridsize_pow_2]);
+					phi[grid_idx] = _w_SOR_HEAD_ * aux_pot + (1.0 - _w_SOR_HEAD_) * phi[grid_idx];
 				}
 			}
 		}
@@ -146,6 +147,7 @@ static void compute_jacobi(vtype *phi_old, vtype* phi_new, const vtype *rho,
 {
 
 	vtype *pointer_auxiliary;
+	vtype aux_pot;
 	vtype C = -(1.0L / (gridsize - 1)) * (1.0L / (gridsize - 1));
 	int gridsize_pow_2 = gridsize * gridsize;
 	int C1 = (gridsize - 1);
@@ -162,7 +164,8 @@ static void compute_jacobi(vtype *phi_old, vtype* phi_new, const vtype *rho,
 				for (int lx = 1; lx < C1; lx++)
 				{
 					Index = lz + ly + lx;
-					phi_new[Index] = _Onesixth_ * (C * rho[Index] + phi_old[Index + 1] + phi_old[Index - 1] + phi_old[Index + gridsize] + phi_old[Index - gridsize] + phi_old[Index + gridsize_pow_2] + phi_old[Index - gridsize_pow_2]);
+					aux_pot = _Onesixth_ * (C * rho[Index] + phi_old[Index + 1] + phi_old[Index - 1] + phi_old[Index + gridsize] + phi_old[Index - gridsize] + phi_old[Index + gridsize_pow_2] + phi_old[Index - gridsize_pow_2]);
+					phi_new[Index] = _w_SOR_HEAD_ * aux_pot + (1.0 - _w_SOR_HEAD_) * phi_new[Index];
 				}
 			}
 		}
@@ -195,6 +198,157 @@ static void jacobi(vtype *phi, const vtype *rho, int gridsize, int iter_max)
 	free(phi_copy);
 }
 
+static void conj_grad(vtype *phi, const vtype *rho, int gridsize, int conj_grad_iter)
+{
+	vtype H = 1.0L / (gridsize - 1);
+	vtype one_over_H_pow_2 = 1.0L / (H * H);
+	int gridsize_pow2 = gridsize * gridsize;
+	int gridsize_pow3 = gridsize * gridsize * gridsize;
+	
+
+	vtype *r, *p, *Ap;
+	r = (vtype *)calloc(gridsize_pow3, sizeof(vtype));
+	p = (vtype *)malloc(gridsize_pow3 * sizeof(vtype));
+	Ap = (vtype *)malloc(gridsize_pow3 * sizeof(vtype));
+
+	vtype alpha, rsold, rsnew;
+
+	int Index;
+	int C1 = (gridsize - 1);
+	int C2 = gridsize * (gridsize - 1);
+	int C3 = gridsize_pow2 * (gridsize - 1);
+
+	// Computing r
+	for (int lz = gridsize_pow2; lz < C3; lz += gridsize_pow2)
+	{
+		for (int ly = gridsize; ly < C2; ly += gridsize)
+		{
+			for (int lx = 1; lx < C1; lx++)
+			{
+				Index = lz + ly + lx;
+				r[Index] = rho[Index] + one_over_H_pow_2 * (6.0 * phi[Index] -  phi[Index + 1] - phi[Index - 1] - phi[Index + gridsize] - phi[Index - gridsize] - phi[Index + gridsize_pow2] - phi[Index - gridsize_pow2]);
+			}
+		}
+	}
+
+	// Copy r to p
+	memcpy(p, r, gridsize_pow3 * sizeof(vtype));
+
+	// Computing rsold
+	rsold = 0;
+	for (int lz = gridsize_pow2; lz < C3; lz += gridsize_pow2)
+	{
+		for (int ly = gridsize; ly < C2; ly += gridsize)
+		{
+			for (int lx = 1; lx < C1; lx++)
+			{
+				Index = lz + ly + lx;
+				rsold += r[Index] * r[Index];
+			}
+		}
+	}
+
+
+	// For cycle over mutually conjugate vectors p
+	int cycle_size = conj_grad_iter < (gridsize - 2) * (gridsize - 2) * (gridsize - 2) ? conj_grad_iter : (gridsize - 2) * (gridsize - 2) * (gridsize - 2);
+	for (int i = 0; i < cycle_size; i++)
+	{
+
+		// Computing Ap
+		for (int lz = gridsize_pow2; lz < C3; lz += gridsize_pow2)
+		{
+			for (int ly = gridsize; ly < C2; ly += gridsize)
+			{
+				for (int lx = 1; lx < C1; lx++)
+				{
+					Index = lz + ly + lx;
+					Ap[Index] = -one_over_H_pow_2 * (6.0 * p[Index] - p[Index + 1] - p[Index - 1] - p[Index + gridsize] - p[Index - gridsize] - p[Index + gridsize_pow2] - p[Index - gridsize_pow2]);
+				}
+			}
+		}
+
+		// Computing alpha
+		alpha = 0;
+		for (int lz = gridsize_pow2; lz < C3; lz += gridsize_pow2)
+		{
+			for (int ly = gridsize; ly < C2; ly += gridsize)
+			{
+				for (int lx = 1; lx < C1; lx++)
+				{
+					Index = lz + ly + lx;
+					alpha += p[Index] * Ap[Index];
+				}
+			}
+		}
+		alpha = rsold / alpha;
+
+		// New solution
+		for (int lz = gridsize_pow2; lz < C3; lz += gridsize_pow2)
+		{
+			for (int ly = gridsize; ly < C2; ly += gridsize)
+			{
+				for (int lx = 1; lx < C1; lx++)
+				{
+					Index = lz + ly + lx;
+					phi[Index] += alpha * p[Index];
+				}
+			}
+		}
+
+		// New rest
+		for (int lz = gridsize_pow2; lz < C3; lz += gridsize_pow2)
+		{
+			for (int ly = gridsize; ly < C2; ly += gridsize)
+			{
+				for (int lx = 1; lx < C1; lx++)
+				{
+					Index = lz + ly + lx;
+					r[Index] -= alpha * Ap[Index];
+				}
+			}
+		}
+
+		// Computing rsnew
+		rsnew = 0;
+		for (int lz = gridsize_pow2; lz < C3; lz += gridsize_pow2)
+		{
+			for (int ly = gridsize; ly < C2; ly += gridsize)
+			{
+				for (int lx = 1; lx < C1; lx++)
+				{
+					Index = lz + ly + lx;
+					rsnew += r[Index] * r[Index];
+				}
+			}
+		}
+
+		if(rsnew/rsold < 1.0e-16)
+		{
+			break;
+		}
+
+		// Updating p
+		for (int lz = gridsize_pow2; lz < C3; lz += gridsize_pow2)
+		{
+			for (int ly = gridsize; ly < C2; ly += gridsize)
+			{
+				for (int lx = 1; lx < C1; lx++)
+				{
+					Index = lz + ly + lx;
+					p[Index] = r[Index] + rsnew / rsold * p[Index];
+				}
+			}
+		}
+
+		// Updating rsold
+		rsold = rsnew;
+	}
+
+	free(r);
+	free(p);
+	free(Ap);
+}
+
 static void multigrid_solver(vtype *phi, const vtype *rho, int gridsize, int type_multigrid)
 {
 	int grid_idx;
@@ -223,6 +377,10 @@ static void multigrid_solver(vtype *phi, const vtype *rho, int gridsize, int typ
 	else if (solver == 1)
 	{
 		jacobi(phi, rho, gridsize, _NiterPreS_);
+	}
+	else if (solver == 2)
+	{
+		conj_grad(phi, rho, gridsize, conj_grad_iter);
 	}
 
 	//** >> Finding rest **/
@@ -255,6 +413,10 @@ static void multigrid_solver(vtype *phi, const vtype *rho, int gridsize, int typ
 		else if (solver == 1)
 		{
 			jacobi(phi, rho, gridsize, _Niterfinddphic_);
+		}
+		else if (solver == 2)
+		{
+			conj_grad(phi, rho, gridsize, conj_grad_iter);
 		}
 	}
 	else
@@ -302,6 +464,10 @@ static void multigrid_solver(vtype *phi, const vtype *rho, int gridsize, int typ
 	{
 		jacobi(phi, rho, gridsize, _NiterPostS_);
 	}
+	else if (solver == 2)
+	{
+		conj_grad(phi, rho, gridsize, conj_grad_iter);
+	}
 
 	free(dphic);
 	free(rest);
@@ -311,88 +477,253 @@ static void multigrid_solver(vtype *phi, const vtype *rho, int gridsize, int typ
 
 static int compute_potential_head_node(struct node *ptr_node_pt)
 {
-	int lv;
 
-	lv = ptr_node_pt->lv;
+	int grid_side; // Number of grid points per side
+	int grid_side_pow2;
+	int grid_limit; // Superior border in the internal grid box
 
-	if(lv == lmin)
+	vtype *aux_pot;
+	vtype *aux_d;
+	int size;
+	int size_pow2;
+	int size_pow3;
+
+	int aux_idx;
+	int box_grid_idx;
+
+	size = no_lmin_cell + 1;
+	size_pow2 = size * size;
+	size_pow3 = size_pow2 * size;
+	aux_pot = (vtype *)malloc(size_pow3 * sizeof(vtype));
+	aux_d = (vtype *)malloc(size_pow3 * sizeof(vtype));
+
+	grid_side = box_side_lmin + 1;
+	grid_side_pow2 = grid_side * grid_side;
+	grid_limit = grid_side - bder_os_sim - 1;
+
+	//** >> Pasing information from real parameters to auxiliary parameters **/
+	for (int k = bder_os_sim; k < grid_limit + 1; k++)
 	{
-		int grid_side;	// Number of grid points per side
-		int grid_side_pow2;
-		int grid_limit; // Superior border in the internal grid box
-
-		vtype *aux_pot;
-		vtype *aux_d;
-		int size;
-		int size_pow2;
-		int size_pow3;
-
-		int aux_idx;
-		int box_grid_idx;
-
-		size = no_lmin_cell + 1;
-		size_pow2 = size * size;
-		size_pow3 = size_pow2 * size;
-		aux_pot = (vtype *)malloc(size_pow3 * sizeof(vtype));
-		aux_d = (vtype *)malloc(size_pow3 * sizeof(vtype));
-
-		grid_side = box_side_lmin + 1;
-		grid_side_pow2 = grid_side * grid_side;
-		grid_limit = grid_side - bder_os_sim - 1;
-
-		//** >> Pasing information from real parameters to auxiliary parameters **/
-		for (int k = bder_os_sim; k < grid_limit + 1; k++)
+		for (int j = bder_os_sim; j < grid_limit + 1; j++)
 		{
-			for (int j = bder_os_sim; j < grid_limit + 1; j++)
+			for (int i = bder_os_sim; i < grid_limit + 1; i++)
 			{
-				for (int i = bder_os_sim; i < grid_limit + 1; i++)
-				{
-					box_grid_idx = i + j * grid_side + k * grid_side_pow2;
-					aux_idx = (i - bder_os_sim) + (j - bder_os_sim) * size + (k - bder_os_sim) * size_pow2;
-					aux_pot[aux_idx] = ptr_node_pt->ptr_pot[box_grid_idx];
-					aux_d[aux_idx] = ptr_node_pt->ptr_d[box_grid_idx];
-				}
+				box_grid_idx = i + j * grid_side + k * grid_side_pow2;
+				aux_idx = (i - bder_os_sim) + (j - bder_os_sim) * size + (k - bder_os_sim) * size_pow2;
+				aux_pot[aux_idx] = ptr_node_pt->ptr_pot[box_grid_idx];
+				aux_d[aux_idx] = ptr_node_pt->ptr_d[box_grid_idx];
 			}
 		}
-
-		int type_multigrid = multigrid;
-		//** >> Poisson Solver **/
-		// Potential-Density-gridsize-type of multigrid
-		multigrid_solver(aux_pot, aux_d, size, type_multigrid);
-
-		//** >> Pasing information from auxiliary parameters to real parameters **/
-		for (int k = bder_os_sim; k < grid_limit + 1; k++)
-		{
-			for (int j = bder_os_sim; j < grid_limit + 1; j++)
-			{
-				for (int i = bder_os_sim; i < grid_limit + 1; i++)
-				{
-					box_grid_idx = i + j * grid_side + k * grid_side_pow2;
-					aux_idx = (i - bder_os_sim) + (j - bder_os_sim) * size + (k - bder_os_sim) * size_pow2;
-					ptr_node_pt->ptr_pot[box_grid_idx] = aux_pot[aux_idx];
-					ptr_node_pt->ptr_d[box_grid_idx] = aux_d[aux_idx];
-				}
-			}
-		
-		}
-		free(aux_pot);
-		free(aux_d);
 	}
+
+	int type_multigrid = multigrid;
+	//** >> Poisson Solver **/
+	// Potential-Density-gridsize-type of multigrid
+	multigrid_solver(aux_pot, aux_d, size, type_multigrid);
+
+	
+
+	//** >> Pasing information from auxiliary parameters to real parameters **/
+	for (int k = bder_os_sim; k < grid_limit + 1; k++)
+	{
+		for (int j = bder_os_sim; j < grid_limit + 1; j++)
+		{
+			for (int i = bder_os_sim; i < grid_limit + 1; i++)
+			{
+				box_grid_idx = i + j * grid_side + k * grid_side_pow2;
+				aux_idx = (i - bder_os_sim) + (j - bder_os_sim) * size + (k - bder_os_sim) * size_pow2;
+				ptr_node_pt->ptr_pot[box_grid_idx] = aux_pot[aux_idx];
+				ptr_node_pt->ptr_d[box_grid_idx] = aux_d[aux_idx];
+			}
+		}
+	}
+	free(aux_pot);
+	free(aux_d);
 
 	return _SUCCESS_;
 }
 
+const int conjugate_gradient_HEAD(struct node *ptr_node)
+{
+	int box_grid_idx;
+
+	vtype H = 1.0L / (1 << ptr_node->lv);
+	vtype one_over_H_pow_2 = 1.0L / (H * H);
+	int size = (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1) * (ptr_node->box_real_dim_z + 1);
+
+	vtype *r, *p, *Ap;
+	r = (vtype *)calloc(size , sizeof(vtype));
+	p = (vtype *)malloc(size * sizeof(vtype));
+	Ap = (vtype *)malloc(size * sizeof(vtype));
+
+	vtype alpha,rsold,rsnew;
+
+	int grid_box_real_dim_X = ptr_node->box_real_dim_x + 1;
+	int grid_box_real_dim_X_times_Y = (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1);
+
+	vtype rhomean_times_4piG = 4 * _G_ * _PI_ * ptr_node->local_mass / (ptr_node->cell_size * H * H * H);
+	vtype aux_tol = ptr_node->grid_intr_size * (_ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ * rhomean_times_4piG) * (_ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ * rhomean_times_4piG); // sqrt(total_resid)/N/rhobar < error_tol 
+
+	//Computing r
+	for(int i = 0; i< ptr_node->grid_intr_size;i++)
+	{
+		box_grid_idx = ptr_node->ptr_intr_grid_idx[i];
+		r[box_grid_idx] = ptr_node->ptr_d[box_grid_idx] + one_over_H_pow_2 *
+																  (6.0 * ptr_node->ptr_pot[box_grid_idx] - ptr_node->ptr_pot[box_grid_idx + 1] - ptr_node->ptr_pot[box_grid_idx - 1] - ptr_node->ptr_pot[box_grid_idx + grid_box_real_dim_X] - ptr_node->ptr_pot[box_grid_idx - grid_box_real_dim_X] - ptr_node->ptr_pot[box_grid_idx + grid_box_real_dim_X_times_Y] - ptr_node->ptr_pot[box_grid_idx - grid_box_real_dim_X_times_Y]);
+	}
+
+	//Copy r to p
+	memcpy(p, r, size * sizeof(vtype));
+
+	//Computing rsold
+	rsold = 0;
+	for (int i = 0; i < ptr_node->grid_intr_size; i++)
+	{
+		box_grid_idx = ptr_node->ptr_intr_grid_idx[i];
+		rsold += r[box_grid_idx] * r[box_grid_idx];
+	}
+
+	if (rsold < aux_tol)
+	{
+		free(r);
+		free(p);
+		free(Ap);
+		return _SUCCESS_;
+	}
+
+	int cycle_size = size < _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_ ? size : _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_;
+	// For cycle over mutually conjugate vectors p
+	for (int i = 0; i < cycle_size; i++)
+	{
+
+		//Computing Ap
+		for(int j = 0; j< ptr_node->grid_intr_size;j++)
+		{
+			box_grid_idx = ptr_node->ptr_intr_grid_idx[j];
+			Ap[box_grid_idx] = -one_over_H_pow_2 * (6.0 * p[box_grid_idx] - p[box_grid_idx + 1] - p[box_grid_idx - 1] - p[box_grid_idx + grid_box_real_dim_X] - p[box_grid_idx - grid_box_real_dim_X] - p[box_grid_idx + grid_box_real_dim_X_times_Y] - p[box_grid_idx - grid_box_real_dim_X_times_Y]);
+		}
+
+		//Computing alpha
+		alpha = 0;
+		for (int j = 0; j < ptr_node->grid_intr_size; j++)
+		{
+			box_grid_idx = ptr_node->ptr_intr_grid_idx[j];
+			alpha += p[box_grid_idx] * Ap[box_grid_idx];
+		}
+
+		alpha = rsold / alpha;
+
+
+		//New solution
+		for (int j = 0; j < ptr_node->grid_intr_size; j++)
+		{
+			box_grid_idx = ptr_node->ptr_intr_grid_idx[j];
+			ptr_node->ptr_pot[box_grid_idx] += alpha * p[box_grid_idx];
+		}
+
+		// New rest
+		for (int j = 0; j < ptr_node->grid_intr_size; j++)
+		{
+			box_grid_idx = ptr_node->ptr_intr_grid_idx[j];
+			r[box_grid_idx] -= alpha * Ap[box_grid_idx];
+		}
+
+		//Computing rsnew
+		rsnew = 0;
+		for (int j = 0; j < ptr_node->grid_intr_size; j++)
+		{
+			box_grid_idx = ptr_node->ptr_intr_grid_idx[j];
+			rsnew += r[box_grid_idx] * r[box_grid_idx];
+		}
+
+		//Breaking cycle if tolerance is reached
+		if (rsnew < aux_tol)
+		{
+			free(r);
+			free(p);
+			free(Ap);
+			return _SUCCESS_;
+		}
+
+		//Updating p
+		for (int j = 0; j < ptr_node->grid_intr_size; j++)
+		{
+			box_grid_idx = ptr_node->ptr_intr_grid_idx[j];
+			p[box_grid_idx] = r[box_grid_idx] + rsnew / rsold * p[box_grid_idx];
+		}
+
+		//Updating rsold
+		rsold = rsnew;
+	}
+
+	free(r);
+	free(p);
+	free(Ap);
+	return _FAILURE_;
+}
+
+
+
 int potential_head_node()
 {
 
-	struct node *ptr_node_pt = GL_ptr_tree;
+	clock_t aux_clock;
 
-	//** >> Coarsest potential **/
-	if(compute_potential_head_node(ptr_node_pt) == _FAILURE_)
+	struct node *ptr_node = GL_ptr_tree;
+
+	if (head_pot_method == 0)
 	{
-		printf("Error at function potential\n");
+		int iter = 0;
+		bool check;
+
+		//** >> CHEKING ERROR SOLUTION CONDITION **/
+		aux_clock = clock();
+		check = poisson_error(ptr_node);
+		GL_times[21] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+		//** >> SOLVING POISSON EQUATION **/
+		while (iter < _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_ && check == false)
+		{
+			iter = iter + 1;
+			//** >> INITIAL POTENTIAL COMPUTATION **/
+			aux_clock = clock();
+			if (compute_potential_head_node(ptr_node) == _FAILURE_)
+			{
+				printf("\n\n Error running potential_head_node() function \n\n ");
+				return _FAILURE_;
+			}
+			GL_times[20] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+			//** >> CHEKING ERROR SOLUTION CONDITION **/
+			aux_clock = clock();
+			check = poisson_error(ptr_node);
+			GL_times[21] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+		}
+
+		if (iter == _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_)
+		{
+			printf("\nERROR: The precision was not reached in the parent node. Too many Multigrid Iterations, plz choose a lower precision than %1.3e\n", (double)_ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_);
+			return _FAILURE_;
+		}
+	}
+	else if (head_pot_method == 1)
+	{
+		aux_clock = clock();
+		//** >> SOLVING POISSON EQUATION **/
+		if (conjugate_gradient_HEAD(ptr_node) == _FAILURE_)
+		{
+			printf("\n\n Error running conjugate_gradient_HEAD() function \n\n ");
+			return _FAILURE_;
+		}
+		GL_times[20] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+	}
+	else
+	{
+		printf("Error, the Head potential method is equal to %d\n", head_pot_method);
 		return _FAILURE_;
 	}
+
+
 
 	return _SUCCESS_;
 }
