@@ -53,6 +53,9 @@ void output_main_parameters(vtype final_time, int Number_timesteps, int Number_o
     fprintf(file, "_w_SOR_ %1.5e\n", (double) _w_SOR_);
     fprintf(file, "_CFL_ %1.5e\n", (double) _CFL_);
     fprintf(file, "_MAX_dt_ %1.5e\n",(double) _MAX_dt_);
+    fprintf(file, "ref_criterion_ptcl %d\n", ref_criterion_ptcl);
+    fprintf(file, "n_exp %d\n", n_exp);
+    fprintf(file, "GC_iter %d\n", GC_iter);
 
     fprintf(file, "Ngrid %d\n", no_lmin_cell + 1);
     fprintf(file, "Nparticles %d\n", GL_no_ptcl);

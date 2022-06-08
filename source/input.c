@@ -42,7 +42,7 @@ int input_galaxies_merger()
     //                        "galaxy1_alone.txt";
 
     // char input_name[100] = "../source/initial_conditions/"
-    //                        "galaxy_merger_model_2.txt";
+    //                        "galaxies_model2.txt";
 
     FILE *file = NULL;
     file = fopen(input_name, "r");

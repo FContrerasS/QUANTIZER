@@ -1,7 +1,7 @@
 /*
- * main.h
+ * garbage_collector.h
  *
- * Header file of the main.c source file
+ * Header file of the garbage_collector.c source file
  *
  * Felipe Contreras
  * felipe.contrerass@postgrado.uv.cl
@@ -24,40 +24,11 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __MAIN__
-#define __MAIN__
+#ifndef __ADDNODETOSTACK__
+#define __ADDNODETOSTACK__
 
-//** >> Code Modules **/
 #include "common.h"
-#include "global_variables.h"
-#include "garbage_collector.h"
-#include "input.h"
-#include "initialization.h"
-#include "tree_construction.h"
-#include "grid_density.h"
-#include "potential.h"
-#include "potential_head_node.h"
-#include "poisson_error.h"
-#include "grid_acceleration.h"
-#include "particle_acceleration.h"
-#include "timestep_1.h"
-#include "timestep_2.h"
-#include "particle_updating_A.h"
-#include "particle_updating_B.h"
-#include "observables.h"
-#include "reset.h"
-#include "tree_adaptation.h"
 
-
-#include "output_main_parameters.h"
-#include "output_snapshots.h"
-
-
-
-#include "terminal_print.h"
-
-
-
+int garbage_collector();
 
 #endif
-

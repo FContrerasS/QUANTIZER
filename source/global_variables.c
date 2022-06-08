@@ -137,10 +137,14 @@ double TOTAL_MEMORY_AUX;
 double TOTAL_MEMORY_TENTACLES;
 double TOTAL_MEMORY_STACK;
 
-static void init_global_constants()
+//** >> GARBAGE COLLECTOR **/
+int GC_iter;
+
+static void
+init_global_constants()
 {
     //Constants
-    //_User_BoxSize_ = 5000.0L; //kpc
+    //_User_BoxSize_ = 3500.0L; //kpc
     _User_BoxSize_ = 0.1L; //kpc
     _PI_ = 3.14159265358979323846L;
     _Onesixth_ = 1.0L / 6.0L;
@@ -161,12 +165,12 @@ static void init_global_user_params()
     no_lmin_cell_pow3 = no_lmin_cell * no_lmin_cell * no_lmin_cell;
     no_grid = no_lmin_cell + 1;
     //GL_no_ptcl = 299586; // 2995865; // 299586; // 231299 // 298159
-     GL_no_ptcl = 10000;
+    GL_no_ptcl = 10000;
     Maxdt = 3.0 * _Mgyear_;
     //meanmass = 100; //Currently only used on input.c
     // total_mass = GL_no_ptcl * meanmass;
     // total_mass = 0;
-    fr_output = 1;
+    fr_output = 5;
     MaxIterations = 10000000;
     no_grid_pow2 = no_grid * no_grid;
     no_grid_pow3 = no_grid * no_grid * no_grid;
@@ -273,6 +277,11 @@ static void init_global_memory()
     TOTAL_MEMORY_STACK = 0;
 }
 
+static void init_global_garbage_collector_parameters()
+{
+    GC_iter = 1000000000;  //Number of time-steps between each garbage collector
+}
+
 void global_variables()
 {
     //** >> Initializing constants **/ 
@@ -304,4 +313,7 @@ void global_variables()
 
     //** >> Initializing memory parameters **/ 
     init_global_memory();
+
+    //** >> Garbage Collector **/
+    init_global_garbage_collector_parameters();
 }

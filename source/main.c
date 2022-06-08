@@ -268,6 +268,19 @@ int main(int argc, char **argv) {
 			GL_times[19] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 		}
 
+		//** >> GARBAGE COLLECTOR **/
+		GL_clock_begin = clock();
+		if ((Number_timesteps+1) % GC_iter == 0)
+		{
+			printf("Garbage Collector\n");
+			if(garbage_collector() == _FAILURE_)
+			{
+				printf("\n\n Error running garbage_collector() function\n\n");
+				return _FAILURE_;
+			}
+		}
+		GL_times[14] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
+
 		// BAR PROGRESS
 		fflush(stdout);
 		printf("\r[");

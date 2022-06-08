@@ -150,6 +150,18 @@ static int computing_memory()
 void terminal_print()
 {
     int cntr_nodes_memory_pool;
+
+    TOTAL_MEMORY_NODES = 0;
+    TOTAL_MEMORY_CELDAS = 0;
+    TOTAL_MEMORY_PARTICLES = 0;
+    TOTAL_MEMORY_CELL_STRUCT = 0;
+    TOTAL_MEMORY_CAJAS = 0;
+    TOTAL_MEMORY_GRID_POINTS = 0;
+    TOTAL_MEMORY_GRID_PROPERTIES = 0;
+    TOTAL_MEMORY_AUX = 0;
+    TOTAL_MEMORY_TENTACLES = 0;
+    TOTAL_MEMORY_STACK = 0;
+
     cntr_nodes_memory_pool = computing_memory();
 
     double sum = TOTAL_MEMORY_NODES + TOTAL_MEMORY_CELDAS + TOTAL_MEMORY_PARTICLES + TOTAL_MEMORY_CELL_STRUCT + TOTAL_MEMORY_CAJAS + TOTAL_MEMORY_GRID_POINTS + TOTAL_MEMORY_GRID_PROPERTIES + TOTAL_MEMORY_AUX + TOTAL_MEMORY_TENTACLES + TOTAL_MEMORY_STACK;
@@ -218,6 +230,7 @@ void terminal_print()
         "Reset",
         "Particle Updating B",
         "Observables",
+        "Garbage Collector",
         "Output Main Parameters",
         "Output Snapshots",
         ""};
@@ -292,7 +305,7 @@ void terminal_print()
     //** >> Particle acceleration time **/
     //** >> Time-step time **/
     //** >> Particle Updating time **/
-    for (int i = 5; i < 14; i++)
+    for (int i = 5; i < 15; i++)
     {
         if (i == MAX_TIME_SECCTION)
         {

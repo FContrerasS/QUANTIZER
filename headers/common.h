@@ -184,4 +184,8 @@ extern double TOTAL_MEMORY_TENTACLES;
 extern double TOTAL_MEMORY_OTROS;
 extern double TOTAL_MEMORY_STACK;
 
+// GARBAGE COLLECTOR
+extern int GC_iter;
+
+
 #endif
