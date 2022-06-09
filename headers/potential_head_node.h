@@ -24,11 +24,13 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __POTHEADNODE__
-#define __POTHEADNODE__
+#ifndef __POTENTIALHEADNODE__
+#define __POTENTIALHEADNODE__
 
 #include "common.h"
 #include "poisson_error.h"
+#include "multigrid.h"
+#include "conjugate_gradient.h"
 
 int potential_head_node();
 

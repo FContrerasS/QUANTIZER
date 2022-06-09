@@ -24,10 +24,11 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __POTBRANCHES__
-#define __POTBRANCHES__
+#ifndef __POTENTIALBRANCHES__
+#define __POTENTIALBRANCHES__
 
 #include "common.h"
+#include "conjugate_gradient.h"
 #include "poisson_error.h"
 #include "space_check.h"
 

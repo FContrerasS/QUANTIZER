@@ -1,7 +1,7 @@
 /*
- * global_variables.h
+ * jacobi.h
  *
- * Header file of the global_variables.c source file
+ * Header file with the most jacobi parameters declared
  *
  * Felipe Contreras
  * felipe.contrerass@postgrado.uv.cl
@@ -24,16 +24,11 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __GLOBALVARIABLES__
-#define __GLOBALVARIABLES__
+#ifndef __JACOBI__
+#define __JACOBI__
 
 #include "common.h"
 
-    void
-    global_variables();
-
-
-
-
+void jacobi(vtype *phi, const vtype *rho, int gridsize, int iter_max);
 
 #endif

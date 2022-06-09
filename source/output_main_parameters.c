@@ -51,7 +51,7 @@ void output_main_parameters(vtype final_time, int Number_timesteps, int Number_o
     fprintf(file, "_NiterPreS_ %d\n", _NiterPreS_);
     fprintf(file, "_NiterPostS_ %d\n", _NiterPostS_);
     fprintf(file, "_Niterfinddphic_ %d\n", _Niterfinddphic_);
-    fprintf(file, "_Iter_branches_SOR_ %d\n", _Iter_branches_SOR_);
+    fprintf(file, "_Iter_branches_solver_ %d\n", _Iter_branches_solver_);
     fprintf(file, "_w_SOR_ %1.5e\n", (double) _w_SOR_);
     fprintf(file, "_w_SOR_HEAD_ %1.5e\n", (double)_w_SOR_HEAD_);
     fprintf(file, "_CFL_ %1.5e\n", (double)_CFL_);

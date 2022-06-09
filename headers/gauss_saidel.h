@@ -1,7 +1,7 @@
 /*
- * global_variables.h
+ * gauss_saidel.h
  *
- * Header file of the global_variables.c source file
+ * Header file with the most gauss_saidel parameters declared
  *
  * Felipe Contreras
  * felipe.contrerass@postgrado.uv.cl
@@ -24,16 +24,11 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __GLOBALVARIABLES__
-#define __GLOBALVARIABLES__
+#ifndef __GAUSSSAIDEL__
+#define __GAUSSSAIDEL__
 
 #include "common.h"
 
-    void
-    global_variables();
-
-
-
-
+void gauss_saidel(vtype *phi, const vtype *rho, int gridsize, int iter_max);
 
 #endif

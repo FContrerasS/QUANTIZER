@@ -126,7 +126,7 @@ extern int solverPostS;
 extern int _NiterPreS_; // _NiterPreS_:      Number of Solver iterations used for a Pre-Smoothing on multigrid method
 extern int _NiterPostS_; //  _NiterPostS_:     Number of Solver iterations used for a Post-Smoothing on multigrid method
 extern int _Niterfinddphic_; // Number of Solver iterations used in the coarsest level on the multigrid method
-extern int _Iter_branches_SOR_; // Number of iterations in the potential computation in the branches of the tree using Successive over-relaxation
+extern int _Iter_branches_solver_; // Number of iterations in the potential computation in the branches of the tree using Successive over-relaxation
 extern vtype _w_SOR_;          // The overrelaxation parameter
 extern vtype _w_SOR_HEAD_;
 extern int head_pot_method;

@@ -211,7 +211,6 @@ static int input_code_units()
 
 int input()
 {
-
     if (input_plummer_model() == _FAILURE_)
     {
         printf("\n\n Error running input_plummer_model function\n\n");

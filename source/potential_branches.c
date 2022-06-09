@@ -250,7 +250,7 @@ static int compute_potential_branch_node(int **pptr_red_black, const int *ptr_re
 	vtype H_pow2 = H * H;
 
 	//** >> Cycle over the Successive over-relaxation **/
-	for (int iter = 0; iter < _Iter_branches_SOR_; iter++)
+	for (int iter = 0; iter < _Iter_branches_solver_; iter++)
 	{
 		//** >> Cycle over red points **/
 		for (int i = 0; i < red_size; i++)
@@ -284,131 +284,6 @@ static int compute_potential_branch_node(int **pptr_red_black, const int *ptr_re
 	}
 
 	return _SUCCESS_;
-}
-
-const int conjugate_gradient_branch_node(struct node *ptr_node)
-{
-
-	clock_t aux_clock;
-
-	int box_grid_idx;
-
-	vtype H = 1.0L / (1 << ptr_node->lv);
-	vtype one_over_H_pow_2 = 1.0L / (H * H);
-	int size = (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1) * (ptr_node->box_real_dim_z + 1);
-
-	vtype *r, *p, *Ap;
-	r = (vtype *)calloc(size, sizeof(vtype));
-	p = (vtype *)malloc(size * sizeof(vtype));
-	Ap = (vtype *)malloc(size * sizeof(vtype));
-
-	vtype alpha, rsold, rsnew;
-
-	int grid_box_real_dim_X = ptr_node->box_real_dim_x + 1;
-	int grid_box_real_dim_X_times_Y = (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1);
-
-	// Computing r
-	for (int i = 0; i < ptr_node->grid_intr_size; i++)
-	{
-		box_grid_idx = ptr_node->ptr_intr_grid_idx[i];
-		r[box_grid_idx] = ptr_node->ptr_d[box_grid_idx] + one_over_H_pow_2 *
-															  (6.0 * ptr_node->ptr_pot[box_grid_idx] - ptr_node->ptr_pot[box_grid_idx + 1] - ptr_node->ptr_pot[box_grid_idx - 1] - ptr_node->ptr_pot[box_grid_idx + grid_box_real_dim_X] - ptr_node->ptr_pot[box_grid_idx - grid_box_real_dim_X] - ptr_node->ptr_pot[box_grid_idx + grid_box_real_dim_X_times_Y] - ptr_node->ptr_pot[box_grid_idx - grid_box_real_dim_X_times_Y]);
-	}
-
-	// Copy r to p
-	memcpy(p, r, size * sizeof(vtype));
-
-	// Computing rsold
-	rsold = 0;
-	for (int i = 0; i < ptr_node->grid_intr_size; i++)
-	{
-		box_grid_idx = ptr_node->ptr_intr_grid_idx[i];
-		rsold += r[box_grid_idx] * r[box_grid_idx];
-	}
-
-	//** >> CHEKING ERROR SOLUTION CONDITION **/
-	aux_clock = clock();
-	if (poisson_error(ptr_node, r, rsold, 1) == true)
-	{
-		GL_times[25] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
-		free(r);
-		free(p);
-		free(Ap);
-		return _SUCCESS_;
-	}
-	GL_times[25] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
-
-	int cycle_size = size < _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_ ? size : _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_;
-	// For cycle over mutually conjugate vectors p
-	for (int i = 0; i < cycle_size; i++)
-	{
-
-		// Computing Ap
-		for (int j = 0; j < ptr_node->grid_intr_size; j++)
-		{
-			box_grid_idx = ptr_node->ptr_intr_grid_idx[j];
-			Ap[box_grid_idx] = -one_over_H_pow_2 * (6.0 * p[box_grid_idx] - p[box_grid_idx + 1] - p[box_grid_idx - 1] - p[box_grid_idx + grid_box_real_dim_X] - p[box_grid_idx - grid_box_real_dim_X] - p[box_grid_idx + grid_box_real_dim_X_times_Y] - p[box_grid_idx - grid_box_real_dim_X_times_Y]);
-		}
-
-		// Computing alpha
-		alpha = 0;
-		for (int j = 0; j < ptr_node->grid_intr_size; j++)
-		{
-			box_grid_idx = ptr_node->ptr_intr_grid_idx[j];
-			alpha += p[box_grid_idx] * Ap[box_grid_idx];
-		}
-
-		alpha = rsold / alpha;
-
-		// New solution
-		for (int j = 0; j < ptr_node->grid_intr_size; j++)
-		{
-			box_grid_idx = ptr_node->ptr_intr_grid_idx[j];
-			ptr_node->ptr_pot[box_grid_idx] += alpha * p[box_grid_idx];
-		}
-
-		// New rest
-		for (int j = 0; j < ptr_node->grid_intr_size; j++)
-		{
-			box_grid_idx = ptr_node->ptr_intr_grid_idx[j];
-			r[box_grid_idx] -= alpha * Ap[box_grid_idx];
-		}
-
-		// Computing rsnew
-		rsnew = 0;
-		for (int j = 0; j < ptr_node->grid_intr_size; j++)
-		{
-			box_grid_idx = ptr_node->ptr_intr_grid_idx[j];
-			rsnew += r[box_grid_idx] * r[box_grid_idx];
-		}
-
-		//** >> CHEKING ERROR SOLUTION CONDITION **/
-		aux_clock = clock();
-		if (poisson_error(ptr_node, r, rsnew, 1) == true)
-		{
-			GL_times[25] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
-			free(r);
-			free(p);
-			free(Ap);
-			return _SUCCESS_;
-		}
-		GL_times[25] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
-
-		// Updating p
-		for (int j = 0; j < ptr_node->grid_intr_size; j++)
-		{
-			box_grid_idx = ptr_node->ptr_intr_grid_idx[j];
-			p[box_grid_idx] = r[box_grid_idx] + rsnew / rsold * p[box_grid_idx];
-		}
-
-		// Updating rsold
-		rsold = rsnew;
-	}
-
-	free(r);
-	free(p);
-	free(Ap);
-	return _FAILURE_;
 }
 
 int potential_branches()
@@ -461,9 +336,9 @@ int potential_branches()
 				{
 					//** >> Computing the potential in the child node **/
 					aux_clock = clock();
-					if (conjugate_gradient_branch_node(ptr_ch) == _FAILURE_)
+					if (conjugate_gradient(ptr_ch) == _FAILURE_)
 					{
-						printf("Error at function conjugate_gradient_branch()\n");
+						printf("Error at function conjugate_gradient()\n");
 						return _FAILURE_;
 					}
 					GL_times[24] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;

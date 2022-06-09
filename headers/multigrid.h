@@ -1,7 +1,7 @@
 /*
- * global_variables.h
+ * multigrid.h
  *
- * Header file of the global_variables.c source file
+ * Header file with the most multigrid parameters declared
  *
  * Felipe Contreras
  * felipe.contrerass@postgrado.uv.cl
@@ -24,16 +24,14 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __GLOBALVARIABLES__
-#define __GLOBALVARIABLES__
+#ifndef __MULTIGRID__
+#define __MULTIGRID__
 
 #include "common.h"
+#include "jacobi.h"
+#include "gauss_saidel.h"
+#include "conjugate_gradient_multigrid.h"
 
-    void
-    global_variables();
-
-
-
-
+void multigrid_solver(vtype *phi, const vtype *rho, int gridsize, int type_multigrid);
 
 #endif

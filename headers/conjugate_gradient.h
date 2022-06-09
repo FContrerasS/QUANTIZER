@@ -1,7 +1,7 @@
 /*
- * global_variables.h
+ * conjugate_gradient.h
  *
- * Header file of the global_variables.c source file
+ * Header file with the most conjugate_gradient parameters declared
  *
  * Felipe Contreras
  * felipe.contrerass@postgrado.uv.cl
@@ -24,16 +24,12 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __GLOBALVARIABLES__
-#define __GLOBALVARIABLES__
+#ifndef __CONJUGATEGRADIENT__
+#define __CONJUGATEGRADIENT__
 
 #include "common.h"
+#include "poisson_error.h"
 
-    void
-    global_variables();
-
-
-
-
+int conjugate_gradient(struct node *ptr_node);
 
 #endif

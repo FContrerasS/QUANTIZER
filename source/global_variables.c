@@ -82,8 +82,8 @@ int solverfinddphic;
 int solverPostS;
 int _NiterPreS_;
 int _NiterPostS_; 
-int _Niterfinddphic_; 
-int _Iter_branches_SOR_;
+int _Niterfinddphic_;
+int _Iter_branches_solver_;
 vtype _w_SOR_;
 vtype _w_SOR_HEAD_;
 int head_pot_method;
@@ -148,7 +148,7 @@ static void
 init_global_constants()
 {
     //Constants
-    //_User_BoxSize_ = 3500.0L; //kpc
+    //_User_BoxSize_ = 1000.0L; //kpc
     _User_BoxSize_ = 0.1L; //kpc
     _PI_ = 3.14159265358979323846L;
     _Onesixth_ = 1.0L / 6.0L;
@@ -168,7 +168,7 @@ static void init_global_user_params()
     no_lmin_cell_pow2 = no_lmin_cell * no_lmin_cell;
     no_lmin_cell_pow3 = no_lmin_cell * no_lmin_cell * no_lmin_cell;
     no_grid = no_lmin_cell + 1;
-    // GL_no_ptcl = 2995865; // 2995865; // 299586; // 231299 // 298159
+    //GL_no_ptcl = 2995865; // 2995865; // 299586; // 231299 // 298159
     GL_no_ptcl = 10000;
     Maxdt = 3.0 * _Mgyear_;
     //meanmass = 100; //Currently only used on input.c
@@ -215,7 +215,7 @@ static void init_global_poisson_params()
     _NiterPreS_ = 2;
     _NiterPostS_ = 2; 
     _Niterfinddphic_ = 2; 
-    _Iter_branches_SOR_ = 20; 
+    _Iter_branches_solver_ = 20; 
     _w_SOR_ = 1.9;
     _w_SOR_HEAD_ = 1.0;
 
@@ -288,7 +288,7 @@ static void init_global_memory()
 
 static void init_global_garbage_collector_parameters()
 {
-    Garbage_Collector_iter = 1000000000; // Number of time-steps between each garbage collector
+    Garbage_Collector_iter = 10000000; // Number of time-steps between each garbage collector
 }
 
 void global_variables()
