@@ -26,29 +26,6 @@
 
 #include "poisson_error.h"
 
-// static bool interior_grid_point(const struct node *ptr_node, int i)
-// {
-// 	bool check = true;
-
-// 	int box_idx = ptr_node->ptr_box_idx[i];
-
-// 	//** Checking the nearest 3 neighbors of face
-// 	if (ptr_node->ptr_box[box_idx - 1] < -3)
-// 	{
-// 		check = false;
-// 	}
-// 	else if (ptr_node->ptr_box[box_idx - ptr_node->box_real_dim_x] < -3)
-// 	{
-// 		check = false;
-// 	}
-// 	else if (ptr_node->ptr_box[box_idx - ptr_node->box_real_dim_x * ptr_node->box_real_dim_y] < -3)
-// 	{
-// 		check = false;
-// 	}
-
-// 	return check;
-// }
-
 static bool poisson_error_mehod_0(const struct node *ptr_node)
 {
 	/* 	The condition used is option 1 (default one), and it
@@ -206,26 +183,90 @@ static bool poisson_error_mehod_2(const struct node *ptr_node)
 	}
 }
 
-bool poisson_error(struct node *ptr_node)
+static bool conj_grad_error(struct node *ptr_node, vtype *error, vtype error_total_pow2)
+{
+
+	vtype H = 1.0L / (1 << ptr_node->lv);
+
+	vtype rhomean_times_4piG = 4 * _G_ * _PI_ * ptr_node->local_mass / (ptr_node->cell_size * H * H * H);
+
+	if (check_poisson_error_method == 0)
+	{
+		vtype aux_tol = ptr_node->grid_intr_size * (_ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ * rhomean_times_4piG) * (_ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ * rhomean_times_4piG); // sqrt(total_resid)/N/rhobar < error_tol
+
+		if (error_total_pow2 < aux_tol)
+		{
+			return true;
+		}
+		return false;
+	}
+	else if (check_poisson_error_method == 1)
+	{
+		int box_grid_idx;
+		vtype aux_error;
+		// Computing the root mean square normalized to the mean density rhomean
+		for (int i = 0; i < ptr_node->grid_intr_size; i++)
+		{
+			box_grid_idx = ptr_node->ptr_intr_grid_idx[i];
+			aux_error = myabs(error[box_grid_idx]) / rhomean_times_4piG;
+			if (aux_error >= _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_)
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+	else if (check_poisson_error_method == 2)
+	{
+		vtype aux_tol = ptr_node->grid_intr_size * (_ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ * rhomean_times_4piG) * (_ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ * rhomean_times_4piG) * (cbrt(ptr_node->grid_intr_size) * cbrt(ptr_node->grid_intr_size));
+
+		if (error_total_pow2 < aux_tol)
+		{
+			return true;
+		}
+		return false;
+	}
+	else
+	{
+		printf("Error: check_poisson_error_method method = %d is different to 0, 1 or 2\n", check_poisson_error_method);
+		exit(EXIT_FAILURE);
+	}
+
+	return false;
+}
+
+bool poisson_error(struct node *ptr_node, vtype *error, vtype error_total_pow2,int type)
 {
 
 	bool check = false;
 
-	if (check_poisson_error_method == 0)
+	if(type == 0)	//Gauss-Saidel and Jacobi
 	{
-		check = poisson_error_mehod_0(ptr_node);
+		if (check_poisson_error_method == 0)
+		{
+			check = poisson_error_mehod_0(ptr_node);
+		}
+		else if (check_poisson_error_method == 1)
+		{
+			check = poisson_error_mehod_1(ptr_node);
+		}
+		else if (check_poisson_error_method == 2)
+		{
+			check = poisson_error_mehod_2(ptr_node);
+		}
+		else
+		{
+			printf("Error: check_poisson_error_method is different to 0, 1 or 2\n");
+			exit(EXIT_FAILURE);
+		}
 	}
-	else if (check_poisson_error_method == 1)
+	else if(type == 1)	//Conjugate Gradient
 	{
-		check = poisson_error_mehod_1(ptr_node);
-	}
-	else if (check_poisson_error_method == 2)
-	{
-		check = poisson_error_mehod_2(ptr_node);
+		check = conj_grad_error(ptr_node, error, error_total_pow2);
 	}
 	else
 	{
-		printf("Error: check_poisson_error_method is different to 0, 1 or 2\n");
+		printf("Error: poisson_error type is different to 0, 1\n");
 		exit(EXIT_FAILURE);
 	}
 

@@ -32,11 +32,11 @@ int input_galaxies_merger()
     printf("Input by galaxies merger\n");
 
     
-    char input_name[100] = "../source/initial_conditions/"
-                           "galaxies_IC_low_ptcl.txt";
-
     // char input_name[100] = "../source/initial_conditions/"
-    //                        "galaxies_IC_high_ptcl.txt";
+    //                        "galaxies_IC_low_ptcl.txt";
+
+    char input_name[100] = "../source/initial_conditions/"
+                           "galaxies_IC_high_ptcl.txt";
 
     // char input_name[100] = "../source/initial_conditions/"
     //                        "galaxy1_alone.txt";

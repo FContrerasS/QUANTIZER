@@ -31,6 +31,6 @@
 
 struct node;
 
-bool poisson_error(struct node *ptr_node);
+bool poisson_error(struct node *ptr_node, vtype *error, vtype error_total_pow2,int type);
 
 #endif

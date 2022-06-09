@@ -24,8 +24,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __POTHEADCOMP__
-#define __POTHEADCOMP__
+#ifndef __POTHEADNODE__
+#define __POTHEADNODE__
 
 #include "common.h"
 #include "poisson_error.h"

@@ -119,8 +119,10 @@ extern vtype _MAX_dt_;
 extern int _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_;
 extern vtype _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_;
 extern int check_poisson_error_method; // 0,1,2 = Method used
-extern int multigrid; // 0 = V cycle, 1 = F cycle, 2 = W cycle.
-extern int solver; // 0 = Gauss-Saidel, 1 = Jacobi
+extern int multigrid_cycle;            // 0 = V cycle, 1 = F cycle, 2 = W cycle.
+extern int solverPreS; // 0 = Gauss-Saidel, 1 = Jacobi // 2 Conjugate Gradient
+extern int solverfinddphic;
+extern int solverPostS;
 extern int _NiterPreS_; // _NiterPreS_:      Number of Solver iterations used for a Pre-Smoothing on multigrid method
 extern int _NiterPostS_; //  _NiterPostS_:     Number of Solver iterations used for a Post-Smoothing on multigrid method
 extern int _Niterfinddphic_; // Number of Solver iterations used in the coarsest level on the multigrid method
@@ -129,7 +131,6 @@ extern vtype _w_SOR_;          // The overrelaxation parameter
 extern vtype _w_SOR_HEAD_;
 extern int head_pot_method;
 extern int branch_pot_method;
-extern int conj_grad_iter;
 
 //** >> Particles **/
 extern vtype *GL_ptcl_mass;
@@ -189,7 +190,7 @@ extern double TOTAL_MEMORY_OTROS;
 extern double TOTAL_MEMORY_STACK;
 
 // GARBAGE COLLECTOR
-extern int GC_iter;
+extern int Garbage_Collector_iter;
 
 
 #endif

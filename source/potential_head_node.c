@@ -1,5 +1,5 @@
 /*
- * potential_heada_node.c
+ * potential_head_node.c
  *
  * Compute the potential in the head node or coarsest level of refinement
  *
@@ -198,7 +198,7 @@ static void jacobi(vtype *phi, const vtype *rho, int gridsize, int iter_max)
 	free(phi_copy);
 }
 
-static void conj_grad(vtype *phi, const vtype *rho, int gridsize, int conj_grad_iter)
+static void conjugate_gradient_multigrid(vtype *phi, const vtype *rho, int gridsize, int conj_grad_iter)
 {
 	vtype H = 1.0L / (gridsize - 1);
 	vtype one_over_H_pow_2 = 1.0L / (H * H);
@@ -370,17 +370,17 @@ static void multigrid_solver(vtype *phi, const vtype *rho, int gridsize, int typ
 	rest = (vtype *)calloc(gridsize_pow_3, sizeof(vtype));
 
 	//** >> Pre - Smoothing **/
-	if(solver == 0)
+	if (solverPreS == 0)
 	{
 		gauss_saidel(phi, rho, gridsize, _NiterPreS_);
 	}
-	else if (solver == 1)
+	else if (solverPreS == 1)
 	{
 		jacobi(phi, rho, gridsize, _NiterPreS_);
 	}
-	else if (solver == 2)
+	else if (solverPreS == 2)
 	{
-		conj_grad(phi, rho, gridsize, conj_grad_iter);
+		conjugate_gradient_multigrid(phi, rho, gridsize, _NiterPreS_);
 	}
 
 	//** >> Finding rest **/
@@ -393,7 +393,6 @@ static void multigrid_solver(vtype *phi, const vtype *rho, int gridsize, int typ
 			{
 				grid_idx = k + j + i;
 				rest[grid_idx] = rho[grid_idx] + one_over_H2 * (
-
 															 6 * phi[grid_idx] - phi[grid_idx + 1] - phi[grid_idx - 1] - phi[grid_idx + gridsize] - phi[grid_idx - gridsize] - phi[grid_idx + gridsize_pow_2] - phi[grid_idx - gridsize_pow_2]);
 			}
 		}
@@ -406,17 +405,17 @@ static void multigrid_solver(vtype *phi, const vtype *rho, int gridsize, int typ
 	if (gridsizecoarse < 4)
 	{
 		//** >> SOLVER **/
-		if (solver == 0)
+		if (solverfinddphic == 0)
 		{
 			gauss_saidel(phi, rho, gridsize, _Niterfinddphic_);
 		}
-		else if (solver == 1)
+		else if (solverfinddphic == 1)
 		{
 			jacobi(phi, rho, gridsize, _Niterfinddphic_);
 		}
-		else if (solver == 2)
+		else if (solverfinddphic == 2)
 		{
-			conj_grad(phi, rho, gridsize, conj_grad_iter);
+			conjugate_gradient_multigrid(phi, rho, gridsize, _Niterfinddphic_);
 		}
 	}
 	else
@@ -456,17 +455,17 @@ static void multigrid_solver(vtype *phi, const vtype *rho, int gridsize, int typ
 	}
 
 	//** >> Post - Smoothing **/
-	if (solver == 0)
+	if (solverPostS == 0)
 	{
 		gauss_saidel(phi, rho, gridsize, _NiterPostS_);
 	}
-	else if (solver == 1)
+	else if (solverPostS == 1)
 	{
 		jacobi(phi, rho, gridsize, _NiterPostS_);
 	}
-	else if (solver == 2)
+	else if (solverPostS == 2)
 	{
-		conj_grad(phi, rho, gridsize, conj_grad_iter);
+		conjugate_gradient_multigrid(phi, rho, gridsize, _NiterPostS_);
 	}
 
 	free(dphic);
@@ -516,7 +515,7 @@ static int compute_potential_head_node(struct node *ptr_node_pt)
 		}
 	}
 
-	int type_multigrid = multigrid;
+	int type_multigrid = multigrid_cycle;
 	//** >> Poisson Solver **/
 	// Potential-Density-gridsize-type of multigrid
 	multigrid_solver(aux_pot, aux_d, size, type_multigrid);
@@ -547,6 +546,8 @@ const int conjugate_gradient_HEAD(struct node *ptr_node)
 {
 	int box_grid_idx;
 
+	clock_t aux_clock;
+
 	vtype H = 1.0L / (1 << ptr_node->lv);
 	vtype one_over_H_pow_2 = 1.0L / (H * H);
 	int size = (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1) * (ptr_node->box_real_dim_z + 1);
@@ -560,9 +561,6 @@ const int conjugate_gradient_HEAD(struct node *ptr_node)
 
 	int grid_box_real_dim_X = ptr_node->box_real_dim_x + 1;
 	int grid_box_real_dim_X_times_Y = (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1);
-
-	vtype rhomean_times_4piG = 4 * _G_ * _PI_ * ptr_node->local_mass / (ptr_node->cell_size * H * H * H);
-	vtype aux_tol = ptr_node->grid_intr_size * (_ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ * rhomean_times_4piG) * (_ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ * rhomean_times_4piG); // sqrt(total_resid)/N/rhobar < error_tol 
 
 	//Computing r
 	for(int i = 0; i< ptr_node->grid_intr_size;i++)
@@ -583,13 +581,18 @@ const int conjugate_gradient_HEAD(struct node *ptr_node)
 		rsold += r[box_grid_idx] * r[box_grid_idx];
 	}
 
-	if (rsold < aux_tol)
+	//** >> CHEKING ERROR SOLUTION CONDITION **/
+	aux_clock = clock();
+	if (poisson_error(ptr_node, r, rsold, 1) == true)
 	{
+		GL_times[25] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 		free(r);
 		free(p);
 		free(Ap);
 		return _SUCCESS_;
 	}
+	GL_times[25] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
 
 	int cycle_size = size < _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_ ? size : _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_;
 	// For cycle over mutually conjugate vectors p
@@ -636,14 +639,17 @@ const int conjugate_gradient_HEAD(struct node *ptr_node)
 			rsnew += r[box_grid_idx] * r[box_grid_idx];
 		}
 
-		//Breaking cycle if tolerance is reached
-		if (rsnew < aux_tol)
+		//** >> CHEKING ERROR SOLUTION CONDITION **/
+		aux_clock = clock();
+		if (poisson_error(ptr_node, r, rsnew, 1) == true)
 		{
+			GL_times[25] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 			free(r);
 			free(p);
 			free(Ap);
 			return _SUCCESS_;
 		}
+		GL_times[25] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
 		//Updating p
 		for (int j = 0; j < ptr_node->grid_intr_size; j++)
@@ -662,14 +668,15 @@ const int conjugate_gradient_HEAD(struct node *ptr_node)
 	return _FAILURE_;
 }
 
-
-
 int potential_head_node()
 {
 
 	clock_t aux_clock;
 
 	struct node *ptr_node = GL_ptr_tree;
+
+	vtype *dummy_pvtype = NULL;
+	vtype dummy_vtype = 0;
 
 	if (head_pot_method == 0)
 	{
@@ -678,7 +685,7 @@ int potential_head_node()
 
 		//** >> CHEKING ERROR SOLUTION CONDITION **/
 		aux_clock = clock();
-		check = poisson_error(ptr_node);
+		check = poisson_error(ptr_node, dummy_pvtype, dummy_vtype,0);
 		GL_times[21] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
 		//** >> SOLVING POISSON EQUATION **/
@@ -696,7 +703,7 @@ int potential_head_node()
 
 			//** >> CHEKING ERROR SOLUTION CONDITION **/
 			aux_clock = clock();
-			check = poisson_error(ptr_node);
+			check = poisson_error(ptr_node,dummy_pvtype,dummy_vtype,0);
 			GL_times[21] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 		}
 
@@ -722,8 +729,6 @@ int potential_head_node()
 		printf("Error, the Head potential method is equal to %d\n", head_pot_method);
 		return _FAILURE_;
 	}
-
-
 
 	return _SUCCESS_;
 }

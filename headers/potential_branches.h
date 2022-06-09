@@ -1,7 +1,7 @@
 /*
- * potential.h
+ * potential_branches.h
  *
- * Header file of the potential.c source file
+ * Header file of the potential_branches.c source file
  *
  * Felipe Contreras
  * felipe.contrerass@postgrado.uv.cl
@@ -24,16 +24,13 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __POTENTIAL__
-#define __POTENTIAL__
+#ifndef __POTBRANCHES__
+#define __POTBRANCHES__
 
 #include "common.h"
-#include "potential_head_node.h"
-#include "potential_branches.h"
+#include "poisson_error.h"
+#include "space_check.h"
 
-
-
-    int
-    potential();
+int potential_branches();
 
 #endif

@@ -44,8 +44,10 @@ void output_main_parameters(vtype final_time, int Number_timesteps, int Number_o
     fprintf(file, "_MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_ %d\n", _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_);
     fprintf(file, "_ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ %1.5e\n", (double) _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_);
     fprintf(file, "check_poisson_error_method %d\n", check_poisson_error_method);
-    fprintf(file, "multigrid_method %d\n", multigrid);
-    fprintf(file, "solver %d\n", solver);
+    fprintf(file, "multigrid_cycle %d\n", multigrid_cycle);
+    fprintf(file, "solverPreS %d\n", solverPreS);
+    fprintf(file, "solverfinddphic %d\n", solverfinddphic);
+    fprintf(file, "solverPostS %d\n", solverPostS);
     fprintf(file, "_NiterPreS_ %d\n", _NiterPreS_);
     fprintf(file, "_NiterPostS_ %d\n", _NiterPostS_);
     fprintf(file, "_Niterfinddphic_ %d\n", _Niterfinddphic_);
@@ -56,7 +58,7 @@ void output_main_parameters(vtype final_time, int Number_timesteps, int Number_o
     fprintf(file, "_MAX_dt_ %1.5e\n",(double) _MAX_dt_);
     fprintf(file, "ref_criterion_ptcl %d\n", ref_criterion_ptcl);
     fprintf(file, "n_exp %d\n", n_exp);
-    fprintf(file, "GC_iter %d\n", GC_iter);
+    fprintf(file, "GC_iter %d\n", Garbage_Collector_iter);
 
     fprintf(file, "Ngrid %d\n", no_lmin_cell + 1);
     fprintf(file, "Nparticles %d\n", GL_no_ptcl);

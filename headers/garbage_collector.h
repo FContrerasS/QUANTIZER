@@ -24,8 +24,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __ADDNODETOSTACK__
-#define __ADDNODETOSTACK__
+#ifndef __GARBAGECOLLECTOR__
+#define __GARBAGECOLLECTOR__
 
 #include "common.h"
 

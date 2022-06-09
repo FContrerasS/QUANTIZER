@@ -24,8 +24,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __TIMESTEPCOMPUTE__
-#define __TIMESTEPCOMPUTE__
+#ifndef __TIMESTEPCOMPUTE1__
+#define __TIMESTEPCOMPUTE1__
 
 #include "common.h"
 

@@ -76,8 +76,10 @@ vtype _w_SOR_: The overrelaxation parameter
 int _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_;
 vtype _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_;
 int check_poisson_error_method;
-int multigrid;
-int solver;
+int multigrid_cycle;
+int solverPreS;
+int solverfinddphic;
+int solverPostS;
 int _NiterPreS_;
 int _NiterPostS_; 
 int _Niterfinddphic_; 
@@ -86,7 +88,6 @@ vtype _w_SOR_;
 vtype _w_SOR_HEAD_;
 int head_pot_method;
 int branch_pot_method;
-int conj_grad_iter;
 
 //** >> Defining Particles Parameters **/
 vtype *GL_ptcl_mass; // Mass
@@ -141,7 +142,7 @@ double TOTAL_MEMORY_TENTACLES;
 double TOTAL_MEMORY_STACK;
 
 //** >> GARBAGE COLLECTOR **/
-int GC_iter;
+int Garbage_Collector_iter;
 
 static void
 init_global_constants()
@@ -162,18 +163,18 @@ static void init_global_user_params()
 {
     BoxSize = 1.0L;
     lmin = 5;     //Coarset level of refinement
-    lmax = lmin + 5;  //Finest level of refinement
+    lmax = lmin + 2;  //Finest level of refinement
     no_lmin_cell = 1 << lmin; // Number of cells in the lmin level of refinement
     no_lmin_cell_pow2 = no_lmin_cell * no_lmin_cell;
     no_lmin_cell_pow3 = no_lmin_cell * no_lmin_cell * no_lmin_cell;
     no_grid = no_lmin_cell + 1;
-    //GL_no_ptcl = 299586; // 2995865; // 299586; // 231299 // 298159
+    // GL_no_ptcl = 2995865; // 2995865; // 299586; // 231299 // 298159
     GL_no_ptcl = 10000;
     Maxdt = 3.0 * _Mgyear_;
     //meanmass = 100; //Currently only used on input.c
     // total_mass = GL_no_ptcl * meanmass;
     // total_mass = 0;
-    fr_output = 10000000;
+    fr_output = 5;
     MaxIterations = 10000000;
     no_grid_pow2 = no_grid * no_grid;
     no_grid_pow3 = no_grid * no_grid * no_grid;
@@ -183,7 +184,7 @@ static void init_global_user_params()
 static void init_global_ref_crit()
 {
     ref_criterion_mass = 1.0e100; // meanmass * 7;
-    ref_criterion_ptcl = 2;
+    ref_criterion_ptcl = 7;
     n_exp = 1;   // n_exp = 0 is corrupted because particles can move between more than 1 level of refinement
     _CFL_ = 0.5; // CFL criteria 0.5
     _MAX_dt_ = _Mgyear_ * 0.01;
@@ -196,7 +197,7 @@ static void init_global_poisson_params()
     /*
     check_poisson_error_method: {0,1,2}
     multigrid:   0 = V cycle, 1 = F cycle, 2 = W cycle.
-    solver:      0 = Gauss-Saidel, 1 = Jacobi, 2 Conjugate Gradient
+    solver PresS PostS finddphic:      // 0 = Gauss-Saidel, 1 = Jacobi // 2 Conjugate Gradient
     _NiterPreS_: Solver iterations in Pre-Smoothing of the multigrid method
     _NiterPostS_: Solver iterations in Post-Smoothing of the multigrid method
     _Niterfinddphic_: Solver iterations on coarsest level of the multigrid method
@@ -207,15 +208,16 @@ static void init_global_poisson_params()
     _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_ = 1000;
     _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ = (1.5e-8);
     check_poisson_error_method = 0;  //Only used Gauss-Said or Jacobi in multigrid
-    multigrid = 0; 
-    solver = 0; 
-    _NiterPreS_ = 2; 
+    multigrid_cycle = 0; 
+    solverPreS = 0;
+    solverPostS = 0;
+    solverfinddphic = 0;
+    _NiterPreS_ = 2;
     _NiterPostS_ = 2; 
     _Niterfinddphic_ = 2; 
     _Iter_branches_SOR_ = 20; 
     _w_SOR_ = 1.9;
     _w_SOR_HEAD_ = 1.0;
-    conj_grad_iter = 25;
 
     head_pot_method = 0; // 0 = Multygrid, 1 = Conjugate gradient
     branch_pot_method = 1; // 0 = SOR, 1 = Conjugate gradient
@@ -286,7 +288,7 @@ static void init_global_memory()
 
 static void init_global_garbage_collector_parameters()
 {
-    GC_iter = 1000000000;  //Number of time-steps between each garbage collector
+    Garbage_Collector_iter = 1000000000; // Number of time-steps between each garbage collector
 }
 
 void global_variables()

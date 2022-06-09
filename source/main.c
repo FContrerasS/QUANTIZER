@@ -270,7 +270,7 @@ int main(int argc, char **argv) {
 
 		//** >> GARBAGE COLLECTOR **/
 		GL_clock_begin = clock();
-		if ((Number_timesteps+1) % GC_iter == 0)
+		if ((Number_timesteps + 1) % Garbage_Collector_iter == 0)
 		{
 			printf("Garbage Collector\n");
 			if(garbage_collector() == _FAILURE_)
