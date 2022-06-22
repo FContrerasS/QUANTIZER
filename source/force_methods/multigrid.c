@@ -26,16 +26,13 @@
 
 #include "multigrid.h"
 
-static vtype *multigrid_restriction(const vtype *phi, int cgridsize)
+static void multigrid_restriction(const vtype *phi, vtype *cphi, int cgridsize)
 {
 
     int gridsize = 2 * cgridsize - 1;
     int gridsize_pow_2 = gridsize * gridsize;
     int cgridsize_pow_2 = cgridsize * cgridsize;
     int Index_A, Index_B;
-
-    vtype *cphi;
-    cphi = (vtype *)calloc(cgridsize * cgridsize * cgridsize, sizeof(vtype));
 
     for (int lz = 1; lz < cgridsize - 1; lz++)
     {
@@ -49,20 +46,15 @@ static vtype *multigrid_restriction(const vtype *phi, int cgridsize)
             }
         }
     }
-    return cphi;
 }
 
-static vtype *multigrid_projection(const vtype *dphic, int cgridsize)
+static void multigrid_projection(const vtype *dphic, vtype *dphi, int cgridsize)
 {
-
-    vtype *dphi;
     int Index_A, Index_B;
 
     int gridsize = 2 * cgridsize - 1;
     int gridsize_pow_2 = gridsize * gridsize;
     int cgridsize_pow_2 = cgridsize * cgridsize;
-
-    dphi = (vtype *)calloc(gridsize * gridsize * gridsize, sizeof(vtype));
 
     for (int lz = 1; lz < cgridsize - 1; lz++)
     {
@@ -109,16 +101,13 @@ static vtype *multigrid_projection(const vtype *dphic, int cgridsize)
             }
         }
     }
-    return dphi;
 }
 
-void multigrid_solver(vtype *phi, const vtype *rho, int gridsize, int type_multigrid)
+void multigrid(vtype *phi, const vtype *rho, int gridsize, int type_multigrid)
 {
     int grid_idx;
-    vtype *dphi;
     vtype *dphic;
     vtype *rest;
-    vtype *restcoarse;
 
     int gridsize_pow_2 = gridsize * gridsize;
     int gridsize_pow_3 = gridsize_pow_2 * gridsize;
@@ -161,7 +150,9 @@ void multigrid_solver(vtype *phi, const vtype *rho, int gridsize, int type_multi
     }
 
     //** >> Restriction: Interpoling fine to coarse **/
-    restcoarse = multigrid_restriction(rest, gridsizecoarse);
+    vtype *restcoarse;
+    restcoarse = (vtype *)calloc(gridsizecoarse_pow_3, sizeof(vtype));
+    multigrid_restriction(rest, restcoarse, gridsizecoarse);
 
     //** >> Finding dphic in coarse level **/
     if (gridsizecoarse < 4)
@@ -185,22 +176,24 @@ void multigrid_solver(vtype *phi, const vtype *rho, int gridsize, int type_multi
         // Here is the onj difference between the multigrid methods
         if (type_multigrid == 0)
         {
-            multigrid_solver(dphic, restcoarse, gridsizecoarse, 0);
+            multigrid(dphic, restcoarse, gridsizecoarse, 0);
         }
         else if (type_multigrid == 1)
         {
-            multigrid_solver(dphic, restcoarse, gridsizecoarse, 1);
-            multigrid_solver(dphic, restcoarse, gridsizecoarse, 0);
+            multigrid(dphic, restcoarse, gridsizecoarse, 1);
+            multigrid(dphic, restcoarse, gridsizecoarse, 0);
         }
         else if (type_multigrid == 2)
         {
-            multigrid_solver(dphic, restcoarse, gridsizecoarse, 2);
-            multigrid_solver(dphic, restcoarse, gridsizecoarse, 2);
+            multigrid(dphic, restcoarse, gridsizecoarse, 2);
+            multigrid(dphic, restcoarse, gridsizecoarse, 2);
         }
     }
 
     //** >> Projection: Interpolation coarse to fine **/
-    dphi = multigrid_projection(dphic, gridsizecoarse);
+    vtype *dphi;
+    dphi = (vtype *)calloc(gridsize_pow_3, sizeof(vtype));
+    multigrid_projection(dphic, dphi, gridsizecoarse);
 
     //** >> Adding dphi in solution phi = phi + dphi **/
     for (int k = gridsize_pow_2; k < C3; k += gridsize_pow_2)

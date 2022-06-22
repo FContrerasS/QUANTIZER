@@ -192,5 +192,10 @@ extern double TOTAL_MEMORY_STACK;
 // GARBAGE COLLECTOR
 extern int Garbage_Collector_iter;
 
+extern vtype **pp_phixx;
+extern vtype **pp_rhoxx;
+extern vtype **pp_restxx;
+extern vtype **pp_dphixx;
+extern vtype **zeros_xx;
 
 #endif

@@ -32,6 +32,6 @@
 #include "gauss_saidel.h"
 #include "conjugate_gradient_multigrid.h"
 
-void multigrid_solver(vtype *phi, const vtype *rho, int gridsize, int type_multigrid);
+void multigrid(vtype *phi, const vtype *rho, int gridsize, int type_multigrid);
 
 #endif

@@ -70,9 +70,8 @@ static int compute_potential_head_node(struct node *ptr_node_pt)
 	int type_multigrid = multigrid_cycle;
 	//** >> Poisson Solver **/
 	// Potential-Density-gridsize-type of multigrid
-	multigrid_solver(aux_pot, aux_d, size, type_multigrid);
-
-	
+	multigrid(aux_pot, aux_d, size, type_multigrid);
+	//multigrid2(aux_pot, aux_d, type_multigrid);
 
 	//** >> Pasing information from auxiliary parameters to real parameters **/
 	for (int k = bder_os_sim; k < grid_limit + 1; k++)

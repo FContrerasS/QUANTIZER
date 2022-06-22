@@ -1,7 +1,7 @@
 /*
- * potential_head_node.h
+ * multigrid2.h
  *
- * Header file of the potential_head_node.c source file
+ * Header file with the most multigrid2 parameters declared
  *
  * Felipe Contreras
  * felipe.contrerass@postgrado.uv.cl
@@ -24,15 +24,14 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __POTENTIALHEADNODE__
-#define __POTENTIALHEADNODE__
+#ifndef __MULTIGRID2__
+#define __MULTIGRID2__
 
 #include "common.h"
-#include "poisson_error.h"
-#include "multigrid.h"
-#include "multigrid2.h"
-#include "conjugate_gradient.h"
+#include "jacobi.h"
+#include "gauss_saidel.h"
+#include "conjugate_gradient_multigrid.h"
 
-int potential_head_node();
+void multigrid2(vtype *phi, vtype *rho, int type_multigrid);
 
 #endif

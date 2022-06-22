@@ -144,12 +144,18 @@ double TOTAL_MEMORY_STACK;
 //** >> GARBAGE COLLECTOR **/
 int Garbage_Collector_iter;
 
+vtype **pp_phixx;
+vtype **pp_rhoxx;
+vtype **pp_restxx;
+vtype **pp_dphixx;
+vtype **zeros_xx;
+
 static void
 init_global_constants()
 {
     //Constants
-    //_User_BoxSize_ = 1000.0L; //kpc
-    _User_BoxSize_ = 0.1L; //kpc
+    _User_BoxSize_ = 0.2L; //kpc
+    //_User_BoxSize_ = 0.1L; //kpc
     _PI_ = 3.14159265358979323846L;
     _Onesixth_ = 1.0L / 6.0L;
     _kpc_to_m_ = 3.08568e19L;
@@ -163,18 +169,18 @@ static void init_global_user_params()
 {
     BoxSize = 1.0L;
     lmin = 5;     //Coarset level of refinement
-    lmax = lmin + 2;  //Finest level of refinement
+    lmax = lmin + 5;  //Finest level of refinement
     no_lmin_cell = 1 << lmin; // Number of cells in the lmin level of refinement
     no_lmin_cell_pow2 = no_lmin_cell * no_lmin_cell;
     no_lmin_cell_pow3 = no_lmin_cell * no_lmin_cell * no_lmin_cell;
     no_grid = no_lmin_cell + 1;
-    //GL_no_ptcl = 2995865; // 2995865; // 299586; // 231299 // 298159
+    //GL_no_ptcl = 299586; // 2995865; // 299586; // 231299 // 298159
     GL_no_ptcl = 10000;
-    Maxdt = 3.0 * _Mgyear_;
+    Maxdt = 10.0 * _Mgyear_;
     //meanmass = 100; //Currently only used on input.c
     // total_mass = GL_no_ptcl * meanmass;
     // total_mass = 0;
-    fr_output = 5;
+    fr_output = 30;
     MaxIterations = 10000000;
     no_grid_pow2 = no_grid * no_grid;
     no_grid_pow3 = no_grid * no_grid * no_grid;
@@ -187,7 +193,7 @@ static void init_global_ref_crit()
     ref_criterion_ptcl = 7;
     n_exp = 1;   // n_exp = 0 is corrupted because particles can move between more than 1 level of refinement
     _CFL_ = 0.5; // CFL criteria 0.5
-    _MAX_dt_ = _Mgyear_ * 0.01;
+    _MAX_dt_ = _Mgyear_ * 1.0;
 }
 
 static void init_global_poisson_params()
@@ -206,7 +212,7 @@ static void init_global_poisson_params()
     vtype _w_SOR_: The overrelaxation parameter
 */
     _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_ = 1000;
-    _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ = (1.5e-8);
+    _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ = (1.5e-10);
     check_poisson_error_method = 0;  //Only used Gauss-Said or Jacobi in multigrid
     multigrid_cycle = 0; 
     solverPreS = 0;
@@ -215,7 +221,7 @@ static void init_global_poisson_params()
     _NiterPreS_ = 2;
     _NiterPostS_ = 2; 
     _Niterfinddphic_ = 2; 
-    _Iter_branches_solver_ = 20; 
+    _Iter_branches_solver_ = 25; 
     _w_SOR_ = 1.9;
     _w_SOR_HEAD_ = 1.0;
 
@@ -291,6 +297,32 @@ static void init_global_garbage_collector_parameters()
     Garbage_Collector_iter = 10000000; // Number of time-steps between each garbage collector
 }
 
+static void init_multigrid2_parameters()
+{
+    int size, size_pow3;
+    pp_phixx = (vtype **)malloc((lmin - 1) * sizeof(vtype *));
+    pp_rhoxx = (vtype **)malloc((lmin - 1) * sizeof(vtype *));
+    pp_restxx = (vtype **)malloc((lmin - 2) * sizeof(vtype *));
+    pp_dphixx = (vtype **)malloc((lmin - 2) * sizeof(vtype *));
+    zeros_xx = (vtype **) malloc((lmin - 1) * sizeof(vtype *));
+    size = ((1 << (lmin )) + 1);
+    size_pow3 = size * size * size;
+    for (int i = 0; i < lmin - 2;i++)
+    {
+        pp_restxx[i] = (vtype *)calloc(size_pow3, sizeof(vtype));
+        pp_dphixx[i] = (vtype *)calloc(size_pow3, sizeof(vtype));
+        zeros_xx[i] = (vtype *)calloc(size_pow3, sizeof(vtype));
+        size = ((1 << (lmin - i - 1)) + 1);
+        size_pow3 = size * size * size;
+        pp_phixx[i+1] = (vtype *)malloc(size_pow3 * sizeof(vtype));
+        pp_rhoxx[i+1] = (vtype *)calloc(size_pow3, sizeof(vtype)); 
+    }
+
+    zeros_xx[lmin-2] = (vtype *)calloc(size_pow3, sizeof(vtype));
+}
+
+
+
 void global_variables()
 {
     //** >> Initializing constants **/ 
@@ -325,4 +357,7 @@ void global_variables()
 
     //** >> Garbage Collector **/
     init_global_garbage_collector_parameters();
+
+    //** >> multigrid2 parameters **/
+    init_multigrid2_parameters();
 }
