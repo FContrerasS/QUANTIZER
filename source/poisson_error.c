@@ -26,6 +26,38 @@
 
 #include "poisson_error.h"
 
+static bool solution_change(const struct node *ptr_node)
+{
+	/* 	   This module is responsible for checking the condition for the solution of the
+   Poisson equation. The condition used is option 3, and it uses the root mean
+   square. In general, the error in the grid of the Poisson equation solution
+   is computed as follows:
+
+   error =
+
+   Sqrt[ 1/Ng^3 * Sum[{( density_i - Laplacian(pot_i) )/rhomean }^2 ] ] * 1/N^2
+
+   The criterion is accepted when the error is less than the threshold. See the
+   _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ parameter in
+   Precision_Parameters.h. Note that error is an adimensional variable. */
+
+	int box_grid_idx;
+	vtype aux;
+
+	// Computing the root mean square normalized to the mean density rhomean
+	for (int i = 0; i < ptr_node->grid_intr_size; i++)
+	{
+		box_grid_idx = ptr_node->ptr_intr_grid_idx[i];
+		aux = ptr_node->ptr_pot[box_grid_idx] / ptr_node->ptr_pot_old[box_grid_idx];
+		if (1 - _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_2 > aux || 1 + _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_2 < aux || ptr_node->ptr_pot[box_grid_idx] * ptr_node->ptr_pot_old[box_grid_idx] < 0)
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
 static bool poisson_error_mehod_0(const struct node *ptr_node)
 {
 	/* 	The condition used is option 1 (default one), and it
@@ -238,37 +270,54 @@ static bool conj_grad_error(struct node *ptr_node, vtype *error, vtype error_tot
 bool poisson_error(struct node *ptr_node, vtype *error, vtype error_total_pow2,int type)
 {
 
-	bool check = false;
+	bool check1;
+	bool check2;
 
-	if(type == 0)	//Gauss-Saidel and Jacobi
+	check1 = solution_change(ptr_node);
+
+
+
+	if(check1 == true)
 	{
-		if (check_poisson_error_method == 0)
+		if (type == 0) // Gauss-Saidel and Jacobi
 		{
-			check = poisson_error_mehod_0(ptr_node);
+			if (check_poisson_error_method == 0)
+			{
+				check2 = poisson_error_mehod_0(ptr_node);
+			}
+			else if (check_poisson_error_method == 1)
+			{
+				check2 = poisson_error_mehod_1(ptr_node);
+			}
+			else if (check_poisson_error_method == 2)
+			{
+				check2 = poisson_error_mehod_2(ptr_node);
+			}
+			else
+			{
+				printf("Error: check_poisson_error_method is different to 0, 1, 2 or 3\n");
+				exit(EXIT_FAILURE);
+			}
 		}
-		else if (check_poisson_error_method == 1)
+		else if (type == 1) // Conjugate Gradient
 		{
-			check = poisson_error_mehod_1(ptr_node);
-		}
-		else if (check_poisson_error_method == 2)
-		{
-			check = poisson_error_mehod_2(ptr_node);
+			check2 = conj_grad_error(ptr_node, error, error_total_pow2);
 		}
 		else
 		{
-			printf("Error: check_poisson_error_method is different to 0, 1 or 2\n");
+			printf("Error: poisson_error type is different to 0, 1\n");
 			exit(EXIT_FAILURE);
 		}
 	}
-	else if(type == 1)	//Conjugate Gradient
-	{
-		check = conj_grad_error(ptr_node, error, error_total_pow2);
-	}
 	else
 	{
-		printf("Error: poisson_error type is different to 0, 1\n");
-		exit(EXIT_FAILURE);
+		check2 = false;
 	}
 
-	return check;
+	if (check2 == false)
+	{
+		memcpy(ptr_node->ptr_pot_old, ptr_node->ptr_pot, ptr_node->grid_properties_cap * sizeof(vtype));
+	}
+
+	return check2;
 }

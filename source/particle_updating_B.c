@@ -32,9 +32,9 @@ static void computing_particles_updating_B_HEAD_ONLY(struct node *ptr_node, vtyp
     for (int i = 0; i < GL_no_ptcl; i++)
     {
         //** >> Updating the new velocity of the particle **/
-        GL_ptcl_vx[i] += GL_ptcl_ax[i] * dt / 2;
-        GL_ptcl_vy[i] += GL_ptcl_ay[i] * dt / 2;
-        GL_ptcl_vz[i] += GL_ptcl_az[i] * dt / 2;
+        GL_ptcl_vx[i] += GL_ptcl_ax[i] * dt * 0.5;
+        GL_ptcl_vy[i] += GL_ptcl_ay[i] * dt * 0.5;
+        GL_ptcl_vz[i] += GL_ptcl_az[i] * dt * 0.5;
     }
     
 }
@@ -56,9 +56,9 @@ static void computing_particles_updating_B(struct node *ptr_node, vtype dt)
                 ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
 
                 //** >> Updating the new velocity of the particle **/
-                GL_ptcl_vx[ptcl_idx] += GL_ptcl_ax[ptcl_idx] * dt / 2;
-                GL_ptcl_vy[ptcl_idx] += GL_ptcl_ay[ptcl_idx] * dt / 2;
-                GL_ptcl_vz[ptcl_idx] += GL_ptcl_az[ptcl_idx] * dt / 2;
+                GL_ptcl_vx[ptcl_idx] += GL_ptcl_ax[ptcl_idx] * dt * 0.5;
+                GL_ptcl_vy[ptcl_idx] += GL_ptcl_ay[ptcl_idx] * dt * 0.5;
+                GL_ptcl_vz[ptcl_idx] += GL_ptcl_az[ptcl_idx] * dt * 0.5;
             }
         }
     }
@@ -74,9 +74,9 @@ static void computing_particles_updating_B(struct node *ptr_node, vtype dt)
                 {
                     ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
                     //** >> Updating the new velocity of the particle **/
-                    GL_ptcl_vx[ptcl_idx] += GL_ptcl_ax[ptcl_idx] * dt / 2;
-                    GL_ptcl_vy[ptcl_idx] += GL_ptcl_ay[ptcl_idx] * dt / 2;
-                    GL_ptcl_vz[ptcl_idx] += GL_ptcl_az[ptcl_idx] * dt / 2;
+                    GL_ptcl_vx[ptcl_idx] += GL_ptcl_ax[ptcl_idx] * dt * 0.5;
+                    GL_ptcl_vy[ptcl_idx] += GL_ptcl_ay[ptcl_idx] * dt * 0.5;
+                    GL_ptcl_vz[ptcl_idx] += GL_ptcl_az[ptcl_idx] * dt * 0.5;
                 }
             }
         }

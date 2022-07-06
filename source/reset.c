@@ -51,9 +51,14 @@ int reset()
 		ptr_head->ptr_d[i] = 0;
 	}
 
+	// for (int i = 0; i < cap; i++)
+	// {
+	// 	ptr_head->ptr_pot[i] = 0;
+	// }
+
 	//** >> Initial values for the potential and acceleration **/
 	//** Here we are modified the boundary values of the potential and acceleration
-	initial_potential_and_acceleration_head(ptr_head);
+	//initial_potential_and_acceleration_head(ptr_head);
 
 	return _SUCCESS_;
 }

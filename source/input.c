@@ -35,8 +35,8 @@ int input_galaxies_merger()
     // char input_name[100] = "../source/initial_conditions/"
     //                        "galaxies_IC_low_ptcl.txt";
 
-    char input_name[100] = "../source/initial_conditions/"
-                           "galaxies_IC_very_low_ptcl.txt";
+    // char input_name[100] = "../source/initial_conditions/"
+    //                        "galaxies_IC_very_low_ptcl.txt";
 
     // char input_name[100] = "../source/initial_conditions/"
     //                        "galaxies_IC_high_ptcl.txt";
@@ -46,6 +46,39 @@ int input_galaxies_merger()
 
     // char input_name[100] = "../source/initial_conditions/"
     //                        "galaxies_model2.txt";
+
+    // char input_name[100] = "../source/initial_conditions/"
+    //                        "galaxies_merger_v2_30k_particles.txt";
+
+    // char input_name[100] = "../source/initial_conditions/"
+    //                        "galaxies_merger_v2_300k_particles.txt";
+
+    // char input_name[100] = "../source/initial_conditions/"
+    //                        "galaxies_merger_v2_3000k_particles.txt";
+
+    // char input_name[100] = "../source/initial_conditions/"
+    //                        "galaxies_merger_v2_70k_particles_with_gas.txt";
+
+    // char input_name[100] = "../source/initial_conditions/"
+    //                        "galaxies_merger_v2_700k_particles_with_gas.txt";
+
+    // char input_name[100] = "../source/initial_conditions/"
+    //                        "spiral_galaxy.txt";
+
+    // char input_name[100] = "../source/initial_conditions/"
+    //                        "spiral_galaxy_stiff_universe.txt";
+
+
+
+//** >> GALIC simulations
+    // char input_name[100] = "../source/initial_conditions/Galic/"
+    //                        "galaxy_alone_15k.txt";
+
+    // char input_name[100] = "../source/initial_conditions/Galic/"
+    //                        "galaxy_alone_30k.txt";
+
+    char input_name[100] = "../source/initial_conditions/Galic/"
+                           "galaxies_merger_30k+15k.txt";
 
     FILE *file = NULL;
     file = fopen(input_name, "r");
@@ -112,8 +145,11 @@ int input_plummer_model()
     // char input_name[100] = "../source/initial_conditions/"
     //                        "plummer_center_moved.txt";
 
-    char input_name[100] = "../source/initial_conditions//"
-                           "Plummer_Np(10000)_BoxSize(0.1)_Mass(1000000).txt";
+    // char input_name[100] = "../source/initial_conditions//"
+    //                        "Plummer_Np(10000)_BoxSize(0.1)_Mass(1000000).txt";
+
+    char input_name[100] = "../source/initial_conditions/"
+                           "Plummer_v2.txt";
 
     FILE *file = NULL;
     file = fopen(input_name, "r");
@@ -201,9 +237,9 @@ static int input_code_units()
         GL_ptcl_y[i] = GL_ptcl_y[i] / _User_BoxSize_ + 0.5L;
         GL_ptcl_z[i] = GL_ptcl_z[i] / _User_BoxSize_ + 0.5L;
         
-        GL_ptcl_vx[i] = GL_ptcl_vx[i] * sqrt(_User_BoxSize_);
-        GL_ptcl_vy[i] = GL_ptcl_vy[i] * sqrt(_User_BoxSize_);
-        GL_ptcl_vz[i] = GL_ptcl_vz[i] * sqrt(_User_BoxSize_);
+        GL_ptcl_vx[i] = GL_ptcl_vx[i] * sqrt(_User_BoxSize_) ;
+        GL_ptcl_vy[i] = GL_ptcl_vy[i] * sqrt(_User_BoxSize_) ;
+        GL_ptcl_vz[i] = GL_ptcl_vz[i] * sqrt(_User_BoxSize_) ;
 
         GL_ptcl_ax[i] = GL_ptcl_ax[i] * _User_BoxSize_ * _User_BoxSize_;
         GL_ptcl_ay[i] = GL_ptcl_ay[i] * _User_BoxSize_ * _User_BoxSize_;
@@ -214,17 +250,17 @@ static int input_code_units()
 
 int input()
 {
-    if (input_plummer_model() == _FAILURE_)
-    {
-        printf("\n\n Error running input_plummer_model function\n\n");
-        return _FAILURE_;
-    }
-
-    // if (input_galaxies_merger() == _FAILURE_)
+    // if (input_plummer_model() == _FAILURE_)
     // {
-    //     printf("\n\n Error running input_galaxies_merger function\n\n");
+    //     printf("\n\n Error running input_plummer_model function\n\n");
     //     return _FAILURE_;
     // }
+
+    if (input_galaxies_merger() == _FAILURE_)
+    {
+        printf("\n\n Error running input_galaxies_merger function\n\n");
+        return _FAILURE_;
+    }
 
 /*     if (input_particle_initialization() == _FAILURE_)
     {

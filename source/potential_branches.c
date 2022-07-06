@@ -316,6 +316,7 @@ int potential_branches()
 	ptr_red_black_size[0] = 0;
 	ptr_red_black_size[1] = 0;
 
+
 	for (int lv = 0; lv < GL_tentacles_level_max; lv++)
 	{
 		no_pts = GL_tentacles_size[lv];
@@ -332,7 +333,9 @@ int potential_branches()
 				initial_potential_branch_node(ptr_node, ptr_ch);
 				GL_times[22] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
-				if (ptr_ch->cell_size < 513)	//216 = node with minimum size of 1 (+1 n_exp) size, (1 + 2*n_exp)^3 * 8 
+				memcpy(ptr_ch->ptr_pot_old, ptr_ch->ptr_pot, ptr_ch->grid_properties_cap * sizeof(vtype));
+
+				if (ptr_ch->cell_size < 513)	//513, 216 = node with minimum size of 1 (+1 n_exp) size, (1 + 2*n_exp)^3 * 8 
 				{
 					//** >> Computing the potential in the child node **/
 					aux_clock = clock();
@@ -354,10 +357,7 @@ int potential_branches()
 					}
 					GL_times[23] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
-					//** >> CHEKING ERROR SOLUTION CONDITION **/
-					aux_clock = clock();
-					check = poisson_error(ptr_ch,dummy_pvtype,dummy_vtype,0);
-					GL_times[25] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+					check = false;
 
 					iter = 0;
 					while (iter < _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_ && check == false)

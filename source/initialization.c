@@ -171,8 +171,20 @@ static int initializing_head_node()
 	ptr_head->grid_intr_size = 0;
 	ptr_head->grid_bder_cap = (no_lmin_cell + 1) * (no_lmin_cell + 1) * (no_lmin_cell + 1) - ptr_head->grid_intr_cap;
 	ptr_head->grid_bder_size = 0;
+	ptr_head->ptr_intr_grid_cell_idx_x = (int *)malloc(ptr_head->grid_intr_cap * sizeof(int));
+	ptr_head->ptr_intr_grid_cell_idx_y = (int *)malloc(ptr_head->grid_intr_cap * sizeof(int));
+	ptr_head->ptr_intr_grid_cell_idx_z = (int *)malloc(ptr_head->grid_intr_cap * sizeof(int));
 	ptr_head->ptr_intr_grid_idx = (int *)malloc(ptr_head->grid_intr_cap * sizeof(int));
+	ptr_head->ptr_bder_grid_cell_idx_x = (int *)malloc(ptr_head->grid_bder_cap * sizeof(int));
+	ptr_head->ptr_bder_grid_cell_idx_y = (int *)malloc(ptr_head->grid_bder_cap * sizeof(int));
+	ptr_head->ptr_bder_grid_cell_idx_z = (int *)malloc(ptr_head->grid_bder_cap * sizeof(int));
 	ptr_head->ptr_bder_grid_idx = (int *)malloc(ptr_head->grid_bder_cap * sizeof(int));
+
+
+
+
+
+
 	int box_grid_idx; // Index in the box grid point
 	//** Filling grid points indexes **/
 	for (int k = bder_os_sim; k < box_side_lmin + 1 - bder_os_sim; k++)
@@ -185,12 +197,18 @@ static int initializing_head_node()
 				//** >> Border grid point **/
 				if (i == bder_os_sim || i == box_side_lmin - bder_os_sim || j == bder_os_sim || j == box_side_lmin - bder_os_sim || k == bder_os_sim || k == box_side_lmin - bder_os_sim)
 				{
+					ptr_head->ptr_bder_grid_cell_idx_x[ptr_head->grid_bder_size] = i + ptr_head->box_ts_x;
+					ptr_head->ptr_bder_grid_cell_idx_y[ptr_head->grid_bder_size] = j + ptr_head->box_ts_y;
+					ptr_head->ptr_bder_grid_cell_idx_z[ptr_head->grid_bder_size] = k + ptr_head->box_ts_z;
 					ptr_head->ptr_bder_grid_idx[ptr_head->grid_bder_size] = box_grid_idx;
 					ptr_head->grid_bder_size += 1; // Increasing the border grid points
 				}
 				//** >> Interior grid point **/
 				else
 				{
+					ptr_head->ptr_intr_grid_cell_idx_x[ptr_head->grid_intr_size] = i + ptr_head->box_ts_x;
+					ptr_head->ptr_intr_grid_cell_idx_y[ptr_head->grid_intr_size] = j + ptr_head->box_ts_y;
+					ptr_head->ptr_intr_grid_cell_idx_z[ptr_head->grid_intr_size] = k + ptr_head->box_ts_z;
 					ptr_head->ptr_intr_grid_idx[ptr_head->grid_intr_size] = box_grid_idx;
 					ptr_head->grid_intr_size += 1; // Increasing the interior grid points
 				}
@@ -203,6 +221,7 @@ static int initializing_head_node()
 	int cap = (ptr_head->box_real_dim_x + 1) * (ptr_head->box_real_dim_y + 1) * (ptr_head->box_real_dim_z + 1);
 	ptr_head->grid_properties_cap = cap;
 	ptr_head->ptr_pot = (vtype *)calloc(cap, sizeof(vtype)); // Potential
+	ptr_head->ptr_pot_old = (vtype *)calloc(cap, sizeof(vtype)); // Potential
 	ptr_head->ptr_ax = (vtype *)calloc(cap, sizeof(vtype));	 // Acceleration
 	ptr_head->ptr_ay = (vtype *)calloc(cap, sizeof(vtype));
 	ptr_head->ptr_az = (vtype *)calloc(cap, sizeof(vtype));

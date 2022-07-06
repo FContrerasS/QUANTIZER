@@ -28,6 +28,7 @@
 
 int potential()
 {
+
     //**>> POTENTIAL HEAD NODE **/
     if (potential_head_node() == _FAILURE_)
     {

@@ -93,6 +93,7 @@ void initialize_node(struct node *ptr_node)
 
 	//** >> Potential, acceleration and density of the grid **/
 	ptr_node->ptr_pot = NULL; // Array with the potential of the node. It is of the same size than the real box grid points
+	ptr_node->ptr_pot_old = NULL;
 	ptr_node->ptr_ax = NULL;	  // Same as potential but with the acceleration
 	ptr_node->ptr_ay = NULL;	  // Same as potential but with the acceleration
 	ptr_node->ptr_az = NULL;	  // Same as potential but with the acceleration

@@ -84,7 +84,7 @@ static int computing_memory()
 				TOTAL_MEMORY_GRID_POINTS += (ptr_node->grid_bder_cap + ptr_node->grid_intr_cap) * sizeof(int); // Grid interior and border points
 			}
 
-			TOTAL_MEMORY_GRID_PROPERTIES += 5 * ptr_node->grid_properties_cap * sizeof(vtype); // Grid properties, accelerations, potential and density
+			TOTAL_MEMORY_GRID_PROPERTIES += 6 * ptr_node->grid_properties_cap * sizeof(vtype); // Grid properties, accelerations, potential and density
 			TOTAL_MEMORY_AUX += ptr_node->zones_cap * sizeof(int *) + ptr_node->cell_ref_cap * sizeof(int);
 			for (int j = 0; j < ptr_node->zones_cap; j++)
 			{
@@ -125,7 +125,7 @@ static int computing_memory()
 
 		TOTAL_MEMORY_STACK += 2 * ptr_node->box_cap * (sizeof(int) + sizeof(vtype));				 // Boxes and mass boxes
 		TOTAL_MEMORY_STACK += 4 * (ptr_node->grid_bder_cap + ptr_node->grid_intr_cap) * sizeof(int); // Grid interior and border points
-		TOTAL_MEMORY_STACK += 5 * ptr_node->grid_properties_cap * sizeof(vtype);					 // Grid properties, accelerations, potential and density
+		TOTAL_MEMORY_STACK += 6 * ptr_node->grid_properties_cap * sizeof(vtype);					 // Grid properties, accelerations, potential and density
 		TOTAL_MEMORY_STACK += ptr_node->zones_cap * sizeof(int *) + ptr_node->cell_ref_cap * sizeof(int);
 		for (int j = 0; j < ptr_node->zones_cap; j++)
 		{
@@ -193,6 +193,7 @@ static void free_memory_pool()
 
 		//** >> Potential, acceleration and density of the grid **/
 		free(ptr_node->ptr_pot);
+		free(ptr_node->ptr_pot_old);
 		free(ptr_node->ptr_ax);
 		free(ptr_node->ptr_ay);
 		free(ptr_node->ptr_az);
@@ -234,10 +235,6 @@ static void free_memory_pool()
 	GL_pool_node_start = NULL;
 	GL_pool_node_end = NULL;
 }
-
-
-
-
 
 int free_nodes_voids()
 {

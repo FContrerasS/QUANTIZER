@@ -66,17 +66,17 @@ int conjugate_gradient(struct node *ptr_node)
         rsold += r[box_grid_idx] * r[box_grid_idx];
     }
 
-    //** >> CHEKING ERROR SOLUTION CONDITION **/
-    aux_clock = clock();
-    if (poisson_error(ptr_node, r, rsold, 1) == true)
-    {
-        GL_times[25] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
-        free(r);
-        free(p);
-        free(Ap);
-        return _SUCCESS_;
-    }
-    GL_times[25] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+    // //** >> CHEKING ERROR SOLUTION CONDITION **/
+    // aux_clock = clock();
+    // if (poisson_error(ptr_node, r, rsold, 1) == true)
+    // {
+    //     GL_times[25] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+    //     free(r);
+    //     free(p);
+    //     free(Ap);
+    //     return _SUCCESS_;
+    // }
+    // GL_times[25] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
     int cycle_size = size < _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_ ? size : _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_;
     // For cycle over mutually conjugate vectors p
@@ -88,6 +88,7 @@ int conjugate_gradient(struct node *ptr_node)
         {
             box_grid_idx = ptr_node->ptr_intr_grid_idx[j];
             Ap[box_grid_idx] = -one_over_H_pow_2 * (6.0 * p[box_grid_idx] - p[box_grid_idx + 1] - p[box_grid_idx - 1] - p[box_grid_idx + grid_box_real_dim_X] - p[box_grid_idx - grid_box_real_dim_X] - p[box_grid_idx + grid_box_real_dim_X_times_Y] - p[box_grid_idx - grid_box_real_dim_X_times_Y]);
+            //printf("Ap = %1.3Le\n", Ap[box_grid_idx]);
         }
 
         // Computing alpha
@@ -123,27 +124,32 @@ int conjugate_gradient(struct node *ptr_node)
         }
 
         //** >> CHEKING ERROR SOLUTION CONDITION **/
-        aux_clock = clock();
-        if (poisson_error(ptr_node, r, rsnew, 1) == true)
+        if (i % 25 == 0)
         {
+            aux_clock = clock();
+            if (poisson_error(ptr_node, r, rsnew, 1) == true)
+            {
+                //printf("\ni = %d\n", i);
+                GL_times[25] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+                free(r);
+                free(p);
+                free(Ap);
+                return _SUCCESS_;
+            }
             GL_times[25] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
-            free(r);
-            free(p);
-            free(Ap);
-            return _SUCCESS_;
         }
-        GL_times[25] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
-
+        //printf("\ni = %d, rsnew = %1.3Le, alpha = %1.3Le\n", i, rsnew,alpha);
         // Updating p
         for (int j = 0; j < ptr_node->grid_intr_size; j++)
         {
             box_grid_idx = ptr_node->ptr_intr_grid_idx[j];
             p[box_grid_idx] = r[box_grid_idx] + rsnew / rsold * p[box_grid_idx];
         }
-
         // Updating rsold
         rsold = rsnew;
     }
+
+    
 
     free(r);
     free(p);

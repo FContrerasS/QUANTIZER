@@ -103,15 +103,19 @@ int potential_head_node()
 	vtype *dummy_pvtype = NULL;
 	vtype dummy_vtype = 0;
 
+	memcpy(ptr_node->ptr_pot_old, ptr_node->ptr_pot, ptr_node->grid_properties_cap * sizeof(vtype));
+
 	if (head_pot_method == 0)
 	{
 		int iter = 0;
 		bool check;
 
-		//** >> CHEKING ERROR SOLUTION CONDITION **/
-		aux_clock = clock();
-		check = poisson_error(ptr_node, dummy_pvtype, dummy_vtype,0);
-		GL_times[21] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+		// //** >> CHEKING ERROR SOLUTION CONDITION **/
+		// aux_clock = clock();
+		// check = poisson_error(ptr_node, dummy_pvtype, dummy_vtype,0);
+		// GL_times[21] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+		check = false;
 
 		//** >> SOLVING POISSON EQUATION **/
 		while (iter < _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_ && check == false)
@@ -125,7 +129,6 @@ int potential_head_node()
 				return _FAILURE_;
 			}
 			GL_times[20] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
-
 			//** >> CHEKING ERROR SOLUTION CONDITION **/
 			aux_clock = clock();
 			check = poisson_error(ptr_node,dummy_pvtype,dummy_vtype,0);

@@ -96,6 +96,7 @@ struct node
 
     //* Potential, Acceleration and density of the grid **/
     vtype *ptr_pot; // Array with the potential of the node. It is of the same size than the real box grid points
+    vtype *ptr_pot_old;
     vtype *ptr_ax;  // Same as potential but with the acceleration
     vtype *ptr_ay;  // Same as potential but with the acceleration
     vtype *ptr_az;  // Same as potential but with the acceleration

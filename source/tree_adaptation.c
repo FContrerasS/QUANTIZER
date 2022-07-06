@@ -1276,7 +1276,7 @@ static int adapt_child_nodes(struct node *ptr_node)
                 //* Potential, Acceleration and density capacity of the grid **/
                 size = (ptr_ch->box_real_dim_x + 1) * (ptr_ch->box_real_dim_y + 1) * (ptr_ch->box_real_dim_z + 1);
                 //** >> Space checking
-                if (space_check(&(ptr_ch->grid_properties_cap), size, 1.0f, "p5v1v1v1v1v1", &(ptr_ch->ptr_pot), &(ptr_ch->ptr_ax), &(ptr_ch->ptr_ay), &(ptr_ch->ptr_az), &(ptr_ch->ptr_d)) == _FAILURE_)
+                if (space_check(&(ptr_ch->grid_properties_cap), size, 1.0f, "p6v1v1v1v1v1v1", &(ptr_ch->ptr_pot), &(ptr_ch->ptr_pot_old), &(ptr_ch->ptr_ax), &(ptr_ch->ptr_ay), &(ptr_ch->ptr_az), &(ptr_ch->ptr_d)) == _FAILURE_)
                 {
                     printf("Error, in space_check function\n");
                     return _FAILURE_;
@@ -1413,7 +1413,7 @@ static int create_new_child_nodes(struct node *ptr_node)
         //** >> Potential, acceleration and density of the grid **/
         size = (ptr_ch->box_real_dim_x + 1) * (ptr_ch->box_real_dim_y + 1) * (ptr_ch->box_real_dim_z + 1);
         //** >> Space checking
-        if (space_check(&(ptr_ch->grid_properties_cap), size, 1.0f, "p5v1v1v1v1v1", &(ptr_ch->ptr_pot), &(ptr_ch->ptr_ax), &(ptr_ch->ptr_ay), &(ptr_ch->ptr_az), &(ptr_ch->ptr_d)) == _FAILURE_)
+        if (space_check(&(ptr_ch->grid_properties_cap), size, 1.0f, "p6v1v1v1v1v1v1", &(ptr_ch->ptr_pot), &(ptr_ch->ptr_pot_old), &(ptr_ch->ptr_ax), &(ptr_ch->ptr_ay), &(ptr_ch->ptr_az), &(ptr_ch->ptr_d)) == _FAILURE_)
         {
             printf("Error, in space_check function\n");
             return _FAILURE_;

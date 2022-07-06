@@ -29,13 +29,15 @@
 static int computing_particles_updating_A_HEAD_ONLY(struct node *ptr_node, vtype dt)
 {
 
+
+
     for (int i = 0; i < GL_no_ptcl; i++)
     {
         //** >> Updating the new position of the particle **/
         //** >> Velocities **/
-        GL_ptcl_vx[i] += GL_ptcl_ax[i] * dt / 2;
-        GL_ptcl_vy[i] += GL_ptcl_ay[i] * dt / 2;
-        GL_ptcl_vz[i] += GL_ptcl_az[i] * dt / 2;
+        GL_ptcl_vx[i] += GL_ptcl_ax[i] * dt * 0.5;
+        GL_ptcl_vy[i] += GL_ptcl_ay[i] * dt * 0.5;
+        GL_ptcl_vz[i] += GL_ptcl_az[i] * dt * 0.5;
 
         //** >> Positions **/
         GL_ptcl_x[i] += GL_ptcl_vx[i] * dt;
@@ -98,9 +100,9 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
 
                     //** >> Updating the new position of the particle **/
                     //** >> Velocities **/
-                    GL_ptcl_vx[ptcl_idx] += GL_ptcl_ax[ptcl_idx] * dt / 2;
-                    GL_ptcl_vy[ptcl_idx] += GL_ptcl_ay[ptcl_idx] * dt / 2;
-                    GL_ptcl_vz[ptcl_idx] += GL_ptcl_az[ptcl_idx] * dt / 2;
+                    GL_ptcl_vx[ptcl_idx] += GL_ptcl_ax[ptcl_idx] * dt * 0.5;
+                    GL_ptcl_vy[ptcl_idx] += GL_ptcl_ay[ptcl_idx] * dt * 0.5;
+                    GL_ptcl_vz[ptcl_idx] += GL_ptcl_az[ptcl_idx] * dt * 0.5;
 
                     //** >> Positions **/
                     GL_ptcl_x[ptcl_idx] += GL_ptcl_vx[ptcl_idx] * dt;

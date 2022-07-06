@@ -75,6 +75,7 @@ vtype _w_SOR_: The overrelaxation parameter
 */
 int _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_;
 vtype _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_;
+vtype _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_2;
 int check_poisson_error_method;
 int multigrid_cycle;
 int solverPreS;
@@ -88,6 +89,12 @@ vtype _w_SOR_;
 vtype _w_SOR_HEAD_;
 int head_pot_method;
 int branch_pot_method;
+
+//** >> Force parameters **/
+int force_stencil;
+
+//** >> Initializing energy parameters **/
+int potential_energy_type;
 
 //** >> Defining Particles Parameters **/
 vtype *GL_ptcl_mass; // Mass
@@ -154,7 +161,7 @@ static void
 init_global_constants()
 {
     //Constants
-    _User_BoxSize_ = 0.2L; //kpc
+    _User_BoxSize_ = 32000.0L; //kpc
     //_User_BoxSize_ = 0.1L; //kpc
     _PI_ = 3.14159265358979323846L;
     _Onesixth_ = 1.0L / 6.0L;
@@ -163,25 +170,31 @@ init_global_constants()
     tt = sqrt(_kpc_to_m_ * _kpc_to_m_ * _kpc_to_m_ * _User_BoxSize_ * _User_BoxSize_ * _User_BoxSize_ / (6.67430e-11L * _Msolar_to_kg_));
     _Mgyear_ = 3.1556952e13L / tt;
     _G_ = 1.0L;
+    _G_ = 6.67430e-11 / (_kpc_to_m_ * _kpc_to_m_ * _kpc_to_m_ * _User_BoxSize_ * _User_BoxSize_ * _User_BoxSize_) * _Msolar_to_kg_ * tt * tt;
+    printf("_User_BoxSize_ = %f\n", (double) _User_BoxSize_);
+    printf("G = %.16f\n", (double)_G_);
+    printf("_Mgyear_ = %1.6e\n", (double)_Mgyear_);
+    printf("tt = %1.6e\n", (double)tt);
 }
 
 static void init_global_user_params()
 {
     BoxSize = 1.0L;
     lmin = 5;     //Coarset level of refinement
-    lmax = lmin + 5;  //Finest level of refinement
+    lmax = lmin + 9;  //Finest level of refinement
     no_lmin_cell = 1 << lmin; // Number of cells in the lmin level of refinement
     no_lmin_cell_pow2 = no_lmin_cell * no_lmin_cell;
     no_lmin_cell_pow3 = no_lmin_cell * no_lmin_cell * no_lmin_cell;
     no_grid = no_lmin_cell + 1;
-    //GL_no_ptcl = 299586; // 2995865; // 299586; // 231299 // 298159
-    GL_no_ptcl = 10000;
-    Maxdt = 10.0 * _Mgyear_;
+    GL_no_ptcl = 45000; 
+    //GL_no_ptcl = 7550; // 2995865; // 299586; // 231299 // 298159
+    // GL_no_ptcl = 10000;
+    Maxdt = 100000.0 * _Mgyear_;
     //meanmass = 100; //Currently only used on input.c
     // total_mass = GL_no_ptcl * meanmass;
     // total_mass = 0;
-    fr_output = 30;
-    MaxIterations = 10000000;
+    fr_output = 400;
+    MaxIterations = 100000000;
     no_grid_pow2 = no_grid * no_grid;
     no_grid_pow3 = no_grid * no_grid * no_grid;
 
@@ -190,7 +203,7 @@ static void init_global_user_params()
 static void init_global_ref_crit()
 {
     ref_criterion_mass = 1.0e100; // meanmass * 7;
-    ref_criterion_ptcl = 7;
+    ref_criterion_ptcl = 8;
     n_exp = 1;   // n_exp = 0 is corrupted because particles can move between more than 1 level of refinement
     _CFL_ = 0.5; // CFL criteria 0.5
     _MAX_dt_ = _Mgyear_ * 1.0;
@@ -212,21 +225,32 @@ static void init_global_poisson_params()
     vtype _w_SOR_: The overrelaxation parameter
 */
     _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_ = 1000;
-    _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ = (1.5e-10);
-    check_poisson_error_method = 0;  //Only used Gauss-Said or Jacobi in multigrid
+    _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ = (1.0e-10);
+    _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_2 = (1.0e-10);
+    check_poisson_error_method = 1;  //Only used Gauss-Said or Jacobi in multigrid
     multigrid_cycle = 0; 
     solverPreS = 0;
     solverPostS = 0;
     solverfinddphic = 0;
     _NiterPreS_ = 2;
     _NiterPostS_ = 2; 
-    _Niterfinddphic_ = 2; 
-    _Iter_branches_solver_ = 25; 
+    _Niterfinddphic_ = 2;
+    _Iter_branches_solver_ = 25; // 25;
     _w_SOR_ = 1.9;
     _w_SOR_HEAD_ = 1.0;
 
     head_pot_method = 0; // 0 = Multygrid, 1 = Conjugate gradient
     branch_pot_method = 1; // 0 = SOR, 1 = Conjugate gradient
+}
+
+static void init_global_force_params()
+{
+    force_stencil = 1;  // 0 = 3-points, 1 = 5-points
+}
+
+static void init_global_energies_params()
+{
+    potential_energy_type = 1; // 0 = Exact, 1 = approximation using potential grid
 }
 
 static void init_global_ptcl()
@@ -294,7 +318,7 @@ static void init_global_memory()
 
 static void init_global_garbage_collector_parameters()
 {
-    Garbage_Collector_iter = 10000000; // Number of time-steps between each garbage collector
+    Garbage_Collector_iter = 1000000; // Number of time-steps between each garbage collector
 }
 
 static void init_multigrid2_parameters()
@@ -337,7 +361,13 @@ void global_variables()
     //** >> Initializing Poisson parameters **/ 
     init_global_poisson_params();
 
-    //** >> Initializing particles **/ 
+    //** >> Initializing Force parameters **/
+    init_global_force_params();
+
+    //** >> Initializing energy parameters **/
+    init_global_energies_params();
+
+    //** >> Initializing particles **/
     init_global_ptcl();
 
     //** >> Initializing tree head **/ 

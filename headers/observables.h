@@ -29,7 +29,6 @@
 
 #include "common.h"
 
-    void
-    observables(vtype *energies);
+int observables(vtype *energies);
 
 #endif

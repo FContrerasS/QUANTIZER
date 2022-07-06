@@ -53,7 +53,7 @@ static void computing_grid_density_head(struct node *ptr_head)
 
     int lv = ptr_head->lv;                              // Level of refinement
     vtype H = 1.0L / (1 << lv);                         // Size of the grid side
-    vtype poisson_coeff = 4 * _G_ * _PI_ / (H * H * H); // Poisson coefficient
+    vtype poisson_coeff = 4.0 * _G_ * _PI_ / (H * H * H); // Poisson coefficient
 
     int grid_box_real_dim_X = (ptr_head->box_real_dim_x + 1);
     int grid_box_real_dim_X_times_Y = (ptr_head->box_real_dim_x + 1) * (ptr_head->box_real_dim_y + 1);
@@ -87,6 +87,7 @@ static void computing_grid_density_head(struct node *ptr_head)
         w[5] = w_x_1 * w_y_2 * w_z_1;
         w[6] = w_x_2 * w_y_1 * w_z_1;
         w[7] = w_x_1 * w_y_1 * w_z_1;
+        
 
         // for (int kk = 0; kk < 2; kk++)
         // {

@@ -118,6 +118,7 @@ extern vtype _MAX_dt_;
 // Relaxation solver at coarsest level
 extern int _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_;
 extern vtype _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_;
+extern vtype _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_2;
 extern int check_poisson_error_method; // 0,1,2 = Method used
 extern int multigrid_cycle;            // 0 = V cycle, 1 = F cycle, 2 = W cycle.
 extern int solverPreS; // 0 = Gauss-Saidel, 1 = Jacobi // 2 Conjugate Gradient
@@ -131,6 +132,12 @@ extern vtype _w_SOR_;          // The overrelaxation parameter
 extern vtype _w_SOR_HEAD_;
 extern int head_pot_method;
 extern int branch_pot_method;
+
+//** >> Force parameters **/
+extern int force_stencil;
+
+//** >> Initializing energy parameters **/
+extern int potential_energy_type;
 
 //** >> Particles **/
 extern vtype *GL_ptcl_mass;

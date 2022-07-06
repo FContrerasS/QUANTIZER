@@ -30,6 +30,8 @@
 void kinetic_energy(vtype *energies)
 {
 
+    
+
     vtype _one_over_User_BoxSize = 1.0L / _User_BoxSize_;
 
     vtype particle_v_pow_2; // Particle velocity to the power of 2
@@ -43,6 +45,35 @@ void kinetic_energy(vtype *energies)
     }
 
     energies[0] = energies[0] * 0.5 * _one_over_User_BoxSize;
+}
+
+void potential_energy_0(vtype *energies)
+{
+
+    vtype distance_x, distance_y, distance_z; // Axial distance between 2 particles
+    vtype distance;                           // Distance between 2 particles
+
+    vtype _one_over_User_BoxSize = 1.0L / _User_BoxSize_;
+
+    for (int i = 0; i < GL_no_ptcl; i++)
+    {
+        // Adding Kinetic energy of the particle
+
+        for (int j = 0; j < i; j++)
+        {
+            // Potential energy
+            distance_x = GL_ptcl_x[i] - GL_ptcl_x[j];
+            distance_y = GL_ptcl_y[i] - GL_ptcl_y[j];
+            distance_z = GL_ptcl_z[i] - GL_ptcl_z[j];
+            distance = distance_x * distance_x + distance_y * distance_y + distance_z * distance_z;
+            distance = sqrt(distance);
+
+            // Adding Potential energy of the particle
+            energies[1] += GL_ptcl_mass[i] * GL_ptcl_mass[j] / (distance);
+        }
+    }
+
+    energies[1] = - energies[1] * _G_ * _one_over_User_BoxSize;
 }
 
 static void computing_particle_potential_head_only(const struct node *ptr_head, vtype *energies)
@@ -294,7 +325,7 @@ static void computing_particle_potential_head_plus_branches(const struct node *p
     }
 }
 
-void potential_energy(vtype *energies)
+void potential_energy_1(vtype *energies)
 {
     vtype _one_over_User_BoxSize = 1.0L / _User_BoxSize_;
 
@@ -316,10 +347,10 @@ void potential_energy(vtype *energies)
         computing_particle_potential_head_only(GL_tentacles[0][0], energies);
     }
 
-    energies[1] = energies[1] * 0.5 * _one_over_User_BoxSize;
+    energies[1] = energies[1] * 0.5 * _G_ * _one_over_User_BoxSize;
 }
 
-void observables(vtype *energies)
+int observables(vtype *energies)
 {
 
     energies[0] = 0; // Kinetic
@@ -327,8 +358,22 @@ void observables(vtype *energies)
     energies[2] = 0; // Total
 
     kinetic_energy(energies);
-    potential_energy(energies);
+
+    if (potential_energy_type == 0)
+    {
+        potential_energy_0(energies);
+    }
+    else if (potential_energy_type == 1)
+    {
+        potential_energy_1(energies);
+    }
+    else
+    {
+        printf("Error, the potential_energy_type value is different of 0 or 1\n");
+        return _FAILURE_;
+    }
 
     energies[2] = energies[0] + energies[1];
 
+    return _SUCCESS_;
 }

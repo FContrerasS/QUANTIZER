@@ -163,6 +163,7 @@ int main(int argc, char **argv) {
 
 		//** >> TIMESTEP **/
 		// printf("Time-step compute\n");
+
 		GL_clock_begin = clock();
 		if (timestep_2(&dt) == _FAILURE_)
 		{
@@ -254,7 +255,12 @@ int main(int argc, char **argv) {
 			//** >> OBSERVABLES **/
 			// printf("Observables\n");
 			GL_clock_begin = clock();
-			observables(energies);
+			if (observables(energies) == _FAILURE_)
+			{
+				printf("\n\n Error running observables() function\n\n");
+				return _FAILURE_;
+			}
+			
 			GL_times[13] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 
 			//** >> OUPUT SNAPSHOTS **/

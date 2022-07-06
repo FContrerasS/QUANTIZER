@@ -801,6 +801,7 @@ static int fill_child_nodes(struct node *ptr_node)
         cap = (ptr_ch->box_real_dim_x + 1) * (ptr_ch->box_real_dim_y + 1) * (ptr_ch->box_real_dim_z + 1);
         ptr_ch->grid_properties_cap = cap;
         ptr_ch->ptr_pot = (vtype *)calloc(cap, sizeof(vtype));
+        ptr_ch->ptr_pot_old = (vtype *)calloc(cap, sizeof(vtype));
         ptr_ch->ptr_ax = (vtype *)calloc(cap, sizeof(vtype));
         ptr_ch->ptr_ay = (vtype *)calloc(cap, sizeof(vtype));
         ptr_ch->ptr_az = (vtype *)calloc(cap, sizeof(vtype));
