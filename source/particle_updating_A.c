@@ -26,10 +26,12 @@
 
 #include "particle_updating_A.h"
 
+//** >> Local Functions
+static int computing_particles_updating_A_HEAD_ONLY(struct node *ptr_node, vtype dt);
+static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool status);
+
 static int computing_particles_updating_A_HEAD_ONLY(struct node *ptr_node, vtype dt)
 {
-
-
 
     for (int i = 0; i < GL_no_ptcl; i++)
     {

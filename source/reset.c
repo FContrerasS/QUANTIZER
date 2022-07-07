@@ -26,7 +26,7 @@
 
 #include "reset.h"
 
-int reset()
+int reset(void)
 {
 	//Global Particles properties
 

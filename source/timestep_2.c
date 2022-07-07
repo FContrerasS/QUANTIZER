@@ -26,6 +26,10 @@
 
 #include "timestep_2.h"
 
+//** >> Local Functions
+static vtype timestep_computation_2_HEAD_ONLY(const struct node *ptr_node);
+static vtype timestep_computation_2(const struct node *ptr_node);
+
 static vtype timestep_computation_2_HEAD_ONLY(const struct node *ptr_node)
 {
     vtype aux_dt;

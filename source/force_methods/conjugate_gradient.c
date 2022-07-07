@@ -124,7 +124,7 @@ int conjugate_gradient(struct node *ptr_node)
         }
 
         //** >> CHEKING ERROR SOLUTION CONDITION **/
-        if (i % 25 == 0)
+        if (i % iter_between_check_potential_solution == 0)
         {
             aux_clock = clock();
             if (poisson_error(ptr_node, r, rsnew, 1) == true)

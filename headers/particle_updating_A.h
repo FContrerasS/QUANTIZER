@@ -30,7 +30,6 @@
 #include "common.h"
 #include "space_check.h"
 
-    int
-    particle_updating_A(vtype dt);
+int particle_updating_A(vtype dt);
 
 #endif

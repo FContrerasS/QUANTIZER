@@ -30,7 +30,6 @@
 #include "common.h"
 #include "space_check.h"
 
-    int
-    tree_construction();
+int tree_construction(void);
 
 #endif

@@ -29,7 +29,6 @@
 
 #include "common.h"
 
-    int
-    grid_acceleration();
+int grid_acceleration(void);
 
 #endif

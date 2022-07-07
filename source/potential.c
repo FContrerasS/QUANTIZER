@@ -26,7 +26,7 @@
 
 #include "potential.h"
 
-int potential()
+int potential(void)
 {
 
     //**>> POTENTIAL HEAD NODE **/

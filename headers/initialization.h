@@ -31,7 +31,6 @@
 #include "space_check.h"
 #include "initial_potential_and_acceleration_head.h"
 
-    int
-    initialization();
+int initialization(void);
 
 #endif

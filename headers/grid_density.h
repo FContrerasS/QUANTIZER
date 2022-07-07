@@ -29,7 +29,6 @@
 
 #include "common.h"
 
-    void
-    grid_density();
+void grid_density(void);
 
 #endif

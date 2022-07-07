@@ -27,11 +27,15 @@
 #include "observables.h"
 #include "space_check.h"
 
-void kinetic_energy(vtype *energies)
+//** >> Local Functions
+static void kinetic_energy(vtype *energies);
+static void potential_energy_exact(vtype *energies);
+static void computing_particle_potential_head_only(const struct node *ptr_head, vtype *energies);
+static void computing_particle_potential_head_plus_branches(const struct node *ptr_node, vtype *energies);
+static void potential_energy_approximation(vtype *energies);
+
+static void kinetic_energy(vtype *energies)
 {
-
-    
-
     vtype _one_over_User_BoxSize = 1.0L / _User_BoxSize_;
 
     vtype particle_v_pow_2; // Particle velocity to the power of 2
@@ -47,7 +51,7 @@ void kinetic_energy(vtype *energies)
     energies[0] = energies[0] * 0.5 * _one_over_User_BoxSize;
 }
 
-void potential_energy_0(vtype *energies)
+static void potential_energy_exact(vtype *energies)
 {
 
     vtype distance_x, distance_y, distance_z; // Axial distance between 2 particles
@@ -325,7 +329,7 @@ static void computing_particle_potential_head_plus_branches(const struct node *p
     }
 }
 
-void potential_energy_1(vtype *energies)
+static void potential_energy_approximation(vtype *energies)
 {
     vtype _one_over_User_BoxSize = 1.0L / _User_BoxSize_;
 
@@ -352,7 +356,6 @@ void potential_energy_1(vtype *energies)
 
 int observables(vtype *energies)
 {
-
     energies[0] = 0; // Kinetic
     energies[1] = 0; // Potential
     energies[2] = 0; // Total
@@ -361,11 +364,11 @@ int observables(vtype *energies)
 
     if (potential_energy_type == 0)
     {
-        potential_energy_0(energies);
+        potential_energy_exact(energies);
     }
     else if (potential_energy_type == 1)
     {
-        potential_energy_1(energies);
+        potential_energy_approximation(energies);
     }
     else
     {

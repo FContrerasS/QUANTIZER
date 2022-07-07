@@ -26,6 +26,12 @@
 
 #include "tree_construction.h"
 
+//** >> Local Functions
+static int fill_cell_ref(struct node *ptr_node);
+static int fill_zones_ref(struct node *ptr_node);
+static int fill_child_nodes(struct node *ptr_node);
+static int fill_tentacles(const struct node *ptr_node);
+
 static int fill_cell_ref(struct node *ptr_node)
 {
     //** >> Adding cells which satisfy the refinement criteria to the array ptr_cell_ref and chaning the box the status of refinement -1 **/
@@ -846,7 +852,7 @@ static int fill_tentacles(const struct node *ptr_node)
     return _SUCCESS_;
 } // end function fill_tentacles
 
-int tree_construction()
+int tree_construction(void)
 {
     struct node *ptr_node; // Parent node
 

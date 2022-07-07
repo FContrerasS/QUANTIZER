@@ -26,7 +26,23 @@
 
 #include "global_variables.h"
 
-    // Constants
+//** >> Local Functions
+static void init_global_constants(void);
+static void init_global_user_params(void);
+static void init_global_ref_crit(void);
+static void init_global_poisson_params(void);
+static void init_global_force_params(void);
+static void init_global_energies_params(void);
+static void init_global_ptcl(void);
+static void init_tree_head(void);
+static void init_global_border_sim_box(void);
+static void init_global_folder_params(void);
+static void init_global_timer(void);
+static void init_global_memory(void);
+static void init_global_garbage_collector_parameters(void);
+static void init_multigrid2_parameters(void);
+
+// Constants
 vtype _User_BoxSize_; //** >> User box size **/
 vtype _PI_;
 vtype _Onesixth_;
@@ -89,6 +105,8 @@ vtype _w_SOR_;
 vtype _w_SOR_HEAD_;
 int head_pot_method;
 int branch_pot_method;
+int iter_between_check_potential_solution;
+int branches_maximal_node_number_to_activate_conjugate_gradient;
 
 //** >> Force parameters **/
 int force_stencil;
@@ -158,10 +176,10 @@ vtype **pp_dphixx;
 vtype **zeros_xx;
 
 static void
-init_global_constants()
+init_global_constants(void)
 {
     //Constants
-    _User_BoxSize_ = 32000.0L; //kpc
+    _User_BoxSize_ = 64000.0L; //kpc
     //_User_BoxSize_ = 0.1L; //kpc
     _PI_ = 3.14159265358979323846L;
     _Onesixth_ = 1.0L / 6.0L;
@@ -177,30 +195,30 @@ init_global_constants()
     printf("tt = %1.6e\n", (double)tt);
 }
 
-static void init_global_user_params()
+static void init_global_user_params(void)
 {
     BoxSize = 1.0L;
     lmin = 5;     //Coarset level of refinement
-    lmax = lmin + 9;  //Finest level of refinement
+    lmax = lmin + 5;  //Finest level of refinement
     no_lmin_cell = 1 << lmin; // Number of cells in the lmin level of refinement
     no_lmin_cell_pow2 = no_lmin_cell * no_lmin_cell;
     no_lmin_cell_pow3 = no_lmin_cell * no_lmin_cell * no_lmin_cell;
     no_grid = no_lmin_cell + 1;
-    GL_no_ptcl = 45000; 
+    GL_no_ptcl = 4500; 
     //GL_no_ptcl = 7550; // 2995865; // 299586; // 231299 // 298159
     // GL_no_ptcl = 10000;
-    Maxdt = 100000.0 * _Mgyear_;
+    Maxdt = 10009.0 * _Mgyear_;
     //meanmass = 100; //Currently only used on input.c
     // total_mass = GL_no_ptcl * meanmass;
     // total_mass = 0;
-    fr_output = 400;
+    fr_output = 3680;
     MaxIterations = 100000000;
     no_grid_pow2 = no_grid * no_grid;
     no_grid_pow3 = no_grid * no_grid * no_grid;
 
 }
 
-static void init_global_ref_crit()
+static void init_global_ref_crit(void)
 {
     ref_criterion_mass = 1.0e100; // meanmass * 7;
     ref_criterion_ptcl = 8;
@@ -209,7 +227,7 @@ static void init_global_ref_crit()
     _MAX_dt_ = _Mgyear_ * 1.0;
 }
 
-static void init_global_poisson_params()
+static void init_global_poisson_params(void)
 {
     //** >> Poisson parameters **/
     // Relaxation solver at coarsest level
@@ -225,8 +243,8 @@ static void init_global_poisson_params()
     vtype _w_SOR_: The overrelaxation parameter
 */
     _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_ = 1000;
-    _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ = (1.0e-10);
-    _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_2 = (1.0e-10);
+    _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ = (1.0e-8);
+    _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_2 = (1.0e-8);
     check_poisson_error_method = 1;  //Only used Gauss-Said or Jacobi in multigrid
     multigrid_cycle = 0; 
     solverPreS = 0;
@@ -239,21 +257,25 @@ static void init_global_poisson_params()
     _w_SOR_ = 1.9;
     _w_SOR_HEAD_ = 1.0;
 
+    iter_between_check_potential_solution = 5;
+
+    branches_maximal_node_number_to_activate_conjugate_gradient = 513; // 513, 216 = node with minimum size of 1 (+1 n_exp) size, (1 + 2*n_exp)^3 * 8
+
     head_pot_method = 0; // 0 = Multygrid, 1 = Conjugate gradient
     branch_pot_method = 1; // 0 = SOR, 1 = Conjugate gradient
 }
 
-static void init_global_force_params()
+static void init_global_force_params(void)
 {
     force_stencil = 1;  // 0 = 3-points, 1 = 5-points
 }
 
-static void init_global_energies_params()
+static void init_global_energies_params(void)
 {
     potential_energy_type = 1; // 0 = Exact, 1 = approximation using potential grid
 }
 
-static void init_global_ptcl()
+static void init_global_ptcl(void)
 {
     GL_ptcl_mass = (vtype *)calloc(GL_no_ptcl , sizeof(vtype));
     GL_ptcl_x = (vtype *)calloc(GL_no_ptcl , sizeof(vtype));
@@ -279,12 +301,12 @@ static void init_global_ptcl()
     GL_ptcl[9] = GL_ptcl_az;
 }
 
-static void init_tree_head()
+static void init_tree_head(void)
 {
     GL_ptr_tree = (struct node *)malloc(sizeof(struct node));
 }
 
-static void init_global_border_sim_box()
+static void init_global_border_sim_box(void)
 {
     bder_os_sim = 1 > (n_exp-1) ? 1 : (n_exp-1); // Border outside the simulation box
     box_side_lmin = no_lmin_cell + 2 * bder_os_sim; // Side of the coarsest box
@@ -292,17 +314,17 @@ static void init_global_border_sim_box()
     box_side_lmin_pow3 = box_side_lmin * box_side_lmin * box_side_lmin;
 }
 
-static void init_global_folder_params()
+static void init_global_folder_params(void)
 {
     folder_created = false;
 }
 
-static void init_global_timer()
+static void init_global_timer(void)
 {
     GL_times = (double *)calloc(100 , sizeof(double));
 }
 
-static void init_global_memory()
+static void init_global_memory(void)
 {
     TOTAL_MEMORY_NODES = 0;
     TOTAL_MEMORY_CELDAS = 0;
@@ -316,12 +338,12 @@ static void init_global_memory()
     TOTAL_MEMORY_STACK = 0;
 }
 
-static void init_global_garbage_collector_parameters()
+static void init_global_garbage_collector_parameters(void)
 {
-    Garbage_Collector_iter = 1000000; // Number of time-steps between each garbage collector
+    Garbage_Collector_iter = 100; // Number of time-steps between each garbage collector
 }
 
-static void init_multigrid2_parameters()
+static void init_multigrid2_parameters(void)
 {
     int size, size_pow3;
     pp_phixx = (vtype **)malloc((lmin - 1) * sizeof(vtype *));

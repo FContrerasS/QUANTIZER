@@ -26,6 +26,10 @@
 
 #include "output_snapshots.h"
 
+//** >> Local Functions
+static int output_folder_names(void);
+static int create_output_folders(void);
+
 char file_data_name[1000];
 char folder_name[1000];
 
@@ -41,7 +45,7 @@ char file_snashot_output_name[100];
 // Creating the simulation directory
 char address_simulation_directory[300];
 
-static int output_folder_names()
+static int output_folder_names(void)
 {
 	//----------------------------------------------------------------------------//
 
@@ -89,7 +93,7 @@ static int output_folder_names()
 	return _SUCCESS_;
 }
 
-static int create_output_folders()
+static int create_output_folders(void)
 {
 	char aux_char[500];
     char aux_char2[600];
@@ -183,19 +187,7 @@ int output_snapshots(const vtype *energies, vtype actualtime, int snapshot)
 		GL_ptcl_vy_conversion[i] = GL_ptcl_vy[i] * _one_over_User_sqrt_BoxSize_;
 		GL_ptcl_vz_conversion[i] = GL_ptcl_vz[i] * _one_over_User_sqrt_BoxSize_;
 	}
-
-	// // Returning to user units 
-	// for (int i = 0; i < GL_no_ptcl; i++)
-	// {
-	// 	GL_ptcl_x[i] = (GL_ptcl_x[i] - 0.5) * _User_BoxSize_;
-	// 	GL_ptcl_y[i] = (GL_ptcl_y[i] - 0.5) * _User_BoxSize_;
-	// 	GL_ptcl_z[i] = (GL_ptcl_z[i] - 0.5) * _User_BoxSize_;
-
-	// 	GL_ptcl_vx[i] *= _one_over_User_sqrt_BoxSize_;
-	// 	GL_ptcl_vy[i] *= _one_over_User_sqrt_BoxSize_;
-	// 	GL_ptcl_vz[i] *= _one_over_User_sqrt_BoxSize_;
-	// }
-
+	
 	sprintf(snapshot_name, "%s%d.bin", file_data_name, snapshot);
 
 	FILE *file = NULL;
@@ -217,18 +209,6 @@ int output_snapshots(const vtype *energies, vtype actualtime, int snapshot)
 	fwrite(energies, 3 * sizeof(vtype),1,file);
 	fwrite(&time_Megayear, sizeof(vtype), 1, file);
 	fclose(file);
-
-	// Returning to code units
-	// for (int i = 0; i < GL_no_ptcl; i++)
-	// {
-	//     GL_ptcl_x[i] = GL_ptcl_x[i] / _User_BoxSize_ + 0.5;
-	//     GL_ptcl_y[i] = GL_ptcl_y[i] / _User_BoxSize_ + 0.5;
-	//     GL_ptcl_z[i] = GL_ptcl_z[i] / _User_BoxSize_ + 0.5;
-
-	//     GL_ptcl_vx[i] /= _one_over_User_sqrt_BoxSize_;
-	//     GL_ptcl_vy[i] /= _one_over_User_sqrt_BoxSize_;
-	//     GL_ptcl_vz[i] /= _one_over_User_sqrt_BoxSize_;
-	// }
 
 	// Free memory
 	free(GL_ptcl_x_conversion);

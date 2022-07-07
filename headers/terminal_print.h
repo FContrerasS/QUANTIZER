@@ -29,7 +29,6 @@
 
 #include "common.h"
 
-    void
-    terminal_print();
+void terminal_print(void);
 
 #endif

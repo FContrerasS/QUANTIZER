@@ -26,7 +26,13 @@
 
 #include "input.h"
 
-int input_galaxies_merger()
+//** >> Local Functions
+int input_galaxies_merger(void);
+int input_plummer_model(void);
+int input_particle_initialization(void);
+static int input_code_units(void);
+
+int input_galaxies_merger(void)
 {
 
     printf("Input by galaxies merger\n");
@@ -77,8 +83,20 @@ int input_galaxies_merger()
     // char input_name[100] = "../source/initial_conditions/Galic/"
     //                        "galaxy_alone_30k.txt";
 
+    // char input_name[100] = "../source/initial_conditions/Galic/"
+    //                        "galaxies_merger_30k+15k.txt";
+
+    // char input_name[100] = "../source/initial_conditions/Galic/"
+    //                        "galaxies_merger_30k+15k_v2.txt";
+
+    // char input_name[100] = "../source/initial_conditions/Galic/"
+    //                        "galaxies_merger_30k+15k_v3.txt";
+
+    // char input_name[100] = "../source/initial_conditions/Galic/"
+    //                        "galaxies_merger_30k+15k_v4.txt";
+
     char input_name[100] = "../source/initial_conditions/Galic/"
-                           "galaxies_merger_30k+15k.txt";
+                           "galaxies_merger_300k+150k.txt";
 
     FILE *file = NULL;
     file = fopen(input_name, "r");
@@ -138,7 +156,7 @@ int input_galaxies_merger()
     return _SUCCESS_;
 }
 
-int input_plummer_model()
+int input_plummer_model(void)
 {
 
     printf("Input by plummer\n");
@@ -202,7 +220,7 @@ int input_plummer_model()
     return _SUCCESS_;
 }
 
-int input_particle_initialization()
+int input_particle_initialization(void)
 {
     printf("Input by random\n");
 
@@ -229,7 +247,7 @@ int input_particle_initialization()
     return _SUCCESS_;
 }
 
-static int input_code_units()
+static int input_code_units(void)
 {
     for (int i = 0; i < GL_no_ptcl; i++)
     {
@@ -248,7 +266,7 @@ static int input_code_units()
     return _SUCCESS_;
 }
 
-int input()
+int input(void)
 {
     // if (input_plummer_model() == _FAILURE_)
     // {

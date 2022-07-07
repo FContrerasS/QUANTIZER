@@ -41,16 +41,14 @@
 /** ! testign */
 
 
-
-
 #include "main.h"
 
 int main(int argc, char **argv) {
 
-	printf("\n ********** RUNNING N-BODY CODE ********** \n\n");
-
 	//printf(std::scientific);
 	//printf(std::setprecision(digits_precision));
+
+	printf("\n ********** RUNNING N-BODY CODE ********** \n\n");
 
 	//* DEFINING OTHER VARIABLES
 	//** >> Defining timestep **/
@@ -76,6 +74,45 @@ int main(int argc, char **argv) {
 	GL_clock_begin = clock();
 	global_variables();
     GL_times[0] += (double) (clock() - GL_clock_begin) / CLOCKS_PER_SEC;
+
+	printf("INITIAL PARAMETERS ...\n\n");
+	printf("\nSIMULATION PARAMETERS ...\n");
+	printf("User Box size = %f\n", (double)_User_BoxSize_);
+	printf("Number of Particles = %d\n", (int)GL_no_ptcl);
+	printf("Max time of the simulation = %f My\n", (double)Maxdt / _Mgyear_);
+	printf("Min level = %d\n", (int)lmin);
+	printf("Max level = %d\n", (int)lmax);
+	printf("Output frecuency = %d\n", (int)fr_output);
+	printf("\n\nUNITS ...\n");
+	printf("Length unit = kpc\n");
+	printf("Mass unit = 1 Solar Mass\n");
+	printf("Time unit = %f\n", (double)tt);
+	printf("G = %f\n", (double)_G_);
+	printf("\n\nREFINEMENT CRITERIA ...\n");
+	printf("Refinement criterion = %d particles\n", (int)ref_criterion_ptcl);
+	printf("n_expand = %d\n", (int)n_exp);
+	printf("CFL criterion = %f\n", (double)_CFL_);
+	printf("Max timestep allow = %f My\n", (double)_MAX_dt_ / _Mgyear_);
+	printf("\n\nPOISSON PARAMETERS ...\n");
+	printf("Threshold over ther density = %f\n", (double)_ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_);
+	printf("Threshold over ther previous solution = %f\n", (double)_ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_2);
+	printf("Poisson error checking method = %d\n", (int)check_poisson_error_method);
+	printf("Multigrid cycle = %d\n", (int)multigrid_cycle);
+	printf("Solver type in the PreSmoothing of multigrid = %d\n", (int)solverPreS);
+	printf("Solver type in the PostSmoothing of multigrid = %d\n", (int)solverPostS);
+	printf("Solver type in the multigrid coarsest level = %d\n", (int)solverfinddphic);
+	printf("Number of solver iterations in the PreSmoothing of multigrid = %d\n", (int)_NiterPreS_);
+	printf("Number of solver iterations in the PostSmoothing of multigrid = %d\n", (int)_NiterPostS_);
+	printf("Number of solver iterations in the multigrid coarsest level = %d\n", (int)_Niterfinddphic_);
+	printf("Number of solver iterations in refinement levels = %d\n", (int)_Iter_branches_solver_);
+	printf("Parameter of Successive Over Relaxation in the coarsest level = %f\n", (double)_w_SOR_HEAD_);
+	printf("Parameter of Successive Over Relaxation in finner level = %f\n", (double)_w_SOR_);
+	printf("Solver type for the corasest level of refinement = %d\n", (int)head_pot_method);
+	printf("\n\nOTHER PARAMETERS ...\n");
+	printf("Force stencil type: 3-points (=0) or 5-points (=1) = %d\n", (int)force_stencil);
+	printf("Method for the computation of the observables = %d\n", (int)potential_energy_type);
+	printf("Number of iterations between each Garbage collector = %d\n", (int)Garbage_Collector_iter);
+	printf("\n\nBEGINNING the SIMULATION ...\n\n");
 
 	//** >> INPUT **/
 	//printf("Input\n");
@@ -160,7 +197,6 @@ int main(int argc, char **argv) {
 
 	while (actualtime < Maxdt && Number_timesteps < MaxIterations)
 	{
-
 		//** >> TIMESTEP **/
 		// printf("Time-step compute\n");
 

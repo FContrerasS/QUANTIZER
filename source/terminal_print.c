@@ -26,7 +26,10 @@
 
 #include "terminal_print.h"
 
-static int computing_memory()
+//** >> Local Functions
+static int computing_memory(void);
+
+static int computing_memory(void)
 {
 
     int no_pts;
@@ -147,7 +150,7 @@ static int computing_memory()
     return cntr_nodes_memory_pool;
 }
 
-void terminal_print()
+void terminal_print(void)
 {
     int cntr_nodes_memory_pool;
 

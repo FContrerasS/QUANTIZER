@@ -26,8 +26,10 @@
 
 #include "new_node.h"
 
+//** >> Local Functions
+static void re_initialize_node(struct node *ptr_node);
 
-void re_initialize_node(struct node *ptr_node)
+static void re_initialize_node(struct node *ptr_node)
 {
   	int box_idx_node;
 
@@ -79,7 +81,7 @@ void re_initialize_node(struct node *ptr_node)
 
 }
 
-struct node* new_node()
+struct node *new_node(void)
 {
 	struct node *ptr_node;
 

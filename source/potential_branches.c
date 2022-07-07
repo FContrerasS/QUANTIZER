@@ -26,15 +26,16 @@
 
 #include "potential_branches.h"
 
+//** >> Local Functions
+static int fill_red_and_black_branch_node(int **pptr_red_black, int *ptr_red_black_cap, int *ptr_red_black_size, const struct node *ptr_node);
+static void initial_potential_branch_node(const struct node *ptr_node, struct node *ptr_ch);
+static int compute_potential_branch_node(int **pptr_red_black, const int *ptr_red_black_size, struct node *ptr_node);
+
 static int fill_red_and_black_branch_node(int **pptr_red_black, int *ptr_red_black_cap, int *ptr_red_black_size, const struct node *ptr_node)
 {
 	int red_size;	  // Number of red points
 	int black_size;	  // Number of black points
 	int red_or_black; // Desition if the point is red or black
-
-	// int box_idx_x; // Box index in X direcction
-	// int box_idx_y; // Box index in Y direcction
-	// int box_idx_z; // Box index in Z direcction
 
 	int box_grid_idx; // box grid index
 
@@ -45,13 +46,6 @@ static int fill_red_and_black_branch_node(int **pptr_red_black, int *ptr_red_bla
 	for (int i = 0; i < ptr_node->grid_intr_size; i++)
 	{
 		box_grid_idx = ptr_node->ptr_intr_grid_idx[i];
-		// box_idx_z = box_grid_idx / ((ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1));
-		// box_idx_y = (box_grid_idx - box_idx_z * (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1)) / (ptr_node->box_real_dim_x + 1);
-		// box_idx_x = box_grid_idx - box_idx_z * (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1) - box_idx_y * (ptr_node->box_real_dim_x + 1);
-		// box_idx_x = ptr_node->ptr_intr_grid_cell_idx_x[i];
-		// box_idx_y = ptr_node->ptr_intr_grid_cell_idx_y[i];
-		// box_idx_z = ptr_node->ptr_intr_grid_cell_idx_z[i];
-		// red_or_black = box_idx_x + box_idx_y + box_idx_z;
 
 		red_or_black = ptr_node->ptr_intr_grid_cell_idx_x[i] +
 					   ptr_node->ptr_intr_grid_cell_idx_y[i] +
@@ -98,13 +92,6 @@ static int fill_red_and_black_branch_node(int **pptr_red_black, int *ptr_red_bla
 static void initial_potential_branch_node(const struct node *ptr_node, struct node *ptr_ch)
 {
 	int ch_box_grid_idx; // Child box grid index
-	// int ch_box_idx_x;   // Child box index
-	// int ch_box_idx_y;
-	// int ch_box_idx_z;
-
-	// int ch_cell_idx_x; // Chilld cell index at x direcction
-	// int ch_cell_idx_y;
-	// int ch_cell_idx_z;
 
 	int box_idx_x0_node; // Parent box index at X direcction
 	int box_idx_x1_node;
@@ -133,18 +120,6 @@ static void initial_potential_branch_node(const struct node *ptr_node, struct no
 	{
 		//** >> Child box indexes **/
 		ch_box_grid_idx = ptr_ch->ptr_bder_grid_idx[i];
-		// ch_box_idx_z = ch_box_grid_idx / ((ptr_ch->box_real_dim_x + 1) * (ptr_ch->box_real_dim_y + 1));
-		// ch_box_idx_y = (ch_box_grid_idx - ch_box_idx_z * (ptr_ch->box_real_dim_x + 1) * (ptr_ch->box_real_dim_y + 1)) / (ptr_ch->box_real_dim_x + 1);
-		// ch_box_idx_x = ch_box_grid_idx - ch_box_idx_z * (ptr_ch->box_real_dim_x + 1) * (ptr_ch->box_real_dim_y + 1) - ch_box_idx_y * (ptr_ch->box_real_dim_x + 1);
-
-		//** >> Child cell indexes **/
-		// ch_cell_idx_x = ch_box_idx_x + ptr_ch->box_ts_x;
-		// ch_cell_idx_y = ch_box_idx_y + ptr_ch->box_ts_y;
-		// ch_cell_idx_z = ch_box_idx_z + ptr_ch->box_ts_z;
-
-		// ch_cell_idx_x = ptr_ch->ptr_bder_grid_cell_idx_x[i];
-		// ch_cell_idx_y = ptr_ch->ptr_bder_grid_cell_idx_y[i];
-		// ch_cell_idx_z = ptr_ch->ptr_bder_grid_cell_idx_z[i];
 
 		//** >> Parent box indexes **/
 		box_idx_x0_node = (ptr_ch->ptr_bder_grid_cell_idx_x[i] >> 1) - ptr_node->box_ts_x;
@@ -181,19 +156,6 @@ static void initial_potential_branch_node(const struct node *ptr_node, struct no
 	{
 		//** >> Child box indexes **/
 		ch_box_grid_idx = ptr_ch->ptr_intr_grid_idx[i];
-
-		// ch_box_idx_z = ch_box_grid_idx / ((ptr_ch->box_real_dim_x + 1) * (ptr_ch->box_real_dim_y + 1));
-		// ch_box_idx_y = (ch_box_grid_idx - ch_box_idx_z * (ptr_ch->box_real_dim_x + 1) * (ptr_ch->box_real_dim_y + 1)) / (ptr_ch->box_real_dim_x + 1);
-		// ch_box_idx_x = ch_box_grid_idx - ch_box_idx_z * (ptr_ch->box_real_dim_x + 1) * (ptr_ch->box_real_dim_y + 1) - ch_box_idx_y * (ptr_ch->box_real_dim_x + 1);
-
-		//** >> Child cell indexes **/
-		// ch_cell_idx_x = ch_box_idx_x + ptr_ch->box_ts_x;
-		// ch_cell_idx_y = ch_box_idx_y + ptr_ch->box_ts_y;
-		// ch_cell_idx_z = ch_box_idx_z + ptr_ch->box_ts_z;
-
-		// ch_cell_idx_x = ptr_ch->ptr_intr_grid_cell_idx_x[i];
-		// ch_cell_idx_y = ptr_ch->ptr_intr_grid_cell_idx_y[i];
-		// ch_cell_idx_z = ptr_ch->ptr_intr_grid_cell_idx_z[i];
 
 		//** >> Parent box indexes **/
 		box_idx_x0_node = (ptr_ch->ptr_intr_grid_cell_idx_x[i] >> 1) - ptr_node->box_ts_x;
@@ -286,7 +248,7 @@ static int compute_potential_branch_node(int **pptr_red_black, const int *ptr_re
 	return _SUCCESS_;
 }
 
-int potential_branches()
+int potential_branches(void)
 {
 	struct node *ptr_node;
 	struct node *ptr_ch;
@@ -335,7 +297,7 @@ int potential_branches()
 
 				memcpy(ptr_ch->ptr_pot_old, ptr_ch->ptr_pot, ptr_ch->grid_properties_cap * sizeof(vtype));
 
-				if (ptr_ch->cell_size < 513)	//513, 216 = node with minimum size of 1 (+1 n_exp) size, (1 + 2*n_exp)^3 * 8 
+				if (ptr_ch->cell_size < branches_maximal_node_number_to_activate_conjugate_gradient) // 513, 216 = node with minimum size of 1 (+1 n_exp) size, (1 + 2*n_exp)^3 * 8
 				{
 					//** >> Computing the potential in the child node **/
 					aux_clock = clock();
@@ -372,11 +334,13 @@ int potential_branches()
 							return _FAILURE_;
 						}
 						GL_times[24] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
-
-						//** >> CHEKING ERROR SOLUTION CONDITION **/
-						aux_clock = clock();
-						check = poisson_error(ptr_ch,dummy_pvtype,dummy_vtype,0);
-						GL_times[25] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+						if (iter % iter_between_check_potential_solution == 0)
+						{
+							//** >> CHEKING ERROR SOLUTION CONDITION **/
+							aux_clock = clock();
+							check = poisson_error(ptr_ch, dummy_pvtype, dummy_vtype, 0);
+							GL_times[25] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+						}
 					}
 					if (iter == _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_)
 					{

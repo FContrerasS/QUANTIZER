@@ -26,11 +26,15 @@
 
 #include "garbage_collector.h"
 
-static int computing_memory()
+//** >> Local Functions
+static int computing_memory(void);
+static void free_memory_pool(void);
+static int free_nodes_voids(void);
+
+static int computing_memory(void)
 {
 
 	int no_pts;
-
 	struct node *ptr_node;
 
 	//** >> Tentacles **/
@@ -146,7 +150,7 @@ static int computing_memory()
 	return cntr_nodes_memory_pool;
 }
 
-static void free_memory_pool()
+static void free_memory_pool(void)
 {
 	// Stack of memory pool
 	struct node *ptr_node = GL_pool_node_start;
@@ -236,7 +240,7 @@ static void free_memory_pool()
 	GL_pool_node_end = NULL;
 }
 
-int free_nodes_voids()
+static int free_nodes_voids(void)
 {
 
 	struct node *ptr_node;
@@ -301,7 +305,7 @@ int free_nodes_voids()
 	return _SUCCESS_;
 }
 
-int garbage_collector()
+int garbage_collector(void)
 {
 
 	TOTAL_MEMORY_NODES = 0;
@@ -358,7 +362,7 @@ int garbage_collector()
 
 	free_memory_pool();
 
-	if(free_nodes_voids() == _FAILURE_)
+	if (free_nodes_voids() == _FAILURE_)
 	{
 		printf("\n\n Error running free_nodes_voids() function\n\n");
 		return _FAILURE_;

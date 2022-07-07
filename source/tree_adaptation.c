@@ -26,6 +26,28 @@
 
 #include "tree_adaptation.h"
 
+//** >> Local Functions
+void check_error(struct node *ptr_node);
+static int updating_cell_struct(struct node *ptr_node);
+static void initialization_node_boxes(struct node *ptr_node);
+static void initialization_ref_aux(struct node *ptr_node);
+static int fill_cell_ref(struct node *ptr_node);
+static int fill_zones_ref(struct node *ptr_node);
+static int create_links(struct node *ptr_node);
+static void remov_cells_nolonger_require_refinement(struct node *ptr_node);
+static int adapt_child_nodes(struct node *ptr_node);
+static int create_new_child_nodes(struct node *ptr_node);
+static int moving_old_child_to_new_child(struct node *ptr_node);
+static int moving_new_zones_to_new_child(struct node *ptr_node);
+static void reorganization_child_node(struct node *ptr_node);
+static int reorganization_grandchild_node(struct node *ptr_node);
+static void updating_ref_zones_grandchildren(struct node *ptr_node);
+static void update_border_child_boxes(struct node *ptr_node);
+static int update_child_grid_points(struct node *ptr_node);
+static int tentacles_updating(struct node *ptr_node, int tentacle_lv);
+static void moved_unused_child_node_to_memory_pool(struct node *ptr_node);
+static void updating_tentacles_max_lv(void);
+
 void check_error(struct node *ptr_node)
 {
 
@@ -2405,7 +2427,7 @@ static void moved_unused_child_node_to_memory_pool(struct node *ptr_node)
     ptr_node->chn_size = ptr_node->zones_size;
 }
 
-static void updating_tentacles_max_lv()
+static void updating_tentacles_max_lv(void)
 {
     int no_lvs = GL_tentacles_level_max < (lmax - lmin) ? GL_tentacles_level_max : (GL_tentacles_level_max - 1);
 
@@ -2419,7 +2441,7 @@ static void updating_tentacles_max_lv()
     }
 }
 
-int tree_adaptation()
+int tree_adaptation(void)
 {
 
     //** >> Working in the refinement zones **/

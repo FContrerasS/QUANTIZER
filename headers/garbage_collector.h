@@ -29,6 +29,6 @@
 
 #include "common.h"
 
-int garbage_collector();
+int garbage_collector(void);
 
 #endif

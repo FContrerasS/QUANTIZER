@@ -26,7 +26,13 @@
 
 #include "initialization.h"
 
-static void initializing_global_parameters()
+//** >> Local Functions
+static void initializing_global_parameters(void);
+static void initializing_particle_flag_updating(void);
+static int initializing_head_node(void);
+static void initializing_tentacles(void);
+
+static void initializing_global_parameters(void)
 {
 
 	total_mass = 0;
@@ -39,7 +45,7 @@ static void initializing_global_parameters()
 	meanmass = total_mass / GL_no_ptcl;
 }
 
-static void initializing_particle_flag_updating()
+static void initializing_particle_flag_updating(void)
 {
 	GL_ptcl_updating_flag = (bool *)malloc(GL_no_ptcl * sizeof(bool));
 
@@ -49,7 +55,7 @@ static void initializing_particle_flag_updating()
 	}
 }
 
-static int initializing_head_node()
+static int initializing_head_node(void)
 {
 
 	struct node *ptr_head;
@@ -60,6 +66,8 @@ static int initializing_head_node()
 	int box_idx_x;
 	int box_idx_y;
 	int box_idx_z;
+
+	int box_grid_idx; // Index in the box grid point
 
 	//** >> Basic values of the node **/
 	initialize_node(ptr_head);
@@ -180,12 +188,6 @@ static int initializing_head_node()
 	ptr_head->ptr_bder_grid_cell_idx_z = (int *)malloc(ptr_head->grid_bder_cap * sizeof(int));
 	ptr_head->ptr_bder_grid_idx = (int *)malloc(ptr_head->grid_bder_cap * sizeof(int));
 
-
-
-
-
-
-	int box_grid_idx; // Index in the box grid point
 	//** Filling grid points indexes **/
 	for (int k = bder_os_sim; k < box_side_lmin + 1 - bder_os_sim; k++)
 	{
@@ -234,7 +236,7 @@ static int initializing_head_node()
 
 } // end function initializing_main_node
 
-static void initializing_tentacles()
+static void initializing_tentacles(void)
 {
 	GL_tentacles = (struct node ***)malloc((lmax - lmin + 1) * sizeof(struct node **));
 	GL_tentacles_cap = (int *)calloc((lmax - lmin + 1), sizeof(int)); // Capacity of pointer of the tentacles in each level
@@ -257,7 +259,7 @@ static void initializing_tentacles()
 	GL_tentacles_level_max = 0; // Maximum depth of the tentacles
 }
 
-int initialization()
+int initialization(void)
 {
 
 	//** >> Initializing global parameters **/

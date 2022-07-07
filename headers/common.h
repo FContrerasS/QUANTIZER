@@ -132,6 +132,8 @@ extern vtype _w_SOR_;          // The overrelaxation parameter
 extern vtype _w_SOR_HEAD_;
 extern int head_pot_method;
 extern int branch_pot_method;
+extern int iter_between_check_potential_solution;
+extern int branches_maximal_node_number_to_activate_conjugate_gradient;
 
 //** >> Force parameters **/
 extern int force_stencil;

@@ -33,7 +33,6 @@
 
 
 
-    int
-    potential();
+int potential(void);
 
 #endif

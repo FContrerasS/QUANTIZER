@@ -26,6 +26,10 @@
 
 #include "particle_updating_B.h"
 
+//** >> Local Functions
+static void computing_particles_updating_B_HEAD_ONLY(struct node *ptr_node, vtype dt);
+static void computing_particles_updating_B(struct node *ptr_node, vtype dt);
+
 static void computing_particles_updating_B_HEAD_ONLY(struct node *ptr_node, vtype dt)
 {
 
@@ -82,7 +86,6 @@ static void computing_particles_updating_B(struct node *ptr_node, vtype dt)
         }
     }
 }
-
 
 void particle_updating_B(vtype dt)
 {

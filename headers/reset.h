@@ -30,7 +30,6 @@
 #include "common.h"
 #include "initial_potential_and_acceleration_head.h"
 
-    int
-    reset();
+int reset(void);
 
 #endif

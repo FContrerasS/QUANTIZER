@@ -29,8 +29,7 @@
 
 #include "common.h"
 
-    int
-    input();
+int input(void);
 
                         
 #endif

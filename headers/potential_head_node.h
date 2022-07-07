@@ -33,6 +33,6 @@
 #include "multigrid2.h"
 #include "conjugate_gradient.h"
 
-int potential_head_node();
+int potential_head_node(void);
 
 #endif

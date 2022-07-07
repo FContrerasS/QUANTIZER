@@ -26,36 +26,36 @@
 
 #include "poisson_error.h"
 
-static bool solution_change(const struct node *ptr_node)
+//** >> Local Functions
+static bool comparison_with_previous_solution(const struct node *ptr_node);
+static bool poisson_error_mehod_0(const struct node *ptr_node);
+static bool poisson_error_mehod_1(const struct node *ptr_node);
+static bool poisson_error_mehod_2(const struct node *ptr_node);
+static bool conj_grad_error(struct node *ptr_node, vtype *error, vtype error_total_pow2);
+
+static bool comparison_with_previous_solution(const struct node *ptr_node)
 {
-	/* 	   This module is responsible for checking the condition for the solution of the
-   Poisson equation. The condition used is option 3, and it uses the root mean
-   square. In general, the error in the grid of the Poisson equation solution
-   is computed as follows:
-
-   error =
-
-   Sqrt[ 1/Ng^3 * Sum[{( density_i - Laplacian(pot_i) )/rhomean }^2 ] ] * 1/N^2
-
-   The criterion is accepted when the error is less than the threshold. See the
-   _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ parameter in
-   Precision_Parameters.h. Note that error is an adimensional variable. */
-
 	int box_grid_idx;
 	vtype aux;
 
-	// Computing the root mean square normalized to the mean density rhomean
+	vtype threshold_minus = 1 - _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_2;
+	vtype threshold_plus = 1 + _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_2;
+
+	bool check = true;
+
 	for (int i = 0; i < ptr_node->grid_intr_size; i++)
 	{
 		box_grid_idx = ptr_node->ptr_intr_grid_idx[i];
 		aux = ptr_node->ptr_pot[box_grid_idx] / ptr_node->ptr_pot_old[box_grid_idx];
-		if (1 - _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_2 > aux || 1 + _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_2 < aux || ptr_node->ptr_pot[box_grid_idx] * ptr_node->ptr_pot_old[box_grid_idx] < 0)
+
+		if ((threshold_minus > aux) || (threshold_plus < aux))
 		{
-			return false;
+			check = false;
+			break;
 		}
 	}
 
-	return true;
+	return check;
 }
 
 static bool poisson_error_mehod_0(const struct node *ptr_node)
@@ -151,9 +151,6 @@ static bool poisson_error_mehod_1(const struct node *ptr_node)
 		}
 	}
 
-	
-
-
 	return true;
 }
 
@@ -176,7 +173,6 @@ static bool poisson_error_mehod_2(const struct node *ptr_node)
 	vtype diff;	 // Diference between the Laplacian of the potential solution and the density
 
 	int box_grid_idx;
-
 
 	vtype H = 1.0L / (1 << ptr_node->lv);
 	vtype one_over_H_pow_2 = 1.0L / (H * H);
@@ -270,28 +266,27 @@ static bool conj_grad_error(struct node *ptr_node, vtype *error, vtype error_tot
 bool poisson_error(struct node *ptr_node, vtype *error, vtype error_total_pow2,int type)
 {
 
-	bool check1;
-	bool check2;
+	bool check;
 
-	check1 = solution_change(ptr_node);
+	check = comparison_with_previous_solution(ptr_node);
 
-
-
-	if(check1 == true)
+	//First checking with the previous solution
+	if(check == true)
 	{
+		//Second checking with the error solution
 		if (type == 0) // Gauss-Saidel and Jacobi
 		{
 			if (check_poisson_error_method == 0)
 			{
-				check2 = poisson_error_mehod_0(ptr_node);
+				check = poisson_error_mehod_0(ptr_node);
 			}
 			else if (check_poisson_error_method == 1)
 			{
-				check2 = poisson_error_mehod_1(ptr_node);
+				check = poisson_error_mehod_1(ptr_node);
 			}
 			else if (check_poisson_error_method == 2)
 			{
-				check2 = poisson_error_mehod_2(ptr_node);
+				check = poisson_error_mehod_2(ptr_node);
 			}
 			else
 			{
@@ -301,7 +296,7 @@ bool poisson_error(struct node *ptr_node, vtype *error, vtype error_total_pow2,i
 		}
 		else if (type == 1) // Conjugate Gradient
 		{
-			check2 = conj_grad_error(ptr_node, error, error_total_pow2);
+			check = conj_grad_error(ptr_node, error, error_total_pow2);
 		}
 		else
 		{
@@ -309,15 +304,11 @@ bool poisson_error(struct node *ptr_node, vtype *error, vtype error_total_pow2,i
 			exit(EXIT_FAILURE);
 		}
 	}
-	else
-	{
-		check2 = false;
-	}
 
-	if (check2 == false)
+	if (check == false)
 	{
 		memcpy(ptr_node->ptr_pot_old, ptr_node->ptr_pot, ptr_node->grid_properties_cap * sizeof(vtype));
 	}
 
-	return check2;
+	return check;
 }

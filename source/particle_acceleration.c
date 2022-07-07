@@ -26,6 +26,10 @@
 
 #include "particle_acceleration.h"
 
+//** >> Local Functions
+static void computing_particle_acceleration_head_only(const struct node *ptr_head);
+static void computing_particle_acceleration_head_plus_branches(const struct node *ptr_node);
+
 static void computing_particle_acceleration_head_only(const struct node *ptr_head)
 {
     int aux_idx;
@@ -86,22 +90,6 @@ static void computing_particle_acceleration_head_only(const struct node *ptr_hea
         w[6] = w_x_2 * w_y_1 * w_z_1;
         w[7] = w_x_1 * w_y_1 * w_z_1;
 
-        // //** >> Computing the weights of the nearest grid points of the particle **/
-        // // Each for cyle yields 2 options: X or 1-X, where X =  pos_x - pos_x_floor
-        // for (int kk = 0; kk < 2; kk++)
-        // {
-        //     w_z = kk + (1 - 2 * kk) * (pos_z - pos_z_floor);
-        //     for (int jj = 0; jj < 2; jj++)
-        //     {
-        //         w_y = jj + (1 - 2 * jj) * (pos_y - pos_y_floor);
-        //         for (int ii = 0; ii < 2; ii++)
-        //         {
-        //             w_x = ii + (1 - 2 * ii) * (pos_x - pos_x_floor);
-        //             w[kk * 4 + jj * 2 + ii] = (1 - w_x) * (1 - w_y) * (1 - w_z);
-        //         }
-        //     }
-        // }
-
         box_grid_idx_x = pos_x_floor - ptr_head->box_ts_x;
         box_grid_idx_y = pos_y_floor - ptr_head->box_ts_y;
         box_grid_idx_z = pos_z_floor - ptr_head->box_ts_z;
@@ -113,10 +101,6 @@ static void computing_particle_acceleration_head_only(const struct node *ptr_hea
             {
                 for (int ii = 0; ii < 2; ii++)
                 {
-                    // box_grid_idx_x = (pos_x_floor + ii) - ptr_head->box_ts_x;
-                    // box_grid_idx_y = (pos_y_floor + jj) - ptr_head->box_ts_y;
-                    // box_grid_idx_z = (pos_z_floor + kk) - ptr_head->box_ts_z;
-                    // box_grid_idx = box_grid_idx_x + box_grid_idx_y * (ptr_head->box_real_dim_x + 1) + box_grid_idx_z * (ptr_head->box_real_dim_x + 1) * (ptr_head->box_real_dim_y + 1);
                     aux_idx = ii + 2 * jj + 4 * kk;
                     box_grid_idxNbr = box_grid_idx + ii + jj * grid_box_real_dim_X + kk * grid_box_real_dim_X_times_Y;
                     GL_ptcl_ax[i] += ptr_head->ptr_ax[box_grid_idxNbr] * w[aux_idx];
@@ -199,20 +183,6 @@ static void computing_particle_acceleration_head_plus_branches(const struct node
                 w[5] = w_x_1 * w_y_2 * w_z_1;
                 w[6] = w_x_2 * w_y_1 * w_z_1;
                 w[7] = w_x_1 * w_y_1 * w_z_1;
-                // Each for cyle yields 2 options: X or 1-X, where X =  pos_x - pos_x_floor
-                // for (int kk = 0; kk < 2; kk++)
-                // {
-                //     w_z = kk + (1 - 2 * kk) * (pos_z - pos_z_floor);
-                //     for (int jj = 0; jj < 2; jj++)
-                //     {
-                //         w_y = jj + (1 - 2 * jj) * (pos_y - pos_y_floor);
-                //         for (int ii = 0; ii < 2; ii++)
-                //         {
-                //             w_x = ii + (1 - 2 * ii) * (pos_x - pos_x_floor);
-                //             w[kk * 4 + jj * 2 + ii] = (1 - w_x) * (1 - w_y) * (1 - w_z);
-                //         }
-                //     }
-                // }
 
                 box_grid_idx_x = pos_x_floor - ptr_node->box_ts_x;
                 box_grid_idx_y = pos_y_floor - ptr_node->box_ts_y;
@@ -225,10 +195,6 @@ static void computing_particle_acceleration_head_plus_branches(const struct node
                     {
                         for (int ii = 0; ii < 2; ii++)
                         {
-                            // box_grid_idx_x = (pos_x_floor + ii) - ptr_node->box_ts_x;
-                            // box_grid_idx_y = (pos_y_floor + jj) - ptr_node->box_ts_y;
-                            // box_grid_idx_z = (pos_z_floor + kk) - ptr_node->box_ts_z;
-                            // box_grid_idx = box_grid_idx_x + box_grid_idx_y * (ptr_node->box_real_dim_x + 1) + box_grid_idx_z * (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1);
                             aux_idx = ii + 2 * jj + 4 * kk;
                             box_grid_idxNbr = box_grid_idx + ii + jj * grid_box_real_dim_X + kk * grid_box_real_dim_X_times_Y;
                             GL_ptcl_ax[ptcl_idx] += ptr_node->ptr_ax[box_grid_idxNbr] * w[aux_idx];
@@ -278,20 +244,6 @@ static void computing_particle_acceleration_head_plus_branches(const struct node
                     w[5] = w_x_1 * w_y_2 * w_z_1;
                     w[6] = w_x_2 * w_y_1 * w_z_1;
                     w[7] = w_x_1 * w_y_1 * w_z_1;
-                    // // Each for cyle yields 2 options: X or 1-X, where X =  pos_x - pos_x_floor
-                    // for (int kk = 0; kk < 2; kk++)
-                    // {
-                    //     //w_z = kk + (1 - 2 * kk) * (pos_z - pos_z_floor);
-                    //     for (int jj = 0; jj < 2; jj++)
-                    //     {
-                    //         //w_y = jj + (1 - 2 * jj) * (pos_y - pos_y_floor);
-                    //         for (int ii = 0; ii < 2; ii++)
-                    //         {
-                    //             //w_x = ii + (1 - 2 * ii) * (pos_x - pos_x_floor);
-                    //             w[kk * 4 + jj * 2 + ii] = (1 - w_x) * (1 - w_y) * (1 - w_z);
-                    //         }
-                    //     }
-                    // }
 
                     box_grid_idx_x = pos_x_floor - ptr_node->box_ts_x;
                     box_grid_idx_y = pos_y_floor - ptr_node->box_ts_y;
@@ -304,10 +256,6 @@ static void computing_particle_acceleration_head_plus_branches(const struct node
                         {
                             for (int ii = 0; ii < 2; ii++)
                             {
-                                // box_grid_idx_x = (pos_x_floor + ii) - ptr_node->box_ts_x;
-                                // box_grid_idx_y = (pos_y_floor + jj) - ptr_node->box_ts_y;
-                                // box_grid_idx_z = (pos_z_floor + kk) - ptr_node->box_ts_z;
-                                // box_grid_idx = box_grid_idx_x + box_grid_idx_y * (ptr_node->box_real_dim_x + 1) + box_grid_idx_z * (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1);
                                 aux_idx = ii + 2 * jj + 4 * kk;
                                 box_grid_idxNbr = box_grid_idx + ii + jj * grid_box_real_dim_X + kk * grid_box_real_dim_X_times_Y;
                                 GL_ptcl_ax[ptcl_idx] += ptr_node->ptr_ax[box_grid_idxNbr] * w[aux_idx];
@@ -322,7 +270,7 @@ static void computing_particle_acceleration_head_plus_branches(const struct node
     }
 }
 
-int particle_acceleration()
+int particle_acceleration(void)
 {
 
     //** >> Particle acceleration **/
@@ -346,8 +294,6 @@ int particle_acceleration()
     {
         computing_particle_acceleration_head_only(GL_tentacles[0][0]);
     }
-
-
 
     return _SUCCESS_;
 }

@@ -29,8 +29,7 @@
 
 #include "common.h"
 
-    void
-    global_variables();
+void global_variables(void);
 
 
 

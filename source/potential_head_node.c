@@ -26,6 +26,9 @@
 
 #include "potential_head_node.h"
 
+//** >> Local Functions
+static int compute_potential_head_node(struct node *ptr_node_pt);
+
 static int compute_potential_head_node(struct node *ptr_node_pt)
 {
 
@@ -93,7 +96,7 @@ static int compute_potential_head_node(struct node *ptr_node_pt)
 	return _SUCCESS_;
 }
 
-int potential_head_node()
+int potential_head_node(void)
 {
 
 	clock_t aux_clock;
@@ -129,10 +132,13 @@ int potential_head_node()
 				return _FAILURE_;
 			}
 			GL_times[20] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
-			//** >> CHEKING ERROR SOLUTION CONDITION **/
-			aux_clock = clock();
-			check = poisson_error(ptr_node,dummy_pvtype,dummy_vtype,0);
-			GL_times[21] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+			if (iter % iter_between_check_potential_solution == 0)
+			{
+				//** >> CHEKING ERROR SOLUTION CONDITION **/
+				aux_clock = clock();
+				check = poisson_error(ptr_node, dummy_pvtype, dummy_vtype, 0);
+				GL_times[21] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+			}
 		}
 
 		if (iter == _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_)

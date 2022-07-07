@@ -32,6 +32,6 @@
 #include "new_node.h"
 #include "add_node_to_stack.h"
 
-int tree_adaptation();
+int tree_adaptation(void);
 
 #endif

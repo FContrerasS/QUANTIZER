@@ -29,8 +29,7 @@
 
 #include "common.h"
 
-    void
-    output_main_parameters(vtype final_time, int Number_timesteps, int Number_outputs);
+void output_main_parameters(vtype final_time, int Number_timesteps, int Number_outputs);
 
 
 #endif

@@ -26,7 +26,13 @@
 
 #include "grid_acceleration.h"
 
-void static computing_grid_acceleration_head(struct node *ptr_head)
+//** >> Local Functions
+static void computing_grid_acceleration_head(struct node *ptr_head);
+static void computing_grid_acceleration_head2(struct node *ptr_head);
+static void computing_grid_acceleration_branch(struct node *ptr_node);
+static void computing_grid_acceleration_branch2(struct node *ptr_node);
+
+static void computing_grid_acceleration_head(struct node *ptr_head)
 {
     int lv = ptr_head->lv;
 
@@ -68,7 +74,7 @@ void static computing_grid_acceleration_head(struct node *ptr_head)
     }
 }
 
-void static computing_grid_acceleration_head2(struct node *ptr_head)
+static void computing_grid_acceleration_head2(struct node *ptr_head)
 {
     int lv = ptr_head->lv;
 
@@ -163,17 +169,10 @@ void static computing_grid_acceleration_head2(struct node *ptr_head)
     }
 }
 
-void static computing_grid_acceleration_branch(struct node *ptr_node)
+static void computing_grid_acceleration_branch(struct node *ptr_node)
 {
     vtype aux_acc; // Auxiliary value for the acceleration
 
-    // int cell_idx_x; // The cell index
-    // int cell_idx_y; // The cell index
-    // int cell_idx_z; // The cell index
-
-    // int box_idx_x;    // Box grid index in X direcction
-    // int box_idx_y;    // Box grid index in Y direcction
-    // int box_idx_z;    // Box grid index in Z direcction
     int box_grid_idx; // Box grid index
 
     int box_idx_1_x_node;    // Parent box index 1 at X direcction
@@ -200,16 +199,6 @@ void static computing_grid_acceleration_branch(struct node *ptr_node)
     for (int i = 0; i < ptr_node->grid_bder_size; i++)
     {
         box_grid_idx = ptr_node->ptr_bder_grid_idx[i];
-        // box_idx_z = box_grid_idx / grid_box_real_dim_X_times_Y_node;
-        // box_idx_y = (box_grid_idx - box_idx_z * grid_box_real_dim_X_times_Y_node) / grid_box_real_dim_X_node;
-        // box_idx_x = box_grid_idx - box_idx_z * grid_box_real_dim_X_times_Y_node - box_idx_y * grid_box_real_dim_X_node;
-        // cell_idx_x = box_idx_x + ptr_node->box_ts_x;
-        // cell_idx_y = box_idx_y + ptr_node->box_ts_y;
-        // cell_idx_z = box_idx_z + ptr_node->box_ts_z;
-
-        // cell_idx_x = ptr_node->ptr_bder_grid_cell_idx_x[i];
-        // cell_idx_y = ptr_node->ptr_bder_grid_cell_idx_y[i];
-        // cell_idx_z = ptr_node->ptr_bder_grid_cell_idx_z[i];
 
         box_idx_1_x_node = (ptr_node->ptr_bder_grid_cell_idx_x[i] >> 1) - ptr_node->ptr_pt->box_ts_x;
         box_idx_2_x_node = ((ptr_node->ptr_bder_grid_cell_idx_x[i] + 1) >> 1) - ptr_node->ptr_pt->box_ts_x;
@@ -246,17 +235,10 @@ void static computing_grid_acceleration_branch(struct node *ptr_node)
     }
 }
 
-void static computing_grid_acceleration_branch2(struct node *ptr_node)
+static void computing_grid_acceleration_branch2(struct node *ptr_node)
 {
     vtype aux_acc; // Auxiliary value for the acceleration
 
-    // int cell_idx_x; // The cell index
-    // int cell_idx_y; // The cell index
-    // int cell_idx_z; // The cell index
-
-    // int box_idx_x;    // Box grid index in X direcction
-    // int box_idx_y;    // Box grid index in Y direcction
-    // int box_idx_z;    // Box grid index in Z direcction
     int box_grid_idx; // Box grid index
 
     int box_idx_X;
@@ -307,16 +289,6 @@ void static computing_grid_acceleration_branch2(struct node *ptr_node)
     for (int i = 0; i < ptr_node->grid_bder_size; i++)
     {
         box_grid_idx = ptr_node->ptr_bder_grid_idx[i];
-        // box_idx_z = box_grid_idx / grid_box_real_dim_X_times_Y_node;
-        // box_idx_y = (box_grid_idx - box_idx_z * grid_box_real_dim_X_times_Y_node) / grid_box_real_dim_X_node;
-        // box_idx_x = box_grid_idx - box_idx_z * grid_box_real_dim_X_times_Y_node - box_idx_y * grid_box_real_dim_X_node;
-        // cell_idx_x = box_idx_x + ptr_node->box_ts_x;
-        // cell_idx_y = box_idx_y + ptr_node->box_ts_y;
-        // cell_idx_z = box_idx_z + ptr_node->box_ts_z;
-
-        // cell_idx_x = ptr_node->ptr_bder_grid_cell_idx_x[i];
-        // cell_idx_y = ptr_node->ptr_bder_grid_cell_idx_y[i];
-        // cell_idx_z = ptr_node->ptr_bder_grid_cell_idx_z[i];
 
         box_idx_1_x_node = (ptr_node->ptr_bder_grid_cell_idx_x[i] >> 1) - ptr_node->ptr_pt->box_ts_x;
         box_idx_2_x_node = ((ptr_node->ptr_bder_grid_cell_idx_x[i] + 1) >> 1) - ptr_node->ptr_pt->box_ts_x;
@@ -400,12 +372,11 @@ void static computing_grid_acceleration_branch2(struct node *ptr_node)
     }
 }
 
-int grid_acceleration()
+int grid_acceleration(void)
 {
     //** >> Acceleration in the grid **/
 
-    // Head
-
+    //** >> HEAD
     if (force_stencil == 0)
     {
         computing_grid_acceleration_head(GL_tentacles[0][0]);

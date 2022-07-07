@@ -29,8 +29,7 @@
 
 #include "common.h"
 
-    int
-    particle_acceleration();
+int particle_acceleration(void);
 
 #endif
 

@@ -29,7 +29,6 @@
 
 #include "common.h"
 
-    int
-    timestep_1(vtype *ptr_dt);
+int timestep_1(vtype *ptr_dt);
 
 #endif

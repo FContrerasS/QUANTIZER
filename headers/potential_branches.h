@@ -32,6 +32,6 @@
 #include "poisson_error.h"
 #include "space_check.h"
 
-int potential_branches();
+int potential_branches(void);
 
 #endif
