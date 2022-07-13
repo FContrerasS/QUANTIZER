@@ -65,7 +65,8 @@ void output_main_parameters(vtype final_time, int Number_timesteps, int Number_o
     fprintf(file, "GC_iter %d\n",(int) Garbage_Collector_iter);
 
     fprintf(file, "Ngrid %d\n",(int) (no_lmin_cell + 1));
-    fprintf(file, "Nparticles %d\n", (int) GL_no_ptcl);
+    fprintf(file, "Nparticles_initial %d\n", (int)Gl_no_ptcl_initial);
+    fprintf(file, "Nparticles_final %d\n", (int) GL_no_ptcl);
     fprintf(file, "Number_timesteps	%d\n", (int) Number_timesteps);
     fprintf(file, "Number_outputs %d\n", (int) Number_outputs);
     fprintf(file, "fr_output %d\n", (int) fr_output);
@@ -76,6 +77,7 @@ void output_main_parameters(vtype final_time, int Number_timesteps, int Number_o
     // fprintf(file, "Mass_unit Solar_mass\n");
     fprintf(file, "Time_unit %1.5e\n", (double)tt);
     fprintf(file, "G %1.5e\n", (double)_G_);
+    fprintf(file, "boundary_type %d\n", (int)boundary_type);
 
     //** >> TIMES
     char Time_names[50][100] = {

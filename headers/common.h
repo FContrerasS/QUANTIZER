@@ -98,6 +98,7 @@ extern int no_lmin_cell; // Number of cells in the lmin level of refinement
 extern int no_lmin_cell_pow2;
 extern int no_lmin_cell_pow3;
 extern int no_grid;
+extern int Gl_no_ptcl_initial;
 extern int GL_no_ptcl;
 extern vtype Maxdt ;
 extern vtype meanmass;

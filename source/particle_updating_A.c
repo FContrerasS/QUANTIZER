@@ -37,57 +37,155 @@ static int computing_particles_updating_A_HEAD_ONLY(struct node *ptr_node, vtype
     {
     case 0:
         {
-        printf("0 boundary_type = %d\n", boundary_type);
-        break;
+            for (int i = 0; i < GL_no_ptcl; i++)
+            {
+                //** >> Updating the new position of the particle **/
+                //** >> Velocities **/
+                GL_ptcl_vx[i] += GL_ptcl_ax[i] * dt * 0.5;
+                GL_ptcl_vy[i] += GL_ptcl_ay[i] * dt * 0.5;
+                GL_ptcl_vz[i] += GL_ptcl_az[i] * dt * 0.5;
+
+                //** >> Positions **/
+                GL_ptcl_x[i] += GL_ptcl_vx[i] * dt;
+                GL_ptcl_y[i] += GL_ptcl_vy[i] * dt;
+                GL_ptcl_z[i] += GL_ptcl_vz[i] * dt;
+
+                //** >> Checking if the particle is translated with the boundary of the box simulation **/
+                if (GL_ptcl_x[i] < 0. || GL_ptcl_x[i] >= 1.)
+                {
+                    //** >> Positions **/
+                    GL_ptcl_x[i] = GL_ptcl_x[i] >= 1. ? GL_ptcl_x[i] - 1 : 1 + GL_ptcl_x[i];
+
+                    printf("\n Particle %d, is translated at x axis. New position  =  %f :\n", i, GL_ptcl_x[i]);
+                }
+                if (GL_ptcl_y[i] < 0. || GL_ptcl_y[i] >= 1.)
+                {
+                    //** >> Positions **/
+                    GL_ptcl_y[i] = GL_ptcl_y[i] >= 1. ? GL_ptcl_y[i] - 1 : 1 + GL_ptcl_y[i];
+
+                    //** >> Velocities **/
+                    GL_ptcl_vy[i] *= -1;
+
+                    //** >> Accelerations **/
+                    GL_ptcl_ay[i] *= -1;
+
+                    printf("\n Particle %d, is translated at y axis. New position  =  %f :\n", i, GL_ptcl_y[i]);
+                }
+
+                if (GL_ptcl_z[i] < 0. || GL_ptcl_z[i] >= 1.)
+                {
+                    //** >> Positions **/
+                    GL_ptcl_z[i] = GL_ptcl_z[i] >= 1. ? GL_ptcl_z[i] - 1 : 1 + GL_ptcl_z[i];
+
+                    //** >> Velocities **/
+                    GL_ptcl_vz[i] *= -1;
+
+                    //** >> Accelerations **/
+                    GL_ptcl_az[i] *= -1;
+
+                    printf("\n Particle %d, is translated at z axis. New position  =  %f :\n", i, GL_ptcl_z[i]);
+                }
+            }
+            break;
         }
     case 1:
         {
-        printf("1 boundary_type = %d\n", boundary_type);
-        break;
+            for (int i = 0; i < GL_no_ptcl; i++)
+            {
+                //** >> Updating the new position of the particle **/
+                //** >> Velocities **/
+                GL_ptcl_vx[i] += GL_ptcl_ax[i] * dt * 0.5;
+                GL_ptcl_vy[i] += GL_ptcl_ay[i] * dt * 0.5;
+                GL_ptcl_vz[i] += GL_ptcl_az[i] * dt * 0.5;
+
+                //** >> Positions **/
+                GL_ptcl_x[i] += GL_ptcl_vx[i] * dt;
+                GL_ptcl_y[i] += GL_ptcl_vy[i] * dt;
+                GL_ptcl_z[i] += GL_ptcl_vz[i] * dt;
+
+                //** >> Checking if the particle is reflected with the boundary of the box simulation **/
+                if (GL_ptcl_x[i] < 0. || GL_ptcl_x[i] >= 1.)
+                {
+                    //** >> Positions **/
+                    GL_ptcl_x[i] = GL_ptcl_x[i] >= 1. ? 2 - GL_ptcl_x[i] : -GL_ptcl_x[i];
+
+                    //** >> Velocities **/
+                    GL_ptcl_vx[i] *= -1;
+
+                    //** >> Accelerations **/
+                    GL_ptcl_ax[i] *= -1;
+
+                    printf("\n Particle %d, is reflected at x axis. New position  =  %f :\n", i, GL_ptcl_x[i]);
+                }
+                if (GL_ptcl_y[i] < 0. || GL_ptcl_y[i] >= 1.)
+                {
+                    //** >> Positions **/
+                    GL_ptcl_y[i] = GL_ptcl_y[i] >= 1. ? 2 - GL_ptcl_y[i] : -GL_ptcl_y[i];
+
+                    //** >> Velocities **/
+                    GL_ptcl_vy[i] *= -1;
+
+                    //** >> Accelerations **/
+                    GL_ptcl_ay[i] *= -1;
+
+                    printf("\n Particle %d, is reflected at y axis. New position  =  %f :\n", i, GL_ptcl_y[i]);
+                }
+
+                if (GL_ptcl_z[i] < 0. || GL_ptcl_z[i] >= 1.)
+                {
+                    //** >> Positions **/
+                    GL_ptcl_z[i] = GL_ptcl_z[i] >= 1. ? 2 - GL_ptcl_z[i] : -GL_ptcl_z[i];
+
+                    //** >> Velocities **/
+                    GL_ptcl_vz[i] *= -1;
+
+                    //** >> Accelerations **/
+                    GL_ptcl_az[i] *= -1;
+
+                    printf("\n Particle %d, is reflected at z axis. New position  =  %f :\n", i, GL_ptcl_z[i]);
+                }
+            }
+            break;
         }
 
     case 2:
         {
-        printf("2 boundary_type = %d\n", boundary_type);
-        break;
+            for (int i = 0; i < GL_no_ptcl; i++)
+            {
+                //** >> Updating the new position of the particle **/
+                //** >> Velocities **/
+                GL_ptcl_vx[i] += GL_ptcl_ax[i] * dt * 0.5;
+                GL_ptcl_vy[i] += GL_ptcl_ay[i] * dt * 0.5;
+                GL_ptcl_vz[i] += GL_ptcl_az[i] * dt * 0.5;
+
+                //** >> Positions **/
+                GL_ptcl_x[i] += GL_ptcl_vx[i] * dt;
+                GL_ptcl_y[i] += GL_ptcl_vy[i] * dt;
+                GL_ptcl_z[i] += GL_ptcl_vz[i] * dt;
+
+                //** >> Checking if the particle exits the simulation **/
+                if (GL_ptcl_x[i] < 0. || GL_ptcl_x[i] >= 1. || GL_ptcl_y[i] < 0. || GL_ptcl_y[i] >= 1. || GL_ptcl_z[i] < 0. || GL_ptcl_z[i] >= 1.)
+                {
+                    GL_ptcl_x[i] = GL_ptcl_x[GL_no_ptcl - 1];
+                    GL_ptcl_y[i] = GL_ptcl_y[GL_no_ptcl - 1];
+                    GL_ptcl_z[i] = GL_ptcl_z[GL_no_ptcl - 1];
+                    GL_ptcl_vx[i] = GL_ptcl_vx[GL_no_ptcl - 1];
+                    GL_ptcl_vy[i] = GL_ptcl_vy[GL_no_ptcl - 1];
+                    GL_ptcl_vz[i] = GL_ptcl_vz[GL_no_ptcl - 1];
+                    GL_ptcl_ax[i] = GL_ptcl_ax[GL_no_ptcl - 1];
+                    GL_ptcl_ay[i] = GL_ptcl_ay[GL_no_ptcl - 1];
+                    GL_ptcl_az[i] = GL_ptcl_az[GL_no_ptcl - 1];
+                    GL_no_ptcl--;
+                    printf("\n Particle %d, exits the simulation:\n", i);
+                }
+            }
+            break;
         }
         
     default:
         {
         printf("Error! the boundary_type paramter = %d is different to 0, 1 or 2\n", boundary_type);
         return _FAILURE_;
-        }
-    }
-
-    for (int i = 0; i < GL_no_ptcl; i++)
-    {
-        //** >> Updating the new position of the particle **/
-        //** >> Velocities **/
-        GL_ptcl_vx[i] += GL_ptcl_ax[i] * dt * 0.5;
-        GL_ptcl_vy[i] += GL_ptcl_ay[i] * dt * 0.5;
-        GL_ptcl_vz[i] += GL_ptcl_az[i] * dt * 0.5;
-
-        //** >> Positions **/
-        GL_ptcl_x[i] += GL_ptcl_vx[i] * dt;
-        GL_ptcl_y[i] += GL_ptcl_vy[i] * dt;
-        GL_ptcl_z[i] += GL_ptcl_vz[i] * dt;
-
-        //** >> Checking if the particle exits the simulation **/
-        if (GL_ptcl_x[i] < 0. || GL_ptcl_x[i] >= 1. || GL_ptcl_y[i] < 0. || GL_ptcl_y[i] >= 1. || GL_ptcl_z[i] < 0. || GL_ptcl_z[i] >= 1.)
-        {
-            printf("Error, Partícula %d, sale de la simulación at positions:\n", i);
-            printf("x = %f\n", (double)GL_ptcl_x[i]);
-            printf("y = %f\n", (double)GL_ptcl_y[i]);
-            printf("z = %f\n", (double)GL_ptcl_z[i]);
-            printf("vx = %f\n", (double)GL_ptcl_vx[i]);
-            printf("vy = %f\n", (double)GL_ptcl_vy[i]);
-            printf("vz = %f\n", (double)GL_ptcl_vz[i]);
-            printf("ax = %f\n", (double)GL_ptcl_ax[i]);
-            printf("ay = %f\n", (double)GL_ptcl_ay[i]);
-            printf("az = %f\n", (double)GL_ptcl_az[i]);
-            printf("index = %d\n", i);
-
-            return _FAILURE_;
         }
     }
 

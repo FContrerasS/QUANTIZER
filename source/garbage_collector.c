@@ -359,8 +359,8 @@ int garbage_collector(void)
 
 	printf("\n%sTOTAL = %f MB%s\n\n", KMAG, sum / 1000000, KNRM);
 
-
 	free_memory_pool();
+
 
 	if (free_nodes_voids() == _FAILURE_)
 	{

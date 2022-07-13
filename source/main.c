@@ -82,6 +82,7 @@ int main(int argc, char **argv) {
 	printf("Max time of the simulation = %f My\n", (double)Maxdt / _Mgyear_);
 	printf("Min level = %d\n", (int)lmin);
 	printf("Max level = %d\n", (int)lmax);
+	printf("Boundary type = %d\n", (int)boundary_type);
 	printf("Output frecuency = %d\n", (int)fr_output);
 	printf("\n\nUNITS ...\n");
 	printf("Length unit = kpc\n");
@@ -312,7 +313,7 @@ int main(int argc, char **argv) {
 
 		//** >> GARBAGE COLLECTOR **/
 		GL_clock_begin = clock();
-		if ((Number_timesteps + 1) % Garbage_Collector_iter == 0)
+		if ((Number_timesteps + 1) % Garbage_Collector_iter == 0 && lmin < lmax)
 		{
 			printf("Garbage Collector\n");
 			if(garbage_collector() == _FAILURE_)
@@ -349,6 +350,7 @@ int main(int argc, char **argv) {
 	*/
 
 	//** >> OUPUT MAIN PARAMETERS **/
+	// printf("Output main parameters\n");
 	GL_clock_begin = clock();
 	output_main_parameters(actualtime, Number_timesteps, Number_outputs);
 	GL_times[18] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;

@@ -60,6 +60,7 @@ int no_lmin_cell; // Number of cells in the lmin level of refinement
 int no_lmin_cell_pow2;
 int no_lmin_cell_pow3;
 int no_grid;
+int Gl_no_ptcl_initial;
 int GL_no_ptcl;
 vtype Maxdt ;
 vtype meanmass;
@@ -180,7 +181,7 @@ static void
 init_global_constants(void)
 {
     //Constants
-    _User_BoxSize_ = 64000.0L; //kpc
+    _User_BoxSize_ = 2400.0L; //kpc
     //_User_BoxSize_ = 0.1L; //kpc
     _PI_ = 3.14159265358979323846L;
     _Onesixth_ = 1.0L / 6.0L;
@@ -205,18 +206,19 @@ static void init_global_user_params(void)
     no_lmin_cell_pow2 = no_lmin_cell * no_lmin_cell;
     no_lmin_cell_pow3 = no_lmin_cell * no_lmin_cell * no_lmin_cell;
     no_grid = no_lmin_cell + 1;
-    GL_no_ptcl = 450; 
+    Gl_no_ptcl_initial = 450;
+    GL_no_ptcl = 50;
     //GL_no_ptcl = 7550; // 2995865; // 299586; // 231299 // 298159
     // GL_no_ptcl = 10000;
-    Maxdt = 10.0 * _Mgyear_;
+    Maxdt = 10000.0 * _Mgyear_;
     //meanmass = 100; //Currently only used on input.c
     // total_mass = GL_no_ptcl * meanmass;
     // total_mass = 0;
-    fr_output = 5;
+    fr_output = 450;
     MaxIterations = 100000000;
     no_grid_pow2 = no_grid * no_grid;
     no_grid_pow3 = no_grid * no_grid * no_grid;
-    boundary_type = 2; // 0 = Periodic, 1 = reflexive, 2 = outflow
+    boundary_type = 0; // 0 = Periodic, 1 = reflexive, 2 = outflow
 }
 
 static void init_global_ref_crit(void)
