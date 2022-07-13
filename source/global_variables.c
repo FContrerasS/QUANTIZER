@@ -68,6 +68,7 @@ int fr_output;
 int MaxIterations;
 int no_grid_pow2;
 int no_grid_pow3;
+int boundary_type;
 
 //** >> Refinement criteria parameters **/
 vtype ref_criterion_mass;
@@ -199,23 +200,23 @@ static void init_global_user_params(void)
 {
     BoxSize = 1.0L;
     lmin = 5;     //Coarset level of refinement
-    lmax = lmin + 5;  //Finest level of refinement
+    lmax = lmin + 0;  //Finest level of refinement
     no_lmin_cell = 1 << lmin; // Number of cells in the lmin level of refinement
     no_lmin_cell_pow2 = no_lmin_cell * no_lmin_cell;
     no_lmin_cell_pow3 = no_lmin_cell * no_lmin_cell * no_lmin_cell;
     no_grid = no_lmin_cell + 1;
-    GL_no_ptcl = 4500; 
+    GL_no_ptcl = 450; 
     //GL_no_ptcl = 7550; // 2995865; // 299586; // 231299 // 298159
     // GL_no_ptcl = 10000;
-    Maxdt = 10009.0 * _Mgyear_;
+    Maxdt = 10.0 * _Mgyear_;
     //meanmass = 100; //Currently only used on input.c
     // total_mass = GL_no_ptcl * meanmass;
     // total_mass = 0;
-    fr_output = 3680;
+    fr_output = 5;
     MaxIterations = 100000000;
     no_grid_pow2 = no_grid * no_grid;
     no_grid_pow3 = no_grid * no_grid * no_grid;
-
+    boundary_type = 2; // 0 = Periodic, 1 = reflexive, 2 = outflow
 }
 
 static void init_global_ref_crit(void)

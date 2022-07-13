@@ -33,6 +33,32 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
 static int computing_particles_updating_A_HEAD_ONLY(struct node *ptr_node, vtype dt)
 {
 
+    switch (boundary_type)
+    {
+    case 0:
+        {
+        printf("0 boundary_type = %d\n", boundary_type);
+        break;
+        }
+    case 1:
+        {
+        printf("1 boundary_type = %d\n", boundary_type);
+        break;
+        }
+
+    case 2:
+        {
+        printf("2 boundary_type = %d\n", boundary_type);
+        break;
+        }
+        
+    default:
+        {
+        printf("Error! the boundary_type paramter = %d is different to 0, 1 or 2\n", boundary_type);
+        return _FAILURE_;
+        }
+    }
+
     for (int i = 0; i < GL_no_ptcl; i++)
     {
         //** >> Updating the new position of the particle **/
@@ -47,7 +73,7 @@ static int computing_particles_updating_A_HEAD_ONLY(struct node *ptr_node, vtype
         GL_ptcl_z[i] += GL_ptcl_vz[i] * dt;
 
         //** >> Checking if the particle exits the simulation **/
-        if (GL_ptcl_x[i] < 0 || GL_ptcl_x[i] > 1 || GL_ptcl_y[i] < 0 || GL_ptcl_y[i] > 1 || GL_ptcl_z[i] < 0 || GL_ptcl_z[i] > 1)
+        if (GL_ptcl_x[i] < 0. || GL_ptcl_x[i] >= 1. || GL_ptcl_y[i] < 0. || GL_ptcl_y[i] >= 1. || GL_ptcl_z[i] < 0. || GL_ptcl_z[i] >= 1.)
         {
             printf("Error, Partícula %d, sale de la simulación at positions:\n", i);
             printf("x = %f\n", (double)GL_ptcl_x[i]);
@@ -112,7 +138,7 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
                     GL_ptcl_z[ptcl_idx] += GL_ptcl_vz[ptcl_idx] * dt;
 
                     //** >> Checking if the particle exits the simulation **/
-                    if (GL_ptcl_x[ptcl_idx] < 0 || GL_ptcl_x[ptcl_idx] > 1 || GL_ptcl_y[ptcl_idx] < 0 || GL_ptcl_y[ptcl_idx] > 1 || GL_ptcl_z[ptcl_idx] < 0 || GL_ptcl_z[ptcl_idx] > 1)
+                    if (GL_ptcl_x[ptcl_idx] < 0. || GL_ptcl_x[ptcl_idx] >= 1. || GL_ptcl_y[ptcl_idx] < 0. || GL_ptcl_y[ptcl_idx] >= 1. || GL_ptcl_z[ptcl_idx] < 0. || GL_ptcl_z[ptcl_idx] >= 1.)
                     {
                         printf("Error, Partícula %d, sale de la simulación at positions:\n", ptcl_idx);
                         printf("x = %f\n", (double)GL_ptcl_x[ptcl_idx]);
@@ -240,7 +266,7 @@ static int computing_particles_updating_A(struct node *ptr_node, vtype dt, bool 
                         GL_ptcl_z[ptcl_idx] += GL_ptcl_vz[ptcl_idx] * dt;
 
                         //** >> Checking if the particle exits the simulation **/
-                        if (GL_ptcl_x[ptcl_idx] < 0 || GL_ptcl_x[ptcl_idx] > 1 || GL_ptcl_y[ptcl_idx] < 0 || GL_ptcl_y[ptcl_idx] > 1 || GL_ptcl_z[ptcl_idx] < 0 || GL_ptcl_z[ptcl_idx] > 1)
+                        if (GL_ptcl_x[ptcl_idx] < 0. || GL_ptcl_x[ptcl_idx] >= 1. || GL_ptcl_y[ptcl_idx] < 0. || GL_ptcl_y[ptcl_idx] >= 1. || GL_ptcl_z[ptcl_idx] < 0. || GL_ptcl_z[ptcl_idx] >= 1.)
                         {
                             printf("Error, Partícula %d, sale de la simulación at positions:\n", ptcl_idx);
                             printf("x = %f\n", (double)GL_ptcl_x[ptcl_idx]);

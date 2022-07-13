@@ -340,7 +340,7 @@ int main(int argc, char **argv) {
 		Number_timesteps++; // Increasing the number of time-steps
 	}
 
-	printf("\n\n%sMaxdt = %f, Final time = %f%s\n\n",KRED ,(double) Maxdt, (double) actualtime,KNRM);
+	printf("\n\n%sMaxdt = %1.3f Myr, Final time = %1.3f Myr %s\n\n", KRED, (double)(Maxdt / _Mgyear_), (double)(actualtime / _Mgyear_), KNRM);
 
 	/**
 	*! ******************************************************************************

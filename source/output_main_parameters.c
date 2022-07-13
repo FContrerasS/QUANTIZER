@@ -74,10 +74,91 @@ void output_main_parameters(vtype final_time, int Number_timesteps, int Number_o
     fprintf(file, "Maxdt %1.5e\n", (double)(final_time / _Mgyear_)); // In Mega years
     // fprintf(file, "Length_unit kpc\n");
     // fprintf(file, "Mass_unit Solar_mass\n");
-    fprintf(file, "Time_unit %f\n", (double)tt);
+    fprintf(file, "Time_unit %1.5e\n", (double)tt);
     fprintf(file, "G %1.5e\n", (double)_G_);
 
+    //** >> TIMES
+    char Time_names[50][100] = {
+        "Global variables",
+        "Input",
+        "Initialization",
+        "Tree Construction",
+        "Grid Density",
+        "Total potential",
+        "Grid Acceleration",
+        "Particle acceleration",
+        "Time-step computing",
+        "Particle Updating A",
+        "Tree Adaptation",
+        "Reset",
+        "Particle Updating B",
+        "Observables",
+        "Garbage Collector",
+        "Output Main Parameters",
+        "Output Snapshots",
+        ""};
 
+    char Time_names_potential[50][100] = {
+        "Head Potential",
+        "Error Check in the Head",
+        "Potential transfer in branches",
+        "Filling Red and Black in branches",
+        "Potential in branches",
+        "Error Check in branches",
+        ""};
+
+    double TOTAL_TIME = 0;
+    for (int i = 0; i < 20; i++)
+    {
+        TOTAL_TIME += GL_times[i];
+    }
+
+
+    fprintf(file, "\n\nTIMES in seconds\n\n");
+
+    fprintf(file, "TOTAL %.3e\n", TOTAL_TIME);
+
+    for (int i = 0; i < 15; i++)
+    {
+        fprintf(file ,"%s = %1.2e ~ %.1f %%\n", Time_names[i], GL_times[i], GL_times[i] * 100 / TOTAL_TIME);
+    }
+    fprintf(file, "Output Snapshots = %.2e ~ %.1f %%\n", GL_times[19], GL_times[19] * 100 / TOTAL_TIME);
+
+    fprintf(file, "\n\nPOTENTIAL TIME [s], Percentage over total potential time\n\n");
+    for (int i = 20; i < 26; i++)
+    {
+        fprintf(file, "%s = %1.2e ~ %.1f %%\n", Time_names_potential[i - 20], GL_times[i], GL_times[i] * 100 / GL_times[5]);
+    }
+
+    //** >> TREE ADAPTATION TIME **/
+    char Time_names_tree_adaptation[50][100] = {
+        "updating_cell_struct",
+        "initialization_node_boxes",
+        "initialization_ref_aux",
+        "fill_cell_ref",
+        "fill_zones_ref",
+        "create_links",
+        "remov_cells_nolonger_require_refinement",
+        "adapt_child_nodes",
+        "create_new_child_nodes",
+        "moving_old_child_to_new_child",
+        "moving_new_zones_to_new_child",
+        "reorganization_child_node",
+        "reorganization_grandchild_node",
+        "updating_ref_zones_grandchildren",
+        "update_border_child_boxes",
+        "update_child_grid_points",
+        "tentacles_updating",
+        "moved_unused_child_node_to_memory_pool",
+        "updating_tentacles_max_lv",
+        ""};
+
+
+    fprintf(file, "\n\nTREE ADAPTATION TIME [s], Percentage over tree adaptation time\n\n");
+    for (int i = 30; i < 49; i++)
+    {
+        fprintf(file, "%d: %s = %1.2e ~ %.1f %%\n", i - 30, Time_names_tree_adaptation[i - 30], GL_times[i], GL_times[i] * 100 / GL_times[10]);
+    }
 
     fclose(file);
 }
