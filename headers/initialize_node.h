@@ -128,6 +128,9 @@ struct node
     int *ptr_links_old_ord_new;
     int *ptr_links_new_ord_new;
     int links_cap;
+
+    //** >> Boundary of the simulation box **/
+    bool simulation_boundary;
 };
 
 

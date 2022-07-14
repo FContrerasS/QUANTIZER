@@ -85,6 +85,7 @@ void initialize_node(struct node *ptr_node)
 	ptr_node->ptr_bder_grid_cell_idx_y = NULL;		 // Y index position of the cells in the node at level l
 	ptr_node->ptr_bder_grid_cell_idx_z = NULL;		 // Z index position of the cells in the node at level l
 	ptr_node->ptr_bder_grid_idx = NULL;
+
 	// Indexes of the interior grid points of the block
     ptr_node->grid_intr_cap = 0;   // Maximum cap of the grid interior points array of the block
     ptr_node->grid_bder_cap = 0; // Maximum cap of the grid border points array of the block
@@ -125,4 +126,7 @@ void initialize_node(struct node *ptr_node)
 	ptr_node->ptr_links_old_ord_new = NULL;
 	ptr_node->ptr_links_new_ord_new = NULL;
 	ptr_node->links_cap = 0;
+
+	//** >> Boundary of the simulation box **/
+	ptr_node->simulation_boundary = false;
 }

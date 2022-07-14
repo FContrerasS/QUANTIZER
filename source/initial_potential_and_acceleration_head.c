@@ -83,11 +83,11 @@ void initial_potential_and_acceleration_head(struct node *ptr_head)
                     dist = (aux_i - cm[0]) * (aux_i - cm[0]) + (aux_j - cm[1]) * (aux_j - cm[1]) + (aux_k - cm[2]) * (aux_k - cm[2]);
                     dist = sqrt(dist);
                     box_grid_idx = i + j * grid_side + k * grid_side * grid_side;
-                    aux_coeff = -_G_ * total_mass / (dist * dist * dist) * H;
+                    aux_coeff = -_G_ * total_mass / (dist * dist * dist) ;
                     ptr_head->ptr_pot[box_grid_idx] = -_G_ * total_mass / dist;
-                    ptr_head->ptr_ax[box_grid_idx] = aux_coeff * myabs(i - cm[0]);
-                    ptr_head->ptr_ay[box_grid_idx] = aux_coeff * myabs(j - cm[1]);
-                    ptr_head->ptr_az[box_grid_idx] = aux_coeff * myabs(k - cm[2]);
+                    ptr_head->ptr_ax[box_grid_idx] = aux_coeff * (aux_i - cm[0]);
+                    ptr_head->ptr_ay[box_grid_idx] = aux_coeff * (aux_j - cm[1]);
+                    ptr_head->ptr_az[box_grid_idx] = aux_coeff * (aux_k - cm[2]);
                     // ptr_head->ptr_pot[box_grid_idx] = 0;
                     // ptr_head->ptr_ax[box_grid_idx] = 0;
                     // ptr_head->ptr_ay[box_grid_idx] = 0;

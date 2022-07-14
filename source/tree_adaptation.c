@@ -42,7 +42,6 @@ static int moving_new_zones_to_new_child(struct node *ptr_node);
 static void reorganization_child_node(struct node *ptr_node);
 static int reorganization_grandchild_node(struct node *ptr_node);
 static void updating_ref_zones_grandchildren(struct node *ptr_node);
-static void update_border_child_boxes(struct node *ptr_node);
 static int update_child_grid_points(struct node *ptr_node);
 static int tentacles_updating(struct node *ptr_node, int tentacle_lv);
 static void moved_unused_child_node_to_memory_pool(struct node *ptr_node);
@@ -223,7 +222,6 @@ void check_error(struct node *ptr_node)
     //   Children
     int cntr_No_exist;
     int cntr_Exist;
-    int cntr_Border;
     int cntr_chn;
 
     for (int i = 0; i < ptr_node->chn_size; i++)
@@ -231,7 +229,6 @@ void check_error(struct node *ptr_node)
         ptr_ch = ptr_node->pptr_chn[i];
         cntr_No_exist = 0;
         cntr_Exist = 0;
-        cntr_Border = 0;
         cntr_chn = 0;
 
         for (int cell_idx = 0; cell_idx < ptr_ch->cell_size; cell_idx++)
@@ -258,10 +255,6 @@ void check_error(struct node *ptr_node)
             {
                 cntr_Exist++;
             }
-            else if (ptr_ch->ptr_box[cell_idx] == -2)
-            {
-                cntr_Border++;
-            }
             else if (ptr_ch->ptr_box[cell_idx] == -1)
             {
                 printf("Error, Hijo, celda = -1\n");
@@ -272,7 +265,7 @@ void check_error(struct node *ptr_node)
             }
         }
 
-        if (ptr_ch->cell_size != cntr_Exist + cntr_chn + cntr_Border)
+        if (ptr_ch->cell_size != cntr_Exist + cntr_chn)
         {
             printf("Error, Hijo, cell size diferente la valor \n");
         }
@@ -281,7 +274,6 @@ void check_error(struct node *ptr_node)
     //   Parent
     cntr_No_exist = 0;
     cntr_Exist = 0;
-    cntr_Border = 0;
     cntr_chn = 0;
     for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
     {
@@ -303,10 +295,6 @@ void check_error(struct node *ptr_node)
         {
             cntr_Exist++;
         }
-        else if (ptr_node->ptr_box[cell_idx] == -2)
-        {
-            cntr_Border++;
-        }
         else if (ptr_node->ptr_box[cell_idx] == -1)
         {
             printf("Error, celda = -1\n");
@@ -316,7 +304,7 @@ void check_error(struct node *ptr_node)
             cntr_chn++;
         }
     }
-    if (ptr_node->cell_size != cntr_Exist + cntr_chn + cntr_Border)
+    if (ptr_node->cell_size != cntr_Exist + cntr_chn)
     {
         printf("Error, parent, cell size diferente la valor \n");
     }
@@ -507,7 +495,7 @@ static int fill_cell_ref(struct node *ptr_node)
                 box_idx_y_node = (ptr_grandch->ptr_cell_idx_y[cell_grandch] >> 2) - ptr_node->box_ts_y;
                 box_idx_z_node = (ptr_grandch->ptr_cell_idx_z[cell_grandch] >> 2) - ptr_node->box_ts_z;
                 box_idx_node = box_idx_x_node + box_idx_y_node * box_real_dim_X_node + box_idx_z_node * box_real_dim_X_times_Y_node;
-                if (ptr_node->ptr_box[box_idx_node] == -3 || ptr_node->ptr_box[box_idx_node] == -2) // Cell has not been added yet
+                if (ptr_node->ptr_box[box_idx_node] == -3) // Cell has not been added yet
                 {
                     size++; // +1 to the total number of cells to be refined
                     //** >> Chaning the cell box status from EXIST (-3) to REFINEMENT REQUIRED (-1) **/
@@ -523,7 +511,7 @@ static int fill_cell_ref(struct node *ptr_node)
                             box_idxNbr = box_idx_node + ii + jj * box_real_dim_X_node + kk * box_real_dim_X_times_Y_node;
                             //** >> Asking if the neighboring cell has not been changed yet **/
                             // The border (-2) of the simulation can be added
-                            if (ptr_node->ptr_box[box_idxNbr] == -3 || ptr_node->ptr_box[box_idxNbr] == -2) // Cell has not been added yet
+                            if (ptr_node->ptr_box[box_idxNbr] == -3) // Cell has not been added yet
                             {
                                 size++; // +1 to the total number of cells to be refined
                                 //** >> Chaning the cell box status from EXIST (-3) to REFINEMENT REQUIRED (-1) **/
@@ -542,13 +530,10 @@ static int fill_cell_ref(struct node *ptr_node)
         box_idx_node = ptr_node->ptr_box_idx[i];
 
         // Refinement criterion in the box_mass in no border box points
-        // if ((ptr_node->ptr_box[box_idx_node] == -3 || ptr_node->ptr_box[box_idx_node] == -1) && ptr_node->ptr_cell_struct[box_idx_node].cell_mass >= ref_criterion_mass) // No border (-2)
-        // if ((ptr_node->ptr_box[box_idx_node] != -2) && ptr_node->ptr_cell_struct[box_idx_node].cell_mass >= ref_criterion_mass) // No border (-2)
-        //if ((ptr_node->ptr_cell_struct[box_idx_node].cell_mass >= ref_criterion_mass || ptr_node->ptr_cell_struct[box_idx_node].ptcl_size >= ref_criterion_ptcl) && ptr_node->ptr_box[box_idx_node] != -2) // No border (-2)
         if (ptr_node->ptr_cell_struct[box_idx_node].cell_mass >= ref_criterion_mass || ptr_node->ptr_cell_struct[box_idx_node].ptcl_size >= ref_criterion_ptcl) // Including border (-2)
         {
             //if (ptr_node->ptr_box[box_idx_node] == -3) // Cell has not been added yet
-            if (ptr_node->ptr_box[box_idx_node] == -3 || ptr_node->ptr_box[box_idx_node] == -2) // Cell has not been added yet
+            if (ptr_node->ptr_box[box_idx_node] == -3) // Cell has not been added yet
             {
                 size++;
                 //** >> Chaning the cell box status from EXIST (-3) to REFINEMENT REQUIRED (-1) **/
@@ -565,7 +550,7 @@ static int fill_cell_ref(struct node *ptr_node)
                         box_idxNbr = box_idx_node + ii + jj * box_real_dim_X_node + kk * box_real_dim_X_times_Y_node;
                         //** >> Asking if the neighboring cell has not been changed yet **/
                         // The border (-2) of the simulation can be added
-                        if (ptr_node->ptr_box[box_idxNbr] == -3 || ptr_node->ptr_box[box_idxNbr] == -2) // Cell has not been added yet
+                        if (ptr_node->ptr_box[box_idxNbr] == -3) // Cell has not been added yet
                         {
                             size++;
                             //** >> Chaning the cell box status from EXIST (-3) to REFINEMENT REQUIRED (-1) **/
@@ -1321,6 +1306,19 @@ static int adapt_child_nodes(struct node *ptr_node)
                 // ptr_ch->ptr_az[j] = 0;
                 ptr_ch->ptr_d[j] = 0;
             }
+
+            //** >> Boundary of the simulation box **/
+            if (ptr_ch->box_min_x == 0 || ptr_ch->box_max_x == (1 << ptr_ch->lv) - 1 ||
+                ptr_ch->box_min_y == 0 || ptr_ch->box_max_y == (1 << ptr_ch->lv) - 1 ||
+                ptr_ch->box_min_z == 0 || ptr_ch->box_max_z == (1 << ptr_ch->lv) - 1)
+            {
+                ptr_ch->simulation_boundary = true;
+            }
+            else
+            {
+                ptr_ch->simulation_boundary = false;
+            }
+            
         }
     }
     return _SUCCESS_;
@@ -1446,6 +1444,18 @@ static int create_new_child_nodes(struct node *ptr_node)
         //** >> Tree structure **/
         ptr_ch->ptr_pt = ptr_node;
         ptr_node->pptr_chn[i] = ptr_ch;
+
+        //** >> Boundary of the simulation box **/
+        if (ptr_ch->box_min_x == 0 || ptr_ch->box_max_x == (1 << ptr_ch->lv) - 1 ||
+            ptr_ch->box_min_y == 0 || ptr_ch->box_max_y == (1 << ptr_ch->lv) - 1 ||
+            ptr_ch->box_min_z == 0 || ptr_ch->box_max_z == (1 << ptr_ch->lv) - 1)
+        {
+            ptr_ch->simulation_boundary = true;
+        }
+        else
+        {
+            ptr_ch->simulation_boundary = false;
+        }
     }
     return _SUCCESS_;
 }
@@ -2037,73 +2047,6 @@ static void updating_ref_zones_grandchildren(struct node *ptr_node)
     }
 }
 
-static void update_border_child_boxes(struct node *ptr_node)
-{
-    struct node *ptr_ch;
-
-    int box_idx_ch; // Box index of the child cell
-
-    int box_idxNbr_ch; // Box index in the neigborhood
-
-    int box_real_dim_X_ch;
-    int box_real_dim_X_times_Y_ch;
-
-    for (int zone_idx = 0; zone_idx < ptr_node->zones_size; zone_idx++)
-    {
-        // ptr_ch = ptr_node->pptr_chn[ptr_node->ptr_links_old_ord_old[zone_idx]];
-        ptr_ch = ptr_node->pptr_chn[zone_idx];
-
-        box_real_dim_X_ch = ptr_ch->box_real_dim_x;
-        box_real_dim_X_times_Y_ch = ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
-
-        // Changing the EXIST (-3) TO BORDER (-2) to all border cells in the box
-        // for (int j = 0; j < ptr_ch->cell_size; j++)
-        for (int j = 0; j < ptr_ch->cell_size; j++)
-        {
-            box_idx_ch = ptr_ch->ptr_box_idx[j];
-
-            if (ptr_ch->ptr_box[box_idx_ch] == -3)
-            {
-                for (int kk = -1; kk < 2; kk++)
-                {
-                    for (int jj = -1; jj < 2; jj++)
-                    {
-                        for (int ii = -1; ii < 2; ii++)
-                        {
-                            box_idxNbr_ch = box_idx_ch + ii + jj * box_real_dim_X_ch + kk * box_real_dim_X_times_Y_ch;
-                            if (ptr_ch->ptr_box[box_idxNbr_ch] == -4) // Border cells are those such that at least on of their first neighbors are NO-EXIST cells.
-                            {
-                                ptr_ch->ptr_box[box_idx_ch] = -2;
-                                ii = 2;
-                                jj = 2;
-                                kk = 2;
-                            }
-                        }
-                    }
-                }
-
-                // for (int kk = -1; kk < 2; kk++)
-                // {
-                //     for (int jj = -1; jj < 2; jj++)
-                //     {
-                //         for (int ii = -1; ii < 2; ii++)
-                //         {
-                //             box_idxNbr_ch = box_idx_ch + ii + jj * ptr_ch->box_real_dim_x + kk * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
-                //             if (ptr_ch->ptr_box[box_idxNbr_ch] == -4) // Border cells are those such that at least on of their first neighbors are NO-EXIST cells.
-                //             {
-                //                 ptr_ch->ptr_box[box_idx_ch] = -2;
-                //                 ii = 2;
-                //                 jj = 2;
-                //                 kk = 2;
-                //             }
-                //         }
-                //     }
-                // }
-            }
-        }
-    }
-}
-
 static int update_child_grid_points(struct node *ptr_node)
 {
 
@@ -2168,202 +2111,225 @@ static int update_child_grid_points(struct node *ptr_node)
                 {
                     box_idx_ch = ii + jj * box_real_dim_X_ch + kk * box_real_dim_X_times_Y_ch;
 
-                    if (ptr_ch->ptr_box[box_idx_ch] == -3 || ptr_ch->ptr_box[box_idx_ch] >= 0)
+                    grid_point_exist = false;
+
+                    box_idxNbr_i0_j0_k0_ch = box_idx_ch;
+                    box_idxNbr_im1_j0_k0_ch = box_idx_ch - 1;
+                    box_idxNbr_i0_jm1_k0_ch = box_idx_ch - box_real_dim_X_ch;
+                    box_idxNbr_im1_jm1_k0_ch = box_idx_ch - 1 - box_real_dim_X_ch;
+                    box_idxNbr_i0_j0_km1_ch = box_idx_ch - box_real_dim_X_times_Y_ch;
+                    box_idxNbr_im1_j0_km1_ch = box_idx_ch - 1 - box_real_dim_X_times_Y_ch;
+                    box_idxNbr_i0_jm1_km1_ch = box_idx_ch - box_real_dim_X_ch - box_real_dim_X_times_Y_ch;
+                    box_idxNbr_im1_jm1_km1_ch = box_idx_ch - 1 - box_real_dim_X_ch - box_real_dim_X_times_Y_ch;
+
+                    //First 
+                    if(ptr_ch->ptr_box[box_idxNbr_i0_j0_k0_ch] > -4)
                     {
                         grid_point_exist = true;
                         is_bder_grid_point = false;
-                    }
-                    else
-                    {
-                        box_idxNbr_i0_j0_k0_ch = box_idx_ch;
-                        box_idxNbr_im1_j0_k0_ch = box_idx_ch - 1;
-                        box_idxNbr_i0_jm1_k0_ch = box_idx_ch - box_real_dim_X_ch;
-                        box_idxNbr_im1_jm1_k0_ch = box_idx_ch - 1 - box_real_dim_X_ch;
-                        box_idxNbr_i0_j0_km1_ch = box_idx_ch - box_real_dim_X_times_Y_ch;
-                        box_idxNbr_im1_j0_km1_ch = box_idx_ch - 1 - box_real_dim_X_times_Y_ch;
-                        box_idxNbr_i0_jm1_km1_ch = box_idx_ch - box_real_dim_X_ch - box_real_dim_X_times_Y_ch;
-                        box_idxNbr_im1_jm1_km1_ch = box_idx_ch - 1 - box_real_dim_X_ch - box_real_dim_X_times_Y_ch;
+                        //** Connection to the right  **/
 
-                        grid_point_exist = false;
-                        // //** >> The grid point exist **/
-                        // if (ptr_ch->ptr_box[box_idxNbr_i0_j0_k0_ch] > -4 ||
-                        //     ptr_ch->ptr_box[box_idxNbr_im1_j0_k0_ch] > -4 ||
-                        //     ptr_ch->ptr_box[box_idxNbr_i0_jm1_k0_ch] > -4 ||
-                        //     ptr_ch->ptr_box[box_idxNbr_im1_jm1_k0_ch] > -4 ||
-                        //     ptr_ch->ptr_box[box_idxNbr_i0_j0_km1_ch] > -4 ||
-                        //     ptr_ch->ptr_box[box_idxNbr_im1_j0_km1_ch] > -4 ||
-                        //     ptr_ch->ptr_box[box_idxNbr_i0_jm1_km1_ch] > -4 ||
-                        //     ptr_ch->ptr_box[box_idxNbr_im1_jm1_km1_ch] > -4)
-                        // {
-                        //     grid_point_exist = true;
-                        //     is_bder_grid_point = false;
-                        //     //** Connection to the right  **/
-                        //     if (ptr_ch->ptr_box[box_idxNbr_i0_j0_k0_ch] < -3 &&
-                        //         ptr_ch->ptr_box[box_idxNbr_i0_jm1_k0_ch] < -3 &&
-                        //         ptr_ch->ptr_box[box_idxNbr_i0_j0_km1_ch] < -3 &&
-                        //         ptr_ch->ptr_box[box_idxNbr_i0_jm1_km1_ch] < -3)
-                        //     {
-                        //         is_bder_grid_point = true;
-                        //     }
-                        //     //** Connection to the left  **/
-                        //     else if (ptr_ch->ptr_box[box_idxNbr_im1_j0_k0_ch] < -3 &&
-                        //              ptr_ch->ptr_box[box_idxNbr_im1_jm1_k0_ch] < -3 &&
-                        //              ptr_ch->ptr_box[box_idxNbr_im1_j0_km1_ch] < -3 &&
-                        //              ptr_ch->ptr_box[box_idxNbr_im1_jm1_km1_ch] < -3)
-                        //     {
-                        //         is_bder_grid_point = true;
-                        //     }
-                        //     //** Backward connection   **/
-                        //     else if (ptr_ch->ptr_box[box_idxNbr_i0_j0_k0_ch] < -3 &&
-                        //              ptr_ch->ptr_box[box_idxNbr_im1_j0_k0_ch] < -3 &&
-                        //              ptr_ch->ptr_box[box_idxNbr_i0_j0_km1_ch] < -3 &&
-                        //              ptr_ch->ptr_box[box_idxNbr_im1_j0_km1_ch] < -3)
-                        //     {
-                        //         is_bder_grid_point = true;
-                        //     }
-                        //     //** Forward connection   **/
-                        //     else if (ptr_ch->ptr_box[box_idxNbr_i0_jm1_k0_ch] < -3 &&
-                        //              ptr_ch->ptr_box[box_idxNbr_im1_jm1_k0_ch] < -3 &&
-                        //              ptr_ch->ptr_box[box_idxNbr_i0_jm1_km1_ch] < -3 &&
-                        //              ptr_ch->ptr_box[box_idxNbr_im1_jm1_km1_ch] < -3)
-                        //     {
-                        //         is_bder_grid_point = true;
-                        //     }
-                        //     //** Upward connection **/
-                        //     else if (ptr_ch->ptr_box[box_idxNbr_i0_j0_k0_ch] < -3 &&
-                        //              ptr_ch->ptr_box[box_idxNbr_im1_j0_k0_ch] < -3 &&
-                        //              ptr_ch->ptr_box[box_idxNbr_i0_jm1_k0_ch] < -3 &&
-                        //              ptr_ch->ptr_box[box_idxNbr_im1_jm1_k0_ch] < -3)
-                        //     {
-                        //         is_bder_grid_point = true;
-                        //     }
-                        //     //** Down connection **/
-                        //     else if (ptr_ch->ptr_box[box_idxNbr_i0_j0_km1_ch] < -3 &&
-                        //              ptr_ch->ptr_box[box_idxNbr_im1_j0_km1_ch] < -3 &&
-                        //              ptr_ch->ptr_box[box_idxNbr_i0_jm1_km1_ch] < -3 &&
-                        //              ptr_ch->ptr_box[box_idxNbr_im1_jm1_km1_ch] < -3)
-                        //     {
-                        //         is_bder_grid_point = true;
-                        //     }
-                        // }
+                        //** Connection to the left  **/
+                        if (ptr_ch->ptr_box[box_idxNbr_im1_j0_k0_ch] < -3 &&
+                                 ptr_ch->ptr_box[box_idxNbr_im1_jm1_k0_ch] < -3 &&
+                                 ptr_ch->ptr_box[box_idxNbr_im1_j0_km1_ch] < -3 &&
+                                 ptr_ch->ptr_box[box_idxNbr_im1_jm1_km1_ch] < -3)
+                        {
+                            is_bder_grid_point = true;
+                        }
+                        //** Backward connection   **/
 
-                        if (ptr_ch->ptr_box[box_idxNbr_i0_j0_k0_ch] == -2)
+                        //** Forward connection   **/
+                        else if (ptr_ch->ptr_box[box_idxNbr_i0_jm1_k0_ch] < -3 &&
+                                 ptr_ch->ptr_box[box_idxNbr_im1_jm1_k0_ch] < -3 &&
+                                 ptr_ch->ptr_box[box_idxNbr_i0_jm1_km1_ch] < -3 &&
+                                 ptr_ch->ptr_box[box_idxNbr_im1_jm1_km1_ch] < -3)
                         {
-                            grid_point_exist = true;
-                            is_bder_grid_point = false;
-                            //** Connection to the left  **/
-                            if (ptr_ch->ptr_box[box_idxNbr_im1_j0_k0_ch] < -3 &&
-                                ptr_ch->ptr_box[box_idxNbr_im1_jm1_k0_ch] < -3 &&
-                                ptr_ch->ptr_box[box_idxNbr_im1_j0_km1_ch] < -3 &&
-                                ptr_ch->ptr_box[box_idxNbr_im1_jm1_km1_ch] < -3)
-                            {
-                                is_bder_grid_point = true;
-                            }
-                            //** Forward connection   **/
-                            else if (ptr_ch->ptr_box[box_idxNbr_i0_jm1_k0_ch] < -3 &&
-                                     ptr_ch->ptr_box[box_idxNbr_im1_jm1_k0_ch] < -3 &&
-                                     ptr_ch->ptr_box[box_idxNbr_i0_jm1_km1_ch] < -3 &&
-                                     ptr_ch->ptr_box[box_idxNbr_im1_jm1_km1_ch] < -3)
-                            {
-                                is_bder_grid_point = true;
-                            }
-                            //** Down connection **/
-                            else if (ptr_ch->ptr_box[box_idxNbr_i0_j0_km1_ch] < -3 &&
-                                     ptr_ch->ptr_box[box_idxNbr_im1_j0_km1_ch] < -3 &&
-                                     ptr_ch->ptr_box[box_idxNbr_i0_jm1_km1_ch] < -3 &&
-                                     ptr_ch->ptr_box[box_idxNbr_im1_jm1_km1_ch] < -3)
-                            {
-                                is_bder_grid_point = true;
-                            }
+                            is_bder_grid_point = true;
                         }
-                        else if (ptr_ch->ptr_box[box_idxNbr_im1_j0_k0_ch] == -2)
+                        //** Upward connection **/
+
+                        //** Down connection **/
+                        else if (ptr_ch->ptr_box[box_idxNbr_i0_j0_km1_ch] < -3 &&
+                                 ptr_ch->ptr_box[box_idxNbr_im1_j0_km1_ch] < -3 &&
+                                 ptr_ch->ptr_box[box_idxNbr_i0_jm1_km1_ch] < -3 &&
+                                 ptr_ch->ptr_box[box_idxNbr_im1_jm1_km1_ch] < -3)
                         {
-                            grid_point_exist = true;
-                            is_bder_grid_point = false;
-                            //** Connection to the right  **/
-                            if (ptr_ch->ptr_box[box_idxNbr_i0_jm1_k0_ch] < -3 &&
-                                ptr_ch->ptr_box[box_idxNbr_i0_j0_km1_ch] < -3 &&
-                                ptr_ch->ptr_box[box_idxNbr_i0_jm1_km1_ch] < -3)
-                            {
-                                is_bder_grid_point = true;
-                            }
-                            //** Forward connection   **/
-                            else if (ptr_ch->ptr_box[box_idxNbr_i0_jm1_k0_ch] < -3 &&
-                                     ptr_ch->ptr_box[box_idxNbr_im1_jm1_k0_ch] < -3 &&
-                                     ptr_ch->ptr_box[box_idxNbr_i0_jm1_km1_ch] < -3 &&
-                                     ptr_ch->ptr_box[box_idxNbr_im1_jm1_km1_ch] < -3)
-                            {
-                                is_bder_grid_point = true;
-                            }
-                            //** Down connection **/
-                            else if (ptr_ch->ptr_box[box_idxNbr_i0_j0_km1_ch] < -3 &&
-                                     ptr_ch->ptr_box[box_idxNbr_im1_j0_km1_ch] < -3 &&
-                                     ptr_ch->ptr_box[box_idxNbr_i0_jm1_km1_ch] < -3 &&
-                                     ptr_ch->ptr_box[box_idxNbr_im1_jm1_km1_ch] < -3)
-                            {
-                                is_bder_grid_point = true;
-                            }
-                        }
-                        else if (ptr_ch->ptr_box[box_idxNbr_i0_jm1_k0_ch] == -2)
-                        {
-                            grid_point_exist = true;
-                            is_bder_grid_point = false;
-                            //** Connection to the left  **/
-                            if (ptr_ch->ptr_box[box_idxNbr_im1_jm1_k0_ch] < -3 &&
-                                ptr_ch->ptr_box[box_idxNbr_im1_j0_km1_ch] < -3 &&
-                                ptr_ch->ptr_box[box_idxNbr_im1_jm1_km1_ch] < -3)
-                            {
-                                is_bder_grid_point = true;
-                            }
-                            //** Backward connection   **/
-                            else if (ptr_ch->ptr_box[box_idxNbr_i0_j0_km1_ch] < -3 &&
-                                     ptr_ch->ptr_box[box_idxNbr_im1_j0_km1_ch] < -3)
-                            {
-                                is_bder_grid_point = true;
-                            }
-                            //** Down connection **/
-                            else if (ptr_ch->ptr_box[box_idxNbr_i0_j0_km1_ch] < -3 &&
-                                     ptr_ch->ptr_box[box_idxNbr_im1_j0_km1_ch] < -3 &&
-                                     ptr_ch->ptr_box[box_idxNbr_i0_jm1_km1_ch] < -3 &&
-                                     ptr_ch->ptr_box[box_idxNbr_im1_jm1_km1_ch] < -3)
-                            {
-                                is_bder_grid_point = true;
-                            }
-                        }
-                        else if (ptr_ch->ptr_box[box_idxNbr_im1_jm1_k0_ch] == -2)
-                        {
-                            grid_point_exist = true;
-                            is_bder_grid_point = false;
-                            //** Connection to the right  **/
-                            if (ptr_ch->ptr_box[box_idxNbr_i0_j0_km1_ch] < -3 &&
-                                ptr_ch->ptr_box[box_idxNbr_i0_jm1_km1_ch] < -3)
-                            {
-                                is_bder_grid_point = true;
-                            }
-                            //** Backward connection   **/
-                            else if (ptr_ch->ptr_box[box_idxNbr_i0_j0_km1_ch] < -3 &&
-                                     ptr_ch->ptr_box[box_idxNbr_im1_j0_km1_ch] < -3)
-                            {
-                                is_bder_grid_point = true;
-                            }
-                            //** Down connection **/
-                            else if (ptr_ch->ptr_box[box_idxNbr_i0_j0_km1_ch] < -3 &&
-                                     ptr_ch->ptr_box[box_idxNbr_im1_j0_km1_ch] < -3 &&
-                                     ptr_ch->ptr_box[box_idxNbr_i0_jm1_km1_ch] < -3 &&
-                                     ptr_ch->ptr_box[box_idxNbr_im1_jm1_km1_ch] < -3)
-                            {
-                                is_bder_grid_point = true;
-                            }
-                        }
-                        else if (ptr_ch->ptr_box[box_idxNbr_i0_j0_km1_ch] == -2 ||
-                                 ptr_ch->ptr_box[box_idxNbr_im1_j0_km1_ch] == -2 ||
-                                 ptr_ch->ptr_box[box_idxNbr_i0_jm1_km1_ch] == -2 ||
-                                 ptr_ch->ptr_box[box_idxNbr_im1_jm1_km1_ch] == -2)
-                        {
-                            grid_point_exist = true;
                             is_bder_grid_point = true;
                         }
                     }
+                    // Second
+                    else if (ptr_ch->ptr_box[box_idxNbr_im1_j0_k0_ch] > -4)
+                    {
+                        grid_point_exist = true;
+                        is_bder_grid_point = false;
+                        //** Connection to the right  **/
+                        if (ptr_ch->ptr_box[box_idxNbr_i0_jm1_k0_ch] < -3 &&
+                            ptr_ch->ptr_box[box_idxNbr_i0_j0_km1_ch] < -3 &&
+                            ptr_ch->ptr_box[box_idxNbr_i0_jm1_km1_ch] < -3)
+                        {
+                            is_bder_grid_point = true;
+                        }
+                        //** Connection to the left  **/
+
+                        //** Backward connection   **/
+
+                        //** Forward connection   **/
+                        else if (ptr_ch->ptr_box[box_idxNbr_i0_jm1_k0_ch] < -3 &&
+                                 ptr_ch->ptr_box[box_idxNbr_im1_jm1_k0_ch] < -3 &&
+                                 ptr_ch->ptr_box[box_idxNbr_i0_jm1_km1_ch] < -3 &&
+                                 ptr_ch->ptr_box[box_idxNbr_im1_jm1_km1_ch] < -3)
+                        {
+                            is_bder_grid_point = true;
+                        }
+                        //** Upward connection **/
+
+                        //** Down connection **/
+                        else if (ptr_ch->ptr_box[box_idxNbr_i0_j0_km1_ch] < -3 &&
+                                 ptr_ch->ptr_box[box_idxNbr_im1_j0_km1_ch] < -3 &&
+                                 ptr_ch->ptr_box[box_idxNbr_i0_jm1_km1_ch] < -3 &&
+                                 ptr_ch->ptr_box[box_idxNbr_im1_jm1_km1_ch] < -3)
+                        {
+                            is_bder_grid_point = true;
+                        }
+                    }
+                    // Third
+                    else if(ptr_ch->ptr_box[box_idxNbr_i0_jm1_k0_ch] > -4)
+                    {
+                        grid_point_exist = true;
+                        is_bder_grid_point = false;
+                        //** Connection to the right  **/
+
+                        //** Connection to the left  **/
+                        if (ptr_ch->ptr_box[box_idxNbr_im1_jm1_k0_ch] < -3 &&
+                                 ptr_ch->ptr_box[box_idxNbr_im1_j0_km1_ch] < -3 &&
+                                 ptr_ch->ptr_box[box_idxNbr_im1_jm1_km1_ch] < -3)
+                        {
+                            is_bder_grid_point = true;
+                        }
+                        //** Backward connection   **/
+                        else if (ptr_ch->ptr_box[box_idxNbr_i0_j0_km1_ch] < -3 &&
+                                 ptr_ch->ptr_box[box_idxNbr_im1_j0_km1_ch] < -3)
+                        {
+                            is_bder_grid_point = true;
+                        }
+                        //** Forward connection   **/
+
+                        //** Upward connection **/
+
+                        //** Down connection **/
+                        else if (ptr_ch->ptr_box[box_idxNbr_i0_j0_km1_ch] < -3 &&
+                                 ptr_ch->ptr_box[box_idxNbr_im1_j0_km1_ch] < -3 &&
+                                 ptr_ch->ptr_box[box_idxNbr_i0_jm1_km1_ch] < -3 &&
+                                 ptr_ch->ptr_box[box_idxNbr_im1_jm1_km1_ch] < -3)
+                        {
+                            is_bder_grid_point = true;
+                        }
+                    }
+                    // Fourth
+                    else if (ptr_ch->ptr_box[box_idxNbr_im1_jm1_k0_ch] > -4)
+                    {
+                        grid_point_exist = true;
+                        is_bder_grid_point = false;
+                        //** Connection to the right  **/
+                        if (ptr_ch->ptr_box[box_idxNbr_i0_j0_km1_ch] < -3 &&
+                            ptr_ch->ptr_box[box_idxNbr_i0_jm1_km1_ch] < -3)
+                        {
+                            is_bder_grid_point = true;
+                        }
+                        //** Connection to the left  **/
+
+                        //** Backward connection   **/
+                        else if (ptr_ch->ptr_box[box_idxNbr_i0_j0_km1_ch] < -3 &&
+                                 ptr_ch->ptr_box[box_idxNbr_im1_j0_km1_ch] < -3)
+                        {
+                            is_bder_grid_point = true;
+                        }
+                        //** Forward connection   **/
+
+                        //** Upward connection **/
+
+                        //** Down connection **/
+                        else if (ptr_ch->ptr_box[box_idxNbr_i0_j0_km1_ch] < -3 &&
+                                 ptr_ch->ptr_box[box_idxNbr_im1_j0_km1_ch] < -3 &&
+                                 ptr_ch->ptr_box[box_idxNbr_i0_jm1_km1_ch] < -3 &&
+                                 ptr_ch->ptr_box[box_idxNbr_im1_jm1_km1_ch] < -3)
+                        {
+                            is_bder_grid_point = true;
+                        }
+                    }
+                    // Others
+                    else if (ptr_ch->ptr_box[box_idxNbr_i0_j0_km1_ch] > -4 ||
+                             ptr_ch->ptr_box[box_idxNbr_im1_j0_km1_ch] > -4 ||
+                             ptr_ch->ptr_box[box_idxNbr_i0_jm1_km1_ch] > -4 ||
+                             ptr_ch->ptr_box[box_idxNbr_im1_jm1_km1_ch] > -4)
+                    {
+                        grid_point_exist = true;
+                        is_bder_grid_point = true;
+                    }
+
+                    // //** >> The grid point exist **/
+                    // if (ptr_ch->ptr_box[box_idxNbr_i0_j0_k0_ch] > -4 ||
+                    //     ptr_ch->ptr_box[box_idxNbr_im1_j0_k0_ch] > -4 ||
+                    //     ptr_ch->ptr_box[box_idxNbr_i0_jm1_k0_ch] > -4 ||
+                    //     ptr_ch->ptr_box[box_idxNbr_im1_jm1_k0_ch] > -4 ||
+                    //     ptr_ch->ptr_box[box_idxNbr_i0_j0_km1_ch] > -4 ||
+                    //     ptr_ch->ptr_box[box_idxNbr_im1_j0_km1_ch] > -4 ||
+                    //     ptr_ch->ptr_box[box_idxNbr_i0_jm1_km1_ch] > -4 ||
+                    //     ptr_ch->ptr_box[box_idxNbr_im1_jm1_km1_ch] > -4)
+                    // {
+                    //     grid_point_exist = true;
+                    //     is_bder_grid_point = false;
+                    //     //** Connection to the right  **/
+                    //     if (ptr_ch->ptr_box[box_idxNbr_i0_j0_k0_ch] < -3 &&
+                    //         ptr_ch->ptr_box[box_idxNbr_i0_jm1_k0_ch] < -3 &&
+                    //         ptr_ch->ptr_box[box_idxNbr_i0_j0_km1_ch] < -3 &&
+                    //         ptr_ch->ptr_box[box_idxNbr_i0_jm1_km1_ch] < -3)
+                    //     {
+                    //         is_bder_grid_point = true;
+                    //     }
+                    //     //** Connection to the left  **/
+                    //     else if (ptr_ch->ptr_box[box_idxNbr_im1_j0_k0_ch] < -3 &&
+                    //              ptr_ch->ptr_box[box_idxNbr_im1_jm1_k0_ch] < -3 &&
+                    //              ptr_ch->ptr_box[box_idxNbr_im1_j0_km1_ch] < -3 &&
+                    //              ptr_ch->ptr_box[box_idxNbr_im1_jm1_km1_ch] < -3)
+                    //     {
+                    //         is_bder_grid_point = true;
+                    //     }
+                    //     //** Backward connection   **/
+                    //     else if (ptr_ch->ptr_box[box_idxNbr_i0_j0_k0_ch] < -3 &&
+                    //              ptr_ch->ptr_box[box_idxNbr_im1_j0_k0_ch] < -3 &&
+                    //              ptr_ch->ptr_box[box_idxNbr_i0_j0_km1_ch] < -3 &&
+                    //              ptr_ch->ptr_box[box_idxNbr_im1_j0_km1_ch] < -3)
+                    //     {
+                    //         is_bder_grid_point = true;
+                    //     }
+                    //     //** Forward connection   **/
+                    //     else if (ptr_ch->ptr_box[box_idxNbr_i0_jm1_k0_ch] < -3 &&
+                    //              ptr_ch->ptr_box[box_idxNbr_im1_jm1_k0_ch] < -3 &&
+                    //              ptr_ch->ptr_box[box_idxNbr_i0_jm1_km1_ch] < -3 &&
+                    //              ptr_ch->ptr_box[box_idxNbr_im1_jm1_km1_ch] < -3)
+                    //     {
+                    //         is_bder_grid_point = true;
+                    //     }
+                    //     //** Upward connection **/
+                    //     else if (ptr_ch->ptr_box[box_idxNbr_i0_j0_k0_ch] < -3 &&
+                    //              ptr_ch->ptr_box[box_idxNbr_im1_j0_k0_ch] < -3 &&
+                    //              ptr_ch->ptr_box[box_idxNbr_i0_jm1_k0_ch] < -3 &&
+                    //              ptr_ch->ptr_box[box_idxNbr_im1_jm1_k0_ch] < -3)
+                    //     {
+                    //         is_bder_grid_point = true;
+                    //     }
+                    //     //** Down connection **/
+                    //     else if (ptr_ch->ptr_box[box_idxNbr_i0_j0_km1_ch] < -3 &&
+                    //              ptr_ch->ptr_box[box_idxNbr_im1_j0_km1_ch] < -3 &&
+                    //              ptr_ch->ptr_box[box_idxNbr_i0_jm1_km1_ch] < -3 &&
+                    //              ptr_ch->ptr_box[box_idxNbr_im1_jm1_km1_ch] < -3)
+                    //     {
+                    //         is_bder_grid_point = true;
+                    //     }
+                    // }
+
                     if (grid_point_exist == true)
                     {
                         box_grid_idx_ch = ii + jj * grid_box_real_dim_X_ch + kk * grid_box_real_dim_X_times_Y_ch;
@@ -2479,7 +2445,7 @@ int tree_adaptation(void)
                 }
                 GL_times[30] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
-                //check_error(ptr_node);
+                check_error(ptr_node);
 
                 //** Initialization of node boxes **/
                 // printf("\n\ninitialization_node_boxes\n\n");
@@ -2612,12 +2578,6 @@ int tree_adaptation(void)
                     }
                     GL_times[43] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
-                    //** >> Update border of the child boxes **//
-                    // printf("\n\nUpdate border child boxes\n\n");
-                    aux_clock = clock();
-                    update_border_child_boxes(ptr_node);
-                    GL_times[44] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
-
                     //** >> Updating children grid points **/
                     // printf("\n\nUpdating children grid points\n\n");
                     aux_clock = clock();
@@ -2648,7 +2608,7 @@ int tree_adaptation(void)
                 moved_unused_child_node_to_memory_pool(ptr_node);
                 GL_times[47] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
-                //check_error(ptr_node);
+                check_error(ptr_node);
             }
         }
 

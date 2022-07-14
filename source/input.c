@@ -163,11 +163,11 @@ int input_plummer_model(void)
     // char input_name[100] = "../source/initial_conditions/"
     //                        "plummer_center_moved.txt";
 
-    // char input_name[100] = "../source/initial_conditions//"
-    //                        "Plummer_Np(10000)_BoxSize(0.1)_Mass(1000000).txt";
+    char input_name[100] = "../source/initial_conditions//"
+                           "Plummer_Np(10000)_BoxSize(0.1)_Mass(1000000).txt";
 
-    char input_name[100] = "../source/initial_conditions/"
-                           "Plummer_v2.txt";
+    // char input_name[100] = "../source/initial_conditions/"
+    //                        "Plummer_v2.txt";
 
     FILE *file = NULL;
     file = fopen(input_name, "r");
@@ -268,17 +268,17 @@ static int input_code_units(void)
 
 int input(void)
 {
-    // if (input_plummer_model() == _FAILURE_)
-    // {
-    //     printf("\n\n Error running input_plummer_model function\n\n");
-    //     return _FAILURE_;
-    // }
-
-    if (input_galaxies_merger() == _FAILURE_)
+    if (input_plummer_model() == _FAILURE_)
     {
-        printf("\n\n Error running input_galaxies_merger function\n\n");
+        printf("\n\n Error running input_plummer_model function\n\n");
         return _FAILURE_;
     }
+
+    // if (input_galaxies_merger() == _FAILURE_)
+    // {
+    //     printf("\n\n Error running input_galaxies_merger function\n\n");
+    //     return _FAILURE_;
+    // }
 
 /*     if (input_particle_initialization() == _FAILURE_)
     {

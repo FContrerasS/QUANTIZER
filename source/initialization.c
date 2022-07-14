@@ -92,10 +92,6 @@ static int initializing_head_node(void)
 				{
 					ptr_head->ptr_box[box_idx] = -5; //-5 corresponds to cell out of the box simulation
 				}
-				else if (i == bder_os_sim || i == box_side_lmin - bder_os_sim - 1 || j == bder_os_sim || j == box_side_lmin - bder_os_sim - 1 || k == bder_os_sim || k == box_side_lmin - bder_os_sim - 1)
-				{
-					ptr_head->ptr_box[box_idx] = -2; //-2 corresponds to cell in the border of the block
-				}
 				else
 				{
 					ptr_head->ptr_box[box_idx] = -3; //-3 corresponds to cell belonging to the block
@@ -231,6 +227,11 @@ static int initializing_head_node(void)
 
 	//** >> Initial values for the potential and acceleration **/
 	initial_potential_and_acceleration_head(ptr_head);
+
+	//** >> Boundary of the simulation box **/
+	ptr_head->simulation_boundary = true;
+
+
 
 	return _SUCCESS_;
 

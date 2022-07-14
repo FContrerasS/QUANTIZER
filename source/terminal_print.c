@@ -96,7 +96,7 @@ static int computing_memory(void)
             }
             TOTAL_MEMORY_AUX += ptr_node->aux_idx_cap * sizeof(int);
             TOTAL_MEMORY_AUX += 4 * ptr_node->links_cap * sizeof(int);
-                }
+        }
         TOTAL_MEMORY_NODES += no_pts * sizeof(struct node);
     }
 
