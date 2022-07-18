@@ -40,7 +40,7 @@ static void kinetic_energy(vtype *energies)
 
     vtype particle_v_pow_2; // Particle velocity to the power of 2
 
-    for (int i = 0; i < GL_no_ptcl; i++)
+    for (int i = 0; i < GL_no_ptcl_final; i++)
     {
         // Kinetic Energy
         particle_v_pow_2 = GL_ptcl_vx[i] * GL_ptcl_vx[i] + GL_ptcl_vy[i] * GL_ptcl_vy[i] + GL_ptcl_vz[i] * GL_ptcl_vz[i];
@@ -59,7 +59,7 @@ static void potential_energy_exact(vtype *energies)
 
     vtype _one_over_User_BoxSize = 1.0L / _User_BoxSize_;
 
-    for (int i = 0; i < GL_no_ptcl; i++)
+    for (int i = 0; i < GL_no_ptcl_final; i++)
     {
         // Adding Kinetic energy of the particle
 
@@ -114,7 +114,7 @@ static void computing_particle_potential_head_only(const struct node *ptr_head, 
     int grid_box_real_dim_X = (ptr_head->box_real_dim_x + 1);
     int grid_box_real_dim_X_times_Y = (ptr_head->box_real_dim_x + 1) * (ptr_head->box_real_dim_y + 1);
 
-    for (int i = 0; i < GL_no_ptcl; i++)
+    for (int i = 0; i < GL_no_ptcl_final; i++)
     {
         //** >> Position of the particles in the grid level **/
         pos_x = GL_ptcl_x[i] * (1 << lv);

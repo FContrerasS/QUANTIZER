@@ -45,7 +45,7 @@ static int computing_memory(void)
     }
 
     //** >> Global particles **/
-    TOTAL_MEMORY_PARTICLES += GL_no_ptcl * (sizeof(bool) + 10 * sizeof(vtype)); // Global particles
+    TOTAL_MEMORY_PARTICLES += GL_no_ptcl_initial * (sizeof(bool) + sizeof(int) + 10 * sizeof(vtype)); // Global particles
 
     //** >> Node properties **/
     for (int lv = 0; lv < GL_tentacles_level_max + 1; lv++)

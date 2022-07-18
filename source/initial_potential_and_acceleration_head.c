@@ -53,7 +53,7 @@ void initial_potential_and_acceleration_head(struct node *ptr_head)
     cm[1] = 0; // Y position
     cm[2] = 0; // Z position
 
-    for (int i = 0; i < GL_no_ptcl; i++)
+    for (int i = 0; i < GL_no_ptcl_final; i++)
     {
         cm[0] += GL_ptcl_mass[i] * GL_ptcl_x[i];
         cm[1] += GL_ptcl_mass[i] * GL_ptcl_y[i];

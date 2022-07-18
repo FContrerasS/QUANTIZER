@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
 	printf("INITIAL PARAMETERS ...\n\n");
 	printf("\nSIMULATION PARAMETERS ...\n");
 	printf("User Box size = %f\n", (double)_User_BoxSize_);
-	printf("Number of Particles = %d\n", (int)GL_no_ptcl);
+	printf("Number of Particles = %d\n", (int)GL_no_ptcl_initial);
 	printf("Max time of the simulation = %f My\n", (double)Maxdt / _Mgyear_);
 	printf("Min level = %d\n", (int)lmin);
 	printf("Max level = %d\n", (int)lmax);

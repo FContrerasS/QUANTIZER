@@ -60,8 +60,8 @@ int no_lmin_cell; // Number of cells in the lmin level of refinement
 int no_lmin_cell_pow2;
 int no_lmin_cell_pow3;
 int no_grid;
-int Gl_no_ptcl_initial;
-int GL_no_ptcl;
+int GL_no_ptcl_initial;
+int GL_no_ptcl_final;
 vtype Maxdt ;
 vtype meanmass;
 vtype total_mass;
@@ -129,6 +129,7 @@ vtype *GL_ptcl_ay;
 vtype *GL_ptcl_az;
 vtype **GL_ptcl;     // All 10 ptcl parameters
 bool *GL_ptcl_updating_flag;  // Particle updating state
+int *GL_ptcl_ID;
 
 //** >> Head or Main node **/
 struct node *GL_ptr_tree; // Pointer to the tree head or  coarsest level
@@ -206,25 +207,25 @@ static void init_global_user_params(void)
     no_lmin_cell_pow2 = no_lmin_cell * no_lmin_cell;
     no_lmin_cell_pow3 = no_lmin_cell * no_lmin_cell * no_lmin_cell;
     no_grid = no_lmin_cell + 1;
-    Gl_no_ptcl_initial = 10;
-    GL_no_ptcl = Gl_no_ptcl_initial;
+    GL_no_ptcl_initial = 10000;
+    GL_no_ptcl_final = GL_no_ptcl_initial;
     //GL_no_ptcl = 7550; // 2995865; // 299586; // 231299 // 298159
     // GL_no_ptcl = 10000;
     Maxdt = 1000.0 * _Mgyear_;
     //meanmass = 100; //Currently only used on input.c
     // total_mass = GL_no_ptcl * meanmass;
     // total_mass = 0;
-    fr_output = 12;
+    fr_output = 6;
     MaxIterations = 100000000;
     no_grid_pow2 = no_grid * no_grid;
     no_grid_pow3 = no_grid * no_grid * no_grid;
-    boundary_type = 2; // 0 = Periodic, 1 = reflexive, 2 = outflow
+    boundary_type = 1; // 0 = Periodic; 1 = Reflexive; 2 = Outflow
 }
 
 static void init_global_ref_crit(void)
 {
     ref_criterion_mass = 1.0e100; // meanmass * 7;
-    ref_criterion_ptcl = 1;
+    ref_criterion_ptcl = 2;
     n_exp = 1;   // n_exp = 0 is corrupted because particles can move between more than 1 level of refinement
     _CFL_ = 0.5; // CFL criteria 0.5
     _MAX_dt_ = _Mgyear_ * 1.0;
@@ -280,16 +281,16 @@ static void init_global_energies_params(void)
 
 static void init_global_ptcl(void)
 {
-    GL_ptcl_mass = (vtype *)calloc(GL_no_ptcl , sizeof(vtype));
-    GL_ptcl_x = (vtype *)calloc(GL_no_ptcl , sizeof(vtype));
-    GL_ptcl_y = (vtype *)calloc(GL_no_ptcl , sizeof(vtype));
-    GL_ptcl_z = (vtype *)calloc(GL_no_ptcl , sizeof(vtype));
-    GL_ptcl_vx = (vtype *)calloc(GL_no_ptcl , sizeof(vtype));
-    GL_ptcl_vy = (vtype *)calloc(GL_no_ptcl , sizeof(vtype));
-    GL_ptcl_vz = (vtype *)calloc(GL_no_ptcl , sizeof(vtype));
-    GL_ptcl_ax = (vtype *)calloc(GL_no_ptcl , sizeof(vtype));
-    GL_ptcl_ay = (vtype *)calloc(GL_no_ptcl , sizeof(vtype));
-    GL_ptcl_az = (vtype *)calloc(GL_no_ptcl , sizeof(vtype));
+    GL_ptcl_mass = (vtype *)calloc(GL_no_ptcl_initial , sizeof(vtype));
+    GL_ptcl_x = (vtype *)calloc(GL_no_ptcl_initial , sizeof(vtype));
+    GL_ptcl_y = (vtype *)calloc(GL_no_ptcl_initial , sizeof(vtype));
+    GL_ptcl_z = (vtype *)calloc(GL_no_ptcl_initial , sizeof(vtype));
+    GL_ptcl_vx = (vtype *)calloc(GL_no_ptcl_initial , sizeof(vtype));
+    GL_ptcl_vy = (vtype *)calloc(GL_no_ptcl_initial , sizeof(vtype));
+    GL_ptcl_vz = (vtype *)calloc(GL_no_ptcl_initial , sizeof(vtype));
+    GL_ptcl_ax = (vtype *)calloc(GL_no_ptcl_initial , sizeof(vtype));
+    GL_ptcl_ay = (vtype *)calloc(GL_no_ptcl_initial , sizeof(vtype));
+    GL_ptcl_az = (vtype *)calloc(GL_no_ptcl_initial , sizeof(vtype));
 
     GL_ptcl = (vtype **)malloc(10 * sizeof(vtype *));
     GL_ptcl[0] = GL_ptcl_mass;

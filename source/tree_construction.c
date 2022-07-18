@@ -758,11 +758,11 @@ static int fill_child_nodes(struct node *ptr_node)
             ptr_ch->box_min_y == 0 || ptr_ch->box_max_y == (1 << ptr_ch->lv) - 1 ||
             ptr_ch->box_min_z == 0 || ptr_ch->box_max_z == (1 << ptr_ch->lv) - 1)
         {
-            ptr_ch->simulation_boundary = true;
+            ptr_ch->is_at_the_edge_of_the_simulation_box = true;
         }
         else
         {
-            ptr_ch->simulation_boundary = false;
+            ptr_ch->is_at_the_edge_of_the_simulation_box = false;
         }
 
     } // End filling child nodes

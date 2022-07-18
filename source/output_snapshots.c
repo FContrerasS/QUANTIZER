@@ -68,7 +68,7 @@ static int output_folder_names(void)
 	{
 		// Default value (total time, Ng, Np, )
 		char aux_char[100];
-		sprintf(aux_char, "Simulation_Maxdt[My](%1.1f)_lv(%d+%d)_Np(%d)", (double) (Maxdt / _Mgyear_), lmin, lmax - lmin, GL_no_ptcl);
+		sprintf(aux_char, "Simulation_Maxdt[My](%1.1f)_lv(%d+%d)_Np(%d)", (double) (Maxdt / _Mgyear_), lmin, lmax - lmin, GL_no_ptcl_initial);
 		strcpy(folder_Simulation_output_name, aux_char);
 	}
 	else
@@ -141,7 +141,7 @@ static int create_output_folders(void)
 int output_snapshots(const vtype *energies, vtype actualtime, int snapshot)
 {
 
-	int size = GL_no_ptcl * sizeof(vtype);
+	int size = GL_no_ptcl_final * sizeof(vtype);
 	char snapshot_name[1500];
 
 	vtype time_Megayear = actualtime / _Mgyear_; // Actual time in mega years
@@ -169,15 +169,15 @@ int output_snapshots(const vtype *energies, vtype actualtime, int snapshot)
 	vtype *GL_ptcl_vy_conversion;
 	vtype *GL_ptcl_vz_conversion;
 
-	GL_ptcl_x_conversion = (vtype *)malloc(GL_no_ptcl * sizeof(vtype));
-	GL_ptcl_y_conversion = (vtype *)malloc(GL_no_ptcl * sizeof(vtype));
-	GL_ptcl_z_conversion = (vtype *)malloc(GL_no_ptcl * sizeof(vtype));
-	GL_ptcl_vx_conversion = (vtype *)malloc(GL_no_ptcl * sizeof(vtype));
-	GL_ptcl_vy_conversion = (vtype *)malloc(GL_no_ptcl * sizeof(vtype));
-	GL_ptcl_vz_conversion = (vtype *)malloc(GL_no_ptcl * sizeof(vtype));
+	GL_ptcl_x_conversion = (vtype *)malloc(size);
+	GL_ptcl_y_conversion = (vtype *)malloc(size);
+	GL_ptcl_z_conversion = (vtype *)malloc(size);
+	GL_ptcl_vx_conversion = (vtype *)malloc(size);
+	GL_ptcl_vy_conversion = (vtype *)malloc(size);
+	GL_ptcl_vz_conversion = (vtype *)malloc(size);
 
 	// Returning to user units
-	for (int i = 0; i < GL_no_ptcl; i++)
+	for (int i = 0; i < GL_no_ptcl_final; i++)
 	{
 		GL_ptcl_x_conversion[i] = (GL_ptcl_x[i] - 0.5) * _User_BoxSize_;
 		GL_ptcl_y_conversion[i] = (GL_ptcl_y[i] - 0.5) * _User_BoxSize_;

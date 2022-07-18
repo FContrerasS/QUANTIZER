@@ -130,7 +130,7 @@ struct node
     int links_cap;
 
     //** >> Boundary of the simulation box **/
-    bool simulation_boundary;
+    bool is_at_the_edge_of_the_simulation_box;
 };
 
 

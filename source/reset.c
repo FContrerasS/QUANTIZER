@@ -33,7 +33,7 @@ int reset(void)
 	//Head and brances nodes
 
 	//** >> Global particle accelerations **/
-	for (int i = 0; i < GL_no_ptcl; i++)
+	for (int i = 0; i < GL_no_ptcl_final; i++)
 	{
 		GL_ptcl_ax[i] = 0;
 		GL_ptcl_ay[i] = 0;

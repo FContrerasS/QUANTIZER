@@ -118,7 +118,7 @@ int input_galaxies_merger(void)
 
     //char aux[3] = "%lf";
 
-    for (int i = 0; i < GL_no_ptcl; i++)
+    for (int i = 0; i < GL_no_ptcl_initial; i++)
     {
         // GL_ptcl_mass[i] = 100; // Total mass over number of particles
         if (fscanf(file, aux, &GL_ptcl_x[i]) == 0)
@@ -187,7 +187,7 @@ int input_plummer_model(void)
     char aux[4] = "%lf";
 #endif
 
-    for (int i = 0; i < GL_no_ptcl; i++)
+    for (int i = 0; i < GL_no_ptcl_initial; i++)
     {
         GL_ptcl_mass[i] = 100; // Total mass over number of particles
         if (fscanf(file, aux, &GL_ptcl_x[i]) == 0)
@@ -228,7 +228,7 @@ int input_particle_initialization(void)
     srand(7878);
 
     vtype maxdistance = _User_BoxSize_ * 0.5;
-    for (int i = 0; i < GL_no_ptcl; i++)
+    for (int i = 0; i < GL_no_ptcl_initial; i++)
     {
         GL_ptcl_mass[i] = meanmass; // at solar mass;
         GL_ptcl_x[i] = ((vtype)rand() / RAND_MAX - 0.5L) * maxdistance;
@@ -249,7 +249,7 @@ int input_particle_initialization(void)
 
 static int input_code_units(void)
 {
-    for (int i = 0; i < GL_no_ptcl; i++)
+    for (int i = 0; i < GL_no_ptcl_initial; i++)
     {
         GL_ptcl_x[i] = GL_ptcl_x[i] / _User_BoxSize_ + 0.5L;
         GL_ptcl_y[i] = GL_ptcl_y[i] / _User_BoxSize_ + 0.5L;

@@ -43,7 +43,7 @@ static vtype timestep_computation_1_HEAD_ONLY(const struct node *ptr_node)
 
     myvmax = 0; // Minium velocity designated by the user
 
-    for (int i = 0; i < GL_no_ptcl; i++)
+    for (int i = 0; i < GL_no_ptcl_final; i++)
     {
         //** >> Velocity at x-axis
         aux_v_pow2 = myabs(GL_ptcl_vx[i]);

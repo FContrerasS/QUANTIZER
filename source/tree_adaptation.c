@@ -330,7 +330,7 @@ void check_error(struct node *ptr_node)
 
     if (ptr_node->lv == lmin)
     {
-        if (ptr_node->local_mass != GL_no_ptcl * 100.0)
+        if (ptr_node->local_mass != GL_no_ptcl_final * 100.0)
         {
             printf("Error, Head lv, diferent mass\n");
             printf("local mass = %f\n", (double)ptr_node->local_mass);
@@ -1312,11 +1312,11 @@ static int adapt_child_nodes(struct node *ptr_node)
                 ptr_ch->box_min_y == 0 || ptr_ch->box_max_y == (1 << ptr_ch->lv) - 1 ||
                 ptr_ch->box_min_z == 0 || ptr_ch->box_max_z == (1 << ptr_ch->lv) - 1)
             {
-                ptr_ch->simulation_boundary = true;
+                ptr_ch->is_at_the_edge_of_the_simulation_box = true;
             }
             else
             {
-                ptr_ch->simulation_boundary = false;
+                ptr_ch->is_at_the_edge_of_the_simulation_box = false;
             }
             
         }
@@ -1450,11 +1450,11 @@ static int create_new_child_nodes(struct node *ptr_node)
             ptr_ch->box_min_y == 0 || ptr_ch->box_max_y == (1 << ptr_ch->lv) - 1 ||
             ptr_ch->box_min_z == 0 || ptr_ch->box_max_z == (1 << ptr_ch->lv) - 1)
         {
-            ptr_ch->simulation_boundary = true;
+            ptr_ch->is_at_the_edge_of_the_simulation_box = true;
         }
         else
         {
-            ptr_ch->simulation_boundary = false;
+            ptr_ch->is_at_the_edge_of_the_simulation_box = false;
         }
     }
     return _SUCCESS_;

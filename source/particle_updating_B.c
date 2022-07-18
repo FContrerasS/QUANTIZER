@@ -33,7 +33,7 @@ static void computing_particles_updating_B(struct node *ptr_node, vtype dt);
 static void computing_particles_updating_B_HEAD_ONLY(struct node *ptr_node, vtype dt)
 {
 
-    for (int i = 0; i < GL_no_ptcl; i++)
+    for (int i = 0; i < GL_no_ptcl_final; i++)
     {
         //** >> Updating the new velocity of the particle **/
         GL_ptcl_vx[i] += GL_ptcl_ax[i] * dt * 0.5;

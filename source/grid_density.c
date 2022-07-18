@@ -62,7 +62,7 @@ static void computing_grid_density_head(struct node *ptr_head)
     int grid_box_real_dim_X = (ptr_head->box_real_dim_x + 1);
     int grid_box_real_dim_X_times_Y = (ptr_head->box_real_dim_x + 1) * (ptr_head->box_real_dim_y + 1);
 
-    for (int i = 0; i < GL_no_ptcl; i++)
+    for (int i = 0; i < GL_no_ptcl_final; i++)
     {
         //** >> Position of the particles in the grid level **/
         pos_x = GL_ptcl_x[i] * (1 << lv);

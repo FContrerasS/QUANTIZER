@@ -128,5 +128,5 @@ void initialize_node(struct node *ptr_node)
 	ptr_node->links_cap = 0;
 
 	//** >> Boundary of the simulation box **/
-	ptr_node->simulation_boundary = false;
+	ptr_node->is_at_the_edge_of_the_simulation_box = false;
 }

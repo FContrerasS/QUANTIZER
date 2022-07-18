@@ -28,7 +28,7 @@
 
 //** >> Local Functions
 static void initializing_global_parameters(void);
-static void initializing_particle_flag_updating(void);
+static void initializing_particle_updating_flag_and_ID(void);
 static int initializing_head_node(void);
 static void initializing_tentacles(void);
 
@@ -37,21 +37,30 @@ static void initializing_global_parameters(void)
 
 	total_mass = 0;
 
-	for(int i = 0; i< GL_no_ptcl; i++)
+	for(int i = 0; i< GL_no_ptcl_initial; i++)
 	{
 		total_mass += GL_ptcl_mass[i];
 	}
 
-	meanmass = total_mass / GL_no_ptcl;
+	meanmass = total_mass / GL_no_ptcl_initial;
 }
 
-static void initializing_particle_flag_updating(void)
+static void initializing_particle_updating_flag_and_ID(void)
 {
-	GL_ptcl_updating_flag = (bool *)malloc(GL_no_ptcl * sizeof(bool));
+	//** >> Updating flag **/
+	GL_ptcl_updating_flag = (bool *)malloc(GL_no_ptcl_initial * sizeof(bool));
 
-	for (int i = 0;i< GL_no_ptcl; i++)
+	for (int i = 0;i< GL_no_ptcl_initial; i++)
 	{
 		GL_ptcl_updating_flag[i] = false;
+	}
+
+	//** >> Particle Id **/
+	GL_ptcl_ID = (int *)malloc(GL_no_ptcl_initial * sizeof(int));
+
+	for (int i = 0; i < GL_no_ptcl_initial; i++)
+	{
+		GL_ptcl_ID[i] = i;
 	}
 }
 
@@ -147,7 +156,7 @@ static int initializing_head_node(void)
 			initialize_cell_struct(&(ptr_head->ptr_cell_struct[j]));
 		}
 
-		for (int j = 0; j < GL_no_ptcl; j++)
+		for (int j = 0; j < GL_no_ptcl_initial; j++)
 		{
 			box_idx_ptcl = ptcl_idx_to_box_idx(ptr_head, j);
 
@@ -229,9 +238,7 @@ static int initializing_head_node(void)
 	initial_potential_and_acceleration_head(ptr_head);
 
 	//** >> Boundary of the simulation box **/
-	ptr_head->simulation_boundary = true;
-
-
+	ptr_head->is_at_the_edge_of_the_simulation_box = true;
 
 	return _SUCCESS_;
 
@@ -266,8 +273,8 @@ int initialization(void)
 	//** >> Initializing global parameters **/
 	initializing_global_parameters();
 
-	//** >> Particle updating flag initialization **/
-	initializing_particle_flag_updating();
+	//** >> Particle updating flag and ID initialization **/
+	initializing_particle_updating_flag_and_ID();
 
 	// struct node *GL_ptr_tree; // Head or Main node
 	//** >> Initializing the Head of the Tree **/

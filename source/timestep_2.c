@@ -39,7 +39,7 @@ static vtype timestep_computation_2_HEAD_ONLY(const struct node *ptr_node)
 
     mydt = _MAX_dt_;
 
-    for (int i = 0; i < GL_no_ptcl; i++)
+    for (int i = 0; i < GL_no_ptcl_final; i++)
     {
 
         //** >> x-axis

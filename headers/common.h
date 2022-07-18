@@ -98,8 +98,8 @@ extern int no_lmin_cell; // Number of cells in the lmin level of refinement
 extern int no_lmin_cell_pow2;
 extern int no_lmin_cell_pow3;
 extern int no_grid;
-extern int Gl_no_ptcl_initial;
-extern int GL_no_ptcl;
+extern int GL_no_ptcl_initial;
+extern int GL_no_ptcl_final;
 extern vtype Maxdt ;
 extern vtype meanmass;
 extern vtype total_mass;
@@ -107,7 +107,7 @@ extern int fr_output;
 extern int MaxIterations;
 extern int no_grid_pow2;
 extern int no_grid_pow3;
-extern int boundary_type;
+
 
 //** >> Refinement criteria parameters **/
 extern vtype ref_criterion_mass;
@@ -156,7 +156,7 @@ extern vtype *GL_ptcl_ay;
 extern vtype *GL_ptcl_az;
 extern vtype **GL_ptcl;
 extern bool *GL_ptcl_updating_flag;
-
+extern int *GL_ptcl_ID;
 
 //** >> Head or Main node **/
 extern struct node *GL_ptr_tree;
@@ -208,5 +208,8 @@ extern vtype **pp_rhoxx;
 extern vtype **pp_restxx;
 extern vtype **pp_dphixx;
 extern vtype **zeros_xx;
+
+//** >> Boundary parameters **/
+extern int boundary_type;
 
 #endif
