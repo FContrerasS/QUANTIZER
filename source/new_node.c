@@ -82,13 +82,13 @@ static void re_initialize_node(struct node *ptr_node)
 
 	//** >> Boundary of the simulation box **/
 	ptr_node->boundary_simulation_contact = false;
-	ptr_node->anomalies_due_to_the_boundary = false;
-	ptr_node->crosses_the_boundary_simulation_box_x = false; // Only for periodic boundary conditions, when one node croses the simulation box at X direcction
-	ptr_node->crosses_the_boundary_simulation_box_y = false;
-	ptr_node->crosses_the_boundary_simulation_box_z = false;
-	ptr_node->crosses_the_whole_simulation_box_x = false;
-	ptr_node->crosses_the_whole_simulation_box_y = false;
-	ptr_node->crosses_the_whole_simulation_box_z = false;
+	ptr_node->pbc_anomalies_due_to_the_boundary = false;
+	ptr_node->pbc_crosses_the_boundary_simulation_box_x = false; // Only for periodic boundary conditions, when one node croses the simulation box at X direcction
+	ptr_node->pbc_crosses_the_boundary_simulation_box_y = false;
+	ptr_node->pbc_crosses_the_boundary_simulation_box_z = false;
+	ptr_node->pbc_crosses_the_whole_simulation_box_x = false;
+	ptr_node->pbc_crosses_the_whole_simulation_box_y = false;
+	ptr_node->pbc_crosses_the_whole_simulation_box_z = false;
 }
 
 struct node *new_node(void)

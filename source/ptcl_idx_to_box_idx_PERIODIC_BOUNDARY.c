@@ -68,17 +68,17 @@ int ptcl_idx_to_box_idx_PERIODIC_BOUNDARY(struct node *ptr_node, int ptcl_idx)
 
     box_idx = box_idx_x + box_idx_y * box_real_dim_X + box_idx_z * box_real_dim_X_times_Y;
 
-    if (ptr_node->anomalies_due_to_the_boundary == true)
+    if (ptr_node->pbc_anomalies_due_to_the_boundary == true)
     {
-        if (ptr_node->crosses_the_boundary_simulation_box_x == true && pos_x_floor > ptr_node->box_max_x)
+        if (ptr_node->pbc_crosses_the_boundary_simulation_box_x == true && pos_x_floor > ptr_node->box_max_x)
         {
             box_idx -= (1 << lv);
         }
-        if (ptr_node->crosses_the_boundary_simulation_box_y == true && pos_y_floor > ptr_node->box_max_y)
+        if (ptr_node->pbc_crosses_the_boundary_simulation_box_y == true && pos_y_floor > ptr_node->box_max_y)
         {
             box_idx -= (1 << lv) * box_real_dim_X;
         }
-        if (ptr_node->crosses_the_boundary_simulation_box_z == true && pos_z_floor > ptr_node->box_max_z)
+        if (ptr_node->pbc_crosses_the_boundary_simulation_box_z == true && pos_z_floor > ptr_node->box_max_z)
         {
             box_idx -= (1 << lv) * box_real_dim_X_times_Y;
         }

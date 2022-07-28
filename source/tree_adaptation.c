@@ -1312,11 +1312,11 @@ static int adapt_child_nodes(struct node *ptr_node)
                 ptr_ch->box_min_y == 0 || ptr_ch->box_max_y == (1 << ptr_ch->lv) - 1 ||
                 ptr_ch->box_min_z == 0 || ptr_ch->box_max_z == (1 << ptr_ch->lv) - 1)
             {
-                ptr_ch->anomalies_due_to_the_boundary = true;
+                ptr_ch->pbc_anomalies_due_to_the_boundary = true;
             }
             else
             {
-                ptr_ch->anomalies_due_to_the_boundary = false;
+                ptr_ch->pbc_anomalies_due_to_the_boundary = false;
             }
             
         }
@@ -1450,11 +1450,11 @@ static int create_new_child_nodes(struct node *ptr_node)
             ptr_ch->box_min_y == 0 || ptr_ch->box_max_y == (1 << ptr_ch->lv) - 1 ||
             ptr_ch->box_min_z == 0 || ptr_ch->box_max_z == (1 << ptr_ch->lv) - 1)
         {
-            ptr_ch->anomalies_due_to_the_boundary = true;
+            ptr_ch->pbc_anomalies_due_to_the_boundary = true;
         }
         else
         {
-            ptr_ch->anomalies_due_to_the_boundary = false;
+            ptr_ch->pbc_anomalies_due_to_the_boundary = false;
         }
     }
     return _SUCCESS_;

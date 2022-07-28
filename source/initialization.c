@@ -90,6 +90,7 @@ static int initializing_head_node(void)
 	ptr_head->ptr_box = (int *)malloc(box_side_lmin_pow3 * sizeof(int));
 	ptr_head->ptr_box_old = (int *)malloc(box_side_lmin_pow3 * sizeof(int));
 	int box_idx; // Index in the box
+	//-6 = teleport cell; -5 = cell outside of the box simulation; -4 = cell out of the node. Status -6 => Status -5. Status -4 => cell exists in the parent node
 	for (int k = 0; k < box_side_lmin; k++)
 	{
 		for (int j = 0; j < box_side_lmin; j++)
@@ -99,7 +100,7 @@ static int initializing_head_node(void)
 				box_idx = i + j * box_side_lmin + k * box_side_lmin_pow2;
 				if (i <= bder_os_sim - 1 || i >= box_side_lmin - bder_os_sim || j <= bder_os_sim - 1 || j >= box_side_lmin - bder_os_sim || k <= bder_os_sim - 1 || k >= box_side_lmin - bder_os_sim)
 				{
-					ptr_head->ptr_box[box_idx] = -5; // Corresponding values to cell out of the box simulation
+					ptr_head->ptr_box[box_idx] = boundary_type == 0 ? -6 : -5; 
 				}
 				else
 				{
@@ -251,23 +252,23 @@ static int initializing_head_node(void)
 
 	if(boundary_type == 0)
 	{
-		ptr_head->anomalies_due_to_the_boundary = true;
-		ptr_head->crosses_the_boundary_simulation_box_x = true;
-		ptr_head->crosses_the_boundary_simulation_box_y = true;
-		ptr_head->crosses_the_boundary_simulation_box_z = true;
-		ptr_head->crosses_the_whole_simulation_box_x = true;
-		ptr_head->crosses_the_whole_simulation_box_y = true;
-		ptr_head->crosses_the_whole_simulation_box_z = true;
+		ptr_head->pbc_anomalies_due_to_the_boundary = true;
+		ptr_head->pbc_crosses_the_boundary_simulation_box_x = true;
+		ptr_head->pbc_crosses_the_boundary_simulation_box_y = true;
+		ptr_head->pbc_crosses_the_boundary_simulation_box_z = true;
+		ptr_head->pbc_crosses_the_whole_simulation_box_x = true;
+		ptr_head->pbc_crosses_the_whole_simulation_box_y = true;
+		ptr_head->pbc_crosses_the_whole_simulation_box_z = true;
 	}
 	else
 	{
-		ptr_head->anomalies_due_to_the_boundary = false;
-		ptr_head->crosses_the_boundary_simulation_box_x = false;
-		ptr_head->crosses_the_boundary_simulation_box_y = false;
-		ptr_head->crosses_the_boundary_simulation_box_z = false;
-		ptr_head->crosses_the_whole_simulation_box_x = false;
-		ptr_head->crosses_the_whole_simulation_box_y = false;
-		ptr_head->crosses_the_whole_simulation_box_z = false;
+		ptr_head->pbc_anomalies_due_to_the_boundary = false;
+		ptr_head->pbc_crosses_the_boundary_simulation_box_x = false;
+		ptr_head->pbc_crosses_the_boundary_simulation_box_y = false;
+		ptr_head->pbc_crosses_the_boundary_simulation_box_z = false;
+		ptr_head->pbc_crosses_the_whole_simulation_box_x = false;
+		ptr_head->pbc_crosses_the_whole_simulation_box_y = false;
+		ptr_head->pbc_crosses_the_whole_simulation_box_z = false;
 	}
 
 

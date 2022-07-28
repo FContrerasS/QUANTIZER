@@ -133,7 +133,9 @@ void initialize_node(struct node *ptr_node)
 	ptr_node->ptr_aux_bool_boundary_anomalies_y = NULL;
 	ptr_node->ptr_aux_bool_boundary_anomalies_z = NULL;
 	ptr_node->aux_idx_cap = 0;
-	//Sub zones for periodic boundary conditions
+	ptr_node->aux_bool_boundary_simulation_contact_cap = 0;
+	ptr_node->aux_bool_boundary_anomalies_cap = 0;
+	// Sub zones for periodic boundary conditions
 	ptr_node->pptr_subzones = NULL;	// Pointer to refined subzones in the node
 	ptr_node->subzones_cap = 0;		// capacity in the number of refined subzones in the node
 	ptr_node->subzones_size = 0;		// Number of refined subzones in the node

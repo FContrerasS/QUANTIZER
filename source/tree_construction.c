@@ -27,7 +27,6 @@
 #include "tree_construction.h"
 
 //** >> Local Functions
-static int fill_cell_ref_PERIODIC_BOUNDARY(struct node *ptr_node);
 static int fill_cell_ref(struct node *ptr_node);
 static int fill_zones_ref_PERIODIC_BOUNDARY(struct node *ptr_node);
 static int fill_zones_ref(struct node *ptr_node);
@@ -36,7 +35,7 @@ static int fill_child_nodes_PERIODIC_BOUNDARY(struct node *ptr_node);
 static int fill_child_nodes(struct node *ptr_node);
 static int fill_tentacles(const struct node *ptr_node);
 
-static int fill_cell_ref_PERIODIC_BOUNDARY(struct node *ptr_node)
+static int fill_cell_ref(struct node *ptr_node)
 {
     //** >> Adding cells which satisfy the refinement criteria to the array ptr_cell_ref and chaning the box the status of refinement -1 **/
     int box_idx_node;    // Box index
@@ -48,6 +47,8 @@ static int fill_cell_ref_PERIODIC_BOUNDARY(struct node *ptr_node)
     int box_real_dim_X_times_Y_node = ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
 
     int ii_aux, jj_aux, kk_aux;
+
+    int lv = ptr_node->lv;
 
     //** >> Changing the box status from EXIST (-3) to REFINEMENT REQUIRED (-1) **/
     for (int i = 0; i < ptr_node->cell_size; i++)
@@ -73,29 +74,29 @@ static int fill_cell_ref_PERIODIC_BOUNDARY(struct node *ptr_node)
                     {
                         box_idxNbr_node = box_idx_node + ii + jj * box_real_dim_X_node + kk * box_real_dim_X_times_Y_node;
 
-                        if (ptr_node->ptr_box[box_idxNbr_node] == -5)
+                        if (boundary_type == 0 && ptr_node->ptr_box[box_idxNbr_node] == -6)
                         {
-                            if (ptr_node->ptr_box[box_idx_node + ii] == -5)
+                            if (ptr_node->ptr_box[box_idx_node + ii] == -6)
                             {
-                                ii_aux = ii < 0 ? ii + ptr_node->box_dim_x : ii - ptr_node->box_dim_x;
+                                ii_aux = ii < 0 ? ii + (1 << lv) : ii - (1 << lv);
                             }
                             else
                             {
                                 ii_aux = ii;
                             }
 
-                            if (ptr_node->ptr_box[box_idx_node + jj * box_real_dim_X_node] == -5)
+                            if (ptr_node->ptr_box[box_idx_node + jj * box_real_dim_X_node] == -6)
                             {
-                                jj_aux = jj < 0 ? jj + ptr_node->box_dim_y : jj - ptr_node->box_dim_y;
+                                jj_aux = jj < 0 ? jj + (1 << lv) : jj - (1 << lv);
                             }
                             else
                             {
                                 jj_aux = jj;
                             }
 
-                            if (ptr_node->ptr_box[box_idx_node + kk * box_real_dim_X_times_Y_node] == -5)
+                            if (ptr_node->ptr_box[box_idx_node + kk * box_real_dim_X_times_Y_node] == -6)
                             {
-                                kk_aux = kk < 0 ? kk + ptr_node->box_dim_z : kk - ptr_node->box_dim_z;
+                                kk_aux = kk < 0 ? kk + (1 << lv) : kk - (1 << lv);
                             }
                             else
                             {
@@ -105,75 +106,6 @@ static int fill_cell_ref_PERIODIC_BOUNDARY(struct node *ptr_node)
                             box_idxNbr_node = box_idx_node + ii_aux + jj_aux * box_real_dim_X_node + kk_aux * box_real_dim_X_times_Y_node;
                         }
 
-                        //** >> Asking if the neighboring cell has not been changed yet **/
-                        // The border (-2) of the simulation can be added
-                        if (ptr_node->ptr_box[box_idxNbr_node] == -3) // Cell has not been added yet
-                        {
-                            cell_ref_idx++;
-                            //** >> Chaning the cell box status from EXIST (-3) to REFINEMENT REQUIRED (-1) **/
-                            ptr_node->ptr_box[box_idxNbr_node] = -1;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    //** >> Adding the infomation about size of the ptr_cell_ref array **/
-    ptr_node->cell_ref_size = cell_ref_idx;
-    ptr_node->cell_ref_cap = cell_ref_idx;
-    ptr_node->ptr_cell_ref = (int *)malloc(ptr_node->cell_ref_cap * sizeof(int));
-
-    //** >> Adding cells refined to the array ptr_cell_ref **/
-    cell_ref_idx = 0;
-    for (int i = 0; i < ptr_node->cell_size; i++)
-    {
-        box_idx_node = ptr_node->ptr_box_idx[i];
-
-        if (ptr_node->ptr_box[box_idx_node] == -1) // Cell require refinement
-        {
-            ptr_node->ptr_cell_ref[cell_ref_idx] = i;
-            cell_ref_idx++;
-        }
-    }
-
-    return _SUCCESS_;
-} // end function fill_cell_ref
-
-static int fill_cell_ref(struct node *ptr_node)
-{
-    //** >> Adding cells which satisfy the refinement criteria to the array ptr_cell_ref and chaning the box the status of refinement -1 **/
-    int box_idx_node;    // Box index
-    int box_idxNbr_node; // Box index in the neigborhood
-
-    int cell_ref_idx = 0; // Index of the position in the cell refined array
-
-    int box_real_dim_X_node = ptr_node->box_real_dim_x;
-    int box_real_dim_X_times_Y_node = ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
-
-    //** >> Changing the box status from EXIST (-3) to REFINEMENT REQUIRED (-1) **/
-    for (int i = 0; i < ptr_node->cell_size; i++)
-    {
-        box_idx_node = ptr_node->ptr_box_idx[i];
-
-        // Refinement criterion in the box_mass in no border box points
-        if (ptr_node->ptr_cell_struct[box_idx_node].cell_mass >= ref_criterion_mass || ptr_node->ptr_cell_struct[box_idx_node].ptcl_size >= ref_criterion_ptcl) 
-        {
-            if (ptr_node->ptr_box[box_idx_node] == -3) // Cell has not been added yet
-            {
-                cell_ref_idx++;
-                //** >> Chaning the cell box status from EXIST (-3) to REFINEMENT REQUIRED (-1) **/
-                ptr_node->ptr_box[box_idx_node] = -1;
-            }
-
-            //** >> Changing the neighboring cell status **/
-            for (int kk = -n_exp; kk < n_exp + 1; kk++)
-            {
-                for (int jj = -n_exp; jj < n_exp + 1; jj++)
-                {
-                    for (int ii = -n_exp; ii < n_exp + 1; ii++)
-                    {
-                        box_idxNbr_node = box_idx_node + ii + jj * box_real_dim_X_node + kk * box_real_dim_X_times_Y_node;
                         //** >> Asking if the neighboring cell has not been changed yet **/
                         // The border (-2) of the simulation can be added
                         if (ptr_node->ptr_box[box_idxNbr_node] == -3) // Cell has not been added yet
@@ -282,7 +214,7 @@ static int fill_zones_ref_PERIODIC_BOUNDARY(struct node *ptr_node)
                 box_idxNbr_z_plus = box_idx_node + box_real_dim_X_times_Y_node;
                 box_idxNbr_z_minus = box_idx_node - box_real_dim_X_times_Y_node;
 
-                if (ptr_node->ptr_box[box_idxNbr_x_plus] == -5)
+                if (ptr_node->ptr_box[box_idxNbr_x_plus] == -6)
                 {
                     ptr_node->ptr_aux_bool_boundary_simulation_contact_x[zone_idx] = true;
                     box_idxNbr_x_plus -= ptr_node->box_dim_x;
@@ -291,7 +223,7 @@ static int fill_zones_ref_PERIODIC_BOUNDARY(struct node *ptr_node)
                         ptr_node->ptr_aux_bool_boundary_anomalies_x[zone_idx] = true;
                     }
                 }
-                else if (ptr_node->ptr_box[box_idxNbr_x_minus] == -5)
+                else if (ptr_node->ptr_box[box_idxNbr_x_minus] == -6)
                 {
                     ptr_node->ptr_aux_bool_boundary_simulation_contact_x[zone_idx] = true;
                     box_idxNbr_x_minus += ptr_node->box_dim_x;
@@ -301,7 +233,7 @@ static int fill_zones_ref_PERIODIC_BOUNDARY(struct node *ptr_node)
                     }
                 }
 
-                if (ptr_node->ptr_box[box_idxNbr_y_plus] == -5)
+                if (ptr_node->ptr_box[box_idxNbr_y_plus] == -6)
                 {
                     ptr_node->ptr_aux_bool_boundary_simulation_contact_y[zone_idx] = true;
                     box_idxNbr_y_plus -= ptr_node->box_dim_y * box_real_dim_X_node;
@@ -310,7 +242,7 @@ static int fill_zones_ref_PERIODIC_BOUNDARY(struct node *ptr_node)
                         ptr_node->ptr_aux_bool_boundary_anomalies_y[zone_idx] = true;
                     }
                 }
-                else if (ptr_node->ptr_box[box_idxNbr_y_minus] == -5)
+                else if (ptr_node->ptr_box[box_idxNbr_y_minus] == -6)
                 {
                     ptr_node->ptr_aux_bool_boundary_simulation_contact_y[zone_idx] = true;
                     box_idxNbr_y_minus += ptr_node->box_dim_y * box_real_dim_X_node;
@@ -320,7 +252,7 @@ static int fill_zones_ref_PERIODIC_BOUNDARY(struct node *ptr_node)
                     }
                 }
 
-                if (ptr_node->ptr_box[box_idxNbr_z_plus] == -5)
+                if (ptr_node->ptr_box[box_idxNbr_z_plus] == -6)
                 {
                     ptr_node->ptr_aux_bool_boundary_simulation_contact_z[zone_idx] = true;
                     box_idxNbr_z_plus -= ptr_node->box_dim_z * box_real_dim_X_times_Y_node;
@@ -329,7 +261,7 @@ static int fill_zones_ref_PERIODIC_BOUNDARY(struct node *ptr_node)
                         ptr_node->ptr_aux_bool_boundary_anomalies_z[zone_idx] = true;
                     }
                 }
-                else if (ptr_node->ptr_box[box_idxNbr_z_minus] == -5)
+                else if (ptr_node->ptr_box[box_idxNbr_z_minus] == -6)
                 {
                     ptr_node->ptr_aux_bool_boundary_simulation_contact_z[zone_idx] = true;
                     box_idxNbr_z_minus += ptr_node->box_dim_z * box_real_dim_X_times_Y_node;
@@ -2212,94 +2144,45 @@ int tree_construction(void)
 
     while (lv < lmax - lmin && lv <= GL_tentacles_level_max)
     {
-
-        //periodic boundary conditions
-        if (boundary_type == 0)
+        no_pts = GL_tentacles_size[lv];
+        //** >> For cycle over parent nodes **/
+        for (int i = 0; i < no_pts; i++)
         {
-            while (GL_max_lv_ref_crosses_the_entire_simulation <= lmin + lv)
+            ptr_node = GL_tentacles[lv][i];
+
+            //** >> Filling the refinement cells array **/
+            if (fill_cell_ref(ptr_node) == _FAILURE_)
             {
-                no_pts = GL_tentacles_size[lv];
-                for (int i = 0; i < no_pts; i++)
-                {
-                    ptr_node = GL_tentacles[lv][i];
-                    //** >> Filling the refinement cells array **/
-                    if (fill_cell_ref_PERIODIC_BOUNDARY(ptr_node) == _FAILURE_)
-                    {
-                        printf("Error at function fill_cell_ref()\n");
-                        return _FAILURE_;
-                    }
-
-                    //** >> Filling the different zones of refinement **/
-                    if (fill_zones_ref_PERIODIC_BOUNDARY(ptr_node) == _FAILURE_)
-                    {
-                        printf("Error at function fill_zones_ref()\n");
-                        return _FAILURE_;
-                    }
-
-                    //** >> Creating child nodes **/
-                    if (ptr_node->zones_size > 0)
-                    {
-                        if (fill_child_nodes_PERIODIC_BOUNDARY(ptr_node) == _FAILURE_)
-                        {
-                            printf("Error at function create_child_nodes()\n");
-                            return _FAILURE_;
-                        }
-
-                        //** >> Filling Tentacles for the next cycle at level of refinement
-                        if (fill_tentacles(ptr_node) == _FAILURE_)
-                        {
-                            printf("Error at function fill_tentacles()\n");
-                            return _FAILURE_;
-                        }
-                    }
-                }
-
-                lv++;
+                printf("Error at function fill_cell_ref()\n");
+                return _FAILURE_;
             }
-        }
-        else
-        {
-            no_pts = GL_tentacles_size[lv];
-            //** >> For cycle over parent nodes **/
-            for (int i = 0; i < no_pts; i++)
+
+            //** >> Filling the different zones of refinement **/
+            if (fill_zones_ref(ptr_node) == _FAILURE_)
             {
-                ptr_node = GL_tentacles[lv][i];
+                printf("Error at function fill_zones_ref()\n");
+                return _FAILURE_;
+            }
 
-                //** >> Filling the refinement cells array **/
-                if (fill_cell_ref(ptr_node) == _FAILURE_)
+            //** >> Creating child nodes **/
+            if (ptr_node->zones_size > 0)
+            {
+                if (fill_child_nodes(ptr_node) == _FAILURE_)
                 {
-                    printf("Error at function fill_cell_ref()\n");
+                    printf("Error at function create_child_nodes()\n");
                     return _FAILURE_;
                 }
 
-                //** >> Filling the different zones of refinement **/
-                if (fill_zones_ref(ptr_node) == _FAILURE_)
+                //** >> Filling Tentacles for the next cycle at level of refinement
+                if (fill_tentacles(ptr_node) == _FAILURE_)
                 {
-                    printf("Error at function fill_zones_ref()\n");
+                    printf("Error at function fill_tentacles()\n");
                     return _FAILURE_;
                 }
+            }
 
-                //** >> Creating child nodes **/
-                if (ptr_node->zones_size > 0)
-                {
-                    if (fill_child_nodes(ptr_node) == _FAILURE_)
-                    {
-                        printf("Error at function create_child_nodes()\n");
-                        return _FAILURE_;
-                    }
-
-                    //** >> Filling Tentacles for the next cycle at level of refinement
-                    if (fill_tentacles(ptr_node) == _FAILURE_)
-                    {
-                        printf("Error at function fill_tentacles()\n");
-                        return _FAILURE_;
-                    }
-                }
-
-            } // End of cycle over parent nodes
-            lv++;
-        }
-        
+        } // End of cycle over parent nodes
+        lv++;
 
     } // End of cycle over refinement levels
 

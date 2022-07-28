@@ -135,6 +135,8 @@ struct node
     bool *ptr_aux_bool_boundary_anomalies_y;
     bool *ptr_aux_bool_boundary_anomalies_z;
     int aux_idx_cap;
+    int aux_bool_boundary_simulation_contact_cap;
+    int aux_bool_boundary_anomalies_cap;
 
     // Sub zones for periodic boundary conditions
     int **pptr_subzones;    // Pointer to refined subzones in the node
