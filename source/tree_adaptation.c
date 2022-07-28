@@ -1132,9 +1132,9 @@ static int adapt_child_nodes(struct node *ptr_node)
             new_box_min_x = INT_MAX;
             new_box_min_y = INT_MAX;
             new_box_min_z = INT_MAX;
-            new_box_max_x = 0;
-            new_box_max_y = 0;
-            new_box_max_z = 0;
+            new_box_max_x = INT_MIN;
+            new_box_max_y = INT_MIN;
+            new_box_max_z = INT_MIN;
             //** >> The MIN and MAX of the set containig only the new cells to be refined
             for (int i = 0; i < ptr_node->ptr_zone_size[new_zone_idx]; i++)
             {
@@ -1312,11 +1312,11 @@ static int adapt_child_nodes(struct node *ptr_node)
                 ptr_ch->box_min_y == 0 || ptr_ch->box_max_y == (1 << ptr_ch->lv) - 1 ||
                 ptr_ch->box_min_z == 0 || ptr_ch->box_max_z == (1 << ptr_ch->lv) - 1)
             {
-                ptr_ch->is_at_the_edge_of_the_simulation_box = true;
+                ptr_ch->anomalies_due_to_the_boundary = true;
             }
             else
             {
-                ptr_ch->is_at_the_edge_of_the_simulation_box = false;
+                ptr_ch->anomalies_due_to_the_boundary = false;
             }
             
         }
@@ -1450,11 +1450,11 @@ static int create_new_child_nodes(struct node *ptr_node)
             ptr_ch->box_min_y == 0 || ptr_ch->box_max_y == (1 << ptr_ch->lv) - 1 ||
             ptr_ch->box_min_z == 0 || ptr_ch->box_max_z == (1 << ptr_ch->lv) - 1)
         {
-            ptr_ch->is_at_the_edge_of_the_simulation_box = true;
+            ptr_ch->anomalies_due_to_the_boundary = true;
         }
         else
         {
-            ptr_ch->is_at_the_edge_of_the_simulation_box = false;
+            ptr_ch->anomalies_due_to_the_boundary = false;
         }
     }
     return _SUCCESS_;
@@ -2068,13 +2068,14 @@ static int update_child_grid_points(struct node *ptr_node)
     bool is_bder_grid_point; // Ask if the grid point is interior
     bool grid_point_exist;
 
-    int size;
-
     int box_real_dim_X_ch;
     int box_real_dim_X_times_Y_ch;
 
     int grid_box_real_dim_X_ch;
     int grid_box_real_dim_X_times_Y_ch;
+
+    int size_bder_grid_points;
+    int size_intr_grid_points;
 
     for (int ch = 0; ch < ptr_node->zones_size; ch++)
     {
@@ -2086,17 +2087,21 @@ static int update_child_grid_points(struct node *ptr_node)
         grid_box_real_dim_X_ch = ptr_ch->box_real_dim_x + 1;
         grid_box_real_dim_X_times_Y_ch = (ptr_ch->box_real_dim_x + 1)* (ptr_ch->box_real_dim_y + 1);
 
-        size = ptr_ch->cell_size / 8 * 18 + 9; // 27 * N - 9 * (N-1)
+        // 27 * N - 9 * (N-1) = 18N+9 >= Total of grid points; N = number of cubics with 8 cells and 27 grid points
+        // Maximum of border grid points = 9*(N*2+1) - (N*2-1) = 16N+10 (Imagine a row of cubics)
+        // Maximum of interior grid points = (2k-1)^3 < 8k^3, where k^3 = N
+        size_bder_grid_points = ptr_ch->cell_size / 8 * 16 + 10;
+        size_intr_grid_points = ptr_ch->cell_size;
 
         //** >> Space checking of border grid points array**/
-        if (space_check(&(ptr_ch->grid_bder_cap), size, 1.0f, "p4i1i1i1i1", &(ptr_ch->ptr_bder_grid_cell_idx_x), &(ptr_ch->ptr_bder_grid_cell_idx_y), &(ptr_ch->ptr_bder_grid_cell_idx_z), &(ptr_ch->ptr_bder_grid_idx)) == _FAILURE_)
+        if (space_check(&(ptr_ch->grid_bder_cap), size_bder_grid_points, 1.0f, "p4i1i1i1i1", &(ptr_ch->ptr_bder_grid_cell_idx_x), &(ptr_ch->ptr_bder_grid_cell_idx_y), &(ptr_ch->ptr_bder_grid_cell_idx_z), &(ptr_ch->ptr_bder_grid_idx)) == _FAILURE_)
         {
             printf("Error, in space_check function\n");
             return _FAILURE_;
         }
 
         //** >> Space checking of interior grid points array**/
-        if (space_check(&(ptr_ch->grid_intr_cap), size, 1.0f, "p4i1i1i1i1", &(ptr_ch->ptr_intr_grid_cell_idx_x), &(ptr_ch->ptr_intr_grid_cell_idx_y), &(ptr_ch->ptr_intr_grid_cell_idx_z), &(ptr_ch->ptr_intr_grid_idx)) == _FAILURE_)
+        if (space_check(&(ptr_ch->grid_intr_cap), size_intr_grid_points, 1.0f, "p4i1i1i1i1", &(ptr_ch->ptr_intr_grid_cell_idx_x), &(ptr_ch->ptr_intr_grid_cell_idx_y), &(ptr_ch->ptr_intr_grid_cell_idx_z), &(ptr_ch->ptr_intr_grid_idx)) == _FAILURE_)
         {
             printf("Error, in space_check function\n");
             return _FAILURE_;
@@ -2424,193 +2429,387 @@ int tree_adaptation(void)
 
         no_lvs = GL_tentacles_level_max < (lmax - lmin) ? GL_tentacles_level_max : (GL_tentacles_level_max - 1);
 
-        for (int lv = no_lvs; lv > -1; lv--)
+        if (boundary_type == 0)
         {
-            GL_tentacles_size[lv + 1] = 0;
-            no_pts = GL_tentacles_size[lv];
-            //** >> For cycle over parent nodes **/
-            for (int i = 0; i < no_pts; i++)
+            for (int lv = no_lvs; lv > -1; lv--)
             {
-                ptr_node = GL_tentacles[lv][i];
-
-                //printf("lv = %d, pt = %d, chn_size = %d\n", ptr_node->lv, i, ptr_node->chn_size);
-
-                //** Updating the box mass information **/
-                // printf("\n\nupdating_cell_struct\n\n");
-                aux_clock = clock();
-                if (updating_cell_struct(ptr_node) == _FAILURE_)
+                GL_tentacles_size[lv + 1] = 0;
+                no_pts = GL_tentacles_size[lv];
+                //** >> For cycle over parent nodes **/
+                for (int i = 0; i < no_pts; i++)
                 {
-                    printf("Error at function updating_cell_struct()\n");
-                    return _FAILURE_;
-                }
-                GL_times[30] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+                    ptr_node = GL_tentacles[lv][i];
 
-                check_error(ptr_node);
+                    // printf("lv = %d, pt = %d, chn_size = %d\n", ptr_node->lv, i, ptr_node->chn_size);
 
-                //** Initialization of node boxes **/
-                // printf("\n\ninitialization_node_boxes\n\n");
-                aux_clock = clock();
-                initialization_node_boxes(ptr_node);
-                GL_times[31] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
-
-                //** Initialization of the auiliary refinement arrays**/
-                // printf("\n\nInitialization ref aux\n\n\n");
-                aux_clock = clock();
-                initialization_ref_aux(ptr_node);
-                GL_times[32] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
-
-                //** >> Filling the refinement cells array **/
-                // printf("\n\nFill cell ref\n\n\n");
-                aux_clock = clock();
-                if (fill_cell_ref(ptr_node) == _FAILURE_)
-                {
-                    printf("Error at function fill_cell_ref()\n");
-                    return _FAILURE_;
-                }
-                GL_times[33] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
-
-                //** >> Filling the different zones of refinement **/
-                // printf("\n\nFill zones ref\n\n");
-                aux_clock = clock();
-                if (fill_zones_ref(ptr_node) == _FAILURE_)
-                {
-                    printf("Error at function fill_zones_ref()\n");
-                    return _FAILURE_;
-                }
-                GL_times[34] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
-
-                if (ptr_node->zones_size > 0)
-                {
-                    //** >> Create links **/
-                    // printf("\n\nCreate links\n\n");
+                    //** Updating the box mass information **/
+                    // printf("\n\nupdating_cell_struct\n\n");
                     aux_clock = clock();
-                    if (create_links(ptr_node) == _FAILURE_)
+                    if (updating_cell_struct(ptr_node) == _FAILURE_)
                     {
-                        printf("Error at function create_links()\n");
+                        printf("Error at function updating_cell_struct()\n");
                         return _FAILURE_;
                     }
-                    GL_times[35] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+                    GL_times[30] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
+                    check_error(ptr_node);
+
+                    //** Initialization of node boxes **/
+                    // printf("\n\ninitialization_node_boxes\n\n");
                     aux_clock = clock();
-                    if (ptr_node->chn_size > 0)
-                    {
-                        //** >> Removing cells that no longer require refinement **/
-                        // printf("\n\nRemoving cells nolonger requiere refinement\n\n");
-                        remov_cells_nolonger_require_refinement(ptr_node);
-                    }
-                    GL_times[36] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+                    initialization_node_boxes(ptr_node);
+                    GL_times[31] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
-                    //** >> Adapting child boxes to the new space **/
-                    // printf("\n\nAdapt child box\n\n");
+                    //** Initialization of the auiliary refinement arrays**/
+                    // printf("\n\nInitialization ref aux\n\n\n");
                     aux_clock = clock();
-                    if (ptr_node->chn_size > 0)
-                    {
-                        if (adapt_child_nodes(ptr_node) == _FAILURE_)
-                        {
-                            printf("Error at function adapt_child_nodes()\n");
-                            return _FAILURE_;
-                        }
-                    }
-                    GL_times[37] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+                    initialization_ref_aux(ptr_node);
+                    GL_times[32] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
-                    //** >> Creating and defining new children nodes for excess in refinement zones and and linking them to the parent node ptr_node **/
-                    // printf("\n\nCreate new child nodes\n\n");
+                    //** >> Filling the refinement cells array **/
+                    // printf("\n\nFill cell ref\n\n\n");
                     aux_clock = clock();
-                    if (ptr_node->zones_size > ptr_node->chn_size)
+                    if (fill_cell_ref(ptr_node) == _FAILURE_)
                     {
-
-                        if (create_new_child_nodes(ptr_node) == _FAILURE_)
-                        {
-                            printf("Error, in new_child_nodes function\n");
-                            return _FAILURE_;
-                        }
-                    }
-                    GL_times[38] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
-
-                    //** >> Adapting the information from old child nodes to new child nodes **/
-                    // printf("\n\nMoving old child to new child\n\n");
-                    aux_clock = clock();
-                    if (ptr_node->chn_size > 0)
-                    {
-                        if (moving_old_child_to_new_child(ptr_node) == _FAILURE_)
-                        {
-                            printf("Error at function moving_old_child_to_new_child()\n");
-                            return _FAILURE_;
-                        }
-                    }
-                    GL_times[39] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
-
-                    //** >> Moving new zones of refienemnt information to all child nodes **/
-                    // printf("\n\nMoving new zones to new child\n\n");
-                    aux_clock = clock();
-                    if (moving_new_zones_to_new_child(ptr_node) == _FAILURE_)
-                    {
-                        printf("Error at function moving_new_zones_to_new_child()\n");
+                        printf("Error at function fill_cell_ref()\n");
                         return _FAILURE_;
                     }
-                    GL_times[40] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+                    GL_times[33] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
-                    //** >> Reorganization child nodes **/
-                    // printf("\n\nReorganization child nodes\n\n");
+                    //** >> Filling the different zones of refinement **/
+                    // printf("\n\nFill zones ref\n\n");
                     aux_clock = clock();
-                    reorganization_child_node(ptr_node);
-                    GL_times[41] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
-
-                    //** >> Reorganization grandchild nodes **/
-                    // printf("\n\nReorganization grandchild nodes\n\n");
-                    aux_clock = clock();
-                    if (ptr_node->chn_size > 0 && lv < no_lvs)
+                    if (fill_zones_ref(ptr_node) == _FAILURE_)
                     {
-                        if (reorganization_grandchild_node(ptr_node) == _FAILURE_)
-                        {
-                            printf("Error at function reorganization_grandchild_node()\n");
-                            return _FAILURE_;
-                        }
-                    }
-                    GL_times[42] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
-
-                    //** >> Updating refinement zones of the grandchildren **/
-                    // printf("\n\nUpdating refinement zones of the grandchildren\n\n");
-                    aux_clock = clock();
-                    if (ptr_node->chn_size > 0 && lv < no_lvs)
-                    {
-                        updating_ref_zones_grandchildren(ptr_node);
-                    }
-                    GL_times[43] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
-
-                    //** >> Updating children grid points **/
-                    // printf("\n\nUpdating children grid points\n\n");
-                    aux_clock = clock();
-                    if (update_child_grid_points(ptr_node) == _FAILURE_)
-                    {
-                        printf("Error at function update_child_grid_points()\n");
+                        printf("Error at function fill_zones_ref()\n");
                         return _FAILURE_;
                     }
-                    GL_times[45] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+                    GL_times[34] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
-                    //** >> Tentacles updating **/
-                    // printf("\n\nTentacles Updating\n\n");
-                    aux_clock = clock();
-                    if (0 < ptr_node->zones_size)
+                    if (ptr_node->zones_size > 0)
                     {
-                        if (tentacles_updating(ptr_node, lv + 1) == _FAILURE_)
+                        //** >> Create links **/
+                        // printf("\n\nCreate links\n\n");
+                        aux_clock = clock();
+                        if (create_links(ptr_node) == _FAILURE_)
                         {
-                            printf("Error at function tentacles_updating()\n");
+                            printf("Error at function create_links()\n");
                             return _FAILURE_;
                         }
+                        GL_times[35] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+                        aux_clock = clock();
+                        if (ptr_node->chn_size > 0)
+                        {
+                            //** >> Removing cells that no longer require refinement **/
+                            // printf("\n\nRemoving cells nolonger requiere refinement\n\n");
+                            remov_cells_nolonger_require_refinement(ptr_node);
+                        }
+                        GL_times[36] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+                        //** >> Adapting child boxes to the new space **/
+                        // printf("\n\nAdapt child box\n\n");
+                        aux_clock = clock();
+                        if (ptr_node->chn_size > 0)
+                        {
+                            if (adapt_child_nodes(ptr_node) == _FAILURE_)
+                            {
+                                printf("Error at function adapt_child_nodes()\n");
+                                return _FAILURE_;
+                            }
+                        }
+                        GL_times[37] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+                        //** >> Creating and defining new children nodes for excess in refinement zones and and linking them to the parent node ptr_node **/
+                        // printf("\n\nCreate new child nodes\n\n");
+                        aux_clock = clock();
+                        if (ptr_node->zones_size > ptr_node->chn_size)
+                        {
+
+                            if (create_new_child_nodes(ptr_node) == _FAILURE_)
+                            {
+                                printf("Error, in new_child_nodes function\n");
+                                return _FAILURE_;
+                            }
+                        }
+                        GL_times[38] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+                        //** >> Adapting the information from old child nodes to new child nodes **/
+                        // printf("\n\nMoving old child to new child\n\n");
+                        aux_clock = clock();
+                        if (ptr_node->chn_size > 0)
+                        {
+                            if (moving_old_child_to_new_child(ptr_node) == _FAILURE_)
+                            {
+                                printf("Error at function moving_old_child_to_new_child()\n");
+                                return _FAILURE_;
+                            }
+                        }
+                        GL_times[39] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+                        //** >> Moving new zones of refienemnt information to all child nodes **/
+                        // printf("\n\nMoving new zones to new child\n\n");
+                        aux_clock = clock();
+                        if (moving_new_zones_to_new_child(ptr_node) == _FAILURE_)
+                        {
+                            printf("Error at function moving_new_zones_to_new_child()\n");
+                            return _FAILURE_;
+                        }
+                        GL_times[40] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+                        //** >> Reorganization child nodes **/
+                        // printf("\n\nReorganization child nodes\n\n");
+                        aux_clock = clock();
+                        reorganization_child_node(ptr_node);
+                        GL_times[41] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+                        //** >> Reorganization grandchild nodes **/
+                        // printf("\n\nReorganization grandchild nodes\n\n");
+                        aux_clock = clock();
+                        if (ptr_node->chn_size > 0 && lv < no_lvs)
+                        {
+                            if (reorganization_grandchild_node(ptr_node) == _FAILURE_)
+                            {
+                                printf("Error at function reorganization_grandchild_node()\n");
+                                return _FAILURE_;
+                            }
+                        }
+                        GL_times[42] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+                        //** >> Updating refinement zones of the grandchildren **/
+                        // printf("\n\nUpdating refinement zones of the grandchildren\n\n");
+                        aux_clock = clock();
+                        if (ptr_node->chn_size > 0 && lv < no_lvs)
+                        {
+                            updating_ref_zones_grandchildren(ptr_node);
+                        }
+                        GL_times[43] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+                        //** >> Updating children grid points **/
+                        // printf("\n\nUpdating children grid points\n\n");
+                        aux_clock = clock();
+                        if (update_child_grid_points(ptr_node) == _FAILURE_)
+                        {
+                            printf("Error at function update_child_grid_points()\n");
+                            return _FAILURE_;
+                        }
+                        GL_times[45] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+                        //** >> Tentacles updating **/
+                        // printf("\n\nTentacles Updating\n\n");
+                        aux_clock = clock();
+                        if (0 < ptr_node->zones_size)
+                        {
+                            if (tentacles_updating(ptr_node, lv + 1) == _FAILURE_)
+                            {
+                                printf("Error at function tentacles_updating()\n");
+                                return _FAILURE_;
+                            }
+                        }
+                        GL_times[46] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
                     }
-                    GL_times[46] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+                    //** >> Moved Unused child node to the stack of memory pool **/
+                    // printf("\n\nMoved Unused child node to the stack of memory pool\n\n");
+                    aux_clock = clock();
+                    moved_unused_child_node_to_memory_pool(ptr_node);
+                    GL_times[47] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+                    check_error(ptr_node);
                 }
-
-                //** >> Moved Unused child node to the stack of memory pool **/
-                // printf("\n\nMoved Unused child node to the stack of memory pool\n\n");
-                aux_clock = clock();
-                moved_unused_child_node_to_memory_pool(ptr_node);
-                GL_times[47] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
-
-                check_error(ptr_node);
             }
         }
+        else
+        {
+            for (int lv = no_lvs; lv > -1; lv--)
+            {
+                GL_tentacles_size[lv + 1] = 0;
+                no_pts = GL_tentacles_size[lv];
+                //** >> For cycle over parent nodes **/
+                for (int i = 0; i < no_pts; i++)
+                {
+                    ptr_node = GL_tentacles[lv][i];
+
+                    // printf("lv = %d, pt = %d, chn_size = %d\n", ptr_node->lv, i, ptr_node->chn_size);
+
+                    //** Updating the box mass information **/
+                    // printf("\n\nupdating_cell_struct\n\n");
+                    aux_clock = clock();
+                    if (updating_cell_struct(ptr_node) == _FAILURE_)
+                    {
+                        printf("Error at function updating_cell_struct()\n");
+                        return _FAILURE_;
+                    }
+                    GL_times[30] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+                    check_error(ptr_node);
+
+                    //** Initialization of node boxes **/
+                    // printf("\n\ninitialization_node_boxes\n\n");
+                    aux_clock = clock();
+                    initialization_node_boxes(ptr_node);
+                    GL_times[31] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+                    //** Initialization of the auiliary refinement arrays**/
+                    // printf("\n\nInitialization ref aux\n\n\n");
+                    aux_clock = clock();
+                    initialization_ref_aux(ptr_node);
+                    GL_times[32] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+                    //** >> Filling the refinement cells array **/
+                    // printf("\n\nFill cell ref\n\n\n");
+                    aux_clock = clock();
+                    if (fill_cell_ref(ptr_node) == _FAILURE_)
+                    {
+                        printf("Error at function fill_cell_ref()\n");
+                        return _FAILURE_;
+                    }
+                    GL_times[33] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+                    //** >> Filling the different zones of refinement **/
+                    // printf("\n\nFill zones ref\n\n");
+                    aux_clock = clock();
+                    if (fill_zones_ref(ptr_node) == _FAILURE_)
+                    {
+                        printf("Error at function fill_zones_ref()\n");
+                        return _FAILURE_;
+                    }
+                    GL_times[34] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+                    if (ptr_node->zones_size > 0)
+                    {
+                        //** >> Create links **/
+                        // printf("\n\nCreate links\n\n");
+                        aux_clock = clock();
+                        if (create_links(ptr_node) == _FAILURE_)
+                        {
+                            printf("Error at function create_links()\n");
+                            return _FAILURE_;
+                        }
+                        GL_times[35] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+                        aux_clock = clock();
+                        if (ptr_node->chn_size > 0)
+                        {
+                            //** >> Removing cells that no longer require refinement **/
+                            // printf("\n\nRemoving cells nolonger requiere refinement\n\n");
+                            remov_cells_nolonger_require_refinement(ptr_node);
+                        }
+                        GL_times[36] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+                        //** >> Adapting child boxes to the new space **/
+                        // printf("\n\nAdapt child box\n\n");
+                        aux_clock = clock();
+                        if (ptr_node->chn_size > 0)
+                        {
+                            if (adapt_child_nodes(ptr_node) == _FAILURE_)
+                            {
+                                printf("Error at function adapt_child_nodes()\n");
+                                return _FAILURE_;
+                            }
+                        }
+                        GL_times[37] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+                        //** >> Creating and defining new children nodes for excess in refinement zones and and linking them to the parent node ptr_node **/
+                        // printf("\n\nCreate new child nodes\n\n");
+                        aux_clock = clock();
+                        if (ptr_node->zones_size > ptr_node->chn_size)
+                        {
+
+                            if (create_new_child_nodes(ptr_node) == _FAILURE_)
+                            {
+                                printf("Error, in new_child_nodes function\n");
+                                return _FAILURE_;
+                            }
+                        }
+                        GL_times[38] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+                        //** >> Adapting the information from old child nodes to new child nodes **/
+                        // printf("\n\nMoving old child to new child\n\n");
+                        aux_clock = clock();
+                        if (ptr_node->chn_size > 0)
+                        {
+                            if (moving_old_child_to_new_child(ptr_node) == _FAILURE_)
+                            {
+                                printf("Error at function moving_old_child_to_new_child()\n");
+                                return _FAILURE_;
+                            }
+                        }
+                        GL_times[39] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+                        //** >> Moving new zones of refienemnt information to all child nodes **/
+                        // printf("\n\nMoving new zones to new child\n\n");
+                        aux_clock = clock();
+                        if (moving_new_zones_to_new_child(ptr_node) == _FAILURE_)
+                        {
+                            printf("Error at function moving_new_zones_to_new_child()\n");
+                            return _FAILURE_;
+                        }
+                        GL_times[40] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+                        //** >> Reorganization child nodes **/
+                        // printf("\n\nReorganization child nodes\n\n");
+                        aux_clock = clock();
+                        reorganization_child_node(ptr_node);
+                        GL_times[41] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+                        //** >> Reorganization grandchild nodes **/
+                        // printf("\n\nReorganization grandchild nodes\n\n");
+                        aux_clock = clock();
+                        if (ptr_node->chn_size > 0 && lv < no_lvs)
+                        {
+                            if (reorganization_grandchild_node(ptr_node) == _FAILURE_)
+                            {
+                                printf("Error at function reorganization_grandchild_node()\n");
+                                return _FAILURE_;
+                            }
+                        }
+                        GL_times[42] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+                        //** >> Updating refinement zones of the grandchildren **/
+                        // printf("\n\nUpdating refinement zones of the grandchildren\n\n");
+                        aux_clock = clock();
+                        if (ptr_node->chn_size > 0 && lv < no_lvs)
+                        {
+                            updating_ref_zones_grandchildren(ptr_node);
+                        }
+                        GL_times[43] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+                        //** >> Updating children grid points **/
+                        // printf("\n\nUpdating children grid points\n\n");
+                        aux_clock = clock();
+                        if (update_child_grid_points(ptr_node) == _FAILURE_)
+                        {
+                            printf("Error at function update_child_grid_points()\n");
+                            return _FAILURE_;
+                        }
+                        GL_times[45] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+                        //** >> Tentacles updating **/
+                        // printf("\n\nTentacles Updating\n\n");
+                        aux_clock = clock();
+                        if (0 < ptr_node->zones_size)
+                        {
+                            if (tentacles_updating(ptr_node, lv + 1) == _FAILURE_)
+                            {
+                                printf("Error at function tentacles_updating()\n");
+                                return _FAILURE_;
+                            }
+                        }
+                        GL_times[46] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+                    }
+
+                    //** >> Moved Unused child node to the stack of memory pool **/
+                    // printf("\n\nMoved Unused child node to the stack of memory pool\n\n");
+                    aux_clock = clock();
+                    moved_unused_child_node_to_memory_pool(ptr_node);
+                    GL_times[47] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+                    check_error(ptr_node);
+                }
+            }
+        }
+
 
         //** >> Tentacles Updating lv max **/
         // printf("\n\nTentacles updating lv max\n\n");

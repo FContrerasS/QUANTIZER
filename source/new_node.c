@@ -37,9 +37,9 @@ static void re_initialize_node(struct node *ptr_node)
 	ptr_node->box_min_x = INT_MAX; // Already minimal box value index in the real local space at the dimension X
 	ptr_node->box_min_y = INT_MAX; // Already minimal box value index in the real local space at the dimension Y
 	ptr_node->box_min_z = INT_MAX; // Already minimal box value index in the real local space at the dimension Z
-	ptr_node->box_max_x = 0;	   // Already maximum box value index in the real local space at the dimension X
-	ptr_node->box_max_y = 0;	   // Already maximum box value index in the real local space at the dimension Y
-	ptr_node->box_max_z = 0;	   // Already maximum box value index in the real local space at the dimension Z
+	ptr_node->box_max_x = INT_MIN;	   // Already maximum box value index in the real local space at the dimension X
+	ptr_node->box_max_y = INT_MIN;	   // Already maximum box value index in the real local space at the dimension Y
+	ptr_node->box_max_z = INT_MIN;	   // Already maximum box value index in the real local space at the dimension Z
 	ptr_node->box_check_fit = true; // Check if the new box will fit in the old one
 
 	//** >> Struct of cells (Particles and cell mass)
@@ -59,6 +59,7 @@ static void re_initialize_node(struct node *ptr_node)
 	//** >> Grid points **/
     ptr_node->grid_intr_size = 0; // Number of existing grid interior points in the block
     ptr_node->grid_bder_size = 0; // Number of existing grid border points in the block
+	ptr_node->grid_SIMULATION_BOUNDARY_size = 0; // Number of the boundary simulation grid points array of the block
 
 	//** >> Potential, acceleration and density of the grid **/
 
@@ -79,6 +80,15 @@ static void re_initialize_node(struct node *ptr_node)
   	}
 	ptr_node->zones_size = 0;		// Number of refined zones in the node
 
+	//** >> Boundary of the simulation box **/
+	ptr_node->boundary_simulation_contact = false;
+	ptr_node->anomalies_due_to_the_boundary = false;
+	ptr_node->crosses_the_boundary_simulation_box_x = false; // Only for periodic boundary conditions, when one node croses the simulation box at X direcction
+	ptr_node->crosses_the_boundary_simulation_box_y = false;
+	ptr_node->crosses_the_boundary_simulation_box_z = false;
+	ptr_node->crosses_the_whole_simulation_box_x = false;
+	ptr_node->crosses_the_whole_simulation_box_y = false;
+	ptr_node->crosses_the_whole_simulation_box_z = false;
 }
 
 struct node *new_node(void)

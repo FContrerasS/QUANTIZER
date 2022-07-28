@@ -89,10 +89,18 @@ struct node
     int *ptr_bder_grid_cell_idx_z; // Z index position of the cells in the node at level l
     int *ptr_bder_grid_idx;       // Indexes of the interior grid points of the block
 
+    int *ptr_SIMULATION_BOUNDARY_grid_cell_idx_x; // X index of the boundary of the simulation grid point
+    int *ptr_SIMULATION_BOUNDARY_grid_cell_idx_y; // Y index position of the cells in the node at level l
+    int *ptr_SIMULATION_BOUNDARY_grid_cell_idx_z; // Z index position of the cells in the node at level l
+    int *ptr_SIMULATION_BOUNDARY_grid_idx;
+
     int grid_intr_cap;  // Maximum cap of the grid interior points array of the block
     int grid_bder_cap;  // Maximum cap of the grid border points array of the block
     int grid_intr_size; // Number of existing grid interior points in the block
     int grid_bder_size; // Number of existing grid border points in the block
+
+    int grid_SIMULATION_BOUNDARY_cap;  // Maximum cap of the boundary simulation grid points array of the block
+    int grid_SIMULATION_BOUNDARY_size; // Number of the boundary simulation grid points array of the block
 
     //* Potential, Acceleration and density of the grid **/
     vtype *ptr_pot; // Array with the potential of the node. It is of the same size than the real box grid points
@@ -120,7 +128,20 @@ struct node
     int *ptr_zone_size; // Number of cells in each refined zone
 
     int *ptr_aux_idx; // Auxiliary array, is used in the initial tree structure to save the index of the boxes elements and other
+    bool *ptr_aux_bool_boundary_simulation_contact_x; // Only for periodic boundary conditions. It sais if the corresponding refinement zone touches the boundary of the simulation box at X axis
+    bool *ptr_aux_bool_boundary_simulation_contact_y; // Only for periodic boundary conditions. It sais if the corresponding refinement zone touches the boundary of the simulation box at Y axis
+    bool *ptr_aux_bool_boundary_simulation_contact_z; // Only for periodic boundary conditions. It sais if the corresponding refinement zone touches the boundary of the simulation box at Z axis
+    bool *ptr_aux_bool_boundary_anomalies_x; // Only for periodic boundary conditions. It sais if the corresponding refinement zone crosses the simulation at X axis
+    bool *ptr_aux_bool_boundary_anomalies_y;
+    bool *ptr_aux_bool_boundary_anomalies_z;
     int aux_idx_cap;
+
+    // Sub zones for periodic boundary conditions
+    int **pptr_subzones;    // Pointer to refined subzones in the node
+    int subzones_cap;        // capacity in the number of refined subzones in the node
+    int subzones_size;       // Number of refined subzones in the node
+    int *ptr_subzone_cap;  // capacity of each refined subzone
+    int *ptr_subzone_size; // Number of cells in each refined subzone
 
     //** >> Links in Tree adaptation **/
     int *ptr_links_old_ord_old;
@@ -130,7 +151,18 @@ struct node
     int links_cap;
 
     //** >> Boundary of the simulation box **/
-    bool is_at_the_edge_of_the_simulation_box;
+    bool boundary_simulation_contact;
+    bool boundary_simulation_contact_x;
+    bool boundary_simulation_contact_y;
+    bool boundary_simulation_contact_z;
+
+    bool pbc_anomalies_due_to_the_boundary;
+    bool pbc_crosses_the_boundary_simulation_box_x;
+    bool pbc_crosses_the_boundary_simulation_box_y;
+    bool pbc_crosses_the_boundary_simulation_box_z;
+    bool pbc_crosses_the_whole_simulation_box_x;
+    bool pbc_crosses_the_whole_simulation_box_y;
+    bool pbc_crosses_the_whole_simulation_box_z;
 };
 
 

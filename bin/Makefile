@@ -31,7 +31,7 @@ GSources += grid_acceleration.c particle_acceleration.c timestep_1.c timestep_2.
 GSources += particle_updating_B.c terminal_print.c observables.c output_main_parameters.c reset.c 
 GSources += initial_potential_and_acceleration_head.c space_check.c tree_adaptation.c new_node.c 
 GSources += add_node_to_stack.c initialize_cell_struct.c ptcl_idx_to_box_idx.c garbage_collector.c 
-GSources += potential_branches.c 
+GSources += potential_branches.c ptcl_idx_to_box_idx_PERIODIC_BOUNDARY.c 
 
 FORCE_METHODS = $(patsubst %,$(FMDir)/%,$(FMSources))
 GENERAL = $(patsubst %,$(GDir)/%,$(GSources))
@@ -50,7 +50,7 @@ OBJ += terminal_print.o observables.o output_main_parameters.o reset.o initial_p
 OBJ += space_check.o tree_adaptation.o new_node.o add_node_to_stack.o initialize_cell_struct.o 
 OBJ += ptcl_idx_to_box_idx.o garbage_collector.o potential_branches.o conjugate_gradient.o 
 OBJ += conjugate_gradient_multigrid.o jacobi.o gauss_saidel.o multigrid.o multigrid2.o
-OBJ +=
+OBJ += ptcl_idx_to_box_idx_PERIODIC_BOUNDARY.o
 
 #OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 

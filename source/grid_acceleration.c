@@ -225,6 +225,32 @@ static void computing_grid_acceleration_branch(struct node *ptr_node)
         ptr_node->ptr_az[box_grid_idx] = aux_acc;
     }
 
+    //** >> Border grid points **/
+    for (int i = 0; i < ptr_node->grid_SIMULATION_BOUNDARY_size; i++)
+    {
+
+        if (boundary_type != 0)
+        {
+            box_grid_idx = ptr_node->ptr_SIMULATION_BOUNDARY_grid_idx[i];
+
+            vtype aux_x = ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_x[i] * H;
+            vtype aux_y = ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_y[i] * H;
+            vtype aux_z = ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_z[i] * H;
+
+            vtype dist = (aux_x - GL_cm[0]) * (aux_x - GL_cm[0]) + (aux_y - GL_cm[1]) * (aux_y - GL_cm[1]) + (aux_z - GL_cm[2]) * (aux_z - GL_cm[2]);
+            dist = sqrt(dist);
+
+            vtype aux_coeff = -_G_ * total_mass / (dist * dist * dist);
+            ptr_node->ptr_ax[box_grid_idx] = aux_coeff * (aux_x - GL_cm[0]);
+            ptr_node->ptr_ay[box_grid_idx] = aux_coeff * (aux_y - GL_cm[1]);
+            ptr_node->ptr_az[box_grid_idx] = aux_coeff * (aux_z - GL_cm[2]);
+        }
+        else
+        {
+            //Do something case periodic
+        }
+    }
+
     //** >> Interior grid points **/
     for (int i = 0; i < ptr_node->grid_intr_size; i++)
     {
@@ -315,6 +341,32 @@ static void computing_grid_acceleration_branch2(struct node *ptr_node)
         ptr_node->ptr_az[box_grid_idx] = aux_acc;
     }
 
+    //** >> Simulation boundary grid points **/
+    for (int i = 0; i < ptr_node->grid_SIMULATION_BOUNDARY_size; i++)
+    {
+
+        if (boundary_type != 0)
+        {
+            box_grid_idx = ptr_node->ptr_SIMULATION_BOUNDARY_grid_idx[i];
+
+            vtype aux_x = ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_x[i] * H;
+            vtype aux_y = ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_y[i] * H;
+            vtype aux_z = ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_z[i] * H;
+
+            vtype dist = (aux_x - GL_cm[0]) * (aux_x - GL_cm[0]) + (aux_y - GL_cm[1]) * (aux_y - GL_cm[1]) + (aux_z - GL_cm[2]) * (aux_z - GL_cm[2]);
+            dist = sqrt(dist);
+
+            vtype aux_coeff = -_G_ * total_mass / (dist * dist * dist);
+            ptr_node->ptr_ax[box_grid_idx] = aux_coeff * (aux_x - GL_cm[0]);
+            ptr_node->ptr_ay[box_grid_idx] = aux_coeff * (aux_y - GL_cm[1]);
+            ptr_node->ptr_az[box_grid_idx] = aux_coeff * (aux_z - GL_cm[2]);
+        }
+        else
+        {
+            // Do something case periodic
+        }
+    }
+
     //** >> Interior grid points **/
     for (int i = 0; i < ptr_node->grid_intr_size; i++)
     {
@@ -379,8 +431,10 @@ int grid_acceleration(void)
     //** >> HEAD
     if (force_stencil == 0)
     {
+        //** >> HEAD
         computing_grid_acceleration_head(GL_tentacles[0][0]);
-        // Branches
+        
+        //** >>  BRANCHES
         for (int lv = 1; lv < GL_tentacles_level_max + 1; lv++)
         {
             // Number of parent of the level = GL_tentacles_size[lv];
@@ -395,8 +449,10 @@ int grid_acceleration(void)
     }
     else if (force_stencil == 1)
     {
+        //** >> HEAD
         computing_grid_acceleration_head2(GL_tentacles[0][0]);
-        // Branches
+
+        //** >>  BRANCHES
         for (int lv = 1; lv < GL_tentacles_level_max + 1; lv++)
         {
             // Number of parent of the level = GL_tentacles_size[lv];

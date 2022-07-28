@@ -254,6 +254,34 @@ int space_check(int *ptr_cap, int size, float increase, const char *format, ...)
                     initialize_cell_struct(&((*pptr_cell)[j]));
                 }
             }
+            else if (format_aux == 'b' && *format == '1')
+            {
+                bool **pptr_bool = NULL;
+                pptr_bool = va_arg(args, bool **);
+                if (*pptr_bool == NULL)
+                {
+                    *pptr_bool = (bool *)malloc((*ptr_cap) * sizeof(bool));
+                }
+                else
+                {
+                    bool *ptr_aux = NULL;
+                    ptr_aux = (bool *)realloc(*pptr_bool, (*ptr_cap) * sizeof(bool));
+                    if (ptr_aux == NULL)
+                    {
+                        printf("Error in the realocation of ptr_bool\n");
+                        return _FAILURE_;
+                    }
+                    else
+                    {
+                        *pptr_bool = ptr_aux;
+                    }
+                    ptr_aux = NULL;
+                }
+                for (int j = cap; j < *ptr_cap; j++)
+                {
+                    (*pptr_bool)[j] = false;
+                }
+            }
             else
             {
                 printf("Error in the realocation of the pointer\n");

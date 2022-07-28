@@ -40,6 +40,7 @@ static void init_global_folder_params(void);
 static void init_global_timer(void);
 static void init_global_memory(void);
 static void init_global_garbage_collector_parameters(void);
+static void init_global_boundary_parameters(void);
 static void init_multigrid2_parameters(void);
 
 // Constants
@@ -69,7 +70,6 @@ int fr_output;
 int MaxIterations;
 int no_grid_pow2;
 int no_grid_pow3;
-int boundary_type;
 
 //** >> Refinement criteria parameters **/
 vtype ref_criterion_mass;
@@ -77,6 +77,9 @@ int ref_criterion_ptcl;
 int n_exp;
 vtype _CFL_; 
 vtype _MAX_dt_;
+
+//** >> Initial Center of Mass **/
+vtype GL_cm[3]; // Center of mass
 
 //** >> Poisson parameters **/
 // Relaxation solver at coarsest level
@@ -177,6 +180,10 @@ vtype **pp_rhoxx;
 vtype **pp_restxx;
 vtype **pp_dphixx;
 vtype **zeros_xx;
+
+//** >> Boundary parameters **/
+int boundary_type;
+int GL_max_lv_ref_crosses_the_entire_simulation; // Maximum level of refinement such that it contains a zone of refinement which crosses the entire simulation
 
 static void
 init_global_constants(void)
@@ -347,6 +354,14 @@ static void init_global_garbage_collector_parameters(void)
     Garbage_Collector_iter = 10000000; // Number of time-steps between each garbage collector
 }
 
+static void init_global_boundary_parameters(void)
+{
+    if (lmin < lmax && boundary_type == 0)
+    {
+        GL_max_lv_ref_crosses_the_entire_simulation = lmin; // Maximum level of refinement such that it contains a zone of refinement which crosses the entire simulation
+    }
+}
+
 static void init_multigrid2_parameters(void)
 {
     int size, size_pow3;
@@ -413,6 +428,9 @@ void global_variables()
 
     //** >> Garbage Collector **/
     init_global_garbage_collector_parameters();
+
+    //** >> Boundary parameters **/
+    init_global_boundary_parameters();
 
     //** >> multigrid2 parameters **/
     init_multigrid2_parameters();

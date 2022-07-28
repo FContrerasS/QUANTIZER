@@ -54,9 +54,9 @@ void initialize_node(struct node *ptr_node)
 	ptr_node->box_min_x = INT_MAX; // Already minimal box value index in the real local space at the dimension X
 	ptr_node->box_min_y = INT_MAX; // Already minimal box value index in the real local space at the dimension Y
 	ptr_node->box_min_z = INT_MAX; // Already minimal box value index in the real local space at the dimension Z
-	ptr_node->box_max_x = 0;	   // Already maximum box value index in the real local space at the dimension X
-	ptr_node->box_max_y = 0;	   // Already maximum box value index in the real local space at the dimension Y
-	ptr_node->box_max_z = 0;	   // Already maximum box value index in the real local space at the dimension Z
+	ptr_node->box_max_x = INT_MIN;	   // Already maximum box value index in the real local space at the dimension X
+	ptr_node->box_max_y = INT_MIN;	   // Already maximum box value index in the real local space at the dimension Y
+	ptr_node->box_max_z = INT_MIN;	   // Already maximum box value index in the real local space at the dimension Z
 	ptr_node->box_check_fit = true; // Check if the new box will fit in the old one
 
 	//** >> Cells in the node **/
@@ -86,11 +86,19 @@ void initialize_node(struct node *ptr_node)
 	ptr_node->ptr_bder_grid_cell_idx_z = NULL;		 // Z index position of the cells in the node at level l
 	ptr_node->ptr_bder_grid_idx = NULL;
 
+	ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_x = NULL; // X index of the boundary of the simulation grid point
+	ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_y = NULL; // Y index position of the cells in the node at level l
+	ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_z = NULL; // Z index position of the cells in the node at level l
+	ptr_node->ptr_SIMULATION_BOUNDARY_grid_idx = NULL;
+
 	// Indexes of the interior grid points of the block
     ptr_node->grid_intr_cap = 0;   // Maximum cap of the grid interior points array of the block
     ptr_node->grid_bder_cap = 0; // Maximum cap of the grid border points array of the block
     ptr_node->grid_intr_size = 0; // Number of existing grid interior points in the block
     ptr_node->grid_bder_size = 0; // Number of existing grid border points in the block
+
+	ptr_node->grid_SIMULATION_BOUNDARY_cap = 0;  // Maximum cap of the boundary simulation grid points array of the block
+	ptr_node->grid_SIMULATION_BOUNDARY_size = 0; // Number of the boundary simulation grid points array of the block
 
 	//** >> Potential, acceleration and density of the grid **/
 	ptr_node->ptr_pot = NULL; // Array with the potential of the node. It is of the same size than the real box grid points
@@ -118,7 +126,19 @@ void initialize_node(struct node *ptr_node)
 	ptr_node->ptr_zone_size = NULL; // Number of cells in each refined zone
 
 	ptr_node->ptr_aux_idx = NULL; // Auxiliary array, is used in the initial tree structure to save the index of the boxes elements and other
+	ptr_node->ptr_aux_bool_boundary_simulation_contact_x = NULL;	// Only for periodic boundary conditions. It sais if the corresponding refinement zone touches the boundary of the simulation box at X axis
+	ptr_node->ptr_aux_bool_boundary_simulation_contact_y = NULL;	// Only for periodic boundary conditions. It sais if the corresponding refinement zone touches the boundary of the simulation box at Y axis
+	ptr_node->ptr_aux_bool_boundary_simulation_contact_z = NULL;	// Only for periodic boundary conditions. It sais if the corresponding refinement zone touches the boundary of the simulation box at Z axis
+	ptr_node->ptr_aux_bool_boundary_anomalies_x = NULL;	// Only for periodic boundary conditions. It sais if the corresponding refinement zone crosses the simulation at X axis
+	ptr_node->ptr_aux_bool_boundary_anomalies_y = NULL;
+	ptr_node->ptr_aux_bool_boundary_anomalies_z = NULL;
 	ptr_node->aux_idx_cap = 0;
+	//Sub zones for periodic boundary conditions
+	ptr_node->pptr_subzones = NULL;	// Pointer to refined subzones in the node
+	ptr_node->subzones_cap = 0;		// capacity in the number of refined subzones in the node
+	ptr_node->subzones_size = 0;		// Number of refined subzones in the node
+	ptr_node->ptr_subzone_cap = NULL;	// capacity of each refined subzone
+	ptr_node->ptr_subzone_size = NULL; // Number of cells in each refined subzone
 
 	//** >> Links in Tree adaptation **/
 	ptr_node->ptr_links_old_ord_old = NULL;
@@ -128,5 +148,18 @@ void initialize_node(struct node *ptr_node)
 	ptr_node->links_cap = 0;
 
 	//** >> Boundary of the simulation box **/
-	ptr_node->is_at_the_edge_of_the_simulation_box = false;
+	ptr_node->boundary_simulation_contact = false;
+	ptr_node->boundary_simulation_contact_x = false; 
+	ptr_node->boundary_simulation_contact_y = false;
+	ptr_node->boundary_simulation_contact_z = false;
+
+	//The following parameters are only used for the Periodic boundary conditions (boundary_type = 0), pbc = periodic boundary conditions
+	ptr_node->pbc_anomalies_due_to_the_boundary = false;	//Anomalies happend when there are at least 2 neighboring cells separated by the simulation box boundary 
+	ptr_node->pbc_crosses_the_boundary_simulation_box_x = false;	// when one node croses the simulation box at X direcction
+	ptr_node->pbc_crosses_the_boundary_simulation_box_y = false;
+	ptr_node->pbc_crosses_the_boundary_simulation_box_z = false;
+	ptr_node->pbc_crosses_the_whole_simulation_box_x = false;
+	ptr_node->pbc_crosses_the_whole_simulation_box_y = false;
+	ptr_node->pbc_crosses_the_whole_simulation_box_z = false;
 }
+

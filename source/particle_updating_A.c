@@ -1559,7 +1559,7 @@ int particle_updating_A(vtype dt)
 
                         ptr_node = GL_tentacles[lv][i];
 
-                        if (ptr_node->is_at_the_edge_of_the_simulation_box == false)
+                        if (ptr_node->boundary_simulation_contact == false)
                         {
                             if (computing_particles_updating_A_NORMAL(GL_tentacles[lv][i], dt, status) == _FAILURE_)
                             {
@@ -1590,7 +1590,7 @@ int particle_updating_A(vtype dt)
 
                         ptr_node = GL_tentacles[lv][i];
 
-                        if (ptr_node->is_at_the_edge_of_the_simulation_box == false)
+                        if (ptr_node->boundary_simulation_contact == false)
                         {
                             if (computing_particles_updating_A_NORMAL(GL_tentacles[lv][i], dt, status) == _FAILURE_)
                             {
@@ -1619,7 +1619,7 @@ int particle_updating_A(vtype dt)
 
                         ptr_node = GL_tentacles[lv][i];
 
-                        if (ptr_node->is_at_the_edge_of_the_simulation_box == false)
+                        if (ptr_node->boundary_simulation_contact == false)
                         {
                             if (computing_particles_updating_A_NORMAL(GL_tentacles[lv][i], dt, status) == _FAILURE_)
                             {

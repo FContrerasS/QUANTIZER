@@ -111,6 +111,9 @@ static void initial_potential_branch_node(const struct node *ptr_node, struct no
 
 	vtype aux_pot; // Auxiliar Potential in the grid point
 
+	vtype H = 1.0 / (1 << ptr_ch->lv);
+	vtype aux_x, aux_y, aux_z, dist;
+
 	int grid_box_real_dim_X_node = (ptr_node->box_real_dim_x + 1);
 	int grid_box_real_dim_X_times_Y_node = (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1);
 
@@ -149,6 +152,28 @@ static void initial_potential_branch_node(const struct node *ptr_node, struct no
 						   ptr_node->ptr_pot[box_grid_i1_j1_k1_node]);
 
 		ptr_ch->ptr_pot[ch_box_grid_idx] = aux_pot;
+	}
+
+	//** >> Simulation boundary grid points **/
+	for (int i = 0; i < ptr_ch->grid_SIMULATION_BOUNDARY_size; i++)
+	{
+		if (boundary_type != 0)
+		{
+			ch_box_grid_idx = ptr_ch->ptr_SIMULATION_BOUNDARY_grid_idx[i];
+
+			aux_x = ptr_ch->ptr_SIMULATION_BOUNDARY_grid_cell_idx_x[i] * H;
+			aux_y = ptr_ch->ptr_SIMULATION_BOUNDARY_grid_cell_idx_y[i] * H;
+			aux_z = ptr_ch->ptr_SIMULATION_BOUNDARY_grid_cell_idx_z[i] * H;
+
+			dist = (aux_x - GL_cm[0]) * (aux_x - GL_cm[0]) + (aux_y - GL_cm[1]) * (aux_y - GL_cm[1]) + (aux_z - GL_cm[2]) * (aux_z - GL_cm[2]);
+			dist = sqrt(dist);
+
+			ptr_ch->ptr_pot[ch_box_grid_idx] = -_G_ * total_mass / dist;
+		}
+		else
+		{
+			// Do something case periodic
+		}
 	}
 
 	// Interior grid points
@@ -277,7 +302,6 @@ int potential_branches(void)
 	ptr_red_black_size = (int *)malloc(2 * sizeof(int));
 	ptr_red_black_size[0] = 0;
 	ptr_red_black_size[1] = 0;
-
 
 	for (int lv = 0; lv < GL_tentacles_level_max; lv++)
 	{

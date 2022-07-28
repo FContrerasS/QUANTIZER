@@ -62,7 +62,7 @@ distance = dist
 
 sibling = sib
 
-
+pbc = periodic boundary conditions
 
 
 

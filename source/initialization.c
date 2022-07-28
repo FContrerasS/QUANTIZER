@@ -99,7 +99,7 @@ static int initializing_head_node(void)
 				box_idx = i + j * box_side_lmin + k * box_side_lmin_pow2;
 				if (i <= bder_os_sim - 1 || i >= box_side_lmin - bder_os_sim || j <= bder_os_sim - 1 || j >= box_side_lmin - bder_os_sim || k <= bder_os_sim - 1 || k >= box_side_lmin - bder_os_sim)
 				{
-					ptr_head->ptr_box[box_idx] = -5; //-5 corresponds to cell out of the box simulation
+					ptr_head->ptr_box[box_idx] = -5; // Corresponding values to cell out of the box simulation
 				}
 				else
 				{
@@ -108,6 +108,7 @@ static int initializing_head_node(void)
 			}
 		}
 	}
+	
 
 	ptr_head->box_dim_x = no_lmin_cell;
 	ptr_head->box_dim_y = no_lmin_cell;
@@ -125,7 +126,9 @@ static int initializing_head_node(void)
 	ptr_head->ptr_cell_idx_y = (int *)malloc(no_lmin_cell_pow3 * sizeof(int));
 	ptr_head->ptr_cell_idx_z = (int *)malloc(no_lmin_cell_pow3 * sizeof(int));
 	ptr_head->ptr_box_idx = (int *)malloc(no_lmin_cell_pow3 * sizeof(int));
+
 	
+
 	int idx;
 	for (int k = 0; k < no_lmin_cell; k++)
 	{
@@ -179,21 +182,25 @@ static int initializing_head_node(void)
 	//** >> Total mass in the node
 	ptr_head->local_mass = total_mass;
 
+	
+
 	//** >> Grid points **/
 	ptr_head->grid_intr_cap = (no_lmin_cell - 1) * (no_lmin_cell - 1) * (no_lmin_cell - 1);
 	ptr_head->grid_intr_size = 0;
-	ptr_head->grid_bder_cap = (no_lmin_cell + 1) * (no_lmin_cell + 1) * (no_lmin_cell + 1) - ptr_head->grid_intr_cap;
-	ptr_head->grid_bder_size = 0;
 	ptr_head->ptr_intr_grid_cell_idx_x = (int *)malloc(ptr_head->grid_intr_cap * sizeof(int));
 	ptr_head->ptr_intr_grid_cell_idx_y = (int *)malloc(ptr_head->grid_intr_cap * sizeof(int));
 	ptr_head->ptr_intr_grid_cell_idx_z = (int *)malloc(ptr_head->grid_intr_cap * sizeof(int));
 	ptr_head->ptr_intr_grid_idx = (int *)malloc(ptr_head->grid_intr_cap * sizeof(int));
-	ptr_head->ptr_bder_grid_cell_idx_x = (int *)malloc(ptr_head->grid_bder_cap * sizeof(int));
-	ptr_head->ptr_bder_grid_cell_idx_y = (int *)malloc(ptr_head->grid_bder_cap * sizeof(int));
-	ptr_head->ptr_bder_grid_cell_idx_z = (int *)malloc(ptr_head->grid_bder_cap * sizeof(int));
-	ptr_head->ptr_bder_grid_idx = (int *)malloc(ptr_head->grid_bder_cap * sizeof(int));
+
+	ptr_head->grid_SIMULATION_BOUNDARY_cap = (no_lmin_cell + 1) * (no_lmin_cell + 1) * (no_lmin_cell + 1) - ptr_head->grid_intr_cap;
+	ptr_head->grid_SIMULATION_BOUNDARY_size = 0;
+	ptr_head->ptr_SIMULATION_BOUNDARY_grid_cell_idx_x = (int *)malloc(ptr_head->grid_SIMULATION_BOUNDARY_cap * sizeof(int));
+	ptr_head->ptr_SIMULATION_BOUNDARY_grid_cell_idx_y = (int *)malloc(ptr_head->grid_SIMULATION_BOUNDARY_cap * sizeof(int));
+	ptr_head->ptr_SIMULATION_BOUNDARY_grid_cell_idx_z = (int *)malloc(ptr_head->grid_SIMULATION_BOUNDARY_cap * sizeof(int));
+	ptr_head->ptr_SIMULATION_BOUNDARY_grid_idx = (int *)malloc(ptr_head->grid_SIMULATION_BOUNDARY_cap * sizeof(int));
 
 	//** Filling grid points indexes **/
+
 	for (int k = bder_os_sim; k < box_side_lmin + 1 - bder_os_sim; k++)
 	{
 		for (int j = bder_os_sim; j < box_side_lmin + 1 - bder_os_sim; j++)
@@ -204,11 +211,11 @@ static int initializing_head_node(void)
 				//** >> Border grid point **/
 				if (i == bder_os_sim || i == box_side_lmin - bder_os_sim || j == bder_os_sim || j == box_side_lmin - bder_os_sim || k == bder_os_sim || k == box_side_lmin - bder_os_sim)
 				{
-					ptr_head->ptr_bder_grid_cell_idx_x[ptr_head->grid_bder_size] = i + ptr_head->box_ts_x;
-					ptr_head->ptr_bder_grid_cell_idx_y[ptr_head->grid_bder_size] = j + ptr_head->box_ts_y;
-					ptr_head->ptr_bder_grid_cell_idx_z[ptr_head->grid_bder_size] = k + ptr_head->box_ts_z;
-					ptr_head->ptr_bder_grid_idx[ptr_head->grid_bder_size] = box_grid_idx;
-					ptr_head->grid_bder_size += 1; // Increasing the border grid points
+					ptr_head->ptr_SIMULATION_BOUNDARY_grid_cell_idx_x[ptr_head->grid_SIMULATION_BOUNDARY_size] = i + ptr_head->box_ts_x;
+					ptr_head->ptr_SIMULATION_BOUNDARY_grid_cell_idx_y[ptr_head->grid_SIMULATION_BOUNDARY_size] = j + ptr_head->box_ts_y;
+					ptr_head->ptr_SIMULATION_BOUNDARY_grid_cell_idx_z[ptr_head->grid_SIMULATION_BOUNDARY_size] = k + ptr_head->box_ts_z;
+					ptr_head->ptr_SIMULATION_BOUNDARY_grid_idx[ptr_head->grid_SIMULATION_BOUNDARY_size] = box_grid_idx;
+					ptr_head->grid_SIMULATION_BOUNDARY_size += 1; // Increasing the border grid points
 				}
 				//** >> Interior grid point **/
 				else
@@ -222,7 +229,6 @@ static int initializing_head_node(void)
 			}
 		}
 	}
-
 
 	//** >> Potential, Acceleration and density of the grid **/
 	int cap = (ptr_head->box_real_dim_x + 1) * (ptr_head->box_real_dim_y + 1) * (ptr_head->box_real_dim_z + 1);
@@ -238,7 +244,32 @@ static int initializing_head_node(void)
 	initial_potential_and_acceleration_head(ptr_head);
 
 	//** >> Boundary of the simulation box **/
-	ptr_head->is_at_the_edge_of_the_simulation_box = true;
+	ptr_head->boundary_simulation_contact = true;
+	ptr_head->boundary_simulation_contact_x = true;
+	ptr_head->boundary_simulation_contact_y = true;
+	ptr_head->boundary_simulation_contact_z = true;
+
+	if(boundary_type == 0)
+	{
+		ptr_head->anomalies_due_to_the_boundary = true;
+		ptr_head->crosses_the_boundary_simulation_box_x = true;
+		ptr_head->crosses_the_boundary_simulation_box_y = true;
+		ptr_head->crosses_the_boundary_simulation_box_z = true;
+		ptr_head->crosses_the_whole_simulation_box_x = true;
+		ptr_head->crosses_the_whole_simulation_box_y = true;
+		ptr_head->crosses_the_whole_simulation_box_z = true;
+	}
+	else
+	{
+		ptr_head->anomalies_due_to_the_boundary = false;
+		ptr_head->crosses_the_boundary_simulation_box_x = false;
+		ptr_head->crosses_the_boundary_simulation_box_y = false;
+		ptr_head->crosses_the_boundary_simulation_box_z = false;
+		ptr_head->crosses_the_whole_simulation_box_x = false;
+		ptr_head->crosses_the_whole_simulation_box_y = false;
+		ptr_head->crosses_the_whole_simulation_box_z = false;
+	}
+
 
 	return _SUCCESS_;
 

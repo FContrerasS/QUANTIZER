@@ -63,9 +63,7 @@ typedef double vtype;
 #include "initialize_cell_struct.h"
 #include "initialize_node.h"
 #include "ptcl_idx_to_box_idx.h"
-
-
-
+#include "ptcl_idx_to_box_idx_PERIODIC_BOUNDARY.h"
 
 //** >> Terminal Colors **/
 #define KNRM "\x1B[0m" // Normal
@@ -115,6 +113,9 @@ extern int ref_criterion_ptcl;
 extern int n_exp;
 extern vtype _CFL_; // CFL criteria 0.5
 extern vtype _MAX_dt_;
+
+//** >> Initial Center of Mass **/
+extern vtype GL_cm[3]; // Center of mass
 
 //** >> Poisson parameters **/
 // Relaxation solver at coarsest level
@@ -211,5 +212,6 @@ extern vtype **zeros_xx;
 
 //** >> Boundary parameters **/
 extern int boundary_type;
+extern int GL_max_lv_ref_crosses_the_entire_simulation; // Maximum level of refinement such that it contains a zone of refinement which crosses the entire simulation
 
 #endif
