@@ -90,7 +90,7 @@ static int initializing_head_node(void)
 	ptr_head->ptr_box = (int *)malloc(box_side_lmin_pow3 * sizeof(int));
 	ptr_head->ptr_box_old = (int *)malloc(box_side_lmin_pow3 * sizeof(int));
 	int box_idx; // Index in the box
-	//-6 = teleport cell; -5 = cell outside of the box simulation; -4 = cell out of the node. Status -6 => Status -5. Status -4 => cell exists in the parent node
+	//-6 = teleport cell (Only for boundary_type 0) ; -5 = cell outside of the box simulation (Only for boundary_type 1 or 2); -4 = cell out of the node, the cell is in the parent node
 	for (int k = 0; k < box_side_lmin; k++)
 	{
 		for (int j = 0; j < box_side_lmin; j++)
@@ -252,23 +252,15 @@ static int initializing_head_node(void)
 
 	if(boundary_type == 0)
 	{
-		ptr_head->pbc_anomalies_due_to_the_boundary = true;
+		ptr_head->pbc_crosses_the_boundary_simulation_box = true;
 		ptr_head->pbc_crosses_the_boundary_simulation_box_x = true;
 		ptr_head->pbc_crosses_the_boundary_simulation_box_y = true;
 		ptr_head->pbc_crosses_the_boundary_simulation_box_z = true;
+
+		ptr_head->pbc_crosses_the_whole_simulation_box = true;
 		ptr_head->pbc_crosses_the_whole_simulation_box_x = true;
 		ptr_head->pbc_crosses_the_whole_simulation_box_y = true;
 		ptr_head->pbc_crosses_the_whole_simulation_box_z = true;
-	}
-	else
-	{
-		ptr_head->pbc_anomalies_due_to_the_boundary = false;
-		ptr_head->pbc_crosses_the_boundary_simulation_box_x = false;
-		ptr_head->pbc_crosses_the_boundary_simulation_box_y = false;
-		ptr_head->pbc_crosses_the_boundary_simulation_box_z = false;
-		ptr_head->pbc_crosses_the_whole_simulation_box_x = false;
-		ptr_head->pbc_crosses_the_whole_simulation_box_y = false;
-		ptr_head->pbc_crosses_the_whole_simulation_box_z = false;
 	}
 
 

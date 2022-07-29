@@ -128,14 +128,10 @@ struct node
     int *ptr_zone_size; // Number of cells in each refined zone
 
     int *ptr_aux_idx; // Auxiliary array, is used in the initial tree structure to save the index of the boxes elements and other
-    bool *ptr_aux_bool_boundary_simulation_contact_x; // Only for periodic boundary conditions. It sais if the corresponding refinement zone touches the boundary of the simulation box at X axis
-    bool *ptr_aux_bool_boundary_simulation_contact_y; // Only for periodic boundary conditions. It sais if the corresponding refinement zone touches the boundary of the simulation box at Y axis
-    bool *ptr_aux_bool_boundary_simulation_contact_z; // Only for periodic boundary conditions. It sais if the corresponding refinement zone touches the boundary of the simulation box at Z axis
-    bool *ptr_aux_bool_boundary_anomalies_x; // Only for periodic boundary conditions. It sais if the corresponding refinement zone crosses the simulation at X axis
+    bool *ptr_aux_bool_boundary_anomalies_x; // Only for periodic boundary conditions, it sais if the corresponding refinement zone crosses the simulation at X axis.
     bool *ptr_aux_bool_boundary_anomalies_y;
     bool *ptr_aux_bool_boundary_anomalies_z;
     int aux_idx_cap;
-    int aux_bool_boundary_simulation_contact_cap;
     int aux_bool_boundary_anomalies_cap;
 
     // Sub zones for periodic boundary conditions
@@ -158,10 +154,13 @@ struct node
     bool boundary_simulation_contact_y;
     bool boundary_simulation_contact_z;
 
-    bool pbc_anomalies_due_to_the_boundary;
+    // The following parameters are only used for the Periodic boundary conditions (boundary_type = 0), pbc = periodic boundary conditions
+    bool pbc_crosses_the_boundary_simulation_box;
     bool pbc_crosses_the_boundary_simulation_box_x;
     bool pbc_crosses_the_boundary_simulation_box_y;
     bool pbc_crosses_the_boundary_simulation_box_z;
+
+    bool pbc_crosses_the_whole_simulation_box;
     bool pbc_crosses_the_whole_simulation_box_x;
     bool pbc_crosses_the_whole_simulation_box_y;
     bool pbc_crosses_the_whole_simulation_box_z;

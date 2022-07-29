@@ -89,7 +89,8 @@ static int computing_memory(void)
             {
                 TOTAL_MEMORY_AUX += ptr_node->ptr_zone_cap[j] * sizeof(int);
             }
-            TOTAL_MEMORY_AUX += ptr_node->aux_idx_cap * (sizeof(int)  + 6 * sizeof(bool)) ;
+            TOTAL_MEMORY_AUX += ptr_node->aux_idx_cap * sizeof(int)  + ptr_node->aux_bool_boundary_anomalies_cap * 3 * sizeof(bool);
+            ;
             TOTAL_MEMORY_AUX += 4 * ptr_node->links_cap * sizeof(int);
         }
         TOTAL_MEMORY_NODES += no_pts * sizeof(struct node);
@@ -130,7 +131,7 @@ static int computing_memory(void)
         {
             TOTAL_MEMORY_STACK += ptr_node->ptr_zone_cap[j] * sizeof(int);
         }
-        TOTAL_MEMORY_STACK += ptr_node->aux_idx_cap * (sizeof(int) + 6 * sizeof(bool));
+        TOTAL_MEMORY_STACK += ptr_node->aux_idx_cap * (sizeof(int) + ptr_node->aux_bool_boundary_anomalies_cap * 3 * sizeof(bool));
         TOTAL_MEMORY_STACK += sizeof(struct node);
         if (ptr_node == GL_pool_node_end)
         {

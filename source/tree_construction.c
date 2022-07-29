@@ -141,7 +141,7 @@ static int fill_cell_ref(struct node *ptr_node)
     return _SUCCESS_;
 } // end function fill_cell_ref
 
-static int fill_zones_ref_PERIODIC_BOUNDARY(struct node *ptr_node)
+static int fill_zones_ref(struct node *ptr_node)
 {
     //** >> Filling the auxiliary diferent refinement zones **/
     int cntr_cell_add_all_zones = 0; // Counter Number of cells added to any refinement zone
@@ -172,239 +172,24 @@ static int fill_zones_ref_PERIODIC_BOUNDARY(struct node *ptr_node)
     //** >> Space checking of auxiliary array ptr_aux_idx **/
     // The size will always be bigger or equal than the number of refined cells
 
-    if (space_check(&(ptr_node->aux_idx_cap), ptr_node->cell_ref_cap, 1.0f, "p7i1b1b1b1b1b1b1", &(ptr_node->ptr_aux_idx), &(ptr_node->ptr_aux_bool_boundary_simulation_contact_x), &(ptr_node->ptr_aux_bool_boundary_simulation_contact_y), &(ptr_node->ptr_aux_bool_boundary_simulation_contact_z), &(ptr_node->ptr_aux_bool_boundary_anomalies_x), &(ptr_node->ptr_aux_bool_boundary_anomalies_y), &(ptr_node->ptr_aux_bool_boundary_anomalies_z)) == _FAILURE_)
+    if (boundary_type == 0 && ptr_node->pbc_crosses_the_whole_simulation_box == true)
     {
-        printf("Error, in space_check function\n");
-        return _FAILURE_;
-    }
-
-    //** >>  Changing the box status from REFINEMENT REQUIRED (-1) to the refinement zone ID (>= 0) **/
-    while (ptr_node->cell_ref_size > cntr_cell_add_all_zones) // The loop while works as long as the number of cell addeed is less than the total refined cells
-    {
-        // Notes that the initiality we inspect the elements in the refined cell array until an element has been found that is not found in any of the current refinement zones
-        cell_idx = ptr_node->ptr_cell_ref[cell_ref_idx]; // Index of the cells array in the node
-        box_idx_node = ptr_node->ptr_box_idx[cell_idx];
-
-        if (ptr_node->ptr_box[box_idx_node] == -1) // A cell without zone has been founded
+        if (space_check(&(ptr_node->aux_idx_cap), ptr_node->cell_ref_cap, 1.0f, "p4i1b1b1b1", &(ptr_node->ptr_aux_idx),  &(ptr_node->ptr_aux_bool_boundary_anomalies_x), &(ptr_node->ptr_aux_bool_boundary_anomalies_y), &(ptr_node->ptr_aux_bool_boundary_anomalies_z)) == _FAILURE_)
         {
-            zone_size = 0; // Initial number of element in the zone
-
-            //** >> Including the first element of the box to the auxiliary array ptr_aux_idx **/
-            ptr_node->ptr_aux_idx[0] = box_idx_node;
-
-            //** >>  Changing the box status from REFINEMENT REQUIRED (-1) to the refinement zone ID (>= 0) **/
-            ptr_node->ptr_box[box_idx_node] = zone_idx;
-
-            zone_size++;               // +1 to the number of cells in the zone
-            cntr_cell_add_all_zones++; // +1 to the number of cells added in total
-
-            //** >> Building of the zone of ID = zone_idx **/
-            cntr_insp = 0;                                                                     // Counter for the number of elements inspectioned in the current zone array
-            while (zone_size > cntr_insp && ptr_node->cell_ref_size > cntr_cell_add_all_zones) // The cycle ends when all the elements of the zone have been inspected or when the number of cells refined is equal to the total number of cells added.
-            {
-                // Note that the number of elements in the zone increases if the neighbors of the inspected cell must be added to the zone
-
-                cntr_cell_add = 0; // Counter number of cells added per cell inspected
-                box_idx_node = ptr_node->ptr_aux_idx[cntr_insp];
-
-                box_idxNbr_x_plus = box_idx_node + 1;
-                box_idxNbr_x_minus = box_idx_node - 1;
-                box_idxNbr_y_plus = box_idx_node + box_real_dim_X_node;
-                box_idxNbr_y_minus = box_idx_node - box_real_dim_X_node;
-                box_idxNbr_z_plus = box_idx_node + box_real_dim_X_times_Y_node;
-                box_idxNbr_z_minus = box_idx_node - box_real_dim_X_times_Y_node;
-
-                if (ptr_node->ptr_box[box_idxNbr_x_plus] == -6)
-                {
-                    ptr_node->ptr_aux_bool_boundary_simulation_contact_x[zone_idx] = true;
-                    box_idxNbr_x_plus -= ptr_node->box_dim_x;
-                    if (ptr_node->ptr_box[box_idxNbr_x_plus] == -1 || ptr_node->ptr_box[box_idxNbr_x_plus] == zone_idx)
-                    {
-                        ptr_node->ptr_aux_bool_boundary_anomalies_x[zone_idx] = true;
-                    }
-                }
-                else if (ptr_node->ptr_box[box_idxNbr_x_minus] == -6)
-                {
-                    ptr_node->ptr_aux_bool_boundary_simulation_contact_x[zone_idx] = true;
-                    box_idxNbr_x_minus += ptr_node->box_dim_x;
-                    if (ptr_node->ptr_box[box_idxNbr_x_minus] == -1 || ptr_node->ptr_box[box_idxNbr_x_minus] == zone_idx)
-                    {
-                        ptr_node->ptr_aux_bool_boundary_anomalies_x[zone_idx] = true;
-                    }
-                }
-
-                if (ptr_node->ptr_box[box_idxNbr_y_plus] == -6)
-                {
-                    ptr_node->ptr_aux_bool_boundary_simulation_contact_y[zone_idx] = true;
-                    box_idxNbr_y_plus -= ptr_node->box_dim_y * box_real_dim_X_node;
-                    if (ptr_node->ptr_box[box_idxNbr_y_plus] == -1 || ptr_node->ptr_box[box_idxNbr_y_plus] == zone_idx)
-                    {
-                        ptr_node->ptr_aux_bool_boundary_anomalies_y[zone_idx] = true;
-                    }
-                }
-                else if (ptr_node->ptr_box[box_idxNbr_y_minus] == -6)
-                {
-                    ptr_node->ptr_aux_bool_boundary_simulation_contact_y[zone_idx] = true;
-                    box_idxNbr_y_minus += ptr_node->box_dim_y * box_real_dim_X_node;
-                    if (ptr_node->ptr_box[box_idxNbr_y_minus] == -1 || ptr_node->ptr_box[box_idxNbr_y_minus] == zone_idx)
-                    {
-                        ptr_node->ptr_aux_bool_boundary_anomalies_y[zone_idx] = true;
-                    }
-                }
-
-                if (ptr_node->ptr_box[box_idxNbr_z_plus] == -6)
-                {
-                    ptr_node->ptr_aux_bool_boundary_simulation_contact_z[zone_idx] = true;
-                    box_idxNbr_z_plus -= ptr_node->box_dim_z * box_real_dim_X_times_Y_node;
-                    if (ptr_node->ptr_box[box_idxNbr_z_plus] == -1 || ptr_node->ptr_box[box_idxNbr_z_plus] == zone_idx)
-                    {
-                        ptr_node->ptr_aux_bool_boundary_anomalies_z[zone_idx] = true;
-                    }
-                }
-                else if (ptr_node->ptr_box[box_idxNbr_z_minus] == -6)
-                {
-                    ptr_node->ptr_aux_bool_boundary_simulation_contact_z[zone_idx] = true;
-                    box_idxNbr_z_minus += ptr_node->box_dim_z * box_real_dim_X_times_Y_node;
-                    if (ptr_node->ptr_box[box_idxNbr_z_minus] == -1 || ptr_node->ptr_box[box_idxNbr_z_minus] == zone_idx)
-                    {
-                        ptr_node->ptr_aux_bool_boundary_anomalies_z[zone_idx] = true;
-                    }
-                }
-
-                //** Checking the nearest 6 neighbors of face
-                // First neighbor
-                if (ptr_node->ptr_box[box_idxNbr_x_plus] == -1)
-                {
-                    ptr_node->ptr_aux_idx[zone_size + cntr_cell_add] = box_idxNbr_x_plus; // Including the neighboring element of the box to the auxiliary array
-                    ptr_node->ptr_box[box_idxNbr_x_plus] = zone_idx;                      // Changing the box status from REFINEMENT REQUIRED (-1) to the refinement zone ID (>= 0)
-                    cntr_cell_add++;                                                      // +1 to the number of cells added in the current inspection
-                }
-                // Second neighbor
-                if (ptr_node->ptr_box[box_idxNbr_x_minus] == -1)
-                {
-                    ptr_node->ptr_aux_idx[zone_size + cntr_cell_add] = box_idxNbr_x_minus; // Including the neighboring element of the box to the auxiliary array
-                    ptr_node->ptr_box[box_idxNbr_x_minus] = zone_idx;                      // Changing the box status from REFINEMENT REQUIRED (-1) to the refinement zone ID (>= 0)
-                    cntr_cell_add++;                                                       // +1 to the number of cells added in the current inspection
-                }
-                // Third neighbor
-                if (ptr_node->ptr_box[box_idxNbr_y_plus] == -1)
-                {
-                    ptr_node->ptr_aux_idx[zone_size + cntr_cell_add] = box_idxNbr_y_plus; // Including the neighboring element of the box to the auxiliary array
-                    ptr_node->ptr_box[box_idxNbr_y_plus] = zone_idx;                      // Changing the box status from REFINEMENT REQUIRED (-1) to the refinement zone ID (>= 0)
-                    cntr_cell_add++;                                                      // +1 to the number of cells added in the current inspection
-                }
-                // Fourth neighbor
-                if (ptr_node->ptr_box[box_idxNbr_y_minus] == -1)
-                {
-                    ptr_node->ptr_aux_idx[zone_size + cntr_cell_add] = box_idxNbr_y_minus; // Including the neighboring element of the box to the auxiliary array
-                    ptr_node->ptr_box[box_idxNbr_y_minus] = zone_idx;                      // Changing the box status from REFINEMENT REQUIRED (-1) to the refinement zone ID (>= 0)
-                    cntr_cell_add++;                                                       // +1 to the number of cells added in the current inspection
-                }
-                // Fifth neighbor
-                if (ptr_node->ptr_box[box_idxNbr_z_plus] == -1)
-                {
-                    ptr_node->ptr_aux_idx[zone_size + cntr_cell_add] = box_idxNbr_z_plus; // Including the neighboring element of the box to the auxiliary array
-                    ptr_node->ptr_box[box_idxNbr_z_plus] = zone_idx;                      // Changing the box status from REFINEMENT REQUIRED (-1) to the refinement zone ID (>= 0)
-                    cntr_cell_add++;                                                      // +1 to the number of cells added in the current inspection
-                }
-                // Sixth neighbor
-                if (ptr_node->ptr_box[box_idxNbr_z_minus] == -1)
-                {
-                    ptr_node->ptr_aux_idx[zone_size + cntr_cell_add] = box_idxNbr_z_minus; // Including the neighboring element of the box to the auxiliary array
-                    ptr_node->ptr_box[box_idxNbr_z_minus] = zone_idx;                      // Changing the box status from REFINEMENT REQUIRED (-1) to the refinement zone ID (>= 0)
-                    cntr_cell_add++;                                                       // +1 to the number of cells added in the current inspection
-                }
-                zone_size += cntr_cell_add;               // Increasing the number of cells in the zone
-                cntr_cell_add_all_zones += cntr_cell_add; // Increasing the number of cells added to the zones
-                cntr_insp++;                              // Increasing the number of inspections
-            }                                             // End while cycle, now the box contains the the information about all cells of the zone "zone_idx"
-
-            //** >> Space checking of refinement zones arrays, refinement capacity array and refinement size array **/
-            if (zone_idx_max < zone_idx + 1)
-            {
-                if (space_check(&(zone_idx_max), zone_idx + 1, 2.0f, "p3i2i1i1", &(ptr_node->pptr_zones), &(ptr_node->ptr_zone_cap), &(ptr_node->ptr_zone_size)) == _FAILURE_)
-                {
-                    printf("Error, in space_check function\n");
-                    return _FAILURE_;
-                }
-            }
-            ptr_node->ptr_zone_size[zone_idx] = zone_size;
-            zone_idx++; // Increasing the zone number
-        }               // Zone defined in the box
-        cell_ref_idx++;
-    } // At this point the box contains the information of all refinement zones
-
-    ptr_node->zones_cap = zone_idx_max; // Maximum amount of zones
-    ptr_node->zones_size = zone_idx;    // Total amount of zones
-
-    //** >> Space checking in each zone **/
-    for (int i = 0; i < ptr_node->zones_size; i++)
+            printf("Error, in space_check function\n");
+            return _FAILURE_;
+        }
+    }
+    else
     {
-        if (space_check(&(ptr_node->ptr_zone_cap[i]), ptr_node->ptr_zone_size[i], 2.0f, "p1i1", &(ptr_node->pptr_zones[i])) == _FAILURE_)
+        if (space_check(&(ptr_node->aux_idx_cap), ptr_node->cell_ref_cap, 1.0f, "p1i1", &(ptr_node->ptr_aux_idx))  == _FAILURE_)
         {
             printf("Error, in space_check function\n");
             return _FAILURE_;
         }
     }
 
-    //** >> Initializing the ptr_aux_idx array to be used as a counter of elemnents in each zone**/
-    // Notes that the number of refined cells is always bigger or equal than the number of refined zones, so that the capacity of ptr_aux_idx is always enough to counter the number of refined zones
-    for (int i = 0; i < ptr_node->zones_size; i++)
-    {
-        ptr_node->ptr_aux_idx[i] = 0;
-    }
 
-    //** >> Adding the cells to the zone array pptr_zones **/
-    for (int i = 0; i < ptr_node->cell_ref_size; i++)
-    {
-        cell_idx = ptr_node->ptr_cell_ref[i];
-        box_idx_node = ptr_node->ptr_box_idx[cell_idx];
-        zone_idx = ptr_node->ptr_box[box_idx_node];
-        cntr_cell_add = ptr_node->ptr_aux_idx[zone_idx];          // Counter the element in the zone "zone_idx"
-        ptr_node->pptr_zones[zone_idx][cntr_cell_add] = cell_idx; // Adding the index of the cell array in the block to the zone
-        ptr_node->ptr_aux_idx[zone_idx] += 1;                     // Counter the number of elements added in the zone "zone_idx"
-    }
-
-    return _SUCCESS_;
-} // End function fill_zones_ref
-
-static int fill_zones_ref(struct node *ptr_node)
-{
-
-    //** >> Filling the auxiliary diferent refinement zones **/
-    int cntr_cell_add_all_zones = 0; // Counter Number of cells added to any refinement zone
-    int cntr_cell_add;               // Counter number of cells added per inspection
-    int cntr_insp;                   // Numer of inspected cells in the zone
-
-    int zone_size;                          // Number of cells in the zone
-    int zone_idx_max = ptr_node->zones_cap; // Maximum id of the zone. It is equal to to the capacity in the number of zones
-    int zone_idx = 0;                       // Index of the zone. Initialized at zone 0
-
-    int box_idx_node; // Box index
-
-    int box_idxNbr_x_plus;  // Box index in the neigborhood on the right
-    int box_idxNbr_x_minus; // Box index in the neigborhood on the left
-    int box_idxNbr_y_plus;  // Box index in the neigborhood behind
-    int box_idxNbr_y_minus; // Box index in the neigborhood in front
-    int box_idxNbr_z_plus;  // Box index in the neigborhood up
-    int box_idxNbr_z_minus; // Box index in the neigborhood down
-
-    int cell_idx;         // The cell index is simply i of the for loop
-    int cell_ref_idx = 0; // The index in the cell refined array ptr_cell_ref
-
-    int box_real_dim_X_node = ptr_node->box_real_dim_x;
-    int box_real_dim_X_times_Y_node = ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
-
-    // The auxiliary array ptr_aux_idx will be used to store the box indexes of the zone
-
-    //** >> Space checking of auxiliary array ptr_aux_idx **/
-    // The size will always be bigger or equal than the number of refined cells
-
-    if (space_check(&(ptr_node->aux_idx_cap), ptr_node->cell_ref_cap, 1.0f, "p1i1", &(ptr_node->ptr_aux_idx)) == _FAILURE_)
-    {
-        printf("Error, in space_check function\n");
-        return _FAILURE_;
-    }
 
     //** >>  Changing the box status from REFINEMENT REQUIRED (-1) to the refinement zone ID (>= 0) **/
     while (ptr_node->cell_ref_size > cntr_cell_add_all_zones) // The loop while works as long as the number of cell addeed is less than the total refined cells
@@ -441,6 +226,69 @@ static int fill_zones_ref(struct node *ptr_node)
                 box_idxNbr_y_minus = box_idx_node - box_real_dim_X_node;
                 box_idxNbr_z_plus = box_idx_node + box_real_dim_X_times_Y_node;
                 box_idxNbr_z_minus = box_idx_node - box_real_dim_X_times_Y_node;
+
+                if(boundary_type == 0)
+                {
+                    if (ptr_node->pbc_crosses_the_whole_simulation_box_x == true)
+                    {
+                        if (ptr_node->ptr_box[box_idxNbr_x_plus] == -6)
+                        {
+                            box_idxNbr_x_plus -= ptr_node->box_dim_x;
+                            if (ptr_node->ptr_box[box_idxNbr_x_plus] == -1 || ptr_node->ptr_box[box_idxNbr_x_plus] == zone_idx)
+                            {
+                                ptr_node->ptr_aux_bool_boundary_anomalies_x[zone_idx] = true;
+                            }
+                        }
+                        else if (ptr_node->ptr_box[box_idxNbr_x_minus] == -6)
+                        {
+                            box_idxNbr_x_minus += ptr_node->box_dim_x;
+                            if (ptr_node->ptr_box[box_idxNbr_x_minus] == -1 || ptr_node->ptr_box[box_idxNbr_x_minus] == zone_idx)
+                            {
+                                ptr_node->ptr_aux_bool_boundary_anomalies_x[zone_idx] = true;
+                            }
+                        }
+                    }
+                    if (ptr_node->pbc_crosses_the_whole_simulation_box_y == true)
+                    {
+                        if (ptr_node->ptr_box[box_idxNbr_y_plus] == -6)
+                        {
+                            box_idxNbr_y_plus -= ptr_node->box_dim_y * box_real_dim_X_node;
+                            if (ptr_node->ptr_box[box_idxNbr_y_plus] == -1 || ptr_node->ptr_box[box_idxNbr_y_plus] == zone_idx)
+                            {
+                                ptr_node->ptr_aux_bool_boundary_anomalies_y[zone_idx] = true;
+                            }
+                        }
+                        else if (ptr_node->ptr_box[box_idxNbr_y_minus] == -6)
+                        {
+                            box_idxNbr_y_minus += ptr_node->box_dim_y * box_real_dim_X_node;
+                            if (ptr_node->ptr_box[box_idxNbr_y_minus] == -1 || ptr_node->ptr_box[box_idxNbr_y_minus] == zone_idx)
+                            {
+                                ptr_node->ptr_aux_bool_boundary_anomalies_y[zone_idx] = true;
+                            }
+                        }
+                    }
+
+                    if (ptr_node->pbc_crosses_the_whole_simulation_box_z == true)
+                    {
+                        if (ptr_node->ptr_box[box_idxNbr_z_plus] == -6)
+                        {
+                            box_idxNbr_z_plus -= ptr_node->box_dim_z * box_real_dim_X_times_Y_node;
+                            if (ptr_node->ptr_box[box_idxNbr_z_plus] == -1 || ptr_node->ptr_box[box_idxNbr_z_plus] == zone_idx)
+                            {
+                                ptr_node->ptr_aux_bool_boundary_anomalies_z[zone_idx] = true;
+                            }
+                        }
+                        else if (ptr_node->ptr_box[box_idxNbr_z_minus] == -6)
+                        {
+                            box_idxNbr_z_minus += ptr_node->box_dim_z * box_real_dim_X_times_Y_node;
+                            if (ptr_node->ptr_box[box_idxNbr_z_minus] == -1 || ptr_node->ptr_box[box_idxNbr_z_minus] == zone_idx)
+                            {
+                                ptr_node->ptr_aux_bool_boundary_anomalies_z[zone_idx] = true;
+                            }
+                        }
+                    }
+                }
+
 
                 //** Checking the nearest 6 neighbors of face
                 // First neighbor
@@ -567,7 +415,15 @@ static int fill_subzones_ref_PERIODIC_BOUNDARY(struct node *ptr_node, int zone_i
 
     // The auxiliary array ptr_aux_idx will be used to store the box indexes of the subzone
 
-    //** >>  Changing the box status from REFINEMENT REQUIRED (-1) to the refinement zone ID (>= 0) **/
+    //Initializing the box in every zone_idx cell at value of REFINEMENT REQUIRED (-1)
+    for(int i = 0; i < ptr_node->ptr_zone_size[zone_idx]; i++)
+    {
+        cell_idx = ptr_node->pptr_zones[zone_idx][i];
+        box_idx_node = ptr_node->ptr_box_idx[cell_idx];
+        ptr_node->ptr_box[box_idx_node] = -1;
+    }
+
+    //** >>  Changing the box status from REFINEMENT REQUIRED (-1) to the refinement subzone ID (>= 0) **/
     while (ptr_node->ptr_zone_size[zone_idx] > cntr_cell_add_all_subzones) // The loop while works as long as the number of cell addeed is less than the total refined cells
     {
         // Notes that the initiality we inspect the elements in the refined cell array until an element has been found that is not found in any of the current refinement subzones
@@ -582,7 +438,7 @@ static int fill_subzones_ref_PERIODIC_BOUNDARY(struct node *ptr_node, int zone_i
             ptr_node->ptr_aux_idx[0] = box_idx_node;
 
             //** >>  Changing the box status from zone ID (>= 0) to the REFINEMENT REQUIRED (-1) in order not to repeat elements **/
-            ptr_node->ptr_box[box_idx_node] = -1;
+            ptr_node->ptr_box[box_idx_node] = subzone_idx;
 
             subzone_size++;               // +1 to the number of cells in the zone
             cntr_cell_add_all_subzones++; // +1 to the number of cells added in total
@@ -605,45 +461,45 @@ static int fill_subzones_ref_PERIODIC_BOUNDARY(struct node *ptr_node, int zone_i
 
                 //** Checking the nearest 6 neighbors of face
                 // First neighbor
-                if (ptr_node->ptr_box[box_idxNbr_x_plus] == zone_idx)
+                if (ptr_node->ptr_box[box_idxNbr_x_plus] == -1)
                 {
                     ptr_node->ptr_aux_idx[subzone_size + cntr_cell_add] = box_idxNbr_x_plus; // Including the neighboring element of the box to the auxiliary array
-                    ptr_node->ptr_box[box_idxNbr_x_plus] = -1;                               // Changing the box status from refinement zone ID (>= 0) to the REFINEMENT REQUIRED (-1)
+                    ptr_node->ptr_box[box_idxNbr_x_plus] = subzone_idx;                      // Changing the box status from refinement zone ID (>= 0) to the REFINEMENT REQUIRED (-1)
                     cntr_cell_add++;                                                      // +1 to the number of cells added in the current inspection
                 }
                 // Second neighbor
-                if (ptr_node->ptr_box[box_idxNbr_x_minus] == zone_idx)
+                if (ptr_node->ptr_box[box_idxNbr_x_minus] == -1)
                 {
                     ptr_node->ptr_aux_idx[subzone_size + cntr_cell_add] = box_idxNbr_x_minus; // Including the neighboring element of the box to the auxiliary array
-                    ptr_node->ptr_box[box_idxNbr_x_minus] = -1;                               // Changing the box status from refinement zone ID (>= 0) to the REFINEMENT REQUIRED (-1)
+                    ptr_node->ptr_box[box_idxNbr_x_minus] = subzone_idx;                      // Changing the box status from refinement zone ID (>= 0) to the REFINEMENT REQUIRED (-1)
                     cntr_cell_add++;                                                       // +1 to the number of cells added in the current inspection
                 }
                 // Third neighbor
-                if (ptr_node->ptr_box[box_idxNbr_y_plus] == zone_idx)
+                if (ptr_node->ptr_box[box_idxNbr_y_plus] == -1)
                 {
                     ptr_node->ptr_aux_idx[subzone_size + cntr_cell_add] = box_idxNbr_y_plus; // Including the neighboring element of the box to the auxiliary array
-                    ptr_node->ptr_box[box_idxNbr_y_plus] = -1;                               // Changing the box status from refinement zone ID (>= 0) to the REFINEMENT REQUIRED (-1)
+                    ptr_node->ptr_box[box_idxNbr_y_plus] = subzone_idx;                      // Changing the box status from refinement zone ID (>= 0) to the REFINEMENT REQUIRED (-1)
                     cntr_cell_add++;                                                      // +1 to the number of cells added in the current inspection
                 }
                 // Fourth neighbor
-                if (ptr_node->ptr_box[box_idxNbr_y_minus] == zone_idx)
+                if (ptr_node->ptr_box[box_idxNbr_y_minus] == -1)
                 {
                     ptr_node->ptr_aux_idx[subzone_size + cntr_cell_add] = box_idxNbr_y_minus; // Including the neighboring element of the box to the auxiliary array
-                    ptr_node->ptr_box[box_idxNbr_y_minus] = -1;                               // Changing the box status from refinement zone ID (>= 0) to the REFINEMENT REQUIRED (-1)
+                    ptr_node->ptr_box[box_idxNbr_y_minus] = subzone_idx;                      // Changing the box status from refinement zone ID (>= 0) to the REFINEMENT REQUIRED (-1)
                     cntr_cell_add++;                                                       // +1 to the number of cells added in the current inspection
                 }
                 // Fifth neighbor
-                if (ptr_node->ptr_box[box_idxNbr_z_plus] == zone_idx)
+                if (ptr_node->ptr_box[box_idxNbr_z_plus] == -1)
                 {
                     ptr_node->ptr_aux_idx[subzone_size + cntr_cell_add] = box_idxNbr_z_plus; // Including the neighboring element of the box to the auxiliary array
-                    ptr_node->ptr_box[box_idxNbr_z_plus] = -1;                               // Changing the box status from refinement zone ID (>= 0) to the REFINEMENT REQUIRED (-1)
+                    ptr_node->ptr_box[box_idxNbr_z_plus] = subzone_idx;                      // Changing the box status from refinement zone ID (>= 0) to the REFINEMENT REQUIRED (-1)
                     cntr_cell_add++;                                                      // +1 to the number of cells added in the current inspection
                 }
                 // Sixth neighbor
-                if (ptr_node->ptr_box[box_idxNbr_z_minus] == zone_idx)
+                if (ptr_node->ptr_box[box_idxNbr_z_minus] == -1)
                 {
                     ptr_node->ptr_aux_idx[subzone_size + cntr_cell_add] = box_idxNbr_z_minus; // Including the neighboring element of the box to the auxiliary array
-                    ptr_node->ptr_box[box_idxNbr_z_minus] = -1;                               // Changing the box status from refinement zone ID (>= 0) to the REFINEMENT REQUIRED (-1)
+                    ptr_node->ptr_box[box_idxNbr_z_minus] = subzone_idx;                      // Changing the box status from refinement zone ID (>= 0) to the REFINEMENT REQUIRED (-1)
                     cntr_cell_add++;                                                       // +1 to the number of cells added in the current inspection
                 }
                 subzone_size += cntr_cell_add;            // Increasing the number of cells in the subzone
@@ -704,7 +560,6 @@ static int fill_subzones_ref_PERIODIC_BOUNDARY(struct node *ptr_node, int zone_i
 
 static int fill_child_nodes_PERIODIC_BOUNDARY(struct node *ptr_node)
 {
-
     struct node *ptr_ch; // Pointer to the child node
 
     int cell_idx;  // Cell index
@@ -757,6 +612,8 @@ static int fill_child_nodes_PERIODIC_BOUNDARY(struct node *ptr_node)
     int size_bder_grid_points_ch;
     int size_intr_grid_points_ch;
 
+    bool check_pbc_crosses_the_whole_simulation_box_ch;
+
     //** >> Creating child nodes in parent node **/
     ptr_node->chn_cap = ptr_node->zones_cap; // Same amount than refinement zones
     ptr_node->chn_size = ptr_node->zones_size;
@@ -784,24 +641,15 @@ static int fill_child_nodes_PERIODIC_BOUNDARY(struct node *ptr_node)
 
         //** >> Boxes **/
         // MIN and MAX cell indexes values of the node.
+        check_pbc_crosses_the_whole_simulation_box_ch = false;
+        if (boundary_type == 0 && ptr_node->pbc_crosses_the_whole_simulation_box == true)
+        {
+            check_pbc_crosses_the_whole_simulation_box_ch = ptr_node->ptr_aux_bool_boundary_anomalies_x[zone_idx] == true ||
+                                                            ptr_node->ptr_aux_bool_boundary_anomalies_y[zone_idx] == true ||
+                                                            ptr_node->ptr_aux_bool_boundary_anomalies_z[zone_idx] == true;
+        }
 
-        ptr_ch->boundary_simulation_contact_x = ptr_node->ptr_aux_bool_boundary_simulation_contact_x[zone_idx];
-        ptr_ch->boundary_simulation_contact_y = ptr_node->ptr_aux_bool_boundary_simulation_contact_y[zone_idx];
-        ptr_ch->boundary_simulation_contact_z = ptr_node->ptr_aux_bool_boundary_simulation_contact_z[zone_idx];
-
-        ptr_ch->boundary_simulation_contact = ptr_ch->boundary_simulation_contact_x ||
-                                              ptr_ch->boundary_simulation_contact_y ||
-                                              ptr_ch->boundary_simulation_contact_z;
-
-        ptr_ch->pbc_crosses_the_boundary_simulation_box_x = ptr_node->ptr_aux_bool_boundary_anomalies_x[zone_idx]; // The node has crossed the simulation box at X direction
-        ptr_ch->pbc_crosses_the_boundary_simulation_box_y = ptr_node->ptr_aux_bool_boundary_anomalies_y[zone_idx];
-        ptr_ch->pbc_crosses_the_boundary_simulation_box_z = ptr_node->ptr_aux_bool_boundary_anomalies_z[zone_idx];
-        ptr_ch->pbc_anomalies_due_to_the_boundary = ptr_ch->pbc_crosses_the_boundary_simulation_box_x ||
-                                                ptr_ch->pbc_crosses_the_boundary_simulation_box_y ||
-                                                ptr_ch->pbc_crosses_the_boundary_simulation_box_z;
-
-        //** >> Filling the different Sub zones of refinement **/
-        if (ptr_ch->pbc_anomalies_due_to_the_boundary == true)
+        if (check_pbc_crosses_the_whole_simulation_box_ch == true)
         {
             if (fill_subzones_ref_PERIODIC_BOUNDARY(ptr_node, zone_idx) == _FAILURE_)
             {
@@ -809,6 +657,8 @@ static int fill_child_nodes_PERIODIC_BOUNDARY(struct node *ptr_node)
                 return _FAILURE_;
             }
         }
+
+
 
         if (ptr_ch->pbc_crosses_the_boundary_simulation_box_x == false)
         {
