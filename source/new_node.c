@@ -74,18 +74,40 @@ static void re_initialize_node(struct node *ptr_node)
 	//** >> Auxililary arrays to go from old box to new box **/
 	ptr_node->cell_ref_size = 0;	// Number of cells to be refined
 
-  	for (int j = 0; j < ptr_node->zones_size; j++)
-  	{
+	//Zones of refinement
+	for (int j = 0; j < ptr_node->zones_cap; j++)
+	{
   	  ptr_node->ptr_zone_size[j] = 0;
   	}
 	ptr_node->zones_size = 0;		// Number of refined zones in the node
 
+	// auxiliary booleans
+	for (int j = 0; j < ptr_node->aux_bool_boundary_anomalies_cap; j++)
+	{
+		ptr_node->ptr_aux_bool_boundary_anomalies_x[j] = false;
+		ptr_node->ptr_aux_bool_boundary_anomalies_y[j] = false;
+		ptr_node->ptr_aux_bool_boundary_anomalies_z[j] = false;
+	}
+
+	//Subzones
+	// for (int j = 0; j < ptr_node->subzones_cap; j++)
+	// {
+	// 	ptr_node->ptr_subzone_size[j] = 0;
+	// }
+	ptr_node->subzones_size = 0;	//NUmber of refined subzones in the node
+
 	//** >> Boundary of the simulation box **/
 	ptr_node->boundary_simulation_contact = false;
-	ptr_node->pbc_anomalies_due_to_the_boundary = false;
-	ptr_node->pbc_crosses_the_boundary_simulation_box_x = false; // Only for periodic boundary conditions, when one node croses the simulation box at X direcction
+	ptr_node->boundary_simulation_contact_x = false;
+	ptr_node->boundary_simulation_contact_y = false;
+	ptr_node->boundary_simulation_contact_z = false;
+
+	ptr_node->pbc_crosses_the_boundary_simulation_box = false;
+	ptr_node->pbc_crosses_the_boundary_simulation_box_x = false; // when one node croses the simulation box at X direcction
 	ptr_node->pbc_crosses_the_boundary_simulation_box_y = false;
 	ptr_node->pbc_crosses_the_boundary_simulation_box_z = false;
+
+	ptr_node->pbc_crosses_the_whole_simulation_box = false;
 	ptr_node->pbc_crosses_the_whole_simulation_box_x = false;
 	ptr_node->pbc_crosses_the_whole_simulation_box_y = false;
 	ptr_node->pbc_crosses_the_whole_simulation_box_z = false;

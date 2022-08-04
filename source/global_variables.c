@@ -189,7 +189,7 @@ static void
 init_global_constants(void)
 {
     //Constants
-    _User_BoxSize_ = 5.0L; //kpc
+    _User_BoxSize_ = 0.1L; //kpc
     //_User_BoxSize_ = 0.1L; //kpc
     _PI_ = 3.14159265358979323846L;
     _Onesixth_ = 1.0L / 6.0L;
@@ -218,11 +218,11 @@ static void init_global_user_params(void)
     GL_no_ptcl_final = GL_no_ptcl_initial;
     //GL_no_ptcl = 7550; // 2995865; // 299586; // 231299 // 298159
     // GL_no_ptcl = 10000;
-    Maxdt = 1000.0 * _Mgyear_;
+    Maxdt = 50.0 * _Mgyear_;
     //meanmass = 100; //Currently only used on input.c
     // total_mass = GL_no_ptcl * meanmass;
     // total_mass = 0;
-    fr_output = 6;
+    fr_output = 10000;
     MaxIterations = 100000000;
     no_grid_pow2 = no_grid * no_grid;
     no_grid_pow3 = no_grid * no_grid * no_grid;
@@ -232,7 +232,7 @@ static void init_global_user_params(void)
 static void init_global_ref_crit(void)
 {
     ref_criterion_mass = 1.0e100; // meanmass * 7;
-    ref_criterion_ptcl = 2;
+    ref_criterion_ptcl = 4;
     n_exp = 1;   // n_exp = 0 is corrupted because particles can move between more than 1 level of refinement
     _CFL_ = 0.5; // CFL criteria 0.5
     _MAX_dt_ = _Mgyear_ * 1.0;
@@ -351,7 +351,7 @@ static void init_global_memory(void)
 
 static void init_global_garbage_collector_parameters(void)
 {
-    Garbage_Collector_iter = 10000000; // Number of time-steps between each garbage collector
+    Garbage_Collector_iter = 50; // Number of time-steps between each garbage collector
 }
 
 static void init_global_boundary_parameters(void)

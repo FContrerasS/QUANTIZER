@@ -135,11 +135,17 @@ struct node
     int aux_bool_boundary_anomalies_cap;
 
     // Sub zones for periodic boundary conditions
-    int **pptr_subzones;    // Pointer to refined subzones in the node
+    // int **pptr_subzones;    // Pointer to refined subzones in the node
     int subzones_cap;        // capacity in the number of refined subzones in the node
     int subzones_size;       // Number of refined subzones in the node
-    int *ptr_subzone_cap;  // capacity of each refined subzone
-    int *ptr_subzone_size; // Number of cells in each refined subzone
+    // int *ptr_subzone_cap;  // capacity of each refined subzone
+    // int *ptr_subzone_size; // Number of cells in each refined subzone
+	int *ptr_aux_min_subzones_x;
+	int *ptr_aux_max_subzones_x;
+    int *ptr_aux_min_subzones_y;
+    int *ptr_aux_max_subzones_y;
+    int *ptr_aux_min_subzones_z;
+    int *ptr_aux_max_subzones_z;
 
     //** >> Links in Tree adaptation **/
     int *ptr_links_old_ord_old;

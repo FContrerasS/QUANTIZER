@@ -63,7 +63,6 @@ typedef double vtype;
 #include "initialize_cell_struct.h"
 #include "initialize_node.h"
 #include "ptcl_idx_to_box_idx.h"
-#include "ptcl_idx_to_box_idx_PERIODIC_BOUNDARY.h"
 
 //** >> Terminal Colors **/
 #define KNRM "\x1B[0m" // Normal

@@ -83,14 +83,25 @@ static int computing_memory(void)
 			TOTAL_MEMORY_GRID_POINTS += 4 * (ptr_node->grid_bder_cap + ptr_node->grid_intr_cap + ptr_node->grid_SIMULATION_BOUNDARY_cap) * sizeof(int); // Grid interior, border and simulation boundary points
 
 			TOTAL_MEMORY_GRID_PROPERTIES += 6 * ptr_node->grid_properties_cap * sizeof(vtype); // Grid properties, accelerations, potential and density
-			TOTAL_MEMORY_AUX += ptr_node->zones_cap * sizeof(int *) + ptr_node->cell_ref_cap * sizeof(int);
+			TOTAL_MEMORY_AUX += ptr_node->zones_cap * sizeof(int *) ;
 			for (int j = 0; j < ptr_node->zones_cap; j++)
 			{
 				TOTAL_MEMORY_AUX += ptr_node->ptr_zone_cap[j] * sizeof(int);
 			}
-			TOTAL_MEMORY_AUX += ptr_node->aux_idx_cap * sizeof(int) + ptr_node->aux_bool_boundary_anomalies_cap * 3 * sizeof(bool);
-			;
+			TOTAL_MEMORY_AUX += ptr_node->aux_idx_cap * sizeof(int) ;
+			TOTAL_MEMORY_AUX += ptr_node->aux_bool_boundary_anomalies_cap * 3 * sizeof(bool);
+
 			TOTAL_MEMORY_AUX += 4 * ptr_node->links_cap * sizeof(int);
+
+        	//** Subzones
+			TOTAL_MEMORY_AUX += 6 * ptr_node->subzones_cap * sizeof(int);
+			//TOTAL_MEMORY_AUX += ptr_node->subzones_cap * sizeof(int *) ;
+
+			// for(int j=0; j < ptr_node->subzones_cap; j++)
+        	// {
+            // 	TOTAL_MEMORY_AUX += ptr_node->ptr_subzone_cap[j] * sizeof(int);
+        	// }
+
 		}
 		TOTAL_MEMORY_NODES += no_pts * sizeof(struct node);
 	}
@@ -125,14 +136,26 @@ static int computing_memory(void)
 		TOTAL_MEMORY_STACK += 2 * ptr_node->box_cap * (sizeof(int) + sizeof(vtype));				 // Boxes and mass boxes
 		TOTAL_MEMORY_STACK += 4 * (ptr_node->grid_bder_cap + ptr_node->grid_intr_cap + ptr_node->grid_SIMULATION_BOUNDARY_cap) * sizeof(int); // Grid interior, border and simulation boundary points
 		TOTAL_MEMORY_STACK += 6 * ptr_node->grid_properties_cap * sizeof(vtype);					 // Grid properties, accelerations, potential and density
-		TOTAL_MEMORY_STACK += ptr_node->zones_cap * sizeof(int *) + ptr_node->cell_ref_cap * sizeof(int);
+		TOTAL_MEMORY_STACK += ptr_node->zones_cap * sizeof(int *);
 		for (int j = 0; j < ptr_node->zones_cap; j++)
 		{
 			TOTAL_MEMORY_STACK += ptr_node->ptr_zone_cap[j] * sizeof(int);
 		}
-		TOTAL_MEMORY_STACK += ptr_node->aux_idx_cap * sizeof(int) + + ptr_node->aux_bool_boundary_anomalies_cap * 3 * sizeof(bool);
-		;
+		TOTAL_MEMORY_STACK += ptr_node->aux_idx_cap * sizeof(int);
+		TOTAL_MEMORY_STACK += ptr_node->aux_bool_boundary_anomalies_cap * 3 * sizeof(bool);
+
+		TOTAL_MEMORY_STACK += 4 * ptr_node->links_cap * sizeof(int);
+
+		//** Subzones
+		TOTAL_MEMORY_STACK += 6 * ptr_node->subzones_cap * sizeof(int);
+		// TOTAL_MEMORY_STACK += ptr_node->subzones_cap * sizeof(int *) ;
+		// for(int j=0; j < ptr_node->subzones_cap; j++)
+        // {
+        //     TOTAL_MEMORY_STACK += ptr_node->ptr_subzone_cap[j] * sizeof(int);
+        // }
+
 		TOTAL_MEMORY_STACK += sizeof(struct node);
+		
 		if (ptr_node == GL_pool_node_end)
 		{
 			ptr_node = NULL;
@@ -150,11 +173,10 @@ static void free_memory_pool(void)
 {
 	// Stack of memory pool
 	struct node *ptr_node = GL_pool_node_start;
-	int cntr;
 	while (ptr_node != NULL)
 	{
 		//** >> Boxes **/
-		free(ptr_node->ptr_box);
+		free(ptr_node->ptr_box); 
 		free(ptr_node->ptr_box_old);
 
 		//** >> Cells in the node **/
@@ -232,40 +254,49 @@ static void free_memory_pool(void)
 			free(ptr_node->pptr_zones);
 		}
 		
-		
-		
+		//Subzones
+		// for(int i = 0; i< ptr_node->subzones_cap;i++)
+		// {
+		// 	if(ptr_node->pptr_subzones[i] != NULL)
+		// 	{
+		// 		free(ptr_node->pptr_subzones[i]);
+		// 	}
+		// }
+		if (ptr_node->subzones_cap != 0)
+		{
+			// free(ptr_node->ptr_subzone_cap);
+			// free(ptr_node->ptr_subzone_size);
+			free(ptr_node->ptr_aux_min_subzones_x);
+			free(ptr_node->ptr_aux_max_subzones_x);
+			free(ptr_node->ptr_aux_min_subzones_y);
+			free(ptr_node->ptr_aux_max_subzones_y);
+			free(ptr_node->ptr_aux_min_subzones_z);
+			free(ptr_node->ptr_aux_max_subzones_z);
+		}
+
+
 
 		if (ptr_node->ptr_aux_idx != NULL)
 		{
 			free(ptr_node->ptr_aux_idx);
-			free(ptr_node->ptr_aux_bool_boundary_simulation_contact_x);
-			free(ptr_node->ptr_aux_bool_boundary_simulation_contact_y);
-			free(ptr_node->ptr_aux_bool_boundary_simulation_contact_z);
+		}
+		if (ptr_node->aux_bool_boundary_anomalies_cap != 0)
+		{
 			free(ptr_node->ptr_aux_bool_boundary_anomalies_x);
 			free(ptr_node->ptr_aux_bool_boundary_anomalies_y);
 			free(ptr_node->ptr_aux_bool_boundary_anomalies_z);
 		}
 
-		// Sub zones for periodic boundary conditions
-		if (ptr_node->pptr_subzones != NULL)
+		//** >> Links in Tree adaptation **/
+		if (ptr_node->links_cap != 0)
 		{
-			cntr = 0;
-			while (cntr < ptr_node->subzones_cap && ptr_node->pptr_subzones[cntr] != NULL)
-			{
-				free(ptr_node->pptr_subzones[cntr]);
-				cntr++;
-			}
-
-			free(ptr_node->pptr_subzones);
-			free(ptr_node->ptr_subzone_cap);
-			free(ptr_node->ptr_subzone_size);
+			free(ptr_node->ptr_links_old_ord_old);
+			free(ptr_node->ptr_links_new_ord_old);
+			free(ptr_node->ptr_links_old_ord_new);
+			free(ptr_node->ptr_links_new_ord_new);
 		}
 
-		//** >> Links in Tree adaptation **/
-		free(ptr_node->ptr_links_old_ord_old);
-		free(ptr_node->ptr_links_new_ord_old);
-		free(ptr_node->ptr_links_old_ord_new);
-		free(ptr_node->ptr_links_new_ord_new);
+
 
 		if (ptr_node == GL_pool_node_end)
 		{

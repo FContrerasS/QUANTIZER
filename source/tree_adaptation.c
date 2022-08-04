@@ -67,18 +67,47 @@ void check_error(struct node *ptr_node)
 
     int ptcl_idx;
 
+    int lv = ptr_node->lv;
+
+    int aux_idx_x;
+    int aux_idx_y;
+    int aux_idx_z;
+
     // Check ptr_box_idx
     // Children:
-
     for (int i = 0; i < ptr_node->chn_size; i++)
     {
         ptr_ch = ptr_node->pptr_chn[i];
         aux_int_2_ch = ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
         for (int cell_idx = 0; cell_idx < ptr_ch->cell_size; cell_idx++)
         {
-            box_idx_x_ch = ptr_ch->ptr_cell_idx_x[cell_idx] - ptr_ch->box_ts_x;
-            box_idx_y_ch = ptr_ch->ptr_cell_idx_y[cell_idx] - ptr_ch->box_ts_y;
-            box_idx_z_ch = ptr_ch->ptr_cell_idx_z[cell_idx] - ptr_ch->box_ts_z;
+
+            aux_idx_x = ptr_ch->ptr_cell_idx_x[cell_idx];
+            aux_idx_y = ptr_ch->ptr_cell_idx_y[cell_idx];
+            aux_idx_z = ptr_ch->ptr_cell_idx_z[cell_idx]; 
+            
+            box_idx_x_ch = aux_idx_x - ptr_ch->box_ts_x;
+            box_idx_y_ch = aux_idx_y - ptr_ch->box_ts_y;
+            box_idx_z_ch = aux_idx_z - ptr_ch->box_ts_z;
+
+            if (ptr_ch->pbc_crosses_the_boundary_simulation_box == true)
+            {
+                if (aux_idx_x > ptr_ch->box_max_x)
+                {
+                    box_idx_x_ch -= (1 << (lv + 1));
+                }
+
+                if (aux_idx_y > ptr_ch->box_max_y)
+                {
+                    box_idx_y_ch -= (1 << (lv + 1));
+                }
+
+                if (aux_idx_z > ptr_ch->box_max_z)
+                {
+                    box_idx_z_ch -= (1 << (lv + 1));
+                }
+            }
+
             box_idx_ch = box_idx_x_ch + box_idx_y_ch * ptr_ch->box_real_dim_x + box_idx_z_ch * aux_int_2_ch;
             if (box_idx_ch != ptr_ch->ptr_box_idx[cell_idx])
             {
@@ -88,12 +117,35 @@ void check_error(struct node *ptr_node)
     }
 
     // Parent node
-
     for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
     {
-        box_idx_x_node = ptr_node->ptr_cell_idx_x[cell_idx] - ptr_node->box_ts_x;
-        box_idx_y_node = ptr_node->ptr_cell_idx_y[cell_idx] - ptr_node->box_ts_y;
-        box_idx_z_node = ptr_node->ptr_cell_idx_z[cell_idx] - ptr_node->box_ts_z;
+
+        aux_idx_x = ptr_node->ptr_cell_idx_x[cell_idx];
+        aux_idx_y = ptr_node->ptr_cell_idx_y[cell_idx];
+        aux_idx_z = ptr_node->ptr_cell_idx_z[cell_idx];
+
+        box_idx_x_node = aux_idx_x - ptr_node->box_ts_x;
+        box_idx_y_node = aux_idx_y - ptr_node->box_ts_y;
+        box_idx_z_node = aux_idx_z - ptr_node->box_ts_z;
+
+        if (ptr_node->pbc_crosses_the_boundary_simulation_box == true)
+        {
+            if (aux_idx_x > ptr_node->box_max_x)
+            {
+                box_idx_x_node -= (1 << (lv + 1));
+            }
+
+            if (aux_idx_y > ptr_node->box_max_y)
+            {
+                box_idx_y_node -= (1 << (lv + 1));
+            }
+
+            if (aux_idx_z > ptr_node->box_max_z)
+            {
+                box_idx_z_node -= (1 << (lv + 1));
+            }
+        }
+
         box_idx_node = box_idx_x_node + box_idx_y_node * ptr_node->box_real_dim_x + box_idx_z_node * aux_int_2_node;
 
         if (box_idx_node != ptr_node->ptr_box_idx[cell_idx])
@@ -109,9 +161,32 @@ void check_error(struct node *ptr_node)
         aux_int_2_ch = ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
         for (int cell_idx = 0; cell_idx < ptr_ch->cell_size; cell_idx++)
         {
-            box_idx_x_ch = ptr_ch->ptr_cell_idx_x[cell_idx] - ptr_ch->box_ts_x;
-            box_idx_y_ch = ptr_ch->ptr_cell_idx_y[cell_idx] - ptr_ch->box_ts_y;
-            box_idx_z_ch = ptr_ch->ptr_cell_idx_z[cell_idx] - ptr_ch->box_ts_z;
+            aux_idx_x = ptr_ch->ptr_cell_idx_x[cell_idx];
+            aux_idx_y = ptr_ch->ptr_cell_idx_y[cell_idx];
+            aux_idx_z = ptr_ch->ptr_cell_idx_z[cell_idx];
+
+            box_idx_x_ch = aux_idx_x - ptr_ch->box_ts_x;
+            box_idx_y_ch = aux_idx_y - ptr_ch->box_ts_y;
+            box_idx_z_ch = aux_idx_z - ptr_ch->box_ts_z;
+
+            if (ptr_ch->pbc_crosses_the_boundary_simulation_box == true)
+            {
+                if (aux_idx_x > ptr_ch->box_max_x)
+                {
+                    box_idx_x_ch -= (1 << (lv + 1));
+                }
+
+                if (aux_idx_y > ptr_ch->box_max_y)
+                {
+                    box_idx_y_ch -= (1 << (lv + 1));
+                }
+
+                if (aux_idx_z > ptr_ch->box_max_z)
+                {
+                    box_idx_z_ch -= (1 << (lv + 1));
+                }
+            }
+
             box_idx_ch = box_idx_x_ch + box_idx_y_ch * ptr_ch->box_real_dim_x + box_idx_z_ch * aux_int_2_ch;
 
             if (ptr_ch->ptr_cell_struct[box_idx_ch].cell_mass != ptr_ch->ptr_cell_struct[box_idx_ch].ptcl_size * 100.0 || ptr_ch->ptr_cell_struct[box_idx_ch].ptcl_size < 0)
@@ -123,12 +198,34 @@ void check_error(struct node *ptr_node)
     }
 
     // Parent node
-
     for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
     {
-        box_idx_x_node = ptr_node->ptr_cell_idx_x[cell_idx] - ptr_node->box_ts_x;
-        box_idx_y_node = ptr_node->ptr_cell_idx_y[cell_idx] - ptr_node->box_ts_y;
-        box_idx_z_node = ptr_node->ptr_cell_idx_z[cell_idx] - ptr_node->box_ts_z;
+        aux_idx_x = ptr_node->ptr_cell_idx_x[cell_idx];
+        aux_idx_y = ptr_node->ptr_cell_idx_y[cell_idx];
+        aux_idx_z = ptr_node->ptr_cell_idx_z[cell_idx];
+
+        box_idx_x_node = aux_idx_x - ptr_node->box_ts_x;
+        box_idx_y_node = aux_idx_y - ptr_node->box_ts_y;
+        box_idx_z_node = aux_idx_z - ptr_node->box_ts_z;
+
+        if (ptr_node->pbc_crosses_the_boundary_simulation_box == true)
+        {
+            if (aux_idx_x > ptr_node->box_max_x)
+            {
+                box_idx_x_node -= (1 << (lv + 1));
+            }
+
+            if (aux_idx_y > ptr_node->box_max_y)
+            {
+                box_idx_y_node -= (1 << (lv + 1));
+            }
+
+            if (aux_idx_z > ptr_node->box_max_z)
+            {
+                box_idx_z_node -= (1 << (lv + 1));
+            }
+        }
+
         box_idx_node = box_idx_x_node + box_idx_y_node * ptr_node->box_real_dim_x + box_idx_z_node * aux_int_2_node;
 
         if (ptr_node->ptr_cell_struct[box_idx_node].cell_mass != ptr_node->ptr_cell_struct[box_idx_node].ptcl_size * 100.0 || ptr_node->ptr_cell_struct[box_idx_node].ptcl_size < 0)
@@ -199,7 +296,7 @@ void check_error(struct node *ptr_node)
         }
     }
 
-    // //Paernt
+    //Parent
     aux_mass1 = 0;
     aux_mass2 = 0;
     for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
@@ -220,6 +317,8 @@ void check_error(struct node *ptr_node)
 
     // Boxes:
     //   Children
+    int cntr_Periodic_boundary;
+    int cntr_border_simulation;
     int cntr_No_exist;
     int cntr_Exist;
     int cntr_chn;
@@ -227,6 +326,8 @@ void check_error(struct node *ptr_node)
     for (int i = 0; i < ptr_node->chn_size; i++)
     {
         ptr_ch = ptr_node->pptr_chn[i];
+        cntr_Periodic_boundary = 0;
+        cntr_border_simulation = 0;
         cntr_No_exist = 0;
         cntr_Exist = 0;
         cntr_chn = 0;
@@ -235,7 +336,7 @@ void check_error(struct node *ptr_node)
         {
             box_idx_ch = ptr_ch->ptr_box_idx[cell_idx];
 
-            if (ptr_ch->ptr_box[box_idx_ch] < -4 || ptr_ch->ptr_box[box_idx_ch] == -1 || ptr_ch->ptr_box[box_idx_ch] > ptr_ch->chn_size - 1)
+            if (ptr_ch->ptr_box[box_idx_ch] < -3 || ptr_ch->ptr_box[box_idx_ch] == -1 || ptr_ch->ptr_box[box_idx_ch] == -2 || ptr_ch->ptr_box[box_idx_ch] > ptr_ch->chn_size - 1)
             {
                 printf("Error, hijo, las celdas de la caja no concuerdan\n ");
             }
@@ -243,9 +344,17 @@ void check_error(struct node *ptr_node)
 
         for (int cell_idx = 0; cell_idx < ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y * ptr_ch->box_real_dim_z; cell_idx++)
         {
-            if (ptr_ch->ptr_box[cell_idx] < -4)
+            if (ptr_ch->ptr_box[cell_idx] < -6)
             {
-                printf("Error, celda < -4\n");
+                printf("Error, celda < -6\n");
+            }
+            else if (ptr_ch->ptr_box[cell_idx] == -6)
+            {
+                cntr_Periodic_boundary++;
+            }
+            else if (ptr_ch->ptr_box[cell_idx] == -5)
+            {
+                cntr_border_simulation++;
             }
             else if (ptr_ch->ptr_box[cell_idx] == -4)
             {
@@ -255,9 +364,9 @@ void check_error(struct node *ptr_node)
             {
                 cntr_Exist++;
             }
-            else if (ptr_ch->ptr_box[cell_idx] == -1)
+            else if (ptr_ch->ptr_box[cell_idx] == -2 || ptr_ch->ptr_box[cell_idx] == -1)
             {
-                printf("Error, Hijo, celda = -1\n");
+                printf("Error, Hijo, celda = %d\n", ptr_ch->ptr_box[cell_idx]);
             }
             else
             {
@@ -272,6 +381,8 @@ void check_error(struct node *ptr_node)
     }
 
     //   Parent
+    cntr_Periodic_boundary = 0;
+    cntr_border_simulation = 0;
     cntr_No_exist = 0;
     cntr_Exist = 0;
     cntr_chn = 0;
@@ -279,7 +390,7 @@ void check_error(struct node *ptr_node)
     {
         box_idx_node = ptr_node->ptr_box_idx[cell_idx];
 
-        if (ptr_node->ptr_box[box_idx_node] < -4 || ptr_node->ptr_box[box_idx_node] == -1 || ptr_node->ptr_box[box_idx_node] > ptr_node->chn_size - 1)
+        if (ptr_node->ptr_box[box_idx_node] < -3 || ptr_node->ptr_box[box_idx_node] == -1 || ptr_node->ptr_box[box_idx_node] == -2 || ptr_node->ptr_box[box_idx_node] > ptr_node->chn_size - 1)
         {
             printf("Error, Parent, las celdas de la caja no concuerdan\n ");
         }
@@ -287,7 +398,19 @@ void check_error(struct node *ptr_node)
 
     for (int cell_idx = 0; cell_idx < ptr_node->box_real_dim_x * ptr_node->box_real_dim_y * ptr_node->box_real_dim_z; cell_idx++)
     {
-        if (ptr_node->ptr_box[cell_idx] <= -4)
+        if (ptr_node->ptr_box[cell_idx] < -6)
+        {
+            printf("Error, celda < -6\n");
+        }
+        else if (ptr_node->ptr_box[cell_idx] == -6)
+        {
+            cntr_Periodic_boundary++;
+        }
+        else if (ptr_node->ptr_box[cell_idx] == -5)
+        {
+            cntr_border_simulation++;
+        }
+        else if (ptr_node->ptr_box[cell_idx] == -4)
         {
             cntr_No_exist++;
         }
@@ -295,9 +418,9 @@ void check_error(struct node *ptr_node)
         {
             cntr_Exist++;
         }
-        else if (ptr_node->ptr_box[cell_idx] == -1)
+        else if (ptr_node->ptr_box[cell_idx] == -2 || ptr_node->ptr_box[cell_idx] == -1)
         {
-            printf("Error, celda = -1\n");
+            printf("Error, celda = %d\n", ptr_node->ptr_box[cell_idx]);
         }
         else
         {
@@ -1312,11 +1435,11 @@ static int adapt_child_nodes(struct node *ptr_node)
                 ptr_ch->box_min_y == 0 || ptr_ch->box_max_y == (1 << ptr_ch->lv) - 1 ||
                 ptr_ch->box_min_z == 0 || ptr_ch->box_max_z == (1 << ptr_ch->lv) - 1)
             {
-                ptr_ch->pbc_anomalies_due_to_the_boundary = true;
+                ptr_ch->boundary_simulation_contact = true;
             }
             else
             {
-                ptr_ch->pbc_anomalies_due_to_the_boundary = false;
+                ptr_ch->boundary_simulation_contact = false;
             }
             
         }
@@ -1450,11 +1573,11 @@ static int create_new_child_nodes(struct node *ptr_node)
             ptr_ch->box_min_y == 0 || ptr_ch->box_max_y == (1 << ptr_ch->lv) - 1 ||
             ptr_ch->box_min_z == 0 || ptr_ch->box_max_z == (1 << ptr_ch->lv) - 1)
         {
-            ptr_ch->pbc_anomalies_due_to_the_boundary = true;
+            ptr_ch->boundary_simulation_contact = true;
         }
         else
         {
-            ptr_ch->pbc_anomalies_due_to_the_boundary = false;
+            ptr_ch->boundary_simulation_contact = false;
         }
     }
     return _SUCCESS_;

@@ -45,6 +45,9 @@ int ptcl_idx_to_box_idx(struct node *ptr_node, int ptcl_idx)
     int box_idx_z; // Box index in Z direcction
     int box_idx;   // Box index
 
+    int box_real_dim_X = ptr_node->box_real_dim_x;
+    int box_real_dim_X_times_Y = ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+
     lv = ptr_node->lv;
 
     //** >> Position of the particles in the grid level of the current node before updating**/
@@ -61,7 +64,23 @@ int ptcl_idx_to_box_idx(struct node *ptr_node, int ptcl_idx)
     box_idx_x = pos_x_floor - ptr_node->box_ts_x;
     box_idx_y = pos_y_floor - ptr_node->box_ts_y;
     box_idx_z = pos_z_floor - ptr_node->box_ts_z;
-    box_idx = box_idx_x + box_idx_y * ptr_node->box_real_dim_x + box_idx_z * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+    box_idx = box_idx_x + box_idx_y * box_real_dim_X + box_idx_z * box_real_dim_X_times_Y;
+
+    if (ptr_node->pbc_crosses_the_boundary_simulation_box == true && lv != lmin)
+    {
+        if (pos_x_floor > ptr_node->box_max_x)
+        {
+            box_idx -= (1 << lv);
+        }
+        if (pos_y_floor > ptr_node->box_max_y)
+        {
+            box_idx -= (1 << lv) * box_real_dim_X;
+        }
+        if (pos_z_floor > ptr_node->box_max_z)
+        {
+            box_idx -= (1 << lv) * box_real_dim_X_times_Y;
+        }
+    }
 
     return box_idx;
 }

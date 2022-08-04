@@ -132,11 +132,17 @@ void initialize_node(struct node *ptr_node)
 	ptr_node->aux_idx_cap = 0;
 	ptr_node->aux_bool_boundary_anomalies_cap = 0;
 	// Sub zones for periodic boundary conditions
-	ptr_node->pptr_subzones = NULL;	// Pointer to refined subzones in the node
+	// ptr_node->pptr_subzones = NULL;	// Pointer to refined subzones in the node
 	ptr_node->subzones_cap = 0;		// capacity in the number of refined subzones in the node
 	ptr_node->subzones_size = 0;		// Number of refined subzones in the node
-	ptr_node->ptr_subzone_cap = NULL;	// capacity of each refined subzone
-	ptr_node->ptr_subzone_size = NULL; // Number of cells in each refined subzone
+	// ptr_node->ptr_subzone_cap = NULL;	// capacity of each refined subzone
+	// ptr_node->ptr_subzone_size = NULL; // Number of cells in each refined subzone
+	ptr_node->ptr_aux_min_subzones_x = NULL;
+	ptr_node->ptr_aux_max_subzones_x = NULL;
+	ptr_node->ptr_aux_min_subzones_y = NULL;
+	ptr_node->ptr_aux_max_subzones_y = NULL;
+	ptr_node->ptr_aux_min_subzones_z = NULL;
+	ptr_node->ptr_aux_max_subzones_z = NULL;
 
 	//** >> Links in Tree adaptation **/
 	ptr_node->ptr_links_old_ord_old = NULL;
