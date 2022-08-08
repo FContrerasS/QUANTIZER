@@ -234,7 +234,7 @@ static void init_global_ref_crit(void)
     ref_criterion_mass = 1.0e100; // meanmass * 7;
     ref_criterion_ptcl = 4;
     n_exp = 1;   // n_exp = 0 is corrupted because particles can move between more than 1 level of refinement
-    _CFL_ = 0.5; // CFL criteria 0.5
+    _CFL_ = 0.9; // CFL criteria 0.5
     _MAX_dt_ = _Mgyear_ * 1.0;
 }
 
@@ -256,7 +256,7 @@ static void init_global_poisson_params(void)
     _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_ = 1000;
     _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ = (1.0e-8);
     _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_2 = (1.0e-8);
-    check_poisson_error_method = 1;  //Only used Gauss-Said or Jacobi in multigrid
+    check_poisson_error_method = 0;  //Only used Gauss-Said or Jacobi in multigrid
     multigrid_cycle = 0; 
     solverPreS = 0;
     solverPostS = 0;
@@ -268,7 +268,7 @@ static void init_global_poisson_params(void)
     _w_SOR_ = 1.9;
     _w_SOR_HEAD_ = 1.0;
 
-    iter_between_check_potential_solution = 5;
+    iter_between_check_potential_solution = 1;
 
     branches_maximal_node_number_to_activate_conjugate_gradient = 513; // 513, 216 = node with minimum size of 1 (+1 n_exp) size, (1 + 2*n_exp)^3 * 8
 
@@ -278,7 +278,7 @@ static void init_global_poisson_params(void)
 
 static void init_global_force_params(void)
 {
-    force_stencil = 1;  // 0 = 3-points, 1 = 5-points
+    force_stencil = 0;  // 0 = 3-points, 1 = 5-points
 }
 
 static void init_global_energies_params(void)
@@ -351,7 +351,7 @@ static void init_global_memory(void)
 
 static void init_global_garbage_collector_parameters(void)
 {
-    Garbage_Collector_iter = 50; // Number of time-steps between each garbage collector
+    Garbage_Collector_iter = 10000000; // Number of time-steps between each garbage collector
 }
 
 static void init_global_boundary_parameters(void)

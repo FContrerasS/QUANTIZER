@@ -153,11 +153,11 @@ void output_main_parameters(vtype final_time, int Number_timesteps, int Number_o
         "tentacles_updating",
         "moved_unused_child_node_to_memory_pool",
         "updating_tentacles_max_lv",
+        "adding_boundary_simulation_box_status_to_children_nodes",
         ""};
 
-
     fprintf(file, "\n\nTREE ADAPTATION TIME [s], Percentage over tree adaptation time\n\n");
-    for (int i = 30; i < 49; i++)
+    for (int i = 30; i < 50; i++)
     {
         fprintf(file, "%d: %s = %1.2e ~ %.1f %%\n", i - 30, Time_names_tree_adaptation[i - 30], GL_times[i], GL_times[i] * 100 / GL_times[10]);
     }
