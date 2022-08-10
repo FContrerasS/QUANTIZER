@@ -39,8 +39,8 @@ void initialize_node(struct node *ptr_node)
 	ptr_node->box_real_dim_x = 0;  // Real dimension X of the box
 	ptr_node->box_real_dim_y = 0;  // Real dimension Y of the box
 	ptr_node->box_real_dim_z = 0;  // Real dimension Z of the box
-	ptr_node->box_real_dim_x_old = 0;  // Auxiliary real dimension X of the box
-	ptr_node->box_real_dim_y_old = 0;  // Auxiliary real dimension Y of the box
+	// ptr_node->box_real_dim_x_old = 0;  // Auxiliary real dimension X of the box
+	// ptr_node->box_real_dim_y_old = 0;  // Auxiliary real dimension Y of the box
 	//ptr_node->box_real_dim_z_old = 0;  // Auxiliary real dimension Z of the box
 	ptr_node->box_dim_x = 0;	   // Dimension X of the box (new and old)
 	ptr_node->box_dim_y = 0;	   // Dimension Y of the box (new and old)
@@ -48,9 +48,9 @@ void initialize_node(struct node *ptr_node)
 	ptr_node->box_ts_x = 0;		   // Index translation from real local index cell to box index at dimension X
 	ptr_node->box_ts_y = 0;		   // Index translation from real local index cell to box index at dimension Y
 	ptr_node->box_ts_z = 0;		   // Index translation from real local index cell to box index at dimension Z
-	ptr_node->box_ts_x_old = 0;		   // Auxiliary index translation from real local index cell to box index at dimension X
-	ptr_node->box_ts_y_old = 0;		   // Auxiliary index translation from real local index cell to box index at dimension Y
-	ptr_node->box_ts_z_old = 0;		   // Auxiliary index translation from real local index cell to box index at dimension Z
+	// ptr_node->box_ts_x_old = 0;		   // Auxiliary index translation from real local index cell to box index at dimension X
+	// ptr_node->box_ts_y_old = 0;		   // Auxiliary index translation from real local index cell to box index at dimension Y
+	// ptr_node->box_ts_z_old = 0;		   // Auxiliary index translation from real local index cell to box index at dimension Z
 	ptr_node->box_min_x = INT_MAX; // Already minimal box value index in the real local space at the dimension X
 	ptr_node->box_min_y = INT_MAX; // Already minimal box value index in the real local space at the dimension Y
 	ptr_node->box_min_z = INT_MAX; // Already minimal box value index in the real local space at the dimension Z
@@ -73,23 +73,25 @@ void initialize_node(struct node *ptr_node)
 	ptr_node->cell_struct_old_cap = 0;
 
 	//** >> Total mass in the node **/
-	ptr_node->local_mass = 0; 
+	ptr_node->local_mass = 0;
+	//** >> Total number of particles in the node
+	ptr_node->local_no_ptcl = 0; // Total mass in the node
 
 	//** >> Grid points **/
 	ptr_node->ptr_intr_grid_cell_idx_x = NULL; // X index of the interior grid point
 	ptr_node->ptr_intr_grid_cell_idx_y = NULL; // Y index position of the cells in the node at level l
 	ptr_node->ptr_intr_grid_cell_idx_z = NULL; // Z index position of the cells in the node at level l
-	ptr_node->ptr_intr_grid_idx = NULL;	  // Indexes of the interior grid points of the block
+	ptr_node->ptr_intr_box_grid_idx = NULL;	  // Indexes of the interior grid points of the block
 
 	ptr_node->ptr_bder_grid_cell_idx_x = NULL;		 // X index of the interior grid point
 	ptr_node->ptr_bder_grid_cell_idx_y = NULL;		 // Y index position of the cells in the node at level l
 	ptr_node->ptr_bder_grid_cell_idx_z = NULL;		 // Z index position of the cells in the node at level l
-	ptr_node->ptr_bder_grid_idx = NULL;
+	ptr_node->ptr_bder_box_grid_idx = NULL;
 
 	ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_x = NULL; // X index of the boundary of the simulation grid point
 	ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_y = NULL; // Y index position of the cells in the node at level l
 	ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_z = NULL; // Z index position of the cells in the node at level l
-	ptr_node->ptr_SIMULATION_BOUNDARY_grid_idx = NULL;
+	ptr_node->ptr_SIMULATION_BOUNDARY_box_grid_idx = NULL;
 
 	// Indexes of the interior grid points of the block
     ptr_node->grid_intr_cap = 0;   // Maximum cap of the grid interior points array of the block

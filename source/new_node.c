@@ -55,6 +55,8 @@ static void re_initialize_node(struct node *ptr_node)
 
 	//** >> Total mass in the node **/
 	ptr_node->local_mass = 0;
+	//** >> Total number of particles in the node
+	ptr_node->local_no_ptcl = 0;
 
 	//** >> Grid points **/
     ptr_node->grid_intr_size = 0; // Number of existing grid interior points in the block

@@ -50,7 +50,7 @@ int conjugate_gradient(struct node *ptr_node)
     // Computing r
     for (int i = 0; i < ptr_node->grid_intr_size; i++)
     {
-        box_grid_idx = ptr_node->ptr_intr_grid_idx[i];
+        box_grid_idx = ptr_node->ptr_intr_box_grid_idx[i];
         r[box_grid_idx] = ptr_node->ptr_d[box_grid_idx] + one_over_H_pow_2 *
                                                               (6.0 * ptr_node->ptr_pot[box_grid_idx] - ptr_node->ptr_pot[box_grid_idx + 1] - ptr_node->ptr_pot[box_grid_idx - 1] - ptr_node->ptr_pot[box_grid_idx + grid_box_real_dim_X] - ptr_node->ptr_pot[box_grid_idx - grid_box_real_dim_X] - ptr_node->ptr_pot[box_grid_idx + grid_box_real_dim_X_times_Y] - ptr_node->ptr_pot[box_grid_idx - grid_box_real_dim_X_times_Y]);
     }
@@ -62,7 +62,7 @@ int conjugate_gradient(struct node *ptr_node)
     rsold = 0;
     for (int i = 0; i < ptr_node->grid_intr_size; i++)
     {
-        box_grid_idx = ptr_node->ptr_intr_grid_idx[i];
+        box_grid_idx = ptr_node->ptr_intr_box_grid_idx[i];
         rsold += r[box_grid_idx] * r[box_grid_idx];
     }
 
@@ -86,7 +86,7 @@ int conjugate_gradient(struct node *ptr_node)
         // Computing Ap
         for (int j = 0; j < ptr_node->grid_intr_size; j++)
         {
-            box_grid_idx = ptr_node->ptr_intr_grid_idx[j];
+            box_grid_idx = ptr_node->ptr_intr_box_grid_idx[j];
             Ap[box_grid_idx] = -one_over_H_pow_2 * (6.0 * p[box_grid_idx] - p[box_grid_idx + 1] - p[box_grid_idx - 1] - p[box_grid_idx + grid_box_real_dim_X] - p[box_grid_idx - grid_box_real_dim_X] - p[box_grid_idx + grid_box_real_dim_X_times_Y] - p[box_grid_idx - grid_box_real_dim_X_times_Y]);
             //printf("Ap = %1.3Le\n", Ap[box_grid_idx]);
         }
@@ -95,7 +95,7 @@ int conjugate_gradient(struct node *ptr_node)
         alpha = 0;
         for (int j = 0; j < ptr_node->grid_intr_size; j++)
         {
-            box_grid_idx = ptr_node->ptr_intr_grid_idx[j];
+            box_grid_idx = ptr_node->ptr_intr_box_grid_idx[j];
             alpha += p[box_grid_idx] * Ap[box_grid_idx];
         }
 
@@ -104,14 +104,14 @@ int conjugate_gradient(struct node *ptr_node)
         // New solution
         for (int j = 0; j < ptr_node->grid_intr_size; j++)
         {
-            box_grid_idx = ptr_node->ptr_intr_grid_idx[j];
+            box_grid_idx = ptr_node->ptr_intr_box_grid_idx[j];
             ptr_node->ptr_pot[box_grid_idx] += alpha * p[box_grid_idx];
         }
 
         // New rest
         for (int j = 0; j < ptr_node->grid_intr_size; j++)
         {
-            box_grid_idx = ptr_node->ptr_intr_grid_idx[j];
+            box_grid_idx = ptr_node->ptr_intr_box_grid_idx[j];
             r[box_grid_idx] -= alpha * Ap[box_grid_idx];
         }
 
@@ -119,7 +119,7 @@ int conjugate_gradient(struct node *ptr_node)
         rsnew = 0;
         for (int j = 0; j < ptr_node->grid_intr_size; j++)
         {
-            box_grid_idx = ptr_node->ptr_intr_grid_idx[j];
+            box_grid_idx = ptr_node->ptr_intr_box_grid_idx[j];
             rsnew += r[box_grid_idx] * r[box_grid_idx];
         }
 
@@ -142,7 +142,7 @@ int conjugate_gradient(struct node *ptr_node)
         // Updating p
         for (int j = 0; j < ptr_node->grid_intr_size; j++)
         {
-            box_grid_idx = ptr_node->ptr_intr_grid_idx[j];
+            box_grid_idx = ptr_node->ptr_intr_box_grid_idx[j];
             p[box_grid_idx] = r[box_grid_idx] + rsnew / rsold * p[box_grid_idx];
         }
         // Updating rsold

@@ -182,8 +182,8 @@ static int initializing_head_node(void)
 
 	//** >> Total mass in the node
 	ptr_head->local_mass = total_mass;
-
-	
+	//** >> Total number of particles in the node
+	ptr_head->local_no_ptcl = GL_no_ptcl_initial;
 
 	//** >> Grid points **/
 	ptr_head->grid_intr_cap = (no_lmin_cell - 1) * (no_lmin_cell - 1) * (no_lmin_cell - 1);
@@ -191,14 +191,14 @@ static int initializing_head_node(void)
 	ptr_head->ptr_intr_grid_cell_idx_x = (int *)malloc(ptr_head->grid_intr_cap * sizeof(int));
 	ptr_head->ptr_intr_grid_cell_idx_y = (int *)malloc(ptr_head->grid_intr_cap * sizeof(int));
 	ptr_head->ptr_intr_grid_cell_idx_z = (int *)malloc(ptr_head->grid_intr_cap * sizeof(int));
-	ptr_head->ptr_intr_grid_idx = (int *)malloc(ptr_head->grid_intr_cap * sizeof(int));
+	ptr_head->ptr_intr_box_grid_idx = (int *)malloc(ptr_head->grid_intr_cap * sizeof(int));
 
 	ptr_head->grid_SIMULATION_BOUNDARY_cap = (no_lmin_cell + 1) * (no_lmin_cell + 1) * (no_lmin_cell + 1) - ptr_head->grid_intr_cap;
 	ptr_head->grid_SIMULATION_BOUNDARY_size = 0;
 	ptr_head->ptr_SIMULATION_BOUNDARY_grid_cell_idx_x = (int *)malloc(ptr_head->grid_SIMULATION_BOUNDARY_cap * sizeof(int));
 	ptr_head->ptr_SIMULATION_BOUNDARY_grid_cell_idx_y = (int *)malloc(ptr_head->grid_SIMULATION_BOUNDARY_cap * sizeof(int));
 	ptr_head->ptr_SIMULATION_BOUNDARY_grid_cell_idx_z = (int *)malloc(ptr_head->grid_SIMULATION_BOUNDARY_cap * sizeof(int));
-	ptr_head->ptr_SIMULATION_BOUNDARY_grid_idx = (int *)malloc(ptr_head->grid_SIMULATION_BOUNDARY_cap * sizeof(int));
+	ptr_head->ptr_SIMULATION_BOUNDARY_box_grid_idx = (int *)malloc(ptr_head->grid_SIMULATION_BOUNDARY_cap * sizeof(int));
 
 	//** Filling grid points indexes **/
 
@@ -215,7 +215,7 @@ static int initializing_head_node(void)
 					ptr_head->ptr_SIMULATION_BOUNDARY_grid_cell_idx_x[ptr_head->grid_SIMULATION_BOUNDARY_size] = i + ptr_head->box_ts_x;
 					ptr_head->ptr_SIMULATION_BOUNDARY_grid_cell_idx_y[ptr_head->grid_SIMULATION_BOUNDARY_size] = j + ptr_head->box_ts_y;
 					ptr_head->ptr_SIMULATION_BOUNDARY_grid_cell_idx_z[ptr_head->grid_SIMULATION_BOUNDARY_size] = k + ptr_head->box_ts_z;
-					ptr_head->ptr_SIMULATION_BOUNDARY_grid_idx[ptr_head->grid_SIMULATION_BOUNDARY_size] = box_grid_idx;
+					ptr_head->ptr_SIMULATION_BOUNDARY_box_grid_idx[ptr_head->grid_SIMULATION_BOUNDARY_size] = box_grid_idx;
 					ptr_head->grid_SIMULATION_BOUNDARY_size += 1; // Increasing the border grid points
 				}
 				//** >> Interior grid point **/
@@ -224,7 +224,7 @@ static int initializing_head_node(void)
 					ptr_head->ptr_intr_grid_cell_idx_x[ptr_head->grid_intr_size] = i + ptr_head->box_ts_x;
 					ptr_head->ptr_intr_grid_cell_idx_y[ptr_head->grid_intr_size] = j + ptr_head->box_ts_y;
 					ptr_head->ptr_intr_grid_cell_idx_z[ptr_head->grid_intr_size] = k + ptr_head->box_ts_z;
-					ptr_head->ptr_intr_grid_idx[ptr_head->grid_intr_size] = box_grid_idx;
+					ptr_head->ptr_intr_box_grid_idx[ptr_head->grid_intr_size] = box_grid_idx;
 					ptr_head->grid_intr_size += 1; // Increasing the interior grid points
 				}
 			}

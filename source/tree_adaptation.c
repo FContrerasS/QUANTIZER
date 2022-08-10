@@ -64,8 +64,11 @@ void check_error(struct node *ptr_node)
 
     struct node *ptr_ch;
 
-    int aux_int_2_ch;
-    int aux_int_2_node = ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+    int box_real_dim_X_node = ptr_node->box_real_dim_x;
+    int box_real_dim_X_times_Y_node = ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+
+    int box_real_dim_X_ch;
+    int box_real_dim_X_times_Y_ch;
 
     int ptcl_idx;
 
@@ -80,7 +83,10 @@ void check_error(struct node *ptr_node)
     for (int i = 0; i < ptr_node->chn_size; i++)
     {
         ptr_ch = ptr_node->pptr_chn[i];
-        aux_int_2_ch = ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
+
+        box_real_dim_X_ch = ptr_ch->box_real_dim_x;
+        box_real_dim_X_times_Y_ch = ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
+
         for (int cell_idx = 0; cell_idx < ptr_ch->cell_size; cell_idx++)
         {
 
@@ -110,7 +116,7 @@ void check_error(struct node *ptr_node)
                 }
             }
 
-            box_idx_ch = box_idx_x_ch + box_idx_y_ch * ptr_ch->box_real_dim_x + box_idx_z_ch * aux_int_2_ch;
+            box_idx_ch = box_idx_x_ch + box_idx_y_ch * box_real_dim_X_ch + box_idx_z_ch * box_real_dim_X_times_Y_ch;
             if (box_idx_ch != ptr_ch->ptr_box_idx[cell_idx])
             {
                 printf("\nError,ptr_box_idx no es igual \n");
@@ -148,7 +154,7 @@ void check_error(struct node *ptr_node)
             }
         }
 
-        box_idx_node = box_idx_x_node + box_idx_y_node * ptr_node->box_real_dim_x + box_idx_z_node * aux_int_2_node;
+        box_idx_node = box_idx_x_node + box_idx_y_node * box_real_dim_X_node + box_idx_z_node * box_real_dim_X_times_Y_node;
 
         if (box_idx_node != ptr_node->ptr_box_idx[cell_idx])
         {
@@ -160,7 +166,10 @@ void check_error(struct node *ptr_node)
     for (int i = 0; i < ptr_node->chn_size; i++)
     {
         ptr_ch = ptr_node->pptr_chn[i];
-        aux_int_2_ch = ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
+
+        box_real_dim_X_ch = ptr_ch->box_real_dim_x;
+        box_real_dim_X_times_Y_ch = ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
+
         for (int cell_idx = 0; cell_idx < ptr_ch->cell_size; cell_idx++)
         {
             aux_idx_x = ptr_ch->ptr_cell_idx_x[cell_idx];
@@ -189,7 +198,7 @@ void check_error(struct node *ptr_node)
                 }
             }
 
-            box_idx_ch = box_idx_x_ch + box_idx_y_ch * ptr_ch->box_real_dim_x + box_idx_z_ch * aux_int_2_ch;
+            box_idx_ch = box_idx_x_ch + box_idx_y_ch * box_real_dim_X_ch + box_idx_z_ch * box_real_dim_X_times_Y_ch;
 
             if (ptr_ch->ptr_cell_struct[box_idx_ch].cell_mass != ptr_ch->ptr_cell_struct[box_idx_ch].ptcl_size * 100.0 || ptr_ch->ptr_cell_struct[box_idx_ch].ptcl_size < 0)
             {
@@ -228,7 +237,7 @@ void check_error(struct node *ptr_node)
             }
         }
 
-        box_idx_node = box_idx_x_node + box_idx_y_node * ptr_node->box_real_dim_x + box_idx_z_node * aux_int_2_node;
+        box_idx_node = box_idx_x_node + box_idx_y_node * box_real_dim_X_node + box_idx_z_node * box_real_dim_X_times_Y_node;
 
         if (ptr_node->ptr_cell_struct[box_idx_node].cell_mass != ptr_node->ptr_cell_struct[box_idx_node].ptcl_size * 100.0 || ptr_node->ptr_cell_struct[box_idx_node].ptcl_size < 0)
         {
@@ -242,7 +251,10 @@ void check_error(struct node *ptr_node)
     for (int i = 0; i < ptr_node->chn_size; i++)
     {
         ptr_ch = ptr_node->pptr_chn[i];
-        aux_int_2_ch = ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
+
+        // box_real_dim_X_ch = ptr_ch->box_real_dim_x;
+        // box_real_dim_X_times_Y_ch = ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
+
         for (int cell_idx = 0; cell_idx < ptr_ch->cell_size; cell_idx++)
         {
             box_idx_ch = ptr_ch->ptr_box_idx[cell_idx];
@@ -258,7 +270,6 @@ void check_error(struct node *ptr_node)
     }
 
     // Parent
-    aux_int_2_node = ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
     for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
     {
         box_idx_node = ptr_node->ptr_box_idx[cell_idx];
@@ -272,10 +283,12 @@ void check_error(struct node *ptr_node)
         }
     }
 
-    // Local mass:
+    // Local mass and loca no particles:
     //  Children
     vtype aux_mass1 = 0;
     vtype aux_mass2 = 0;
+    int aux_no_ptcl1 = 0;
+    int aux_no_ptcl2 = 0;
     for (int i = 0; i < ptr_node->chn_size; i++)
     {
         aux_mass1 = 0;
@@ -286,35 +299,52 @@ void check_error(struct node *ptr_node)
             box_idx_ch = ptr_ch->ptr_box_idx[cell_idx];
 
             aux_mass1 += ptr_ch->ptr_cell_struct[box_idx_ch].cell_mass;
+            aux_no_ptcl1 += ptr_ch->ptr_cell_struct[box_idx_ch].ptcl_size;
         }
         for (int cell_idx = 0; cell_idx < ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y * ptr_ch->box_real_dim_z; cell_idx++)
         {
             aux_mass2 += ptr_ch->ptr_cell_struct[cell_idx].cell_mass;
+            aux_no_ptcl2 += ptr_ch->ptr_cell_struct[cell_idx].ptcl_size;
         }
         if (aux_mass1 != aux_mass2 || aux_mass1 != ptr_ch->local_mass)
         {
             printf("\nError, Child local mass diferente a mass en caja\n ");
             printf("cell mass = %f, box mass = %f, local mass = %f\n", (double) aux_mass1, (double) aux_mass2, (double) ptr_ch->local_mass);
         }
+
+        if (aux_no_ptcl1 != aux_no_ptcl2 || aux_no_ptcl1 != ptr_ch->local_no_ptcl)
+        {
+            printf("\nError, Child local number of particles diferente a local no ptcl en caja\n ");
+            printf("cell no particles = %d, box no ptcl = %d, local no ptcl = %d\n", (int)aux_no_ptcl1, (int)aux_no_ptcl2, (int)ptr_ch->local_no_ptcl);
+        }
     }
 
     //Parent
     aux_mass1 = 0;
     aux_mass2 = 0;
+    aux_no_ptcl1 = 0;
+    aux_no_ptcl2 = 0;
     for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
     {
         box_idx_node = ptr_node->ptr_box_idx[cell_idx];
 
         aux_mass1 += ptr_node->ptr_cell_struct[box_idx_node].cell_mass;
+        aux_no_ptcl1 += ptr_node->ptr_cell_struct[box_idx_node].ptcl_size;
     }
     for (int cell_idx = 0; cell_idx < ptr_node->box_real_dim_x * ptr_node->box_real_dim_y * ptr_node->box_real_dim_z; cell_idx++)
     {
         aux_mass2 += ptr_node->ptr_cell_struct[cell_idx].cell_mass;
+        aux_no_ptcl2 += ptr_node->ptr_cell_struct[cell_idx].ptcl_size;
     }
     if (aux_mass1 != aux_mass2 || aux_mass1 != ptr_node->local_mass)
     {
         printf("\nError, Parent local mass diferente a mass en caja\n ");
         printf("cell mass = %f, box mass = %f, local mass = %f\n", (double)aux_mass1, (double) aux_mass2, (double)ptr_node->local_mass);
+    }
+    if (aux_no_ptcl1 != aux_no_ptcl2 || aux_no_ptcl1 != ptr_node->local_no_ptcl)
+    {
+        printf("\nError, Parent local number of particles diferente a local no ptcl en caja\n ");
+        printf("cell no particles = %d, box no ptcl = %d, local no ptcl = %d\n", (int)aux_no_ptcl1, (int)aux_no_ptcl2, (int)ptr_node->local_no_ptcl);
     }
 
     // Boxes:
@@ -461,6 +491,12 @@ void check_error(struct node *ptr_node)
             printf("local mass = %f\n", (double)ptr_node->local_mass);
         }
 
+        if (ptr_node->local_no_ptcl != GL_no_ptcl_final)
+        {
+            printf("Error, Head lv, diferent local no ptcl\n");
+            printf("local no_ptcl = %f\n", (double)ptr_node->local_no_ptcl);
+        }
+
         if (GL_tentacles_size[0] != 1)
         {
             printf("Error, tentacles size != 1 at Head lv\n");
@@ -591,9 +627,6 @@ static int find_min_max_subzones_ref_PERIODIC_BOUNDARY(struct node *ptr_node, in
         cell_ref_idx++;
     } // At this point the box contains the information of all refinement subzones
 
-    // ptr_node->subzones_cap = subzone_idx_max; // Maximum amount of subzones
-    ptr_node->subzones_size = subzone_idx; // Total amount of subzones
-
     if (subzone_idx > 1)
     {
         //** >> Space checking of refinement subzones min and max arrays  **/
@@ -606,7 +639,7 @@ static int find_min_max_subzones_ref_PERIODIC_BOUNDARY(struct node *ptr_node, in
         //** >> Initializing suzbones min and max
         if (ptr_node->ptr_aux_bool_boundary_anomalies_x[zone_idx] == true)
         {
-            for (int i = 0; i < ptr_node->subzones_size; i++)
+            for (int i = 0; i < subzone_idx; i++)
             {
                 ptr_node->ptr_aux_min_subzones_x[i] = INT_MAX;
                 ptr_node->ptr_aux_max_subzones_x[i] = INT_MIN;
@@ -615,7 +648,7 @@ static int find_min_max_subzones_ref_PERIODIC_BOUNDARY(struct node *ptr_node, in
 
         if (ptr_node->ptr_aux_bool_boundary_anomalies_y[zone_idx] == true)
         {
-            for (int i = 0; i < ptr_node->subzones_size; i++)
+            for (int i = 0; i < subzone_idx; i++)
             {
                 ptr_node->ptr_aux_min_subzones_y[i] = INT_MAX;
                 ptr_node->ptr_aux_max_subzones_y[i] = INT_MIN;
@@ -624,7 +657,7 @@ static int find_min_max_subzones_ref_PERIODIC_BOUNDARY(struct node *ptr_node, in
 
         if (ptr_node->ptr_aux_bool_boundary_anomalies_z[zone_idx] == true)
         {
-            for (int i = 0; i < ptr_node->subzones_size; i++)
+            for (int i = 0; i < subzone_idx; i++)
             {
                 ptr_node->ptr_aux_min_subzones_z[i] = INT_MAX;
                 ptr_node->ptr_aux_max_subzones_z[i] = INT_MIN;
@@ -687,6 +720,9 @@ static int find_min_max_subzones_ref_PERIODIC_BOUNDARY(struct node *ptr_node, in
             ptr_node->ptr_box[box_idx_node] = zone_idx;
         }
     }
+
+    // ptr_node->subzones_cap = subzone_idx_max; // Maximum amount of subzones
+    ptr_node->subzones_size = subzone_idx; // Total amount of subzones
 
     return _SUCCESS_;
 }
@@ -863,9 +899,9 @@ static void initialization_ref_aux(struct node *ptr_node)
     {
         ptr_node->ptr_zone_size[i] = 0; // The zone i contains 0 elements
     }
-    ptr_node->zones_size = 0; // The total number of zones of refinement is 0
+    // ptr_node->zones_size = 0; // The total number of zones of refinement is 0
 
-    ptr_node->subzones_size = 0; //The total number of subzones of refinement is 0
+    // ptr_node->subzones_size = 0; //The total number of subzones of refinement is 0
 }
 
 static int fill_cell_ref(struct node *ptr_node)
@@ -907,9 +943,9 @@ static int fill_cell_ref(struct node *ptr_node)
             for (int cell_grandch = 0; cell_grandch < ptr_grandch->cell_size; cell_grandch += 8)
             {
 
-                aux_idx_x = (ptr_grandch->ptr_cell_idx_x[cell_grandch] >> 2);
-                aux_idx_y = (ptr_grandch->ptr_cell_idx_y[cell_grandch] >> 2);
-                aux_idx_z = (ptr_grandch->ptr_cell_idx_z[cell_grandch] >> 2);
+                aux_idx_x = ptr_grandch->ptr_cell_idx_x[cell_grandch] >> 2;
+                aux_idx_y = ptr_grandch->ptr_cell_idx_y[cell_grandch] >> 2;
+                aux_idx_z = ptr_grandch->ptr_cell_idx_z[cell_grandch] >> 2;
 
                 box_idx_x_node = aux_idx_x - ptr_node->box_ts_x;
                 box_idx_y_node = aux_idx_y - ptr_node->box_ts_y;
@@ -1361,9 +1397,9 @@ static int create_links(struct node *ptr_node)
             for (int cell_idx = 0; cell_idx < ptr_ch->cell_size; cell_idx += 8)
             {
 
-                aux_idx_x = (ptr_ch->ptr_cell_idx_x[cell_idx] >> 1);
-                aux_idx_y = (ptr_ch->ptr_cell_idx_y[cell_idx] >> 1);
-                aux_idx_z = (ptr_ch->ptr_cell_idx_z[cell_idx] >> 1);
+                aux_idx_x = ptr_ch->ptr_cell_idx_x[cell_idx] >> 1;
+                aux_idx_y = ptr_ch->ptr_cell_idx_y[cell_idx] >> 1;
+                aux_idx_z = ptr_ch->ptr_cell_idx_z[cell_idx] >> 1;
 
                 box_idx_x_node = aux_idx_x - ptr_node->box_ts_x;
                 box_idx_y_node = aux_idx_y - ptr_node->box_ts_y;
@@ -1600,9 +1636,9 @@ static void remov_cells_nolonger_require_refinement(struct node *ptr_node)
             no_cells = ptr_ch->cell_size;
             for (int cell_idx = 0; cell_idx < no_cells; cell_idx += 8)
             {
-                aux_idx_x = (ptr_ch->ptr_cell_idx_x[cell_idx] >> 1);
-                aux_idx_y = (ptr_ch->ptr_cell_idx_y[cell_idx] >> 1);
-                aux_idx_z = (ptr_ch->ptr_cell_idx_z[cell_idx] >> 1);
+                aux_idx_x = ptr_ch->ptr_cell_idx_x[cell_idx] >> 1;
+                aux_idx_y = ptr_ch->ptr_cell_idx_y[cell_idx] >> 1;
+                aux_idx_z = ptr_ch->ptr_cell_idx_z[cell_idx] >> 1;
 
                 box_idx_x_node = aux_idx_x - ptr_node->box_ts_x;
                 box_idx_y_node = aux_idx_y - ptr_node->box_ts_y;
@@ -1638,6 +1674,7 @@ static void remov_cells_nolonger_require_refinement(struct node *ptr_node)
                         box_idx_ch = ptr_ch->ptr_box_idx[j];
                         // box_idx_ch = (box_idx_x_ch + ii) + (box_idx_y_ch + jj) * ptr_ch->box_real_dim_x + (box_idx_z_ch + kk) * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
                         ptr_ch->local_mass -= ptr_ch->ptr_cell_struct[box_idx_ch].cell_mass;
+                        ptr_ch->local_no_ptcl -= ptr_ch->ptr_cell_struct[box_idx_ch].ptcl_size;
                         ptr_ch->ptr_cell_struct[box_idx_ch].cell_mass = 0;
                         ptr_ch->ptr_cell_struct[box_idx_ch].ptcl_size = 0;
                         ptr_ch->ptr_box[box_idx_ch] = -4;
@@ -2592,20 +2629,33 @@ static int adapt_child_nodes(struct node *ptr_node)
                     // X axis
                     if (ptr_ch->boundary_simulation_contact_x == true && new_boundary_simulation_contact_x == false)
                     {
-                        for (int k = 0; k < ptr_ch->box_real_dim_z; k++)
-                        {
-                            for (int j = 0; j < ptr_ch->box_real_dim_y; j++)
-                            {
-                                for (int i = 0; i < (ptr_ch->box_real_dim_x - ptr_ch->box_dim_x) / 2; i++)
-                                {
-                                    box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
-                                    ptr_ch->ptr_box[box_idx_ch] = -4;
-                                }
 
-                                for (int i = (ptr_ch->box_real_dim_x + ptr_ch->box_dim_x) / 2; i < ptr_ch->box_real_dim_x; i++)
+                        if (ptr_ch->box_min_x == 0)
+                        {
+                            for (int k = 0; k < ptr_ch->box_real_dim_z; k++)
+                            {
+                                for (int j = 0; j < ptr_ch->box_real_dim_y; j++)
                                 {
-                                    box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
-                                    ptr_ch->ptr_box[box_idx_ch] = -4;
+                                    for (int i = 0; i < (ptr_ch->box_real_dim_x - ptr_ch->box_dim_x) / 2; i++)
+                                    {
+                                        box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
+                                        ptr_ch->ptr_box[box_idx_ch] = -4;
+                                    }
+                                }
+                            }
+                        }
+
+                        if (ptr_ch->box_max_x == (1 << (lv + 1)) - 1)
+                        {
+                            for (int k = 0; k < ptr_ch->box_real_dim_z; k++)
+                            {
+                                for (int j = 0; j < ptr_ch->box_real_dim_y; j++)
+                                {
+                                    for (int i = (ptr_ch->box_real_dim_x + ptr_ch->box_dim_x) / 2; i < ptr_ch->box_real_dim_x; i++)
+                                    {
+                                        box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
+                                        ptr_ch->ptr_box[box_idx_ch] = -4;
+                                    }
                                 }
                             }
                         }
@@ -2614,20 +2664,33 @@ static int adapt_child_nodes(struct node *ptr_node)
                     // Y axis
                     if (ptr_ch->boundary_simulation_contact_y == true && new_boundary_simulation_contact_y == false)
                     {
-                        for (int k = 0; k < ptr_ch->box_real_dim_z; k++)
-                        {
-                            for (int i = 0; i < ptr_ch->box_real_dim_x; i++)
-                            {
-                                for (int j = 0; j < (ptr_ch->box_real_dim_y - ptr_ch->box_dim_y) / 2; j++)
-                                {
-                                    box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
-                                    ptr_ch->ptr_box[box_idx_ch] = -4;
-                                }
 
-                                for (int j = (ptr_ch->box_real_dim_y + ptr_ch->box_dim_y) / 2; j < ptr_ch->box_real_dim_y; j++)
+                        if (ptr_ch->box_min_y == 0)
+                        {
+                            for (int k = 0; k < ptr_ch->box_real_dim_z; k++)
+                            {
+                                for (int i = 0; i < ptr_ch->box_real_dim_x; i++)
                                 {
-                                    box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
-                                    ptr_ch->ptr_box[box_idx_ch] = -4;
+                                    for (int j = 0; j < (ptr_ch->box_real_dim_y - ptr_ch->box_dim_y) / 2; j++)
+                                    {
+                                        box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
+                                        ptr_ch->ptr_box[box_idx_ch] = -4;
+                                    }
+                                }
+                            }
+                        }
+
+                        if (ptr_ch->box_max_y == (1 << (lv + 1)) - 1)
+                        {
+                            for (int k = 0; k < ptr_ch->box_real_dim_z; k++)
+                            {
+                                for (int i = 0; i < ptr_ch->box_real_dim_x; i++)
+                                {
+                                    for (int j = (ptr_ch->box_real_dim_y + ptr_ch->box_dim_y) / 2; j < ptr_ch->box_real_dim_y; j++)
+                                    {
+                                        box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
+                                        ptr_ch->ptr_box[box_idx_ch] = -4;
+                                    }
                                 }
                             }
                         }
@@ -2636,26 +2699,37 @@ static int adapt_child_nodes(struct node *ptr_node)
                     // Z axis
                     if (ptr_ch->boundary_simulation_contact_z == true && new_boundary_simulation_contact_z == false)
                     {
-                        for (int j = 0; j < ptr_ch->box_real_dim_y; j++)
+                        if(ptr_ch->box_min_z == 0)
                         {
-                            for (int i = 0; i < ptr_ch->box_real_dim_x; i++)
+                            for (int j = 0; j < ptr_ch->box_real_dim_y; j++)
                             {
-                                for (int k = 0; k < (ptr_ch->box_real_dim_z - ptr_ch->box_dim_z) / 2; k++)
+                                for (int i = 0; i < ptr_ch->box_real_dim_x; i++)
                                 {
-                                    box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
-                                    ptr_ch->ptr_box[box_idx_ch] = -4;
+                                    for (int k = 0; k < (ptr_ch->box_real_dim_z - ptr_ch->box_dim_z) / 2; k++)
+                                    {
+                                        box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
+                                        ptr_ch->ptr_box[box_idx_ch] = -4;
+                                    }
                                 }
+                            }
+                        }
 
-                                for (int k = (ptr_ch->box_real_dim_z + ptr_ch->box_dim_z) / 2; k < ptr_ch->box_real_dim_z; k++)
+                        if (ptr_ch->box_max_z == (1 << (lv + 1)) - 1)
+                        {
+                            for (int j = 0; j < ptr_ch->box_real_dim_y; j++)
+                            {
+                                for (int i = 0; i < ptr_ch->box_real_dim_x; i++)
                                 {
-                                    box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
-                                    ptr_ch->ptr_box[box_idx_ch] = -4;
+                                    for (int k = (ptr_ch->box_real_dim_z + ptr_ch->box_dim_z) / 2; k < ptr_ch->box_real_dim_z; k++)
+                                    {
+                                        box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
+                                        ptr_ch->ptr_box[box_idx_ch] = -4;
+                                    }
                                 }
                             }
                         }
                     }
                 }
-                
             }
 
 
@@ -2676,14 +2750,14 @@ static int adapt_child_nodes(struct node *ptr_node)
             if (ptr_ch->box_check_fit == false)
             {
                 // Real dimensions of the old box
-                ptr_ch->box_real_dim_x_old = ptr_ch->box_real_dim_x;
-                ptr_ch->box_real_dim_y_old = ptr_ch->box_real_dim_y;
+                // ptr_ch->box_real_dim_x_old = ptr_ch->box_real_dim_x;
+                // ptr_ch->box_real_dim_y_old = ptr_ch->box_real_dim_y;
                 // ptr_ch->box_real_dim_z_old = ptr_ch->box_real_dim_z;
 
                 // Translations between cell array and old box (Used to access only to the mass box)
-                ptr_ch->box_ts_x_old = ptr_ch->box_ts_x; // Every cell in the level l in the box must be subtracted this value to obtain the box index
-                ptr_ch->box_ts_y_old = ptr_ch->box_ts_y;
-                ptr_ch->box_ts_z_old = ptr_ch->box_ts_z;
+                // ptr_ch->box_ts_x_old = ptr_ch->box_ts_x; // Every cell in the level l in the box must be subtracted this value to obtain the box index
+                // ptr_ch->box_ts_y_old = ptr_ch->box_ts_y;
+                // ptr_ch->box_ts_z_old = ptr_ch->box_ts_z;
 
                 // Real dimensions of the new box
                 ptr_ch->box_real_dim_x = 5 > (n_exp - 1) ? (ptr_ch->box_dim_x + 10) : (ptr_ch->box_dim_x + 2 * n_exp - 2);
@@ -3512,8 +3586,8 @@ static int create_new_child_nodes(struct node *ptr_node)
         ptr_ch->box_real_dim_y = 5 > (n_exp - 1) ? (ptr_ch->box_dim_y + 10) : (ptr_ch->box_dim_y + 2 * n_exp - 2);
         ptr_ch->box_real_dim_z = 5 > (n_exp - 1) ? (ptr_ch->box_dim_z + 10) : (ptr_ch->box_dim_z + 2 * n_exp - 2);
 
-        ptr_ch->box_real_dim_x_old = ptr_ch->box_real_dim_x;
-        ptr_ch->box_real_dim_y_old = ptr_ch->box_real_dim_y;
+        // ptr_ch->box_real_dim_x_old = ptr_ch->box_real_dim_x;
+        // ptr_ch->box_real_dim_y_old = ptr_ch->box_real_dim_y;
         // ptr_ch->box_real_dim_z_old = ptr_ch->box_real_dim_z;
 
         // Translations between cell array and box
@@ -3870,7 +3944,10 @@ static int moving_old_child_to_new_child(struct node *ptr_node)
 
                                 // Local mass
                                 ptr_ch_B->local_mass += ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].cell_mass;
+                                ptr_ch_B->local_no_ptcl += ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptcl_size;
+
                                 ptr_ch_A->local_mass -= ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].cell_mass;
+                                ptr_ch_A->local_no_ptcl -= ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptcl_size;
 
                                 // Moving from end of child A to removed cells of child A
                                 ptr_ch_A->ptr_cell_idx_x[aux_int_A] = ptr_ch_A->ptr_cell_idx_x[aux_int_X];
@@ -4049,7 +4126,10 @@ static int moving_old_child_to_new_child(struct node *ptr_node)
 
                                 // Local mass
                                 ptr_ch_B->local_mass += ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].cell_mass;
+                                ptr_ch_B->local_no_ptcl += ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptcl_size;
+
                                 ptr_ch_A->local_mass -= ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].cell_mass;
+                                ptr_ch_A->local_no_ptcl -= ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptcl_size;
 
                                 // Moving from end of child A to removed cells of child A
                                 ptr_ch_A->ptr_cell_idx_x[aux_int_A] = ptr_ch_A->ptr_cell_idx_x[aux_int_X];
@@ -4196,6 +4276,7 @@ static int moving_old_child_to_new_child(struct node *ptr_node)
                             ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A] = cell_struct_aux;
 
                             ptr_ch_B->local_mass += ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].cell_mass;
+                            ptr_ch_B->local_no_ptcl += ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptcl_size;
                         }
                     }
                 }
@@ -4333,10 +4414,12 @@ static int moving_new_zones_to_new_child(struct node *ptr_node)
                     box_idx_ptcl_ch = ptcl_idx_to_box_idx(ptr_ch, ptcl_idx);
                     ptr_ch->ptr_cell_struct[box_idx_ptcl_ch].cell_mass += GL_ptcl_mass[ptcl_idx];
                     // ptr_ch->local_mass += GL_ptcl_mass[ptcl_idx];
+                    // ptr_ch->local_no_ptcl += 1;
                     ptr_ch->ptr_cell_struct[box_idx_ptcl_ch].ptr_ptcl[ptr_ch->ptr_cell_struct[box_idx_ptcl_ch].ptcl_size] = ptcl_idx;
                     ptr_ch->ptr_cell_struct[box_idx_ptcl_ch].ptcl_size += 1;
                 }
                 ptr_ch->local_mass += ptr_node->ptr_cell_struct[box_idx_node].cell_mass;
+                ptr_ch->local_no_ptcl += ptr_node->ptr_cell_struct[box_idx_node].ptcl_size;
             }
             zone_element++;
         }
@@ -4354,6 +4437,8 @@ static void adding_boundary_simulation_box_status_to_children_nodes(struct node 
     int box_real_dim_X_times_Y_ch;
 
     int box_idx_ch;
+
+    int lv = ptr_node->lv;
 
     for (int zone_idx = 0; zone_idx < ptr_node->zones_size; zone_idx++)
     {
@@ -4441,20 +4526,32 @@ static void adding_boundary_simulation_box_status_to_children_nodes(struct node 
                 // X axis
                 if (ptr_ch->boundary_simulation_contact_x == true)
                 {
-                    for (int k = 0; k < ptr_ch->box_real_dim_z; k++)
+                    if (ptr_ch->box_min_x == 0)
                     {
-                        for (int j = 0; j < ptr_ch->box_real_dim_y; j++)
+                        for (int k = 0; k < ptr_ch->box_real_dim_z; k++)
                         {
-                            for (int i = 0; i < (ptr_ch->box_real_dim_x - ptr_ch->box_dim_x) / 2; i++)
+                            for (int j = 0; j < ptr_ch->box_real_dim_y; j++)
                             {
-                                box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
-                                ptr_ch->ptr_box[box_idx_ch] = -5;
+                                for (int i = 0; i < (ptr_ch->box_real_dim_x - ptr_ch->box_dim_x) / 2; i++)
+                                {
+                                    box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
+                                    ptr_ch->ptr_box[box_idx_ch] = -5;
+                                }
                             }
+                        }
+                    }
 
-                            for (int i = (ptr_ch->box_real_dim_x + ptr_ch->box_dim_x) / 2; i < ptr_ch->box_real_dim_x; i++)
+                    if (ptr_ch->box_max_x == (1 << (lv + 1)) - 1)
+                    {
+                        for (int k = 0; k < ptr_ch->box_real_dim_z; k++)
+                        {
+                            for (int j = 0; j < ptr_ch->box_real_dim_y; j++)
                             {
-                                box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
-                                ptr_ch->ptr_box[box_idx_ch] = -5;
+                                for (int i = (ptr_ch->box_real_dim_x + ptr_ch->box_dim_x) / 2; i < ptr_ch->box_real_dim_x; i++)
+                                {
+                                    box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
+                                    ptr_ch->ptr_box[box_idx_ch] = -5;
+                                }
                             }
                         }
                     }
@@ -4463,20 +4560,32 @@ static void adding_boundary_simulation_box_status_to_children_nodes(struct node 
                 // Y axis
                 if (ptr_ch->boundary_simulation_contact_y == true)
                 {
-                    for (int k = 0; k < ptr_ch->box_real_dim_z; k++)
+                    if (ptr_ch->box_min_y == 0)
                     {
-                        for (int i = 0; i < ptr_ch->box_real_dim_x; i++)
+                        for (int k = 0; k < ptr_ch->box_real_dim_z; k++)
                         {
-                            for (int j = 0; j < (ptr_ch->box_real_dim_y - ptr_ch->box_dim_y) / 2; j++)
+                            for (int i = 0; i < ptr_ch->box_real_dim_x; i++)
                             {
-                                box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
-                                ptr_ch->ptr_box[box_idx_ch] = -5;
+                                for (int j = 0; j < (ptr_ch->box_real_dim_y - ptr_ch->box_dim_y) / 2; j++)
+                                {
+                                    box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
+                                    ptr_ch->ptr_box[box_idx_ch] = -5;
+                                }
                             }
+                        }
+                    }
 
-                            for (int j = (ptr_ch->box_real_dim_y + ptr_ch->box_dim_y) / 2; j < ptr_ch->box_real_dim_y; j++)
+                    if (ptr_ch->box_max_y == (1 << (lv + 1)) - 1)
+                    {
+                        for (int k = 0; k < ptr_ch->box_real_dim_z; k++)
+                        {
+                            for (int i = 0; i < ptr_ch->box_real_dim_x; i++)
                             {
-                                box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
-                                ptr_ch->ptr_box[box_idx_ch] = -5;
+                                for (int j = (ptr_ch->box_real_dim_y + ptr_ch->box_dim_y) / 2; j < ptr_ch->box_real_dim_y; j++)
+                                {
+                                    box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
+                                    ptr_ch->ptr_box[box_idx_ch] = -5;
+                                }
                             }
                         }
                     }
@@ -4485,20 +4594,32 @@ static void adding_boundary_simulation_box_status_to_children_nodes(struct node 
                 // Z axis
                 if (ptr_ch->boundary_simulation_contact_z == true)
                 {
-                    for (int j = 0; j < ptr_ch->box_real_dim_y; j++)
+                    if (ptr_ch->box_min_z == 0)
                     {
-                        for (int i = 0; i < ptr_ch->box_real_dim_x; i++)
+                        for (int j = 0; j < ptr_ch->box_real_dim_y; j++)
                         {
-                            for (int k = 0; k < (ptr_ch->box_real_dim_z - ptr_ch->box_dim_z) / 2; k++)
+                            for (int i = 0; i < ptr_ch->box_real_dim_x; i++)
                             {
-                                box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
-                                ptr_ch->ptr_box[box_idx_ch] = -5;
+                                for (int k = 0; k < (ptr_ch->box_real_dim_z - ptr_ch->box_dim_z) / 2; k++)
+                                {
+                                    box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
+                                    ptr_ch->ptr_box[box_idx_ch] = -5;
+                                }
                             }
+                        }
+                    }
 
-                            for (int k = (ptr_ch->box_real_dim_z + ptr_ch->box_dim_z) / 2; k < ptr_ch->box_real_dim_z; k++)
+                    if (ptr_ch->box_max_z == (1 << (lv + 1)) - 1)
+                    {
+                        for (int j = 0; j < ptr_ch->box_real_dim_y; j++)
+                        {
+                            for (int i = 0; i < ptr_ch->box_real_dim_x; i++)
                             {
-                                box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
-                                ptr_ch->ptr_box[box_idx_ch] = -5;
+                                for (int k = (ptr_ch->box_real_dim_z + ptr_ch->box_dim_z) / 2; k < ptr_ch->box_real_dim_z; k++)
+                                {
+                                    box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
+                                    ptr_ch->ptr_box[box_idx_ch] = -5;
+                                }
                             }
                         }
                     }
@@ -4805,14 +4926,14 @@ static int update_child_grid_points(struct node *ptr_node)
         size_SIMULATION_BOUNDARY_grid_points = size_bder_grid_points;
 
         //** >> Space checking of border grid points array**/
-        if (space_check(&(ptr_ch->grid_bder_cap), size_bder_grid_points, 1.0f, "p4i1i1i1i1", &(ptr_ch->ptr_bder_grid_cell_idx_x), &(ptr_ch->ptr_bder_grid_cell_idx_y), &(ptr_ch->ptr_bder_grid_cell_idx_z), &(ptr_ch->ptr_bder_grid_idx)) == _FAILURE_)
+        if (space_check(&(ptr_ch->grid_bder_cap), size_bder_grid_points, 1.0f, "p4i1i1i1i1", &(ptr_ch->ptr_bder_grid_cell_idx_x), &(ptr_ch->ptr_bder_grid_cell_idx_y), &(ptr_ch->ptr_bder_grid_cell_idx_z), &(ptr_ch->ptr_bder_box_grid_idx)) == _FAILURE_)
         {
             printf("Error, in space_check function\n");
             return _FAILURE_;
         }
 
         //** >> Space checking of interior grid points array**/
-        if (space_check(&(ptr_ch->grid_intr_cap), size_intr_grid_points, 1.0f, "p4i1i1i1i1", &(ptr_ch->ptr_intr_grid_cell_idx_x), &(ptr_ch->ptr_intr_grid_cell_idx_y), &(ptr_ch->ptr_intr_grid_cell_idx_z), &(ptr_ch->ptr_intr_grid_idx)) == _FAILURE_)
+        if (space_check(&(ptr_ch->grid_intr_cap), size_intr_grid_points, 1.0f, "p4i1i1i1i1", &(ptr_ch->ptr_intr_grid_cell_idx_x), &(ptr_ch->ptr_intr_grid_cell_idx_y), &(ptr_ch->ptr_intr_grid_cell_idx_z), &(ptr_ch->ptr_intr_box_grid_idx)) == _FAILURE_)
         {
             printf("Error, in space_check function\n");
             return _FAILURE_;
@@ -4821,7 +4942,7 @@ static int update_child_grid_points(struct node *ptr_node)
         if (ptr_ch->boundary_simulation_contact == true)
         {
             //** >> Space checking of simulation boundary grid points array**/
-            if (space_check(&(ptr_ch->grid_SIMULATION_BOUNDARY_cap), size_SIMULATION_BOUNDARY_grid_points, 1.0f, "p4i1i1i1i1", &(ptr_ch->ptr_SIMULATION_BOUNDARY_grid_cell_idx_x), &(ptr_ch->ptr_SIMULATION_BOUNDARY_grid_cell_idx_y), &(ptr_ch->ptr_SIMULATION_BOUNDARY_grid_cell_idx_z), &(ptr_ch->ptr_SIMULATION_BOUNDARY_grid_idx)) == _FAILURE_)
+            if (space_check(&(ptr_ch->grid_SIMULATION_BOUNDARY_cap), size_SIMULATION_BOUNDARY_grid_points, 1.0f, "p4i1i1i1i1", &(ptr_ch->ptr_SIMULATION_BOUNDARY_grid_cell_idx_x), &(ptr_ch->ptr_SIMULATION_BOUNDARY_grid_cell_idx_y), &(ptr_ch->ptr_SIMULATION_BOUNDARY_grid_cell_idx_z), &(ptr_ch->ptr_SIMULATION_BOUNDARY_box_grid_idx)) == _FAILURE_)
             {
                 printf("Error, in space_check function\n");
                 return _FAILURE_;
@@ -5032,7 +5153,7 @@ static int update_child_grid_points(struct node *ptr_node)
                             ptr_ch->ptr_SIMULATION_BOUNDARY_grid_cell_idx_x[ptr_ch->grid_SIMULATION_BOUNDARY_size] = aux_idx_x;
                             ptr_ch->ptr_SIMULATION_BOUNDARY_grid_cell_idx_y[ptr_ch->grid_SIMULATION_BOUNDARY_size] = aux_idx_y;
                             ptr_ch->ptr_SIMULATION_BOUNDARY_grid_cell_idx_z[ptr_ch->grid_SIMULATION_BOUNDARY_size] = aux_idx_z;
-                            ptr_ch->ptr_SIMULATION_BOUNDARY_grid_idx[ptr_ch->grid_SIMULATION_BOUNDARY_size] = box_grid_idx_ch;
+                            ptr_ch->ptr_SIMULATION_BOUNDARY_box_grid_idx[ptr_ch->grid_SIMULATION_BOUNDARY_size] = box_grid_idx_ch;
                             ptr_ch->grid_SIMULATION_BOUNDARY_size += 1; // Increasing the number of border grid points in the array
                         }
                         //** >> Border grid point**/
@@ -5042,7 +5163,7 @@ static int update_child_grid_points(struct node *ptr_node)
                             ptr_ch->ptr_bder_grid_cell_idx_x[ptr_ch->grid_bder_size] = aux_idx_x;
                             ptr_ch->ptr_bder_grid_cell_idx_y[ptr_ch->grid_bder_size] = aux_idx_y;
                             ptr_ch->ptr_bder_grid_cell_idx_z[ptr_ch->grid_bder_size] = aux_idx_z;
-                            ptr_ch->ptr_bder_grid_idx[ptr_ch->grid_bder_size] = box_grid_idx_ch;
+                            ptr_ch->ptr_bder_box_grid_idx[ptr_ch->grid_bder_size] = box_grid_idx_ch;
                             ptr_ch->grid_bder_size += 1; // Increasing the number of border grid points in the array
                         }
                         //** Interior grid point **/
@@ -5053,7 +5174,7 @@ static int update_child_grid_points(struct node *ptr_node)
                             ptr_ch->ptr_intr_grid_cell_idx_x[ptr_ch->grid_intr_size] = aux_idx_x;
                             ptr_ch->ptr_intr_grid_cell_idx_y[ptr_ch->grid_intr_size] = aux_idx_y;
                             ptr_ch->ptr_intr_grid_cell_idx_z[ptr_ch->grid_intr_size] = aux_idx_z;
-                            ptr_ch->ptr_intr_grid_idx[ptr_ch->grid_intr_size] = box_grid_idx_ch;
+                            ptr_ch->ptr_intr_box_grid_idx[ptr_ch->grid_intr_size] = box_grid_idx_ch;
                             ptr_ch->grid_intr_size += 1; // Increasing the number of interior grid points in the array
                         }
                     }
@@ -5299,7 +5420,7 @@ static int update_child_grid_points(struct node *ptr_node)
         //                     ptr_ch->ptr_bder_grid_cell_idx_x[ptr_ch->grid_bder_size] = ii + ptr_ch->box_ts_x;
         //                     ptr_ch->ptr_bder_grid_cell_idx_y[ptr_ch->grid_bder_size] = jj + ptr_ch->box_ts_y;
         //                     ptr_ch->ptr_bder_grid_cell_idx_z[ptr_ch->grid_bder_size] = kk + ptr_ch->box_ts_z;
-        //                     ptr_ch->ptr_bder_grid_idx[ptr_ch->grid_bder_size] = box_grid_idx_ch;
+        //                     ptr_ch->ptr_bder_box_grid_idx[ptr_ch->grid_bder_size] = box_grid_idx_ch;
         //                     ptr_ch->grid_bder_size += 1; // Increasing the number of border grid points in the array
         //                 }
         //                 //** Interior grid point **/
@@ -5309,7 +5430,7 @@ static int update_child_grid_points(struct node *ptr_node)
         //                     ptr_ch->ptr_intr_grid_cell_idx_x[ptr_ch->grid_intr_size] = ii + ptr_ch->box_ts_x;
         //                     ptr_ch->ptr_intr_grid_cell_idx_y[ptr_ch->grid_intr_size] = jj + ptr_ch->box_ts_y;
         //                     ptr_ch->ptr_intr_grid_cell_idx_z[ptr_ch->grid_intr_size] = kk + ptr_ch->box_ts_z;
-        //                     ptr_ch->ptr_intr_grid_idx[ptr_ch->grid_intr_size] = box_grid_idx_ch;
+        //                     ptr_ch->ptr_intr_box_grid_idx[ptr_ch->grid_intr_size] = box_grid_idx_ch;
         //                     ptr_ch->grid_intr_size += 1; // Increasing the number of interior grid points in the array
         //                 }
         //             }

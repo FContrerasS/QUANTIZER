@@ -45,7 +45,7 @@ static int fill_red_and_black_branch_node(int **pptr_red_black, int *ptr_red_bla
 	//** >> Filling Red and Black arrays with the correspondig grid points **/
 	for (int i = 0; i < ptr_node->grid_intr_size; i++)
 	{
-		box_grid_idx = ptr_node->ptr_intr_grid_idx[i];
+		box_grid_idx = ptr_node->ptr_intr_box_grid_idx[i];
 
 		red_or_black = ptr_node->ptr_intr_grid_cell_idx_x[i] +
 					   ptr_node->ptr_intr_grid_cell_idx_y[i] +
@@ -122,7 +122,7 @@ static void initial_potential_branch_node(const struct node *ptr_node, struct no
 	for (int i = 0; i < ptr_ch->grid_bder_size; i++)
 	{
 		//** >> Child box indexes **/
-		ch_box_grid_idx = ptr_ch->ptr_bder_grid_idx[i];
+		ch_box_grid_idx = ptr_ch->ptr_bder_box_grid_idx[i];
 
 		//** >> Parent box indexes **/
 		box_idx_x0_node = (ptr_ch->ptr_bder_grid_cell_idx_x[i] >> 1) - ptr_node->box_ts_x;
@@ -159,7 +159,7 @@ static void initial_potential_branch_node(const struct node *ptr_node, struct no
 	{
 		if (boundary_type != 0)
 		{
-			ch_box_grid_idx = ptr_ch->ptr_SIMULATION_BOUNDARY_grid_idx[i];
+			ch_box_grid_idx = ptr_ch->ptr_SIMULATION_BOUNDARY_box_grid_idx[i];
 
 			aux_x = ptr_ch->ptr_SIMULATION_BOUNDARY_grid_cell_idx_x[i] * H;
 			aux_y = ptr_ch->ptr_SIMULATION_BOUNDARY_grid_cell_idx_y[i] * H;
@@ -180,7 +180,7 @@ static void initial_potential_branch_node(const struct node *ptr_node, struct no
 	for (int i = 0; i < ptr_ch->grid_intr_size; i++)
 	{
 		//** >> Child box indexes **/
-		ch_box_grid_idx = ptr_ch->ptr_intr_grid_idx[i];
+		ch_box_grid_idx = ptr_ch->ptr_intr_box_grid_idx[i];
 
 		//** >> Parent box indexes **/
 		box_idx_x0_node = (ptr_ch->ptr_intr_grid_cell_idx_x[i] >> 1) - ptr_node->box_ts_x;

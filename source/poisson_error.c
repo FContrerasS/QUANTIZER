@@ -45,7 +45,7 @@ static bool comparison_with_previous_solution(const struct node *ptr_node)
 
 	for (int i = 0; i < ptr_node->grid_intr_size; i++)
 	{
-		box_grid_idx = ptr_node->ptr_intr_grid_idx[i];
+		box_grid_idx = ptr_node->ptr_intr_box_grid_idx[i];
 		aux = ptr_node->ptr_pot[box_grid_idx] / ptr_node->ptr_pot_old[box_grid_idx];
 
 		if ((threshold_minus > aux) || (threshold_plus < aux))
@@ -90,7 +90,7 @@ static bool poisson_error_mehod_0(const struct node *ptr_node)
 
 	for (int i = 0; i < ptr_node->grid_intr_size; i++)
 	{
-		box_grid_idx = ptr_node->ptr_intr_grid_idx[i];
+		box_grid_idx = ptr_node->ptr_intr_box_grid_idx[i];
 		diff = ptr_node->ptr_d[box_grid_idx] + one_over_H_pow_2 *
 												   (6.0 * ptr_node->ptr_pot[box_grid_idx] - ptr_node->ptr_pot[box_grid_idx + 1] - ptr_node->ptr_pot[box_grid_idx - 1] - ptr_node->ptr_pot[box_grid_idx + grid_box_real_dim_X] - ptr_node->ptr_pot[box_grid_idx - grid_box_real_dim_X] - ptr_node->ptr_pot[box_grid_idx + grid_box_real_dim_X_times_Y] - ptr_node->ptr_pot[box_grid_idx - grid_box_real_dim_X_times_Y]);
 		error += diff * diff;
@@ -141,7 +141,7 @@ static bool poisson_error_mehod_1(const struct node *ptr_node)
 	// Computing the root mean square normalized to the mean density rhomean
 	for (int i = 0; i < ptr_node->grid_intr_size; i++)
 	{
-		box_grid_idx = ptr_node->ptr_intr_grid_idx[i];
+		box_grid_idx = ptr_node->ptr_intr_box_grid_idx[i];
 		error = ptr_node->ptr_d[box_grid_idx] + one_over_H_pow_2 *
 													(6.0 * ptr_node->ptr_pot[box_grid_idx] - ptr_node->ptr_pot[box_grid_idx + 1] - ptr_node->ptr_pot[box_grid_idx - 1] - ptr_node->ptr_pot[box_grid_idx + grid_box_real_dim_X] - ptr_node->ptr_pot[box_grid_idx - grid_box_real_dim_X] - ptr_node->ptr_pot[box_grid_idx + grid_box_real_dim_X_times_Y] - ptr_node->ptr_pot[box_grid_idx - grid_box_real_dim_X_times_Y]);
 		error = myabs(error) / rhomean_times_4piG;
@@ -188,7 +188,7 @@ static bool poisson_error_mehod_2(const struct node *ptr_node)
 	// Computing the root mean square normalized to the mean density rhomean
 	for (int i = 0; i < ptr_node->grid_intr_size; i++)
 	{
-		box_grid_idx = ptr_node->ptr_intr_grid_idx[i];
+		box_grid_idx = ptr_node->ptr_intr_box_grid_idx[i];
 		diff = ptr_node->ptr_d[box_grid_idx] + one_over_H_pow_2 *
 												   (6.0 * ptr_node->ptr_pot[box_grid_idx] - ptr_node->ptr_pot[box_grid_idx + 1] - ptr_node->ptr_pot[box_grid_idx - 1] - ptr_node->ptr_pot[box_grid_idx + grid_box_real_dim_X] - ptr_node->ptr_pot[box_grid_idx - grid_box_real_dim_X] - ptr_node->ptr_pot[box_grid_idx + grid_box_real_dim_X_times_Y] - ptr_node->ptr_pot[box_grid_idx - grid_box_real_dim_X_times_Y]);
 		error += diff * diff;
@@ -235,7 +235,7 @@ static bool conj_grad_error(struct node *ptr_node, vtype *error, vtype error_tot
 		// Computing the root mean square normalized to the mean density rhomean
 		for (int i = 0; i < ptr_node->grid_intr_size; i++)
 		{
-			box_grid_idx = ptr_node->ptr_intr_grid_idx[i];
+			box_grid_idx = ptr_node->ptr_intr_box_grid_idx[i];
 			aux_error = myabs(error[box_grid_idx]) / rhomean_times_4piG;
 			if (aux_error >= _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_)
 			{

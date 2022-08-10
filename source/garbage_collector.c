@@ -207,14 +207,14 @@ static void free_memory_pool(void)
 		free(ptr_node->ptr_intr_grid_cell_idx_x);
 		free(ptr_node->ptr_intr_grid_cell_idx_y);
 		free(ptr_node->ptr_intr_grid_cell_idx_z);
-		free(ptr_node->ptr_intr_grid_idx);
+		free(ptr_node->ptr_intr_box_grid_idx);
 
 		if (ptr_node->grid_bder_cap != 0)
 		{
 			free(ptr_node->ptr_bder_grid_cell_idx_x);
 			free(ptr_node->ptr_bder_grid_cell_idx_y);
 			free(ptr_node->ptr_bder_grid_cell_idx_z);
-			free(ptr_node->ptr_bder_grid_idx);
+			free(ptr_node->ptr_bder_box_grid_idx);
 		}
 
 		if (ptr_node->grid_SIMULATION_BOUNDARY_cap != 0)
@@ -222,7 +222,7 @@ static void free_memory_pool(void)
 			free(ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_x);
 			free(ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_y);
 			free(ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_z);
-			free(ptr_node->ptr_SIMULATION_BOUNDARY_grid_idx);
+			free(ptr_node->ptr_SIMULATION_BOUNDARY_box_grid_idx);
 		}
 
 		//** >> Potential, acceleration and density of the grid **/
