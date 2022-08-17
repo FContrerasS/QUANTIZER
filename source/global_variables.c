@@ -65,7 +65,8 @@ int GL_no_ptcl_initial;
 int GL_no_ptcl_final;
 vtype Maxdt ;
 vtype meanmass;
-vtype total_mass;
+vtype GL_total_mass_initial;
+vtype GL_total_mass_final;
 int fr_output;
 int MaxIterations;
 int no_grid_pow2;
@@ -209,7 +210,7 @@ static void init_global_user_params(void)
 {
     BoxSize = 1.0L;
     lmin = 5;     //Coarset level of refinement
-    lmax = lmin + 3;  //Finest level of refinement
+    lmax = lmin + 4;  //Finest level of refinement
     no_lmin_cell = 1 << lmin; // Number of cells in the lmin level of refinement
     no_lmin_cell_pow2 = no_lmin_cell * no_lmin_cell;
     no_lmin_cell_pow3 = no_lmin_cell * no_lmin_cell * no_lmin_cell;
@@ -219,11 +220,11 @@ static void init_global_user_params(void)
     //GL_no_ptcl = 7550; // 2995865; // 299586; // 231299 // 298159
     // GL_no_ptcl = 10000;
     Maxdt = 50.0 * _Mgyear_;
-    //meanmass = 100; //Currently only used on input.c
-    // total_mass = GL_no_ptcl * meanmass;
-    // total_mass = 0;
-    fr_output = 10000;
-    MaxIterations = 100000000;
+    // meanmass = 100; //Currently only used on input.c
+    //  GL_total_mass_initial = GL_no_ptcl * meanmass;
+    //  GL_total_mass_initial = 0;
+    fr_output = 1000;
+    MaxIterations = 20;
     no_grid_pow2 = no_grid * no_grid;
     no_grid_pow3 = no_grid * no_grid * no_grid;
     boundary_type = 1; // 0 = Periodic; 1 = Reflexive; 2 = Outflow
@@ -232,7 +233,7 @@ static void init_global_user_params(void)
 static void init_global_ref_crit(void)
 {
     ref_criterion_mass = 1.0e100; // meanmass * 7;
-    ref_criterion_ptcl = 4;
+    ref_criterion_ptcl = 2;
     n_exp = 1;   // n_exp = 0 is corrupted because particles can move between more than 1 level of refinement
     _CFL_ = 0.9; // CFL criteria 0.5
     _MAX_dt_ = _Mgyear_ * 1.0;

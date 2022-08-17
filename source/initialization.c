@@ -35,14 +35,18 @@ static void initializing_tentacles(void);
 static void initializing_global_parameters(void)
 {
 
-	total_mass = 0;
+	GL_total_mass_initial = 0;
 
 	for(int i = 0; i< GL_no_ptcl_initial; i++)
 	{
-		total_mass += GL_ptcl_mass[i];
+		GL_total_mass_initial += GL_ptcl_mass[i];
 	}
 
-	meanmass = total_mass / GL_no_ptcl_initial;
+	GL_total_mass_final = GL_total_mass_initial;
+
+	meanmass = GL_total_mass_initial / GL_no_ptcl_initial;
+
+	
 }
 
 static void initializing_particle_updating_flag_and_ID(void)
@@ -181,7 +185,7 @@ static int initializing_head_node(void)
 	}
 
 	//** >> Total mass in the node
-	ptr_head->local_mass = total_mass;
+	ptr_head->local_mass = GL_total_mass_initial;
 	//** >> Total number of particles in the node
 	ptr_head->local_no_ptcl = GL_no_ptcl_initial;
 

@@ -221,6 +221,8 @@ static bool conj_grad_error(struct node *ptr_node, vtype *error, vtype error_tot
 	if (check_poisson_error_method == 0)
 	{
 		vtype aux_tol = ptr_node->grid_intr_size * (_ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ * rhomean_times_4piG) * (_ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ * rhomean_times_4piG); // sqrt(total_resid)/N/rhobar < error_tol
+		printf("lv = %d, ID = %d, cell_size = %d\n", ptr_node->lv, ptr_node->ID, ptr_node->cell_size);
+		printf("error_total_pow2 = %f, aux_tol = %f, grid_intr_size = %d, grid_bder_size = %d\n", (double)error_total_pow2, (double)aux_tol, ptr_node->grid_intr_size, ptr_node->grid_bder_size);
 
 		if (error_total_pow2 < aux_tol)
 		{

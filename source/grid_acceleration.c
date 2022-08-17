@@ -210,7 +210,7 @@ static void computing_simulation_boundary_grid_point_acceleration(struct node *p
 
     vtype dist;
 
-    vtype aux_coeff_1 = -_G_ * total_mass;
+    vtype aux_coeff_1 = -_G_ * GL_total_mass_initial;
     vtype aux_coeff_2;
 
     //** >> Simulation Boundary grid points **/
@@ -261,7 +261,7 @@ static void computing_simulation_boundary_grid_point_acceleration(struct node *p
 
 static void computing_grid_acceleration_branch(struct node *ptr_node)
 {
-    vtype aux_acc; // Auxiliary value for the acceleration
+    //vtype aux_acc; // Auxiliary value for the acceleration
 
     struct node *ptr_pt = ptr_node->ptr_pt;
     
@@ -276,6 +276,12 @@ static void computing_grid_acceleration_branch(struct node *ptr_node)
     int box_idx_2_z_pt;    // Parent box index 2 at Z direcction
     int box_grid_idx_1_pt; // Parent box grid index 1
     int box_grid_idx_2_pt; // Parent box grid index 2
+    int box_grid_idx_3_pt; // Parent box grid index 3
+    int box_grid_idx_4_pt; // Parent box grid index 4
+    int box_grid_idx_5_pt; // Parent box grid index 5
+    int box_grid_idx_6_pt; // Parent box grid index 6
+    int box_grid_idx_7_pt; // Parent box grid index 7
+    int box_grid_idx_8_pt; // Parent box grid index 8
 
     int lv = ptr_node->lv;
 
@@ -302,37 +308,39 @@ static void computing_grid_acceleration_branch(struct node *ptr_node)
     //** >> Border grid points **/
     for (int i = 0; i < ptr_node->grid_bder_size; i++)
     {
+        //Notes here that a middle grid child grid point will never be a border grid point because the child cells are
+        // composed by 8 grid cells where that grid point is in the middle.
         box_grid_idx = ptr_node->ptr_bder_box_grid_idx[i];
 
         aux_idx_1_x = ptr_node->ptr_bder_grid_cell_idx_x[i] >> 1;
-        aux_idx_1_y = (ptr_node->ptr_bder_grid_cell_idx_x[i] + 1) >> 1;
-        aux_idx_1_z = ptr_node->ptr_bder_grid_cell_idx_y[i] >> 1;
-        aux_idx_2_x = (ptr_node->ptr_bder_grid_cell_idx_y[i] + 1) >> 1;
-        aux_idx_2_y = ptr_node->ptr_bder_grid_cell_idx_z[i] >> 1;
+        aux_idx_1_y = ptr_node->ptr_bder_grid_cell_idx_y[i] >> 1;
+        aux_idx_1_z = ptr_node->ptr_bder_grid_cell_idx_z[i] >> 1;
+        aux_idx_2_x = (ptr_node->ptr_bder_grid_cell_idx_x[i] + 1) >> 1;
+        aux_idx_2_y = (ptr_node->ptr_bder_grid_cell_idx_y[i] + 1) >> 1;
         aux_idx_2_z = (ptr_node->ptr_bder_grid_cell_idx_z[i] + 1) >> 1;
 
         box_idx_1_x_pt = aux_idx_1_x - ptr_pt->box_ts_x;
-        box_idx_2_x_pt = aux_idx_1_y - ptr_pt->box_ts_x;
-        box_idx_1_y_pt = aux_idx_1_z - ptr_pt->box_ts_y;
-        box_idx_2_y_pt = aux_idx_2_x - ptr_pt->box_ts_y;
-        box_idx_1_z_pt = aux_idx_2_y - ptr_pt->box_ts_z;
+        box_idx_1_y_pt = aux_idx_1_y - ptr_pt->box_ts_y;
+        box_idx_1_z_pt = aux_idx_1_z - ptr_pt->box_ts_z;
+        box_idx_2_x_pt = aux_idx_2_x - ptr_pt->box_ts_x;
+        box_idx_2_y_pt = aux_idx_2_y - ptr_pt->box_ts_y;
         box_idx_2_z_pt = aux_idx_2_z - ptr_pt->box_ts_z;
 
         if (ptr_pt->pbc_crosses_the_boundary_simulation_box == true)
         {
-            if (aux_idx_1_x > ptr_node->box_max_x)
+            if (aux_idx_1_x > ptr_pt->box_max_x)
             {
                 box_idx_1_x_pt -= (1 << (lv - 1));
                 box_idx_2_x_pt -= (1 << (lv - 1));
             }
 
-            if (aux_idx_1_y > ptr_node->box_max_y)
+            if (aux_idx_1_y > ptr_pt->box_max_y)
             {
                 box_idx_1_y_pt -= (1 << (lv - 1));
                 box_idx_2_y_pt -= (1 << (lv - 1));
             }
 
-            if (aux_idx_1_z > ptr_node->box_max_z)
+            if (aux_idx_1_z > ptr_pt->box_max_z)
             {
                 box_idx_1_z_pt -= (1 << (lv - 1));
                 box_idx_2_z_pt -= (1 << (lv - 1));
@@ -347,21 +355,47 @@ static void computing_grid_acceleration_branch(struct node *ptr_node)
         // box_idx_2_z_node = ((ptr_node->ptr_bder_grid_cell_idx_z[i] + 1) >> 1) - ptr_pt->box_ts_z;
 
         box_grid_idx_1_pt = box_idx_1_x_pt + box_idx_1_y_pt * grid_box_real_dim_X_pt + box_idx_1_z_pt * grid_box_real_dim_X_times_Y_pt;
+        box_grid_idx_2_pt = box_idx_2_x_pt + box_idx_1_y_pt * grid_box_real_dim_X_pt + box_idx_1_z_pt * grid_box_real_dim_X_times_Y_pt;
+        box_grid_idx_3_pt = box_idx_1_x_pt + box_idx_2_y_pt * grid_box_real_dim_X_pt + box_idx_1_z_pt * grid_box_real_dim_X_times_Y_pt;
+        box_grid_idx_4_pt = box_idx_2_x_pt + box_idx_2_y_pt * grid_box_real_dim_X_pt + box_idx_1_z_pt * grid_box_real_dim_X_times_Y_pt;
+        box_grid_idx_5_pt = box_idx_1_x_pt + box_idx_1_y_pt * grid_box_real_dim_X_pt + box_idx_2_z_pt * grid_box_real_dim_X_times_Y_pt;
+        box_grid_idx_6_pt = box_idx_2_x_pt + box_idx_1_y_pt * grid_box_real_dim_X_pt + box_idx_2_z_pt * grid_box_real_dim_X_times_Y_pt;
+        box_grid_idx_7_pt = box_idx_1_x_pt + box_idx_2_y_pt * grid_box_real_dim_X_pt + box_idx_2_z_pt * grid_box_real_dim_X_times_Y_pt;
+        box_grid_idx_8_pt = box_idx_2_x_pt + box_idx_2_y_pt * grid_box_real_dim_X_pt + box_idx_2_z_pt * grid_box_real_dim_X_times_Y_pt;
 
         //** x-axis acceleration **/
-        box_grid_idx_2_pt = box_idx_2_x_pt + box_idx_1_y_pt * grid_box_real_dim_X_pt + box_idx_1_z_pt * grid_box_real_dim_X_times_Y_pt;
-        aux_acc = (ptr_pt->ptr_ax[box_grid_idx_1_pt] + ptr_pt->ptr_ax[box_grid_idx_2_pt]) * 0.5;
-        ptr_node->ptr_ax[box_grid_idx] = aux_acc;
+        // box_grid_idx_2_pt = box_idx_2_x_pt + box_idx_1_y_pt * grid_box_real_dim_X_pt + box_idx_1_z_pt * grid_box_real_dim_X_times_Y_pt;
+        // aux_acc = (ptr_pt->ptr_ax[box_grid_idx_1_pt] + ptr_pt->ptr_ax[box_grid_idx_2_pt]) * 0.5;
+        // ptr_node->ptr_ax[box_grid_idx] = aux_acc;
+
+        // //** y-axis acceleration **/
+        // box_grid_idx_2_pt = box_idx_1_x_pt + box_idx_2_y_pt * grid_box_real_dim_X_pt + box_idx_1_z_pt * grid_box_real_dim_X_times_Y_pt;
+        // aux_acc = (ptr_pt->ptr_ay[box_grid_idx_1_pt] + ptr_pt->ptr_ay[box_grid_idx_2_pt]) * 0.5;
+        // ptr_node->ptr_ay[box_grid_idx] = aux_acc;
+
+        // //** z-axis acceleration **/
+        // box_grid_idx_2_pt = box_idx_1_x_pt + box_idx_1_y_pt * grid_box_real_dim_X_pt + box_idx_2_z_pt * grid_box_real_dim_X_times_Y_pt;
+        // aux_acc = (ptr_pt->ptr_az[box_grid_idx_1_pt] + ptr_pt->ptr_az[box_grid_idx_2_pt]) * 0.5;
+        // ptr_node->ptr_az[box_grid_idx] = aux_acc;
+
+        //** x-axis acceleration **/
+        ptr_node->ptr_ax[box_grid_idx] = 0.125 * (ptr_pt->ptr_ax[box_grid_idx_1_pt] + ptr_pt->ptr_ax[box_grid_idx_2_pt] +
+                                                  ptr_pt->ptr_ax[box_grid_idx_3_pt] + ptr_pt->ptr_ax[box_grid_idx_4_pt] +
+                                                  ptr_pt->ptr_ax[box_grid_idx_5_pt] + ptr_pt->ptr_ax[box_grid_idx_6_pt] +
+                                                  ptr_pt->ptr_ax[box_grid_idx_7_pt] + ptr_pt->ptr_ax[box_grid_idx_8_pt]);
 
         //** y-axis acceleration **/
-        box_grid_idx_2_pt = box_idx_1_x_pt + box_idx_2_y_pt * grid_box_real_dim_X_pt + box_idx_1_z_pt * grid_box_real_dim_X_times_Y_pt;
-        aux_acc = (ptr_pt->ptr_ay[box_grid_idx_1_pt] + ptr_pt->ptr_ay[box_grid_idx_2_pt]) * 0.5;
-        ptr_node->ptr_ay[box_grid_idx] = aux_acc;
+        ptr_node->ptr_ay[box_grid_idx] = 0.125 * (ptr_pt->ptr_ay[box_grid_idx_1_pt] + ptr_pt->ptr_ay[box_grid_idx_2_pt] +
+                                                  ptr_pt->ptr_ay[box_grid_idx_3_pt] + ptr_pt->ptr_ay[box_grid_idx_4_pt] +
+                                                  ptr_pt->ptr_ay[box_grid_idx_5_pt] + ptr_pt->ptr_ay[box_grid_idx_6_pt] +
+                                                  ptr_pt->ptr_ay[box_grid_idx_7_pt] + ptr_pt->ptr_ay[box_grid_idx_8_pt]);
 
         //** z-axis acceleration **/
-        box_grid_idx_2_pt = box_idx_1_x_pt + box_idx_1_y_pt * grid_box_real_dim_X_pt + box_idx_2_z_pt * grid_box_real_dim_X_times_Y_pt;
-        aux_acc = (ptr_pt->ptr_az[box_grid_idx_1_pt] + ptr_pt->ptr_az[box_grid_idx_2_pt]) * 0.5;
-        ptr_node->ptr_az[box_grid_idx] = aux_acc;
+        ptr_node->ptr_az[box_grid_idx] = 0.125 * (ptr_pt->ptr_az[box_grid_idx_1_pt] + ptr_pt->ptr_az[box_grid_idx_2_pt] +
+                                                  ptr_pt->ptr_az[box_grid_idx_3_pt] + ptr_pt->ptr_az[box_grid_idx_4_pt] +
+                                                  ptr_pt->ptr_az[box_grid_idx_5_pt] + ptr_pt->ptr_az[box_grid_idx_6_pt] +
+                                                  ptr_pt->ptr_az[box_grid_idx_7_pt] + ptr_pt->ptr_az[box_grid_idx_8_pt]);
+        
     }
 
     //** >> Interior grid points **/
@@ -376,7 +410,7 @@ static void computing_grid_acceleration_branch(struct node *ptr_node)
 
 static void computing_grid_acceleration_branch2(struct node *ptr_node)
 {
-    vtype aux_acc; // Auxiliary value for the acceleration
+    //vtype aux_acc; // Auxiliary value for the acceleration
 
     struct node *ptr_pt = ptr_node->ptr_pt;
 
@@ -409,6 +443,12 @@ static void computing_grid_acceleration_branch2(struct node *ptr_node)
     int box_idx_2_z_pt;    // Parent box index 2 at Z direcction
     int box_grid_idx_1_pt; // Parent box grid index 1
     int box_grid_idx_2_pt; // Parent box grid index 2
+    int box_grid_idx_3_pt; // Parent box grid index 3
+    int box_grid_idx_4_pt; // Parent box grid index 4
+    int box_grid_idx_5_pt; // Parent box grid index 5
+    int box_grid_idx_6_pt; // Parent box grid index 6
+    int box_grid_idx_7_pt; // Parent box grid index 7
+    int box_grid_idx_8_pt; // Parent box grid index 8
 
     int aux_idx_1_x;
     int aux_idx_1_y;
@@ -448,17 +488,17 @@ static void computing_grid_acceleration_branch2(struct node *ptr_node)
         box_grid_idx = ptr_node->ptr_bder_box_grid_idx[i];
 
         aux_idx_1_x = ptr_node->ptr_bder_grid_cell_idx_x[i] >> 1;
-        aux_idx_1_y = (ptr_node->ptr_bder_grid_cell_idx_x[i] + 1) >> 1;
-        aux_idx_1_z = ptr_node->ptr_bder_grid_cell_idx_y[i] >> 1;
-        aux_idx_2_x = (ptr_node->ptr_bder_grid_cell_idx_y[i] + 1) >> 1;
-        aux_idx_2_y = ptr_node->ptr_bder_grid_cell_idx_z[i] >> 1;
+        aux_idx_1_y = ptr_node->ptr_bder_grid_cell_idx_y[i] >> 1;
+        aux_idx_1_z = ptr_node->ptr_bder_grid_cell_idx_z[i] >> 1;
+        aux_idx_2_x = (ptr_node->ptr_bder_grid_cell_idx_x[i] + 1) >> 1;
+        aux_idx_2_y = (ptr_node->ptr_bder_grid_cell_idx_y[i] + 1) >> 1;
         aux_idx_2_z = (ptr_node->ptr_bder_grid_cell_idx_z[i] + 1) >> 1;
 
         box_idx_1_x_pt = aux_idx_1_x - ptr_pt->box_ts_x;
-        box_idx_2_x_pt = aux_idx_1_y - ptr_pt->box_ts_x;
-        box_idx_1_y_pt = aux_idx_1_z - ptr_pt->box_ts_y;
-        box_idx_2_y_pt = aux_idx_2_x - ptr_pt->box_ts_y;
-        box_idx_1_z_pt = aux_idx_2_y - ptr_pt->box_ts_z;
+        box_idx_1_y_pt = aux_idx_1_y - ptr_pt->box_ts_y;
+        box_idx_1_z_pt = aux_idx_1_z - ptr_pt->box_ts_z;
+        box_idx_2_x_pt = aux_idx_2_x - ptr_pt->box_ts_x;
+        box_idx_2_y_pt = aux_idx_2_y - ptr_pt->box_ts_y;
         box_idx_2_z_pt = aux_idx_2_z - ptr_pt->box_ts_z;
 
         if (ptr_pt->pbc_crosses_the_boundary_simulation_box == true)
@@ -483,21 +523,48 @@ static void computing_grid_acceleration_branch2(struct node *ptr_node)
         }
 
         box_grid_idx_1_pt = box_idx_1_x_pt + box_idx_1_y_pt * grid_box_real_dim_X_pt + box_idx_1_z_pt * grid_box_real_dim_X_times_Y_pt;
+        box_grid_idx_2_pt = box_idx_2_x_pt + box_idx_1_y_pt * grid_box_real_dim_X_pt + box_idx_1_z_pt * grid_box_real_dim_X_times_Y_pt;
+        box_grid_idx_3_pt = box_idx_1_x_pt + box_idx_2_y_pt * grid_box_real_dim_X_pt + box_idx_1_z_pt * grid_box_real_dim_X_times_Y_pt;
+        box_grid_idx_4_pt = box_idx_2_x_pt + box_idx_2_y_pt * grid_box_real_dim_X_pt + box_idx_1_z_pt * grid_box_real_dim_X_times_Y_pt;
+        box_grid_idx_5_pt = box_idx_1_x_pt + box_idx_1_y_pt * grid_box_real_dim_X_pt + box_idx_2_z_pt * grid_box_real_dim_X_times_Y_pt;
+        box_grid_idx_6_pt = box_idx_2_x_pt + box_idx_1_y_pt * grid_box_real_dim_X_pt + box_idx_2_z_pt * grid_box_real_dim_X_times_Y_pt;
+        box_grid_idx_7_pt = box_idx_1_x_pt + box_idx_2_y_pt * grid_box_real_dim_X_pt + box_idx_2_z_pt * grid_box_real_dim_X_times_Y_pt;
+        box_grid_idx_8_pt = box_idx_2_x_pt + box_idx_2_y_pt * grid_box_real_dim_X_pt + box_idx_2_z_pt * grid_box_real_dim_X_times_Y_pt;
+
+        // box_grid_idx_1_pt = box_idx_1_x_pt + box_idx_1_y_pt * grid_box_real_dim_X_pt + box_idx_1_z_pt * grid_box_real_dim_X_times_Y_pt;
+
+        // //** x-axis acceleration **/
+        // box_grid_idx_2_pt = box_idx_2_x_pt + box_idx_1_y_pt * grid_box_real_dim_X_pt + box_idx_1_z_pt * grid_box_real_dim_X_times_Y_pt;
+        // aux_acc = (ptr_pt->ptr_ax[box_grid_idx_1_pt] + ptr_pt->ptr_ax[box_grid_idx_2_pt]) * 0.5;
+        // ptr_node->ptr_ax[box_grid_idx] = aux_acc;
+
+        // //** y-axis acceleration **/
+        // box_grid_idx_2_pt = box_idx_1_x_pt + box_idx_2_y_pt * grid_box_real_dim_X_pt + box_idx_1_z_pt * grid_box_real_dim_X_times_Y_pt;
+        // aux_acc = (ptr_pt->ptr_ay[box_grid_idx_1_pt] + ptr_pt->ptr_ay[box_grid_idx_2_pt]) * 0.5;
+        // ptr_node->ptr_ay[box_grid_idx] = aux_acc;
+
+        // //** z-axis acceleration **/
+        // box_grid_idx_2_pt = box_idx_1_x_pt + box_idx_1_y_pt * grid_box_real_dim_X_pt + box_idx_2_z_pt * grid_box_real_dim_X_times_Y_pt;
+        // aux_acc = (ptr_pt->ptr_az[box_grid_idx_1_pt] + ptr_pt->ptr_az[box_grid_idx_2_pt]) * 0.5;
+        // ptr_node->ptr_az[box_grid_idx] = aux_acc;
 
         //** x-axis acceleration **/
-        box_grid_idx_2_pt = box_idx_2_x_pt + box_idx_1_y_pt * grid_box_real_dim_X_pt + box_idx_1_z_pt * grid_box_real_dim_X_times_Y_pt;
-        aux_acc = (ptr_pt->ptr_ax[box_grid_idx_1_pt] + ptr_pt->ptr_ax[box_grid_idx_2_pt]) * 0.5;
-        ptr_node->ptr_ax[box_grid_idx] = aux_acc;
+        ptr_node->ptr_ax[box_grid_idx] = 0.125 * (ptr_pt->ptr_ax[box_grid_idx_1_pt] + ptr_pt->ptr_ax[box_grid_idx_2_pt] +
+                                                  ptr_pt->ptr_ax[box_grid_idx_3_pt] + ptr_pt->ptr_ax[box_grid_idx_4_pt] +
+                                                  ptr_pt->ptr_ax[box_grid_idx_5_pt] + ptr_pt->ptr_ax[box_grid_idx_6_pt] +
+                                                  ptr_pt->ptr_ax[box_grid_idx_7_pt] + ptr_pt->ptr_ax[box_grid_idx_8_pt]);
 
         //** y-axis acceleration **/
-        box_grid_idx_2_pt = box_idx_1_x_pt + box_idx_2_y_pt * grid_box_real_dim_X_pt + box_idx_1_z_pt * grid_box_real_dim_X_times_Y_pt;
-        aux_acc = (ptr_pt->ptr_ay[box_grid_idx_1_pt] + ptr_pt->ptr_ay[box_grid_idx_2_pt]) * 0.5;
-        ptr_node->ptr_ay[box_grid_idx] = aux_acc;
+        ptr_node->ptr_ay[box_grid_idx] = 0.125 * (ptr_pt->ptr_ay[box_grid_idx_1_pt] + ptr_pt->ptr_ay[box_grid_idx_2_pt] +
+                                                  ptr_pt->ptr_ay[box_grid_idx_3_pt] + ptr_pt->ptr_ay[box_grid_idx_4_pt] +
+                                                  ptr_pt->ptr_ay[box_grid_idx_5_pt] + ptr_pt->ptr_ay[box_grid_idx_6_pt] +
+                                                  ptr_pt->ptr_ay[box_grid_idx_7_pt] + ptr_pt->ptr_ay[box_grid_idx_8_pt]);
 
         //** z-axis acceleration **/
-        box_grid_idx_2_pt = box_idx_1_x_pt + box_idx_1_y_pt * grid_box_real_dim_X_pt + box_idx_2_z_pt * grid_box_real_dim_X_times_Y_pt;
-        aux_acc = (ptr_pt->ptr_az[box_grid_idx_1_pt] + ptr_pt->ptr_az[box_grid_idx_2_pt]) * 0.5;
-        ptr_node->ptr_az[box_grid_idx] = aux_acc;
+        ptr_node->ptr_az[box_grid_idx] = 0.125 * (ptr_pt->ptr_az[box_grid_idx_1_pt] + ptr_pt->ptr_az[box_grid_idx_2_pt] +
+                                                  ptr_pt->ptr_az[box_grid_idx_3_pt] + ptr_pt->ptr_az[box_grid_idx_4_pt] +
+                                                  ptr_pt->ptr_az[box_grid_idx_5_pt] + ptr_pt->ptr_az[box_grid_idx_6_pt] +
+                                                  ptr_pt->ptr_az[box_grid_idx_7_pt] + ptr_pt->ptr_az[box_grid_idx_8_pt]);
     }
 
     //** >> Interior grid points **/

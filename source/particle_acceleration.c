@@ -187,6 +187,25 @@ static void computing_particle_acceleration_head_plus_branches(const struct node
                 box_grid_idx_x = pos_x_floor - ptr_node->box_ts_x;
                 box_grid_idx_y = pos_y_floor - ptr_node->box_ts_y;
                 box_grid_idx_z = pos_z_floor - ptr_node->box_ts_z;
+
+                if (ptr_node->pbc_crosses_the_boundary_simulation_box == true)
+                {
+                    if (pos_x_floor > ptr_node->box_max_x)
+                    {
+                        box_grid_idx_x -= (1 << lv);
+                    }
+
+                    if (pos_y_floor > ptr_node->box_max_y)
+                    {
+                        box_grid_idx_y -= (1 << lv);
+                    }
+
+                    if (pos_z_floor > ptr_node->box_max_z)
+                    {
+                        box_grid_idx_z -= (1 << lv);
+                    }
+                }
+
                 box_grid_idx = box_grid_idx_x + box_grid_idx_y * grid_box_real_dim_X + box_grid_idx_z * grid_box_real_dim_X_times_Y;
                 //** >> Particle density contributes to 8 enclosure grid points **/
                 for (int kk = 0; kk < 2; kk++)
@@ -248,6 +267,25 @@ static void computing_particle_acceleration_head_plus_branches(const struct node
                     box_grid_idx_x = pos_x_floor - ptr_node->box_ts_x;
                     box_grid_idx_y = pos_y_floor - ptr_node->box_ts_y;
                     box_grid_idx_z = pos_z_floor - ptr_node->box_ts_z;
+
+                    if (ptr_node->pbc_crosses_the_boundary_simulation_box == true)
+                    {
+                        if (pos_x_floor > ptr_node->box_max_x)
+                        {
+                            box_grid_idx_x -= (1 << lv);
+                        }
+
+                        if (pos_y_floor > ptr_node->box_max_y)
+                        {
+                            box_grid_idx_y -= (1 << lv);
+                        }
+
+                        if (pos_z_floor > ptr_node->box_max_z)
+                        {
+                            box_grid_idx_z -= (1 << lv);
+                        }
+                    }
+
                     box_grid_idx = box_grid_idx_x + box_grid_idx_y * grid_box_real_dim_X + box_grid_idx_z * grid_box_real_dim_X_times_Y;
                     //** >> Particle density contributes to 8 enclosure grid points **/
                     for (int kk = 0; kk < 2; kk++)

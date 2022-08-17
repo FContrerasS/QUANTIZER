@@ -74,14 +74,14 @@ static void re_initialize_node(struct node *ptr_node)
 	ptr_node->chn_size = 0;	   // Number of children of the node
 
 	//** >> Auxililary arrays to go from old box to new box **/
-	ptr_node->cell_ref_size = 0;	// Number of cells to be refined
+	//ptr_node->cell_ref_size = 0;	// Number of cells to be refined
 
 	//Zones of refinement
-	for (int j = 0; j < ptr_node->zones_cap; j++)
-	{
-  	  ptr_node->ptr_zone_size[j] = 0;
-  	}
-	ptr_node->zones_size = 0;		// Number of refined zones in the node
+	// for (int j = 0; j < ptr_node->zones_cap; j++)
+	// {
+  	//   ptr_node->ptr_zone_size[j] = 0;
+  	// }
+	//ptr_node->zones_size = 0;		// Number of refined zones in the node
 
 	// auxiliary booleans
 	for (int j = 0; j < ptr_node->aux_bool_boundary_anomalies_cap; j++)
@@ -96,7 +96,7 @@ static void re_initialize_node(struct node *ptr_node)
 	// {
 	// 	ptr_node->ptr_subzone_size[j] = 0;
 	// }
-	ptr_node->subzones_size = 0;	//NUmber of refined subzones in the node
+	//ptr_node->subzones_size = 0;	//NUmber of refined subzones in the node
 
 	//** >> Boundary of the simulation box **/
 	ptr_node->boundary_simulation_contact = false;

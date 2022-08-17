@@ -129,7 +129,7 @@ static vtype timestep_computation_1(const struct node *ptr_node)
         {
             box_idx = ptr_node->ptr_box_idx[cell_idx];
 
-            if (ptr_node->ptr_box[box_idx] < 0)
+            if (ptr_node->ptr_box[box_idx] == -3)
             {
                 for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
                 {

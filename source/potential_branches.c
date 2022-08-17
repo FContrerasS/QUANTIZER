@@ -28,7 +28,8 @@
 
 //** >> Local Functions
 static int fill_red_and_black_branch_node(int **pptr_red_black, int *ptr_red_black_cap, int *ptr_red_black_size, const struct node *ptr_node);
-static void initial_potential_branch_node(const struct node *ptr_node, struct node *ptr_ch);
+static void computing_simulation_boundary_grid_point_potential(const struct node *ptr_node);
+static void initial_potential_branch_node(const struct node *ptr_node);
 static int compute_potential_branch_node(int **pptr_red_black, const int *ptr_red_black_size, struct node *ptr_node);
 
 static int fill_red_and_black_branch_node(int **pptr_red_black, int *ptr_red_black_cap, int *ptr_red_black_size, const struct node *ptr_node)
@@ -89,128 +90,236 @@ static int fill_red_and_black_branch_node(int **pptr_red_black, int *ptr_red_bla
 	return _SUCCESS_;
 }
 
-static void initial_potential_branch_node(const struct node *ptr_node, struct node *ptr_ch)
+static void computing_simulation_boundary_grid_point_potential(const struct node *ptr_node)
 {
-	int ch_box_grid_idx; // Child box grid index
+	int lv = ptr_node->lv;
 
-	int box_idx_x0_node; // Parent box index at X direcction
-	int box_idx_x1_node;
-	int box_idx_y0_node;
-	int box_idx_y1_node;
-	int box_idx_z0_node;
-	int box_idx_z1_node;
+	int box_grid_idx; // Box grid index
 
-	int box_grid_i0_j0_k0_node; // Parent grid index at i0, j0, k0 position
-	int box_grid_i1_j0_k0_node;
-	int box_grid_i0_j1_k0_node;
-	int box_grid_i1_j1_k0_node;
-	int box_grid_i0_j0_k1_node;
-	int box_grid_i1_j0_k1_node;
-	int box_grid_i0_j1_k1_node;
-	int box_grid_i1_j1_k1_node;
+	int aux_i;
+	int aux_j;
+	int aux_k;
 
-	vtype aux_pot; // Auxiliar Potential in the grid point
+	vtype H = 1.0L / (1 << lv);
 
-	vtype H = 1.0 / (1 << ptr_ch->lv);
-	vtype aux_x, aux_y, aux_z, dist;
+	vtype dist;
 
-	int grid_box_real_dim_X_node = (ptr_node->box_real_dim_x + 1);
-	int grid_box_real_dim_X_times_Y_node = (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1);
+	vtype aux_coeff = -_G_ * GL_total_mass_initial;
 
-	//** >> Passing the potential from coarse parent to fine child **/
-	// Border grid points
-	for (int i = 0; i < ptr_ch->grid_bder_size; i++)
+	//** >> Simulation Boundary grid points **/
+	for (int i = 0; i < ptr_node->grid_SIMULATION_BOUNDARY_size; i++)
 	{
-		//** >> Child box indexes **/
-		ch_box_grid_idx = ptr_ch->ptr_bder_box_grid_idx[i];
+		box_grid_idx = ptr_node->ptr_SIMULATION_BOUNDARY_box_grid_idx[i];
 
-		//** >> Parent box indexes **/
-		box_idx_x0_node = (ptr_ch->ptr_bder_grid_cell_idx_x[i] >> 1) - ptr_node->box_ts_x;
-		box_idx_x1_node = ((ptr_ch->ptr_bder_grid_cell_idx_x[i] + 1) >> 1) - ptr_node->box_ts_x;
-		box_idx_y0_node = (ptr_ch->ptr_bder_grid_cell_idx_y[i] >> 1) - ptr_node->box_ts_y;
-		box_idx_y1_node = ((ptr_ch->ptr_bder_grid_cell_idx_y[i] + 1) >> 1) - ptr_node->box_ts_y;
-		box_idx_z0_node = (ptr_ch->ptr_bder_grid_cell_idx_z[i] >> 1) - ptr_node->box_ts_z;
-		box_idx_z1_node = ((ptr_ch->ptr_bder_grid_cell_idx_z[i] + 1) >> 1) - ptr_node->box_ts_z;
-
-		//** >> Parent grid indexes **/
-		box_grid_i0_j0_k0_node = box_idx_x0_node + box_idx_y0_node * grid_box_real_dim_X_node + box_idx_z0_node * grid_box_real_dim_X_times_Y_node;
-		box_grid_i1_j0_k0_node = box_idx_x1_node + box_idx_y0_node * grid_box_real_dim_X_node + box_idx_z0_node * grid_box_real_dim_X_times_Y_node;
-		box_grid_i0_j1_k0_node = box_idx_x0_node + box_idx_y1_node * grid_box_real_dim_X_node + box_idx_z0_node * grid_box_real_dim_X_times_Y_node;
-		box_grid_i1_j1_k0_node = box_idx_x1_node + box_idx_y1_node * grid_box_real_dim_X_node + box_idx_z0_node * grid_box_real_dim_X_times_Y_node;
-		box_grid_i0_j0_k1_node = box_idx_x0_node + box_idx_y0_node * grid_box_real_dim_X_node + box_idx_z1_node * grid_box_real_dim_X_times_Y_node;
-		box_grid_i1_j0_k1_node = box_idx_x1_node + box_idx_y0_node * grid_box_real_dim_X_node + box_idx_z1_node * grid_box_real_dim_X_times_Y_node;
-		box_grid_i0_j1_k1_node = box_idx_x0_node + box_idx_y1_node * grid_box_real_dim_X_node + box_idx_z1_node * grid_box_real_dim_X_times_Y_node;
-		box_grid_i1_j1_k1_node = box_idx_x1_node + box_idx_y1_node * grid_box_real_dim_X_node + box_idx_z1_node * grid_box_real_dim_X_times_Y_node;
-
-		aux_pot = 0.125 * (ptr_node->ptr_pot[box_grid_i0_j0_k0_node] +
-						   ptr_node->ptr_pot[box_grid_i1_j0_k0_node] +
-						   ptr_node->ptr_pot[box_grid_i0_j1_k0_node] +
-						   ptr_node->ptr_pot[box_grid_i1_j1_k0_node] +
-						   ptr_node->ptr_pot[box_grid_i0_j0_k1_node] +
-						   ptr_node->ptr_pot[box_grid_i1_j0_k1_node] +
-						   ptr_node->ptr_pot[box_grid_i0_j1_k1_node] +
-						   ptr_node->ptr_pot[box_grid_i1_j1_k1_node]);
-
-		ptr_ch->ptr_pot[ch_box_grid_idx] = aux_pot;
-	}
-
-	//** >> Simulation boundary grid points **/
-	for (int i = 0; i < ptr_ch->grid_SIMULATION_BOUNDARY_size; i++)
-	{
-		if (boundary_type != 0)
+		if (ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_x[i] == 0 ||
+			ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_x[i] == (1 << lv))
 		{
-			ch_box_grid_idx = ptr_ch->ptr_SIMULATION_BOUNDARY_box_grid_idx[i];
-
-			aux_x = ptr_ch->ptr_SIMULATION_BOUNDARY_grid_cell_idx_x[i] * H;
-			aux_y = ptr_ch->ptr_SIMULATION_BOUNDARY_grid_cell_idx_y[i] * H;
-			aux_z = ptr_ch->ptr_SIMULATION_BOUNDARY_grid_cell_idx_z[i] * H;
-
-			dist = (aux_x - GL_cm[0]) * (aux_x - GL_cm[0]) + (aux_y - GL_cm[1]) * (aux_y - GL_cm[1]) + (aux_z - GL_cm[2]) * (aux_z - GL_cm[2]);
-			dist = sqrt(dist);
-
-			ptr_ch->ptr_pot[ch_box_grid_idx] = -_G_ * total_mass / dist;
+			aux_i = GL_cm[0] < 0.5 ? 0 : (1 << lv) * H;
 		}
 		else
 		{
-			// Do something case periodic
+			aux_i = ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_x[i] * H;
 		}
+
+		if (ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_y[i] == 0 ||
+			ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_y[i] == (1 << lv))
+		{
+			aux_j = GL_cm[1] < 0.5 ? 0 : (1 << lv) * H;
+		}
+		else
+		{
+			aux_j = ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_y[i];
+		}
+
+		if (ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_z[i] == 0 ||
+			ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_z[i] == (1 << lv))
+		{
+			aux_k = GL_cm[2] < 0.5 ? 0 : (1 << lv) * H;
+		}
+		else
+		{
+			aux_k = ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_z[i] * H;
+		}
+
+		dist = (aux_i - GL_cm[0]) * (aux_i - GL_cm[0]) + (aux_j - GL_cm[1]) * (aux_j - GL_cm[1]) + (aux_k - GL_cm[2]) * (aux_k - GL_cm[2]);
+		dist = sqrt(dist);
+
+		ptr_node->ptr_pot[box_grid_idx] = aux_coeff / dist;
+	}
+}
+
+static void initial_potential_branch_node(const struct node *ptr_node)
+{
+
+	struct node *ptr_pt = ptr_node->ptr_pt;
+
+	int box_grid_idx_node; // Node box grid index
+
+	int box_idx_1_x_pt; // Parent box index at X direcction
+	int box_idx_1_y_pt;
+	int box_idx_1_z_pt;
+	int box_idx_2_x_pt;
+	int box_idx_2_y_pt;
+	int box_idx_2_z_pt;
+
+	int box_grid_idx_1_pt; // Parent box grid index 1
+	int box_grid_idx_2_pt; // Parent box grid index 2
+	int box_grid_idx_3_pt; // Parent box grid index 3
+	int box_grid_idx_4_pt; // Parent box grid index 4
+	int box_grid_idx_5_pt; // Parent box grid index 5
+	int box_grid_idx_6_pt; // Parent box grid index 6
+	int box_grid_idx_7_pt; // Parent box grid index 7
+	int box_grid_idx_8_pt; // Parent box grid index 8
+
+	int aux_idx_1_x;
+	int aux_idx_1_y;
+	int aux_idx_1_z;
+	int aux_idx_2_x;
+	int aux_idx_2_y;
+	int aux_idx_2_z;
+
+
+
+	//vtype aux_pot; // Auxiliar Potential in the grid point
+
+	int lv = ptr_node->lv;
+
+	//vtype H = 1.0 / (1 << lv);
+	//vtype aux_x, aux_y, aux_z, dist;
+
+	int grid_box_real_dim_X_pt = (ptr_pt->box_real_dim_x + 1);
+	int grid_box_real_dim_X_times_Y_pt = (ptr_pt->box_real_dim_x + 1) * (ptr_pt->box_real_dim_y + 1);
+
+	//** >> Simulation Boundary grid points **/
+	computing_simulation_boundary_grid_point_potential(ptr_node);
+
+	//** >> Passing the potential from coarse parent to fine child **/
+	// Border grid points
+	for (int i = 0; i < ptr_node->grid_bder_size; i++)
+	{
+		//** >> Child box indexes **/
+		box_grid_idx_node = ptr_node->ptr_bder_box_grid_idx[i];
+
+		//** >> Parent box indexes **/
+		// box_idx_x0_node = (ptr_ch->ptr_bder_grid_cell_idx_x[i] >> 1) - ptr_node->box_ts_x;
+		// box_idx_x1_node = ((ptr_ch->ptr_bder_grid_cell_idx_x[i] + 1) >> 1) - ptr_node->box_ts_x;
+		// box_idx_y0_node = (ptr_ch->ptr_bder_grid_cell_idx_y[i] >> 1) - ptr_node->box_ts_y;
+		// box_idx_y1_node = ((ptr_ch->ptr_bder_grid_cell_idx_y[i] + 1) >> 1) - ptr_node->box_ts_y;
+		// box_idx_z0_node = (ptr_ch->ptr_bder_grid_cell_idx_z[i] >> 1) - ptr_node->box_ts_z;
+		// box_idx_z1_node = ((ptr_ch->ptr_bder_grid_cell_idx_z[i] + 1) >> 1) - ptr_node->box_ts_z;
+
+		//** >> Parent box indexes **/
+		aux_idx_1_x = ptr_node->ptr_bder_grid_cell_idx_x[i] >> 1;
+		aux_idx_1_y = ptr_node->ptr_bder_grid_cell_idx_y[i] >> 1;
+		aux_idx_1_z = ptr_node->ptr_bder_grid_cell_idx_z[i] >> 1;
+		aux_idx_2_x = (ptr_node->ptr_bder_grid_cell_idx_x[i] + 1) >> 1;
+		aux_idx_2_y = (ptr_node->ptr_bder_grid_cell_idx_y[i] + 1) >> 1;
+		aux_idx_2_z = (ptr_node->ptr_bder_grid_cell_idx_z[i] + 1) >> 1;
+
+		box_idx_1_x_pt = aux_idx_1_x - ptr_pt->box_ts_x;
+		box_idx_1_y_pt = aux_idx_1_y - ptr_pt->box_ts_y;
+		box_idx_1_z_pt = aux_idx_1_z - ptr_pt->box_ts_z;
+		box_idx_2_x_pt = aux_idx_2_x - ptr_pt->box_ts_x;
+		box_idx_2_y_pt = aux_idx_2_y - ptr_pt->box_ts_y;
+		box_idx_2_z_pt = aux_idx_2_z - ptr_pt->box_ts_z;
+
+		if (ptr_pt->pbc_crosses_the_boundary_simulation_box == true)
+		{
+			if (aux_idx_1_x > ptr_pt->box_max_x)
+			{
+				box_idx_1_x_pt -= (1 << (lv - 1));
+				box_idx_2_x_pt -= (1 << (lv - 1));
+			}
+
+			if (aux_idx_1_y > ptr_pt->box_max_y)
+			{
+				box_idx_1_y_pt -= (1 << (lv - 1));
+				box_idx_2_y_pt -= (1 << (lv - 1));
+			}
+
+			if (aux_idx_1_z > ptr_pt->box_max_z)
+			{
+				box_idx_1_z_pt -= (1 << (lv - 1));
+				box_idx_2_z_pt -= (1 << (lv - 1));
+			}
+		}
+
+		//** >> Parent grid indexes **/
+
+		box_grid_idx_1_pt = box_idx_1_x_pt + box_idx_1_y_pt * grid_box_real_dim_X_pt + box_idx_1_z_pt * grid_box_real_dim_X_times_Y_pt;
+		box_grid_idx_2_pt = box_idx_2_x_pt + box_idx_1_y_pt * grid_box_real_dim_X_pt + box_idx_1_z_pt * grid_box_real_dim_X_times_Y_pt;
+		box_grid_idx_3_pt = box_idx_1_x_pt + box_idx_2_y_pt * grid_box_real_dim_X_pt + box_idx_1_z_pt * grid_box_real_dim_X_times_Y_pt;
+		box_grid_idx_4_pt = box_idx_2_x_pt + box_idx_2_y_pt * grid_box_real_dim_X_pt + box_idx_1_z_pt * grid_box_real_dim_X_times_Y_pt;
+		box_grid_idx_5_pt = box_idx_1_x_pt + box_idx_1_y_pt * grid_box_real_dim_X_pt + box_idx_2_z_pt * grid_box_real_dim_X_times_Y_pt;
+		box_grid_idx_6_pt = box_idx_2_x_pt + box_idx_1_y_pt * grid_box_real_dim_X_pt + box_idx_2_z_pt * grid_box_real_dim_X_times_Y_pt;
+		box_grid_idx_7_pt = box_idx_1_x_pt + box_idx_2_y_pt * grid_box_real_dim_X_pt + box_idx_2_z_pt * grid_box_real_dim_X_times_Y_pt;
+		box_grid_idx_8_pt = box_idx_2_x_pt + box_idx_2_y_pt * grid_box_real_dim_X_pt + box_idx_2_z_pt * grid_box_real_dim_X_times_Y_pt;
+
+		ptr_node->ptr_pot[box_grid_idx_node] = 0.125 * (ptr_pt->ptr_pot[box_grid_idx_1_pt] + ptr_pt->ptr_pot[box_grid_idx_2_pt] +
+														ptr_pt->ptr_pot[box_grid_idx_3_pt] + ptr_pt->ptr_pot[box_grid_idx_4_pt] +
+														ptr_pt->ptr_pot[box_grid_idx_5_pt] + ptr_pt->ptr_pot[box_grid_idx_6_pt] +
+														ptr_pt->ptr_pot[box_grid_idx_7_pt] + ptr_pt->ptr_pot[box_grid_idx_8_pt]);
+		
 	}
 
 	// Interior grid points
-	for (int i = 0; i < ptr_ch->grid_intr_size; i++)
+	for (int i = 0; i < ptr_node->grid_intr_size; i++)
 	{
 		//** >> Child box indexes **/
-		ch_box_grid_idx = ptr_ch->ptr_intr_box_grid_idx[i];
+		box_grid_idx_node = ptr_node->ptr_intr_box_grid_idx[i];
 
 		//** >> Parent box indexes **/
-		box_idx_x0_node = (ptr_ch->ptr_intr_grid_cell_idx_x[i] >> 1) - ptr_node->box_ts_x;
-		box_idx_x1_node = ((ptr_ch->ptr_intr_grid_cell_idx_x[i] + 1) >> 1) - ptr_node->box_ts_x;
-		box_idx_y0_node = (ptr_ch->ptr_intr_grid_cell_idx_y[i] >> 1) - ptr_node->box_ts_y;
-		box_idx_y1_node = ((ptr_ch->ptr_intr_grid_cell_idx_y[i] + 1) >> 1) - ptr_node->box_ts_y;
-		box_idx_z0_node = (ptr_ch->ptr_intr_grid_cell_idx_z[i] >> 1) - ptr_node->box_ts_z;
-		box_idx_z1_node = ((ptr_ch->ptr_intr_grid_cell_idx_z[i] + 1) >> 1) - ptr_node->box_ts_z;
+		aux_idx_1_x = ptr_node->ptr_intr_grid_cell_idx_x[i] >> 1;
+		aux_idx_1_y = ptr_node->ptr_intr_grid_cell_idx_y[i] >> 1;
+		aux_idx_1_z = ptr_node->ptr_intr_grid_cell_idx_z[i] >> 1;
+		aux_idx_2_x = (ptr_node->ptr_intr_grid_cell_idx_x[i] + 1) >> 1;
+		aux_idx_2_y = (ptr_node->ptr_intr_grid_cell_idx_y[i] + 1) >> 1;
+		aux_idx_2_z = (ptr_node->ptr_intr_grid_cell_idx_z[i] + 1) >> 1;
+
+		box_idx_1_x_pt = aux_idx_1_x - ptr_pt->box_ts_x;
+		box_idx_1_y_pt = aux_idx_1_y - ptr_pt->box_ts_y;
+		box_idx_1_z_pt = aux_idx_1_z - ptr_pt->box_ts_z;
+		box_idx_2_x_pt = aux_idx_2_x - ptr_pt->box_ts_x;
+		box_idx_2_y_pt = aux_idx_2_y - ptr_pt->box_ts_y;
+		box_idx_2_z_pt = aux_idx_2_z - ptr_pt->box_ts_z;
+
+		if (ptr_pt->pbc_crosses_the_boundary_simulation_box == true)
+		{
+			if (aux_idx_1_x > ptr_pt->box_max_x)
+			{
+				box_idx_1_x_pt -= (1 << (lv - 1));
+				box_idx_2_x_pt -= (1 << (lv - 1));
+			}
+
+			if (aux_idx_1_y > ptr_pt->box_max_y)
+			{
+				box_idx_1_y_pt -= (1 << (lv - 1));
+				box_idx_2_y_pt -= (1 << (lv - 1));
+			}
+
+			if (aux_idx_1_z > ptr_pt->box_max_z)
+			{
+				box_idx_1_z_pt -= (1 << (lv - 1));
+				box_idx_2_z_pt -= (1 << (lv - 1));
+			}
+		}
 
 		//** >> Parent grid indexes **/
-		box_grid_i0_j0_k0_node = box_idx_x0_node + box_idx_y0_node * grid_box_real_dim_X_node + box_idx_z0_node * grid_box_real_dim_X_times_Y_node;
-		box_grid_i1_j0_k0_node = box_idx_x1_node + box_idx_y0_node * grid_box_real_dim_X_node + box_idx_z0_node * grid_box_real_dim_X_times_Y_node;
-		box_grid_i0_j1_k0_node = box_idx_x0_node + box_idx_y1_node * grid_box_real_dim_X_node + box_idx_z0_node * grid_box_real_dim_X_times_Y_node;
-		box_grid_i1_j1_k0_node = box_idx_x1_node + box_idx_y1_node * grid_box_real_dim_X_node + box_idx_z0_node * grid_box_real_dim_X_times_Y_node;
-		box_grid_i0_j0_k1_node = box_idx_x0_node + box_idx_y0_node * grid_box_real_dim_X_node + box_idx_z1_node * grid_box_real_dim_X_times_Y_node;
-		box_grid_i1_j0_k1_node = box_idx_x1_node + box_idx_y0_node * grid_box_real_dim_X_node + box_idx_z1_node * grid_box_real_dim_X_times_Y_node;
-		box_grid_i0_j1_k1_node = box_idx_x0_node + box_idx_y1_node * grid_box_real_dim_X_node + box_idx_z1_node * grid_box_real_dim_X_times_Y_node;
-		box_grid_i1_j1_k1_node = box_idx_x1_node + box_idx_y1_node * grid_box_real_dim_X_node + box_idx_z1_node * grid_box_real_dim_X_times_Y_node;
 
-		aux_pot = 0.125 * (ptr_node->ptr_pot[box_grid_i0_j0_k0_node] +
-						   ptr_node->ptr_pot[box_grid_i1_j0_k0_node] +
-						   ptr_node->ptr_pot[box_grid_i0_j1_k0_node] +
-						   ptr_node->ptr_pot[box_grid_i1_j1_k0_node] +
-						   ptr_node->ptr_pot[box_grid_i0_j0_k1_node] +
-						   ptr_node->ptr_pot[box_grid_i1_j0_k1_node] +
-						   ptr_node->ptr_pot[box_grid_i0_j1_k1_node] +
-						   ptr_node->ptr_pot[box_grid_i1_j1_k1_node]);
+		box_grid_idx_1_pt = box_idx_1_x_pt + box_idx_1_y_pt * grid_box_real_dim_X_pt + box_idx_1_z_pt * grid_box_real_dim_X_times_Y_pt;
+		box_grid_idx_2_pt = box_idx_2_x_pt + box_idx_1_y_pt * grid_box_real_dim_X_pt + box_idx_1_z_pt * grid_box_real_dim_X_times_Y_pt;
+		box_grid_idx_3_pt = box_idx_1_x_pt + box_idx_2_y_pt * grid_box_real_dim_X_pt + box_idx_1_z_pt * grid_box_real_dim_X_times_Y_pt;
+		box_grid_idx_4_pt = box_idx_2_x_pt + box_idx_2_y_pt * grid_box_real_dim_X_pt + box_idx_1_z_pt * grid_box_real_dim_X_times_Y_pt;
+		box_grid_idx_5_pt = box_idx_1_x_pt + box_idx_1_y_pt * grid_box_real_dim_X_pt + box_idx_2_z_pt * grid_box_real_dim_X_times_Y_pt;
+		box_grid_idx_6_pt = box_idx_2_x_pt + box_idx_1_y_pt * grid_box_real_dim_X_pt + box_idx_2_z_pt * grid_box_real_dim_X_times_Y_pt;
+		box_grid_idx_7_pt = box_idx_1_x_pt + box_idx_2_y_pt * grid_box_real_dim_X_pt + box_idx_2_z_pt * grid_box_real_dim_X_times_Y_pt;
+		box_grid_idx_8_pt = box_idx_2_x_pt + box_idx_2_y_pt * grid_box_real_dim_X_pt + box_idx_2_z_pt * grid_box_real_dim_X_times_Y_pt;
 
-		ptr_ch->ptr_pot[ch_box_grid_idx] = aux_pot;
-	}
+		ptr_node->ptr_pot[box_grid_idx_node] = 0.125 * (ptr_pt->ptr_pot[box_grid_idx_1_pt] + ptr_pt->ptr_pot[box_grid_idx_2_pt] +
+														ptr_pt->ptr_pot[box_grid_idx_3_pt] + ptr_pt->ptr_pot[box_grid_idx_4_pt] +
+														ptr_pt->ptr_pot[box_grid_idx_5_pt] + ptr_pt->ptr_pot[box_grid_idx_6_pt] +
+														ptr_pt->ptr_pot[box_grid_idx_7_pt] + ptr_pt->ptr_pot[box_grid_idx_8_pt]);
+		}
 }
 
 static int compute_potential_branch_node(int **pptr_red_black, const int *ptr_red_black_size, struct node *ptr_node)
@@ -316,7 +425,7 @@ int potential_branches(void)
 				ptr_ch = ptr_node->pptr_chn[j];
 				//** >> Transfer the potential from parent to child nodes **/
 				aux_clock = clock();
-				initial_potential_branch_node(ptr_node, ptr_ch);
+				initial_potential_branch_node(ptr_ch);
 				GL_times[22] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
 				memcpy(ptr_ch->ptr_pot_old, ptr_ch->ptr_pot, ptr_ch->grid_properties_cap * sizeof(vtype));

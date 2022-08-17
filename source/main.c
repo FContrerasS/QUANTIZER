@@ -199,7 +199,7 @@ int main(int argc, char **argv) {
 	while (actualtime < Maxdt && Number_timesteps < MaxIterations)
 	{
 		//** >> TIMESTEP **/
-		// printf("Time-step compute\n");
+		printf("\nTime-step compute\n");
 
 		GL_clock_begin = clock();
 		if (timestep_2(&dt) == _FAILURE_)
@@ -212,7 +212,7 @@ int main(int argc, char **argv) {
 		actualtime += dt; // Updating actual time
 
 		//** >> PARTICLE UPDATING A **/
-		// printf("Particles Updating A\n");
+		printf("Particles Updating A\n");
 		GL_clock_begin = clock();
 		if (particle_updating_A(dt) == _FAILURE_)
 		{
@@ -222,7 +222,7 @@ int main(int argc, char **argv) {
 		GL_times[9] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 
 		//** >> RESET **/
-		// printf("Reset\n");
+		printf("Reset\n");
 		GL_clock_begin = clock();
 		if (reset() == _FAILURE_)
 		{
@@ -232,7 +232,7 @@ int main(int argc, char **argv) {
 		GL_times[11] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 
 		//** >> TREE ADAPTATION **/
-		// printf("tree adaptation\n");
+		printf("tree adaptation\n");
 		GL_clock_begin = clock();
 		if (tree_adaptation() == _FAILURE_)
 		{
@@ -242,13 +242,14 @@ int main(int argc, char **argv) {
 		GL_times[10] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 
 		//** >> DENSITY COMPUTATION **/
-		//printf("Density \n");
+		printf("Density \n");
 		GL_clock_begin = clock();
 		grid_density();
 		GL_times[4] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 
-		// printf("Potential\n");
+		
 		//** >> POTENTIAL COMPUTATION **/
+		printf("Potential\n");
 		GL_clock_begin = clock();
 		if (potential() == _FAILURE_)
 		{
@@ -258,7 +259,7 @@ int main(int argc, char **argv) {
 		GL_times[5] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 
 		//** >> GRID ACCELERATION **/
-		// printf("Grid acceleration\n");
+		printf("Grid acceleration\n");
 		GL_clock_begin = clock();
 		if (grid_acceleration() == _FAILURE_)
 		{
@@ -268,7 +269,7 @@ int main(int argc, char **argv) {
 		GL_times[6] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 
 		//** >> PARTICLE ACCELERATION **/
-		// printf("Particle acceleration\n");
+		printf("Particle acceleration\n");
 		GL_clock_begin = clock();
 		if (particle_acceleration() == _FAILURE_)
 		{
@@ -278,19 +279,20 @@ int main(int argc, char **argv) {
 		GL_times[7] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 
 		//** >> PARTICLE UPDATING B **/
-		// printf("Particle Updating B\n");
+		printf("Particle Updating B\n");
 		GL_clock_begin = clock();
 		particle_updating_B(dt);
 		GL_times[12] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 
-		//** >> OUPUT SNAPSHOTS **/
+		printf("Finalized part updating B\n");
 
+		//** >> OUPUT SNAPSHOTS **/
 		if (Number_timesteps % fr_output == 0 || actualtime >= Maxdt)
 		{
 			++Number_outputs;
 
 			//** >> OBSERVABLES **/
-			// printf("Observables\n");
+			//printf("Observables\n");
 			GL_clock_begin = clock();
 			if (observables(energies) == _FAILURE_)
 			{
@@ -311,6 +313,7 @@ int main(int argc, char **argv) {
 			GL_times[19] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 		}
 
+		
 		//** >> GARBAGE COLLECTOR **/
 		GL_clock_begin = clock();
 		if ((Number_timesteps + 1) % Garbage_Collector_iter == 0 && lmin < lmax)

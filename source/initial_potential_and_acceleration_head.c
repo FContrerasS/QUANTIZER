@@ -60,16 +60,15 @@ void initial_potential_and_acceleration_head(struct node *ptr_head)
     }
 
     //** Normalizing per the total mass **/
-    GL_cm[0] = GL_cm[0] / total_mass;
-    GL_cm[1] = GL_cm[1] / total_mass;
-    GL_cm[2] = GL_cm[2] / total_mass;  
+    GL_cm[0] = GL_cm[0] / GL_total_mass_initial;
+    GL_cm[1] = GL_cm[1] / GL_total_mass_initial;
+    GL_cm[2] = GL_cm[2] / GL_total_mass_initial;
 
     int border_grid_points = 0;
     int interior_grid_points = 0;
 
     if (boundary_type == 0)
     {
-
         vtype dis_periodic[8] = {0, 0, 0, 0, 0, 0, 0, 0};
         vtype aux_ijk = (grid_limit - bder_os_sim) * H;
         int counter = 0;
@@ -222,13 +221,13 @@ void initial_potential_and_acceleration_head(struct node *ptr_head)
 
                     if (counter > 0)
                     {
-                        aux_coeff = -_G_ * total_mass / dist;
+                        aux_coeff = -_G_ * GL_total_mass_initial / dist;
                         for (int l = 0; l < (1 << counter); l++)
                         {
                             ptr_head->ptr_pot[box_grid_idx_periodic[l]] = aux_coeff;
                         }
 
-                        aux_coeff = -_G_ * total_mass / (dist * dist * dist);
+                        aux_coeff = -_G_ * GL_total_mass_initial / (dist * dist * dist);
 
                         if (counter == 1)
                         {   
@@ -287,8 +286,8 @@ void initial_potential_and_acceleration_head(struct node *ptr_head)
                         for (int l = 1; l < (1 << counter);l++)
                         {
                             ptr_head->ptr_ax[box_grid_idx_periodic[l]] = ptr_head->ptr_ax[box_grid_idx_periodic[0]];
-                            ptr_head->ptr_ax[box_grid_idx_periodic[l]] = ptr_head->ptr_ay[box_grid_idx_periodic[0]];
-                            ptr_head->ptr_ax[box_grid_idx_periodic[l]] = ptr_head->ptr_az[box_grid_idx_periodic[0]];
+                            ptr_head->ptr_ay[box_grid_idx_periodic[l]] = ptr_head->ptr_ay[box_grid_idx_periodic[0]];
+                            ptr_head->ptr_az[box_grid_idx_periodic[l]] = ptr_head->ptr_az[box_grid_idx_periodic[0]];
                         }
 
                             border_grid_points += (1 << counter);
@@ -322,8 +321,8 @@ void initial_potential_and_acceleration_head(struct node *ptr_head)
                         dist = (aux_i - GL_cm[0]) * (aux_i - GL_cm[0]) + (aux_j - GL_cm[1]) * (aux_j - GL_cm[1]) + (aux_k - GL_cm[2]) * (aux_k - GL_cm[2]);
                         dist = sqrt(dist);
                         box_grid_idx = i + j * grid_side + k * grid_side * grid_side;
-                        aux_coeff = -_G_ * total_mass / (dist * dist * dist);
-                        ptr_head->ptr_pot[box_grid_idx] = -_G_ * total_mass / dist;
+                        aux_coeff = -_G_ * GL_total_mass_initial / (dist * dist * dist);
+                        ptr_head->ptr_pot[box_grid_idx] = -_G_ * GL_total_mass_initial / dist;
                         ptr_head->ptr_ax[box_grid_idx] = aux_coeff * (aux_i - GL_cm[0]);
                         ptr_head->ptr_ay[box_grid_idx] = aux_coeff * (aux_j - GL_cm[1]);
                         ptr_head->ptr_az[box_grid_idx] = aux_coeff * (aux_k - GL_cm[2]);

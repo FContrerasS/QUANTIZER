@@ -206,6 +206,12 @@ void check_error(struct node *ptr_node)
                 printf("lv = %d, ID = %d, ptcl_size = %d, cell_mass = %f\n", ptr_ch->lv, ptr_ch->ID, ptr_ch->ptr_cell_struct[box_idx_ch].ptcl_size, (double)ptr_ch->ptr_cell_struct[box_idx_ch].cell_mass);
             }
         }
+
+        if (ptr_ch->local_no_ptcl == 0)
+        {
+            printf("Hijo at lv = %d, ID = %d\n", ptr_ch->lv, ptr_ch->ID);
+            printf("Error, child no ptcl = 0\n");
+        }
     }
 
     // Parent node
@@ -244,6 +250,11 @@ void check_error(struct node *ptr_node)
             printf("Error, parent, box_idx = %d\n", box_idx_node);
             printf("lv = %d, ID = %d, ptcl_size = %d, cell_mass = %f\n", ptr_node->lv, ptr_node->ID, ptr_node->ptr_cell_struct[box_idx_node].ptcl_size, (double) ptr_node->ptr_cell_struct[box_idx_node].cell_mass );
         }
+    }
+    if (ptr_node->local_no_ptcl == 0)
+    {
+        printf("Parent at lv = %d, ID = %d\n", ptr_node->lv, ptr_node->ID);
+        printf("Error, parent no ptcl = 0\n");
     }
 
     //Particles are in the right cell
@@ -285,14 +296,16 @@ void check_error(struct node *ptr_node)
 
     // Local mass and loca no particles:
     //  Children
-    vtype aux_mass1 = 0;
-    vtype aux_mass2 = 0;
-    int aux_no_ptcl1 = 0;
-    int aux_no_ptcl2 = 0;
+    vtype aux_mass1;
+    vtype aux_mass2;
+    int aux_no_ptcl1;
+    int aux_no_ptcl2;
     for (int i = 0; i < ptr_node->chn_size; i++)
     {
         aux_mass1 = 0;
         aux_mass2 = 0;
+        aux_no_ptcl1 = 0;
+        aux_no_ptcl2 = 0;
         ptr_ch = ptr_node->pptr_chn[i];
         for (int cell_idx = 0; cell_idx < ptr_ch->cell_size; cell_idx++)
         {
@@ -410,6 +423,37 @@ void check_error(struct node *ptr_node)
         {
             printf("Error, Hijo, cell size diferente la valor \n");
         }
+
+        //Minimum amount of cell size
+        if (ptr_ch->cell_size < 64 )
+        {
+            printf("Hijo at lv = %d, ID = %d\n", ptr_ch->lv, ptr_ch->ID);
+            printf("Parent at lv = %d, ID = %d\n", ptr_node->lv, ptr_node->ID);
+            printf("Error, Hijo, cell size minimum amount of 64 broken = %d \n", ptr_ch->cell_size);
+            printf("local no ptcl = %d \n", ptr_ch->local_no_ptcl);
+
+            printf("Parent cell size = %d\n", ptr_node->cell_size);
+
+            printf("child min_x = %d, max_x = %d\n", ptr_ch->box_min_x, ptr_ch->box_max_x);
+            printf("child min_y = %d, max_y = %d\n", ptr_ch->box_min_y, ptr_ch->box_max_y);
+            printf("child min_z = %d, max_z = %d\n", ptr_ch->box_min_z, ptr_ch->box_max_z);
+
+            printf("Parent min_x = %d, max_x = %d\n", ptr_node->box_min_x, ptr_node->box_max_x);
+            printf("Parent min_y = %d, max_y = %d\n", ptr_node->box_min_y, ptr_node->box_max_y);
+            printf("Parent min_z = %d, max_z = %d\n", ptr_node->box_min_z, ptr_node->box_max_z);
+
+            for (int j = 0; j < ptr_node->zones_size;j++)
+            {
+                printf("zone = %d, size = %d\n",j,ptr_node->ptr_zone_size[j]);
+            }
+
+            for (int j = 0; j < ptr_node->ptr_zone_size[35]; j++)
+            {
+                box_idx_node = ptr_node->ptr_box_idx[ptr_node->pptr_zones[35][j]];
+                printf("box value of %d element = %d\n", j, ptr_node->ptr_box[box_idx_node]);
+                printf("ptcl size of that cell = %d\n",ptr_node->ptr_cell_struct[box_idx_node].ptcl_size);
+            }
+        }
     }
 
     //   Parent
@@ -462,6 +506,12 @@ void check_error(struct node *ptr_node)
     if (ptr_node->cell_size != cntr_Exist + cntr_chn)
     {
         printf("Error, parent, cell size diferente la valor \n");
+    }
+
+    // Minimum amount of cell size
+    if (ptr_node->cell_size < 64)
+    {
+        printf("Error, Parent, cell size minimum amount of 64 broken = %d \n", ptr_node->cell_size);
     }
 
     for (int i = 0; i < ptr_node->chn_size; i++)
@@ -894,11 +944,11 @@ static void initialization_node_boxes(struct node *ptr_node)
 
 static void initialization_ref_aux(struct node *ptr_node)
 {
-    ptr_node->cell_ref_size = 0; // Number of cell to refine is equal to 0
-    for (int i = 0; i < ptr_node->zones_cap; i++)
-    {
-        ptr_node->ptr_zone_size[i] = 0; // The zone i contains 0 elements
-    }
+    //ptr_node->cell_ref_size = 0; // Number of cell to refine is equal to 0
+    // for (int i = 0; i < ptr_node->zones_cap; i++)
+    // {
+    //     ptr_node->ptr_zone_size[i] = 0; // The zone i contains 0 elements
+    // }
     // ptr_node->zones_size = 0; // The total number of zones of refinement is 0
 
     // ptr_node->subzones_size = 0; //The total number of subzones of refinement is 0
@@ -5523,7 +5573,9 @@ int tree_adaptation(void)
                 }
                 GL_times[30] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
+                
                 check_error(ptr_node);
+                printf("pre-check ends\n");
 
                 //** Initialization of node boxes **/
                 // printf("\n\ninitialization_node_boxes\n\n");
@@ -5556,6 +5608,22 @@ int tree_adaptation(void)
                     return _FAILURE_;
                 }
                 GL_times[34] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+                if (ptr_node->ID == 0 && ptr_node->lv == 8 && ptr_node->zones_size == 41)
+                {
+                    printf("zones size = %d\n",ptr_node->zones_size);
+                    int box_idx_node;
+                    printf("Information just after create the nez reifnment zones of ");
+                    printf("the parent of the ID 35 issue ");
+                    for (int j = 0; j < ptr_node->ptr_zone_size[35]; j++)
+                    {
+                        box_idx_node = ptr_node->ptr_box_idx[ptr_node->pptr_zones[35][j]];
+                        printf("box value of %d element = %d\n", j, ptr_node->ptr_box[box_idx_node]);
+                        printf("ptcl size of that cell = %d\n", ptr_node->ptr_cell_struct[box_idx_node].ptcl_size);
+                    }
+                }
+
+
 
                 if (ptr_node->zones_size > 0)
                 {
@@ -5692,7 +5760,9 @@ int tree_adaptation(void)
                 moved_unused_child_node_to_memory_pool(ptr_node);
                 GL_times[47] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
+                
                 check_error(ptr_node);
+                printf("post-check ends\n");
             }
         }
 
