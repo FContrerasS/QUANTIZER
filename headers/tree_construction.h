@@ -29,6 +29,7 @@
 
 #include "common.h"
 #include "space_check.h"
+#include "add_node_to_stack.h"
 
 int tree_construction(void);
 

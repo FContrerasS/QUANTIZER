@@ -56,9 +56,9 @@ int ptcl_idx_to_box_idx(struct node *ptr_node, int ptcl_idx)
     pos_z = GL_ptcl_z[ptcl_idx] * (1 << lv);
 
     //** >> Floor of the particles positions in the grid level of the current node before updating**/
-    pos_x_floor = (int)pos_x;
-    pos_y_floor = (int)pos_y;
-    pos_z_floor = (int)pos_z;
+    pos_x_floor = myfloor(pos_x);
+    pos_y_floor = myfloor(pos_y);
+    pos_z_floor = myfloor(pos_z);
 
     //** >> Box index in the current node before updating **/
     box_idx_x = pos_x_floor - ptr_node->box_ts_x;

@@ -55,24 +55,24 @@ static int computing_particles_updating_A_HEAD_ONLY(struct node *ptr_node, vtype
                 if (GL_ptcl_x[i] < 0. || GL_ptcl_x[i] >= 1.)
                 {
                     //** >> Positions **/
-                    GL_ptcl_x[i] = GL_ptcl_x[i] >= 1. ? GL_ptcl_x[i] - 1 : 1 + GL_ptcl_x[i];
+                    GL_ptcl_x[i] = GL_ptcl_x[i] >= 1. ? GL_ptcl_x[i] - 1. : 1. + GL_ptcl_x[i];
 
-                    printf("\n Particle %d, is translated at x axis. New position  =  %f :\n", i, GL_ptcl_x[i]);
+                    printf("\n Head Node, Particle %d, is translated at x axis. New position  =  %f :\n", i, GL_ptcl_x[i]);
                 }
                 if (GL_ptcl_y[i] < 0. || GL_ptcl_y[i] >= 1.)
                 {
                     //** >> Positions **/
-                    GL_ptcl_y[i] = GL_ptcl_y[i] >= 1. ? GL_ptcl_y[i] - 1 : 1 + GL_ptcl_y[i];
+                    GL_ptcl_y[i] = GL_ptcl_y[i] >= 1. ? GL_ptcl_y[i] - 1. : 1. + GL_ptcl_y[i];
 
-                    printf("\n Particle %d, is translated at y axis. New position  =  %f :\n", i, GL_ptcl_y[i]);
+                    printf("\n Head Node, Particle %d, is translated at y axis. New position  =  %f :\n", i, GL_ptcl_y[i]);
                 }
 
                 if (GL_ptcl_z[i] < 0. || GL_ptcl_z[i] >= 1.)
                 {
                     //** >> Positions **/
-                    GL_ptcl_z[i] = GL_ptcl_z[i] >= 1. ? GL_ptcl_z[i] - 1 : 1 + GL_ptcl_z[i];
+                    GL_ptcl_z[i] = GL_ptcl_z[i] >= 1. ? GL_ptcl_z[i] - 1. : 1. + GL_ptcl_z[i];
 
-                    printf("\n Particle %d, is translated at z axis. New position  =  %f :\n", i, GL_ptcl_z[i]);
+                    printf("\n Head Node, Particle %d, is translated at z axis. New position  =  %f :\n", i, GL_ptcl_z[i]);
                 }
             }
             break;
@@ -96,42 +96,42 @@ static int computing_particles_updating_A_HEAD_ONLY(struct node *ptr_node, vtype
                 if (GL_ptcl_x[i] < 0. || GL_ptcl_x[i] >= 1.)
                 {
                     //** >> Positions **/
-                    GL_ptcl_x[i] = GL_ptcl_x[i] >= 1. ? 2 - GL_ptcl_x[i] : -GL_ptcl_x[i];
+                    GL_ptcl_x[i] = GL_ptcl_x[i] >= 1. ? 2. - GL_ptcl_x[i] : -GL_ptcl_x[i];
 
                     //** >> Velocities **/
-                    GL_ptcl_vx[i] *= -1;
+                    GL_ptcl_vx[i] *= -1.;
 
                     //** >> Accelerations **/
-                    GL_ptcl_ax[i] *= -1;
+                    GL_ptcl_ax[i] *= -1.;
 
-                    printf("\n Particle %d, is reflected at x axis. New position  =  %f :\n", i, GL_ptcl_x[i]);
+                    printf("\n Head Node, Particle %d, is reflected at x axis. New position  =  %f :\n", i, GL_ptcl_x[i]);
                 }
                 if (GL_ptcl_y[i] < 0. || GL_ptcl_y[i] >= 1.)
                 {
                     //** >> Positions **/
-                    GL_ptcl_y[i] = GL_ptcl_y[i] >= 1. ? 2 - GL_ptcl_y[i] : -GL_ptcl_y[i];
+                    GL_ptcl_y[i] = GL_ptcl_y[i] >= 1. ? 2. - GL_ptcl_y[i] : -GL_ptcl_y[i];
 
                     //** >> Velocities **/
-                    GL_ptcl_vy[i] *= -1;
+                    GL_ptcl_vy[i] *= -1.;
 
                     //** >> Accelerations **/
-                    GL_ptcl_ay[i] *= -1;
+                    GL_ptcl_ay[i] *= -1.;
 
-                    printf("\n Particle %d, is reflected at y axis. New position  =  %f :\n", i, GL_ptcl_y[i]);
+                    printf("\n Head Node, Particle %d, is reflected at y axis. New position  =  %f :\n", i, GL_ptcl_y[i]);
                 }
 
                 if (GL_ptcl_z[i] < 0. || GL_ptcl_z[i] >= 1.)
                 {
                     //** >> Positions **/
-                    GL_ptcl_z[i] = GL_ptcl_z[i] >= 1. ? 2 - GL_ptcl_z[i] : -GL_ptcl_z[i];
+                    GL_ptcl_z[i] = GL_ptcl_z[i] >= 1. ? 2. - GL_ptcl_z[i] : -GL_ptcl_z[i];
 
                     //** >> Velocities **/
-                    GL_ptcl_vz[i] *= -1;
+                    GL_ptcl_vz[i] *= -1.;
 
                     //** >> Accelerations **/
-                    GL_ptcl_az[i] *= -1;
+                    GL_ptcl_az[i] *= -1.;
 
-                    printf("\n Particle %d, is reflected at z axis. New position  =  %f :\n", i, GL_ptcl_z[i]);
+                    printf("\n Head Node, Particle %d, is reflected at z axis. New position  =  %f :\n", i, GL_ptcl_z[i]);
                 }
             }
             break;
@@ -155,7 +155,7 @@ static int computing_particles_updating_A_HEAD_ONLY(struct node *ptr_node, vtype
                 //** >> Checking if the particle exits the simulation **/
                 if (GL_ptcl_x[i] < 0. || GL_ptcl_x[i] >= 1. || GL_ptcl_y[i] < 0. || GL_ptcl_y[i] >= 1. || GL_ptcl_z[i] < 0. || GL_ptcl_z[i] >= 1.)
                 {
-                    printf("\n Particle ID = %d, local id = %d, exits the simulation:\n", GL_ptcl_ID[i], i);
+                    printf("\n Head Node, Particle ID = %d, local id = %d, exits the simulation\n", GL_ptcl_ID[i], i);
 
                     GL_total_mass_final -= GL_ptcl_mass[i];
                     GL_no_ptcl_final--;
@@ -247,46 +247,46 @@ static int computing_particles_updating_A_PERIODIC(struct node *ptr_node, vtype 
                         {
                             //** >> Positions **/
                             // GL_ptcl_x[ptcl_idx] = GL_ptcl_x[ptcl_idx] >= 1. ? GL_ptcl_x[ptcl_idx] - 1 : 1 + GL_ptcl_x[ptcl_idx];
-                            GL_ptcl_x[ptcl_idx] = 1 + GL_ptcl_x[ptcl_idx];
+                            GL_ptcl_x[ptcl_idx] = 1. + GL_ptcl_x[ptcl_idx];
 
-                            printf("\n Particle %d, is translated at x axis. New position  =  %f :\n", ptcl_idx, GL_ptcl_x[ptcl_idx]);
+                            printf("\n node lv = %d, ID = %d, Particle %d, is translated at x axis. New position  =  %f :\n", ptr_node->lv, ptr_node->ID, ptcl_idx, GL_ptcl_x[ptcl_idx]);
                         }
                         else if (GL_ptcl_x[ptcl_idx] >= 1.)
                         {
                             //** >> Positions **/
-                            GL_ptcl_x[ptcl_idx] = GL_ptcl_x[ptcl_idx] - 1;
+                            GL_ptcl_x[ptcl_idx] = GL_ptcl_x[ptcl_idx] - 1.;
 
-                            printf("\n Particle %d, is translated at x axis. New position  =  %f :\n", ptcl_idx, GL_ptcl_x[ptcl_idx]);
+                            printf("\n node lv = %d, ID = %d, Particle %d, is translated at x axis. New position  =  %f :\n", ptr_node->lv, ptr_node->ID, ptcl_idx, GL_ptcl_x[ptcl_idx]);
                         }
                         
                         if (GL_ptcl_y[ptcl_idx] < 0.)
                         {
                             //** >> Positions **/
-                            GL_ptcl_y[ptcl_idx] = 1 + GL_ptcl_y[ptcl_idx];
+                            GL_ptcl_y[ptcl_idx] = 1. + GL_ptcl_y[ptcl_idx];
 
-                            printf("\n Particle %d, is translated at y axis. New position  =  %f :\n", ptcl_idx, GL_ptcl_y[ptcl_idx]);
+                            printf("\n node lv = %d, ID = %d, Particle %d, is translated at y axis. New position  =  %f :\n", ptr_node->lv, ptr_node->ID, ptcl_idx, GL_ptcl_y[ptcl_idx]);
                         }
                         else if (GL_ptcl_y[ptcl_idx] >= 1.)
                         {
                             //** >> Positions **/
-                            GL_ptcl_y[ptcl_idx] = GL_ptcl_y[ptcl_idx] - 1;
+                            GL_ptcl_y[ptcl_idx] = GL_ptcl_y[ptcl_idx] - 1.;
 
-                            printf("\n Particle %d, is translated at y axis. New position  =  %f :\n", ptcl_idx, GL_ptcl_y[ptcl_idx]);
+                            printf("\n node lv = %d, ID = %d, Particle %d, is translated at y axis. New position  =  %f :\n", ptr_node->lv, ptr_node->ID, ptcl_idx, GL_ptcl_y[ptcl_idx]);
                         }
 
                         if (GL_ptcl_z[ptcl_idx] < 0.)
                         {
                             //** >> Positions **/
-                            GL_ptcl_z[ptcl_idx] = 1 + GL_ptcl_z[ptcl_idx];
+                            GL_ptcl_z[ptcl_idx] = 1. + GL_ptcl_z[ptcl_idx];
 
-                            printf("\n Particle %d, is translated at z axis. New position  =  %f :\n", ptcl_idx, GL_ptcl_z[ptcl_idx]);
+                            printf("\n node lv = %d, ID = %d, Particle %d, is translated at z axis. New position  =  %f :\n", ptr_node->lv, ptr_node->ID, ptcl_idx, GL_ptcl_z[ptcl_idx]);
                         }
                         else if (GL_ptcl_z[ptcl_idx] >= 1.)
                         {
                             //** >> Positions **/
-                            GL_ptcl_z[ptcl_idx] = GL_ptcl_z[ptcl_idx] - 1;
+                            GL_ptcl_z[ptcl_idx] = GL_ptcl_z[ptcl_idx] - 1.;
 
-                            printf("\n Particle %d, is translated at z axis. New position  =  %f :\n", ptcl_idx, GL_ptcl_z[ptcl_idx]);
+                            printf("\n node lv = %d, ID = %d, Particle %d, is translated at z axis. New position  =  %f :\n", ptr_node->lv, ptr_node->ID, ptcl_idx, GL_ptcl_z[ptcl_idx]);
                         }
                     }
 
@@ -435,46 +435,46 @@ static int computing_particles_updating_A_PERIODIC(struct node *ptr_node, vtype 
                             {
                                 //** >> Positions **/
                                 // GL_ptcl_x[ptcl_idx] = GL_ptcl_x[ptcl_idx] >= 1. ? GL_ptcl_x[ptcl_idx] - 1 : 1 + GL_ptcl_x[ptcl_idx];
-                                GL_ptcl_x[ptcl_idx] = 1 + GL_ptcl_x[ptcl_idx];
+                                GL_ptcl_x[ptcl_idx] = 1. + GL_ptcl_x[ptcl_idx];
 
-                                printf("\n Particle %d, is translated at x axis. New position  =  %f :\n", ptcl_idx, GL_ptcl_x[ptcl_idx]);
+                                printf("\n node lv = %d, ID = %d, Particle %d, is translated at x axis. New position  =  %f :\n", ptr_node->lv, ptr_node->ID, ptcl_idx, GL_ptcl_x[ptcl_idx]);
                             }
                             else if (GL_ptcl_x[ptcl_idx] >= 1.)
                             {
                                 //** >> Positions **/
-                                GL_ptcl_x[ptcl_idx] = GL_ptcl_x[ptcl_idx] - 1;
+                                GL_ptcl_x[ptcl_idx] = GL_ptcl_x[ptcl_idx] - 1.;
 
-                                printf("\n Particle %d, is translated at x axis. New position  =  %f :\n", ptcl_idx, GL_ptcl_x[ptcl_idx]);
+                                printf("\n node lv = %d, ID = %d, Particle %d, is translated at x axis. New position  =  %f :\n", ptr_node->lv, ptr_node->ID, ptcl_idx, GL_ptcl_x[ptcl_idx]);
                             }
 
                             if (GL_ptcl_y[ptcl_idx] < 0.)
                             {
                                 //** >> Positions **/
-                                GL_ptcl_y[ptcl_idx] = 1 + GL_ptcl_y[ptcl_idx];
+                                GL_ptcl_y[ptcl_idx] = 1. + GL_ptcl_y[ptcl_idx];
 
-                                printf("\n Particle %d, is translated at y axis. New position  =  %f :\n", ptcl_idx, GL_ptcl_y[ptcl_idx]);
+                                printf("\n node lv = %d, ID = %d, Particle %d , is translated at y axis. New position  =  %f :\n", ptr_node->lv, ptr_node->ID, ptcl_idx, GL_ptcl_y[ptcl_idx]);
                             }
                             else if (GL_ptcl_y[ptcl_idx] >= 1.)
                             {
                                 //** >> Positions **/
-                                GL_ptcl_y[ptcl_idx] = GL_ptcl_y[ptcl_idx] - 1;
+                                GL_ptcl_y[ptcl_idx] = GL_ptcl_y[ptcl_idx] - 1.;
 
-                                printf("\n Particle %d, is translated at y axis. New position  =  %f :\n", ptcl_idx, GL_ptcl_y[ptcl_idx]);
+                                printf("\n node lv = %d, ID = %d, Particle %d , is translated at y axis. New position  =  %f :\n", ptr_node->lv, ptr_node->ID, ptcl_idx, GL_ptcl_y[ptcl_idx]);
                             }
 
                             if (GL_ptcl_z[ptcl_idx] < 0.)
                             {
                                 //** >> Positions **/
-                                GL_ptcl_z[ptcl_idx] = 1 + GL_ptcl_z[ptcl_idx];
+                                GL_ptcl_z[ptcl_idx] = 1. + GL_ptcl_z[ptcl_idx];
 
-                                printf("\n Particle %d, is translated at z axis. New position  =  %f :\n", ptcl_idx, GL_ptcl_z[ptcl_idx]);
+                                printf("\n node lv = %d, ID = %d, Particle %d , is translated at z axis. New position  =  %f :\n", ptr_node->lv, ptr_node->ID, ptcl_idx, GL_ptcl_z[ptcl_idx]);
                             }
                             else if (GL_ptcl_z[ptcl_idx] >= 1.)
                             {
                                 //** >> Positions **/
-                                GL_ptcl_z[ptcl_idx] = GL_ptcl_z[ptcl_idx] - 1;
+                                GL_ptcl_z[ptcl_idx] = GL_ptcl_z[ptcl_idx] - 1.;
 
-                                printf("\n Particle %d, is translated at z axis. New position  =  %f :\n", ptcl_idx, GL_ptcl_z[ptcl_idx]);
+                                printf("\n node lv = %d, ID = %d, Particle %d , is translated at z axis. New position  =  %f :\n", ptr_node->lv, ptr_node->ID, ptcl_idx, GL_ptcl_z[ptcl_idx]);
                             }
                         }
 
@@ -642,6 +642,12 @@ static int computing_particles_updating_A_REFLEXIVE(struct node *ptr_node, vtype
                 if (GL_ptcl_updating_flag[ptcl_idx] != status)
                 {
 
+                    // if (ptcl_idx == 2500)
+                    // {
+                    //     printf("\nMonitoreando la particula de ID 2500:\n Child Antes: \n");
+                    //     printf("pos_x = %f, pos_y = %f, pos_z = %f\n", (double)GL_ptcl_x[ptcl_idx], (double)GL_ptcl_y[ptcl_idx], (double)GL_ptcl_z[ptcl_idx]);
+                    // }
+
                     //** >> Updating the new position of the particle **/
                     //** >> Velocities **/
                     GL_ptcl_vx[ptcl_idx] += GL_ptcl_ax[ptcl_idx] * dt * 0.5;
@@ -655,50 +661,50 @@ static int computing_particles_updating_A_REFLEXIVE(struct node *ptr_node, vtype
 
                     //** >> Moving the particle to the new node if it is necessary **/
                     box_idx_node_new = ptcl_idx_to_box_idx(ptr_node, ptcl_idx);
-
+                    
                     //** >> Checking if the particle is reflected with the boundary of the box simulation **/
                     if (ptr_node->ptr_box[box_idx_node_new] == -5)
                     {
                         if (GL_ptcl_x[ptcl_idx] < 0. || GL_ptcl_x[ptcl_idx] >= 1.)
                         {
                             //** >> Positions **/
-                            GL_ptcl_x[ptcl_idx] = GL_ptcl_x[ptcl_idx] >= 1. ? 2 - GL_ptcl_x[ptcl_idx] : -GL_ptcl_x[ptcl_idx];
+                            GL_ptcl_x[ptcl_idx] = GL_ptcl_x[ptcl_idx] >= 1. ? 2. - GL_ptcl_x[ptcl_idx] : -GL_ptcl_x[ptcl_idx];
 
                             //** >> Velocities **/
-                            GL_ptcl_vx[ptcl_idx] *= -1;
+                            GL_ptcl_vx[ptcl_idx] *= -1.;
 
                             //** >> Accelerations **/
-                            GL_ptcl_ax[ptcl_idx] *= -1;
+                            GL_ptcl_ax[ptcl_idx] *= -1.;
 
-                            printf("\n Particle %d, is reflected at x axis. New position  =  %f :\n", ptcl_idx, GL_ptcl_x[ptcl_idx]);
+                            printf("\n node lv = %d, ID = %d, Particle %d , is reflected at x axis. New position  =  %f :\n", ptr_node->lv, ptr_node->ID, ptcl_idx, GL_ptcl_x[ptcl_idx]);
                         }
 
                         if (GL_ptcl_y[ptcl_idx] < 0. || GL_ptcl_y[ptcl_idx] >= 1.)
                         {
                             //** >> Positions **/
-                            GL_ptcl_y[ptcl_idx] = GL_ptcl_y[ptcl_idx] >= 1. ? 2 - GL_ptcl_y[ptcl_idx] : -GL_ptcl_y[ptcl_idx];
+                            GL_ptcl_y[ptcl_idx] = GL_ptcl_y[ptcl_idx] >= 1. ? 2. - GL_ptcl_y[ptcl_idx] : -GL_ptcl_y[ptcl_idx];
 
                             //** >> Velocities **/
-                            GL_ptcl_vy[ptcl_idx] *= -1;
+                            GL_ptcl_vy[ptcl_idx] *= -1.;
 
                             //** >> Accelerations **/
-                            GL_ptcl_ay[ptcl_idx] *= -1;
+                            GL_ptcl_ay[ptcl_idx] *= -1.;
 
-                            printf("\n Particle %d, is reflected at y axis. New position  =  %f :\n", ptcl_idx, GL_ptcl_y[ptcl_idx]);
+                            printf("\n node lv = %d, ID = %d, Particle %d , is reflected at y axis. New position  =  %f :\n", ptr_node->lv, ptr_node->ID, ptcl_idx, GL_ptcl_y[ptcl_idx]);
                         }
 
                         if (GL_ptcl_z[ptcl_idx] < 0. || GL_ptcl_z[ptcl_idx] >= 1.)
                         {
                             //** >> Positions **/
-                            GL_ptcl_z[ptcl_idx] = GL_ptcl_z[ptcl_idx] >= 1. ? 2 - GL_ptcl_z[ptcl_idx] : -GL_ptcl_z[ptcl_idx];
+                            GL_ptcl_z[ptcl_idx] = GL_ptcl_z[ptcl_idx] >= 1. ? 2. - GL_ptcl_z[ptcl_idx] : -GL_ptcl_z[ptcl_idx];
 
                             //** >> Velocities **/
-                            GL_ptcl_vz[ptcl_idx] *= -1;
+                            GL_ptcl_vz[ptcl_idx] *= -1.;
 
                             //** >> Accelerations **/
-                            GL_ptcl_az[ptcl_idx] *= -1;
+                            GL_ptcl_az[ptcl_idx] *= -1.;
 
-                            printf("\n Particle %d, is reflected at z axis. New position  =  %f :\n", ptcl_idx, GL_ptcl_z[ptcl_idx]);
+                            printf("\n node lv = %d, ID = %d, Particle %d , is reflected at z axis. New position  =  %f :\n", ptr_node->lv, ptr_node->ID, ptcl_idx, GL_ptcl_z[ptcl_idx]);
                         }
 
                         //** >> Updating the new box index **/
@@ -805,6 +811,13 @@ static int computing_particles_updating_A_REFLEXIVE(struct node *ptr_node, vtype
 
                         //** >> Updating the new position of the particle **/
                         //** >> Velocities **/
+
+                        // if (ptcl_idx == 2500)
+                        // {
+                        //     printf("\nMonitoreando la particula de ID 2500:\n Parent Antes: \n");
+                        //     printf("pos_x = %f, pos_y = %f, pos_z = %f\n", (double)GL_ptcl_x[ptcl_idx], (double)GL_ptcl_y[ptcl_idx], (double)GL_ptcl_z[ptcl_idx]);
+                        // }
+
                         GL_ptcl_vx[ptcl_idx] += GL_ptcl_ax[ptcl_idx] * dt / 2;
                         GL_ptcl_vy[ptcl_idx] += GL_ptcl_ay[ptcl_idx] * dt / 2;
                         GL_ptcl_vz[ptcl_idx] += GL_ptcl_az[ptcl_idx] * dt / 2;
@@ -823,43 +836,43 @@ static int computing_particles_updating_A_REFLEXIVE(struct node *ptr_node, vtype
                             if (GL_ptcl_x[ptcl_idx] < 0. || GL_ptcl_x[ptcl_idx] >= 1.)
                             {
                                 //** >> Positions **/
-                                GL_ptcl_x[ptcl_idx] = GL_ptcl_x[ptcl_idx] >= 1. ? 2 - GL_ptcl_x[ptcl_idx] : -GL_ptcl_x[ptcl_idx];
+                                GL_ptcl_x[ptcl_idx] = GL_ptcl_x[ptcl_idx] >= 1. ? 2. - GL_ptcl_x[ptcl_idx] : -GL_ptcl_x[ptcl_idx];
 
                                 //** >> Velocities **/
-                                GL_ptcl_vx[ptcl_idx] *= -1;
+                                GL_ptcl_vx[ptcl_idx] *= -1.;
 
                                 //** >> Accelerations **/
-                                GL_ptcl_ax[ptcl_idx] *= -1;
+                                GL_ptcl_ax[ptcl_idx] *= -1.;
 
-                                printf("\n Particle %d, is reflected at x axis. New position  =  %f :\n", ptcl_idx, GL_ptcl_x[ptcl_idx]);
+                                printf("\n node lv = %d, ID = %d, Particle %d , is reflected at x axis. New position  =  %f :\n", ptr_node->lv, ptr_node->ID, ptcl_idx, GL_ptcl_x[ptcl_idx]);
                             }
 
                             if (GL_ptcl_y[ptcl_idx] < 0. || GL_ptcl_y[ptcl_idx] >= 1.)
                             {
                                 //** >> Positions **/
-                                GL_ptcl_y[ptcl_idx] = GL_ptcl_y[ptcl_idx] >= 1. ? 2 - GL_ptcl_y[ptcl_idx] : -GL_ptcl_y[ptcl_idx];
+                                GL_ptcl_y[ptcl_idx] = GL_ptcl_y[ptcl_idx] >= 1. ? 2. - GL_ptcl_y[ptcl_idx] : -GL_ptcl_y[ptcl_idx];
 
                                 //** >> Velocities **/
-                                GL_ptcl_vy[ptcl_idx] *= -1;
+                                GL_ptcl_vy[ptcl_idx] *= -1.;
 
                                 //** >> Accelerations **/
-                                GL_ptcl_ay[ptcl_idx] *= -1;
+                                GL_ptcl_ay[ptcl_idx] *= -1.;
 
-                                printf("\n Particle %d, is reflected at y axis. New position  =  %f :\n", ptcl_idx, GL_ptcl_y[ptcl_idx]);
+                                printf("\n node lv = %d, ID = %d, Particle %d , is reflected at y axis. New position  =  %f :\n", ptr_node->lv, ptr_node->ID, ptcl_idx, GL_ptcl_y[ptcl_idx]);
                             }
 
                             if (GL_ptcl_z[ptcl_idx] < 0. || GL_ptcl_z[ptcl_idx] >= 1.)
                             {
                                 //** >> Positions **/
-                                GL_ptcl_z[ptcl_idx] = GL_ptcl_z[ptcl_idx] >= 1. ? 2 - GL_ptcl_z[ptcl_idx] : -GL_ptcl_z[ptcl_idx];
+                                GL_ptcl_z[ptcl_idx] = GL_ptcl_z[ptcl_idx] >= 1. ? 2. - GL_ptcl_z[ptcl_idx] : -GL_ptcl_z[ptcl_idx];
 
                                 //** >> Velocities **/
-                                GL_ptcl_vz[ptcl_idx] *= -1;
+                                GL_ptcl_vz[ptcl_idx] *= -1.;
 
                                 //** >> Accelerations **/
-                                GL_ptcl_az[ptcl_idx] *= -1;
+                                GL_ptcl_az[ptcl_idx] *= -1.;
 
-                                printf("\n Particle %d, is reflected at z axis. New position  =  %f :\n", ptcl_idx, GL_ptcl_z[ptcl_idx]);
+                                printf("\n node lv = %d, ID = %d, Particle %d , is reflected at z axis. New position  =  %f :\n", ptr_node->lv, ptr_node->ID, ptcl_idx, GL_ptcl_z[ptcl_idx]);
                             }
 
                             //** >> Updating the new box index **/
@@ -1000,6 +1013,8 @@ static int computing_particles_updating_A_OUTFLOW(struct node *ptr_node, vtype d
     int box_idx_sib;      // Box index of the sibling node
     int box_idx_ch;       // Box index of the child node
 
+    //int aux_box_idx_node_new;
+
     if (ptr_node->chn_size == 0)
     {
         for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
@@ -1025,12 +1040,13 @@ static int computing_particles_updating_A_OUTFLOW(struct node *ptr_node, vtype d
 
                     //** >> Moving the particle to the new node if it is necessary **/
                     box_idx_node_new = ptcl_idx_to_box_idx(ptr_node, ptcl_idx);
+                    // aux_box_idx_node_new = box_idx_node_new;
 
                     //** >> Checking if the particle exits the simulation **/
                     if (ptr_node->ptr_box[box_idx_node_new] == -5)
                     {
-                        printf("\n Particle ID = %d, local id = %d, exits the simulation:\n", GL_ptcl_ID[ptcl_idx], ptcl_idx);
-                        
+                        printf("\n node lv = %d, ID = %d, Particle ID = %d, local id = %d, exits the simulation\n", ptr_node->lv, ptr_node->ID, GL_ptcl_ID[ptcl_idx], ptcl_idx);
+
                         //** >> Removing the local information from the coarser nodes **/
                         ptr_node_aux = ptr_node;
                         while (ptr_node_aux != GL_ptr_tree)
@@ -1092,13 +1108,22 @@ static int computing_particles_updating_A_OUTFLOW(struct node *ptr_node, vtype d
                         }
                     }
 
+                    // if (GL_ptcl_x[ptcl_idx] < 0. || GL_ptcl_x[ptcl_idx] >= 1. || GL_ptcl_y[ptcl_idx] < 0. || GL_ptcl_y[ptcl_idx] >= 1. || GL_ptcl_z[ptcl_idx] < 0. || GL_ptcl_z[ptcl_idx] >= 1.)
+                    // {
+                    //     printf("node lv = %d, node ID = %d\n", ptr_node->lv, ptr_node->ID);
+                    //     printf("Error, particle do not was updated\n");
+                    //     printf("box_idx old = %d, box_idx new aux = %d, box_idx new = %d \n", box_idx_node_old, aux_box_idx_node_new, box_idx_node_new);
+                    //     printf("box value old = %d, box value new aux = %d, box value new = %d \n", ptr_node->ptr_box[box_idx_node_old], ptr_node->ptr_box[aux_box_idx_node_new], ptr_node->ptr_box[box_idx_node_new]);
+                    //     printf("ptcl id = %d, pos_x = %f, pos_y = %f, pos_z = %f\n", GL_ptcl_ID[ptcl_idx], (double)GL_ptcl_x[ptcl_idx], (double)GL_ptcl_y[ptcl_idx], (double)GL_ptcl_z[ptcl_idx]);
+                    // }
+
                     //** >> Checking if the particle exits the simulation **/
                     // if (GL_ptcl_x[ptcl_idx] < 0. || GL_ptcl_x[ptcl_idx] >= 1. || GL_ptcl_y[ptcl_idx] < 0. || GL_ptcl_y[ptcl_idx] >= 1. || GL_ptcl_z[ptcl_idx] < 0. || GL_ptcl_z[ptcl_idx] >= 1.)
                     // {
                     //     //** >> Updating Global total mass **/
                     //     GL_total_mass_final -= GL_ptcl_mass[ptcl_idx];
 
-                    //     printf("\n Particle ID = %d, local id = %d, exits the simulation:\n", GL_ptcl_ID[ptcl_idx], ptcl_idx);
+                    //     printf("\n Particle ID = %d, local id = %d, exits the simulation\n", GL_ptcl_ID[ptcl_idx], ptcl_idx);
 
                     //     //** >> Removing the particle from the local cell node **/
                     //     ptr_node->local_mass -= GL_ptcl_mass[ptcl_idx];
@@ -1274,10 +1299,12 @@ static int computing_particles_updating_A_OUTFLOW(struct node *ptr_node, vtype d
                         //** >> Moving the particle to the new node if it is necessary **/
                         box_idx_node_new = ptcl_idx_to_box_idx(ptr_node, ptcl_idx);
 
+                        // aux_box_idx_node_new = box_idx_node_new;
+
                         //** >> Checking if the particle exits the simulation **/
                         if (ptr_node->ptr_box[box_idx_node_new] == -5)
                         {
-                            printf("\n Particle ID = %d, local id = %d, exits the simulation:\n", GL_ptcl_ID[ptcl_idx], ptcl_idx);
+                            printf("\n node lv = %d, ID = %d, Particle ID = %d, local id = %d, exits the simulation\n", ptr_node->lv, ptr_node->ID, GL_ptcl_ID[ptcl_idx], ptcl_idx);
 
                             //** >> Removing the local information from the coarser nodes **/
                             ptr_node_aux = ptr_node;
@@ -1340,10 +1367,19 @@ static int computing_particles_updating_A_OUTFLOW(struct node *ptr_node, vtype d
                             }
                         }
 
+                        // if (GL_ptcl_x[ptcl_idx] < 0. || GL_ptcl_x[ptcl_idx] >= 1. || GL_ptcl_y[ptcl_idx] < 0. || GL_ptcl_y[ptcl_idx] >= 1. || GL_ptcl_z[ptcl_idx] < 0. || GL_ptcl_z[ptcl_idx] >= 1.)
+                        // {
+                        //     printf("node lv = %d, node ID = %d\n", ptr_node->lv, ptr_node->ID);
+                        //     printf("Error, particle do not was updated\n");
+                        //     printf("box_idx old = %d, box_idx new aux = %d, box_idx new = %d \n", box_idx_node_old, aux_box_idx_node_new, box_idx_node_new);
+                        //     printf("box value old = %d, box value new aux = %d, box value new = %d \n", ptr_node->ptr_box[box_idx_node_old], ptr_node->ptr_box[aux_box_idx_node_new], ptr_node->ptr_box[box_idx_node_new]);
+                        //     printf("ptcl id = %d, pos_x = %f, pos_y = %f, pos_z = %f\n", GL_ptcl_ID[ptcl_idx], (double)GL_ptcl_x[ptcl_idx], (double)GL_ptcl_y[ptcl_idx], (double)GL_ptcl_z[ptcl_idx]);
+                        // }
+
                         // //** >> Checking if the particle exits the simulation **/
                         // if (GL_ptcl_x[ptcl_idx] < 0. || GL_ptcl_x[ptcl_idx] >= 1. || GL_ptcl_y[ptcl_idx] < 0. || GL_ptcl_y[ptcl_idx] >= 1. || GL_ptcl_z[ptcl_idx] < 0. || GL_ptcl_z[ptcl_idx] >= 1.)
                         // {
-                        //     printf("\n Particle ID = %d, local id = %d, exits the simulation:\n", GL_ptcl_ID[ptcl_idx], ptcl_idx);
+                        //     printf("\n Particle ID = %d, local id = %d, exits the simulation\n", GL_ptcl_ID[ptcl_idx], ptcl_idx);
 
                         //     //** >> Updating Global total mass **/
                         //     GL_total_mass_final -= GL_ptcl_mass[ptcl_idx];

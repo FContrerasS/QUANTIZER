@@ -190,7 +190,7 @@ static void
 init_global_constants(void)
 {
     //Constants
-    _User_BoxSize_ = 0.1L; //kpc
+    _User_BoxSize_ = 0.05L; //kpc
     //_User_BoxSize_ = 0.1L; //kpc
     _PI_ = 3.14159265358979323846L;
     _Onesixth_ = 1.0L / 6.0L;
@@ -209,7 +209,7 @@ init_global_constants(void)
 static void init_global_user_params(void)
 {
     BoxSize = 1.0L;
-    lmin = 5;     //Coarset level of refinement
+    lmin = 4;     //Coarset level of refinement
     lmax = lmin + 4;  //Finest level of refinement
     no_lmin_cell = 1 << lmin; // Number of cells in the lmin level of refinement
     no_lmin_cell_pow2 = no_lmin_cell * no_lmin_cell;
@@ -224,7 +224,7 @@ static void init_global_user_params(void)
     //  GL_total_mass_initial = GL_no_ptcl * meanmass;
     //  GL_total_mass_initial = 0;
     fr_output = 1000;
-    MaxIterations = 20;
+    MaxIterations = 1000000;
     no_grid_pow2 = no_grid * no_grid;
     no_grid_pow3 = no_grid * no_grid * no_grid;
     boundary_type = 1; // 0 = Periodic; 1 = Reflexive; 2 = Outflow
@@ -233,7 +233,7 @@ static void init_global_user_params(void)
 static void init_global_ref_crit(void)
 {
     ref_criterion_mass = 1.0e100; // meanmass * 7;
-    ref_criterion_ptcl = 2;
+    ref_criterion_ptcl = 1;
     n_exp = 1;   // n_exp = 0 is corrupted because particles can move between more than 1 level of refinement
     _CFL_ = 0.9; // CFL criteria 0.5
     _MAX_dt_ = _Mgyear_ * 1.0;
@@ -257,7 +257,7 @@ static void init_global_poisson_params(void)
     _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_ = 1000;
     _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ = (1.0e-8);
     _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_2 = (1.0e-8);
-    check_poisson_error_method = 0;  //Only used Gauss-Said or Jacobi in multigrid
+    check_poisson_error_method = 1;  //Only used Gauss-Said or Jacobi in multigrid
     multigrid_cycle = 0; 
     solverPreS = 0;
     solverPostS = 0;
@@ -279,7 +279,7 @@ static void init_global_poisson_params(void)
 
 static void init_global_force_params(void)
 {
-    force_stencil = 0;  // 0 = 3-points, 1 = 5-points
+    force_stencil = 1;  // 0 = 3-points, 1 = 5-points
 }
 
 static void init_global_energies_params(void)
@@ -320,7 +320,7 @@ static void init_tree_head(void)
 
 static void init_global_border_sim_box(void)
 {
-    bder_os_sim = 1 > (n_exp-1) ? 1 : (n_exp-1); // Border outside the simulation box
+    bder_os_sim = 1 > n_exp ? 1 : n_exp; // Border outside the simulation box
     box_side_lmin = no_lmin_cell + 2 * bder_os_sim; // Side of the coarsest box
     box_side_lmin_pow2 = box_side_lmin * box_side_lmin;
     box_side_lmin_pow3 = box_side_lmin * box_side_lmin * box_side_lmin;

@@ -42,15 +42,19 @@
 #if _VTYPE_ == 1
 typedef float vtype;
 #define myabs fabsf
+#define myfloor floorf
 #elif _VTYPE_ == 2
 typedef double vtype;
 #define myabs fabs
+#define myfloor floor
 #elif _VTYPE_ == 3
 typedef long double vtype;
 #define myabs fabsl
+#define myfloor floorl
 #else
 typedef double vtype;
 #define myabs fabs
+#define myfloor floor
 #endif
 
 #define _SUCCESS_ 0 /* integer returned after successful call of a function */

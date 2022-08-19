@@ -31,6 +31,7 @@ static int fill_cell_ref(struct node *ptr_node);
 static int fill_zones_ref(struct node *ptr_node);
 static int find_min_max_subzones_ref_PERIODIC_BOUNDARY(struct node *ptr_node, int zone_idx);
 static int fill_child_nodes(struct node *ptr_node);
+static void moved_unused_child_node_to_memory_pool(struct node *ptr_node);
 static int fill_tentacles(const struct node *ptr_node);
 
 static int fill_cell_ref(struct node *ptr_node)
@@ -1315,13 +1316,15 @@ static int fill_child_nodes(struct node *ptr_node)
 				{
 					for (int j = 0; j < ptr_ch->box_real_dim_y; j++)
 					{
-						for (int i = 0; i < (ptr_ch->box_real_dim_x - ptr_ch->box_dim_x)/2; i++)
+						// for (int i = 0; i < (ptr_ch->box_real_dim_x - ptr_ch->box_dim_x) / 2; i++)
+						for (int i = 0; i < ptr_ch->box_min_x - ptr_ch->box_ts_x; i++)
 						{
 							box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
 							ptr_ch->ptr_box[box_idx_ch] = -6;
 						}
 
-						for (int i = (ptr_ch->box_real_dim_x + ptr_ch->box_dim_x) / 2; i < ptr_ch->box_real_dim_x; i++)
+						// for (int i = (ptr_ch->box_real_dim_x + ptr_ch->box_dim_x) / 2; i < ptr_ch->box_real_dim_x; i++)
+						for (int i = ptr_ch->box_max_x + 1 - ptr_ch->box_ts_x; i < ptr_ch->box_real_dim_x; i++)
 						{
 							box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
 							ptr_ch->ptr_box[box_idx_ch] = -6;
@@ -1336,13 +1339,15 @@ static int fill_child_nodes(struct node *ptr_node)
 				{
 					for (int i = 0; i < ptr_ch->box_real_dim_x; i++)
 					{
-						for (int j = 0; j < (ptr_ch->box_real_dim_y - ptr_ch->box_dim_y) / 2; j++)
+						// for (int j = 0; j < (ptr_ch->box_real_dim_y - ptr_ch->box_dim_y) / 2; j++)
+						for (int j = 0; j < ptr_ch->box_min_y - ptr_ch->box_ts_y; j++)
 						{
 							box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
 							ptr_ch->ptr_box[box_idx_ch] = -6;
 						}
 
-						for (int j = (ptr_ch->box_real_dim_y + ptr_ch->box_dim_y) / 2; j < ptr_ch->box_real_dim_y; j++)
+						// for (int j = (ptr_ch->box_real_dim_y + ptr_ch->box_dim_y) / 2; j < ptr_ch->box_real_dim_y; j++)
+						for (int j = ptr_ch->box_max_y + 1 - ptr_ch->box_ts_y; j < ptr_ch->box_real_dim_y; j++)
 						{
 							box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
 							ptr_ch->ptr_box[box_idx_ch] = -6;
@@ -1357,13 +1362,15 @@ static int fill_child_nodes(struct node *ptr_node)
 				{
 					for (int i = 0; i < ptr_ch->box_real_dim_x; i++)
 					{
-						for (int k = 0; k < (ptr_ch->box_real_dim_z - ptr_ch->box_dim_z) / 2; k++)
+						// for (int k = 0; k < (ptr_ch->box_real_dim_z - ptr_ch->box_dim_z) / 2; k++)
+						for (int k = 0; k < ptr_ch->box_min_z - ptr_ch->box_ts_z; k++)
 						{
 							box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
 							ptr_ch->ptr_box[box_idx_ch] = -6;
 						}
 
-						for (int k = (ptr_ch->box_real_dim_z + ptr_ch->box_dim_z) / 2; k < ptr_ch->box_real_dim_z; k++)
+						// for (int k = (ptr_ch->box_real_dim_z + ptr_ch->box_dim_z) / 2; k < ptr_ch->box_real_dim_z; k++)
+						for (int k = ptr_ch->box_max_z + 1 - ptr_ch->box_ts_z; k < ptr_ch->box_real_dim_z; k++)
 						{
 							box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
 							ptr_ch->ptr_box[box_idx_ch] = -6;
@@ -1384,8 +1391,9 @@ static int fill_child_nodes(struct node *ptr_node)
                     {
                         for (int j = 0; j < ptr_ch->box_real_dim_y; j++)
                         {
-                            for (int i = 0; i < (ptr_ch->box_real_dim_x - ptr_ch->box_dim_x) / 2; i++)
-                            {
+							// for (int i = 0; i < (ptr_ch->box_real_dim_x - ptr_ch->box_dim_x) / 2; i++)
+							for (int i = 0; i < ptr_ch->box_min_x - ptr_ch->box_ts_x; i++)
+							{
                                 box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
                                 ptr_ch->ptr_box[box_idx_ch] = -5;
                             }
@@ -1398,8 +1406,9 @@ static int fill_child_nodes(struct node *ptr_node)
                     {
                         for (int j = 0; j < ptr_ch->box_real_dim_y; j++)
                         {
-                            for (int i = (ptr_ch->box_real_dim_x + ptr_ch->box_dim_x) / 2; i < ptr_ch->box_real_dim_x; i++)
-                            {
+							// for (int i = (ptr_ch->box_real_dim_x + ptr_ch->box_dim_x) / 2; i < ptr_ch->box_real_dim_x; i++)
+							for (int i = ptr_ch->box_max_x + 1 - ptr_ch->box_ts_x; i < ptr_ch->box_real_dim_x; i++)
+							{
                                 box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
                                 ptr_ch->ptr_box[box_idx_ch] = -5;
                             }
@@ -1416,8 +1425,9 @@ static int fill_child_nodes(struct node *ptr_node)
                     {
                         for (int i = 0; i < ptr_ch->box_real_dim_x; i++)
                         {
-                            for (int j = 0; j < (ptr_ch->box_real_dim_y - ptr_ch->box_dim_y) / 2; j++)
-                            {
+							// for (int j = 0; j < (ptr_ch->box_real_dim_y - ptr_ch->box_dim_y) / 2; j++)
+							for (int j = 0; j < ptr_ch->box_min_y - ptr_ch->box_ts_y; j++)
+							{
                                 box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
                                 ptr_ch->ptr_box[box_idx_ch] = -5;
                             }
@@ -1431,8 +1441,9 @@ static int fill_child_nodes(struct node *ptr_node)
                     {
                         for (int i = 0; i < ptr_ch->box_real_dim_x; i++)
                         {
-                            for (int j = (ptr_ch->box_real_dim_y + ptr_ch->box_dim_y) / 2; j < ptr_ch->box_real_dim_y; j++)
-                            {
+							// for (int j = (ptr_ch->box_real_dim_y + ptr_ch->box_dim_y) / 2; j < ptr_ch->box_real_dim_y; j++)
+							for (int j = ptr_ch->box_max_y + 1 - ptr_ch->box_ts_y; j < ptr_ch->box_real_dim_y; j++)
+							{
                                 box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
                                 ptr_ch->ptr_box[box_idx_ch] = -5;
                             }
@@ -1450,8 +1461,9 @@ static int fill_child_nodes(struct node *ptr_node)
                     {
                         for (int i = 0; i < ptr_ch->box_real_dim_x; i++)
                         {
-                            for (int k = 0; k < (ptr_ch->box_real_dim_z - ptr_ch->box_dim_z) / 2; k++)
-                            {
+							// for (int k = 0; k < (ptr_ch->box_real_dim_z - ptr_ch->box_dim_z) / 2; k++)
+							for (int k = 0; k < ptr_ch->box_min_z - ptr_ch->box_ts_z; k++)
+							{
                                 box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
                                 ptr_ch->ptr_box[box_idx_ch] = -5;
                             }
@@ -1465,8 +1477,9 @@ static int fill_child_nodes(struct node *ptr_node)
                     {
                         for (int i = 0; i < ptr_ch->box_real_dim_x; i++)
                         {
-                            for (int k = (ptr_ch->box_real_dim_z + ptr_ch->box_dim_z) / 2; k < ptr_ch->box_real_dim_z; k++)
-                            {
+							// for (int k = (ptr_ch->box_real_dim_z + ptr_ch->box_dim_z) / 2; k < ptr_ch->box_real_dim_z; k++)
+							for (int k = ptr_ch->box_max_z + 1 - ptr_ch->box_ts_z; k < ptr_ch->box_real_dim_z; k++)
+							{
                                 box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
                                 ptr_ch->ptr_box[box_idx_ch] = -5;
                             }
@@ -1841,11 +1854,68 @@ static int fill_child_nodes(struct node *ptr_node)
 	return _SUCCESS_;
 } // end function fill_child_nodes
 
+static void moved_unused_child_node_to_memory_pool(struct node *ptr_node)
+{
+	int box_idx_node;
+
+	int aux_int;
+	int *aux_ptr_int;
+
+	//** >> Removing zones (children nodes) with 0 particles
+	for (int ch = 0; ch < ptr_node->chn_size; ch++)
+	{
+		if (ptr_node->pptr_chn[ch]->local_no_ptcl < ref_criterion_ptcl)
+		{
+			//** >> Changing the ID of the replacement zone
+			ptr_node->pptr_chn[ptr_node->chn_size - 1]->ID = ch;
+
+			//** >> Changing the box status of the replacement zone from the old zone value "ptr_node->chn_size - 1" to the new one = ch
+			for (int cell_idx = 0; cell_idx < ptr_node->ptr_zone_size[ptr_node->chn_size - 1]; cell_idx++)
+			{
+				box_idx_node = ptr_node->ptr_box_idx[ptr_node->pptr_zones[ptr_node->chn_size - 1][cell_idx]];
+				ptr_node->ptr_box[box_idx_node] = ch;
+			}
+
+			//** >> Changing the box status of the removed zone from the old zone value ch to the new one = -3
+			for (int cell_idx = 0; cell_idx < ptr_node->ptr_zone_size[ch]; cell_idx++)
+			{
+				box_idx_node = ptr_node->ptr_box_idx[ptr_node->pptr_zones[ch][cell_idx]];
+				ptr_node->ptr_box[box_idx_node] = -3;
+			}
+
+			//** >> Removing the zone ch without particles from the children of the node ptr_node
+			add_node_to_stack(ptr_node->pptr_chn[ch]);
+			//** >> Replacing the ch zone for the last children
+			ptr_node->pptr_chn[ch] = ptr_node->pptr_chn[ptr_node->chn_size - 1];
+			ptr_node->pptr_chn[ptr_node->zones_size - 1] = NULL;
+
+			//** >> Updating the zone values
+			// Size of the zones
+			aux_int = ptr_node->ptr_zone_size[ch];
+			ptr_node->ptr_zone_size[ch] = ptr_node->ptr_zone_size[ptr_node->zones_size - 1];
+			ptr_node->ptr_zone_size[ptr_node->zones_size - 1] = aux_int;
+			// Cap of the zones
+			aux_int = ptr_node->ptr_zone_cap[ch];
+			ptr_node->ptr_zone_cap[ch] = ptr_node->ptr_zone_cap[ptr_node->zones_size - 1];
+			ptr_node->ptr_zone_cap[ptr_node->zones_size - 1] = aux_int;
+			// Zone array
+			aux_ptr_int = ptr_node->pptr_zones[ch];
+			ptr_node->pptr_zones[ch] = ptr_node->pptr_zones[ptr_node->zones_size - 1];
+			ptr_node->pptr_zones[ptr_node->zones_size - 1] = aux_ptr_int;
+
+			ptr_node->chn_size -= 1;	//-1 the the total number of children in the node
+			//ptr_node->zones_size -= 1;	//-1 the the total number of zones in the node
+
+			ch--;
+		}
+	}
+}
+
 static int fill_tentacles(const struct node *ptr_node)
 {
 	int lv = ptr_node->lv - lmin + 1; // Children level
 
-	int size = GL_tentacles_size[lv] + ptr_node->zones_size;
+	int size = GL_tentacles_size[lv] + ptr_node->chn_size;
 
 	if (space_check(&(GL_tentacles_cap[lv]), size, 4.0f, "p1n2", &(GL_tentacles[lv])) == _FAILURE_)
 	{
@@ -1853,7 +1923,7 @@ static int fill_tentacles(const struct node *ptr_node)
 		return _FAILURE_;
 	}
 
-	for (int i = 0; i < ptr_node->zones_size; i++)
+	for (int i = 0; i < ptr_node->chn_size; i++)
 	{
 		//** >> Putting elements in the new tentacles **/
 		GL_tentacles[lv][GL_tentacles_size[lv] + i] = ptr_node->pptr_chn[i];
@@ -1901,14 +1971,18 @@ int tree_construction(void)
 				return _FAILURE_;
 			}
 
-			//** >> Creating child nodes **/
+			
 			if (ptr_node->zones_size > 0)
 			{
+				//** >> Creating child nodes **/
 				if (fill_child_nodes(ptr_node) == _FAILURE_)
 				{
 					printf("Error at function create_child_nodes()\n");
 					return _FAILURE_;
 				}
+
+				//** >> Removing child nodes with 0 particles
+				moved_unused_child_node_to_memory_pool(ptr_node);
 
 				//** >> Filling Tentacles for the next cycle at level of refinement
 				if (fill_tentacles(ptr_node) == _FAILURE_)
