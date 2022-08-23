@@ -145,8 +145,8 @@ static void computing_grid_acceleration_head2(struct node *ptr_head)
         {
             box_grid_idxNbr_7 = box_grid_idx + 2;
             box_grid_idxNbr_8 = box_grid_idx - 2;
-            box_grid_idxNbr_7 -= ptr_head->ptr_box[box_idx - 2] > -4 ? 0 : (1 << lv);
-            box_grid_idxNbr_8 += ptr_head->ptr_box[box_idx - 2] > -4 ? (1 << lv) : 0;
+            box_grid_idxNbr_7 -= ptr_head->ptr_box[box_idx - 2] == -6 ? 0 : (1 << lv);
+            box_grid_idxNbr_8 += ptr_head->ptr_box[box_idx - 2] == -6 ? (1 << lv) : 0;
             ptr_head->ptr_ax[box_grid_idx] = (ptr_head->ptr_pot[box_grid_idxNbr_2] - ptr_head->ptr_pot[box_grid_idxNbr_1]) * two_over_3H - (ptr_head->ptr_pot[box_grid_idxNbr_8] - ptr_head->ptr_pot[box_grid_idxNbr_7]) * one_over_12H;
         }
         else
@@ -157,16 +157,16 @@ static void computing_grid_acceleration_head2(struct node *ptr_head)
         //y
         if (ptr_head->ptr_box[box_idx - 2 * box_real_dim_X_head] > -4 && ptr_head->ptr_box[box_idx + box_real_dim_X_head] > -4)
         {
-            box_grid_idxNbr_9 = box_grid_idx + 2 * grid_box_real_dim_X_head;
+            box_grid_idxNbr_9  = box_grid_idx + 2 * grid_box_real_dim_X_head;
             box_grid_idxNbr_10 = box_grid_idx - 2 * grid_box_real_dim_X_head;
             ptr_head->ptr_ay[box_grid_idx] = (ptr_head->ptr_pot[box_grid_idxNbr_4] - ptr_head->ptr_pot[box_grid_idxNbr_3]) * two_over_3H - (ptr_head->ptr_pot[box_grid_idxNbr_10] - ptr_head->ptr_pot[box_grid_idxNbr_9]) * one_over_12H;
         }
         else if (boundary_type == 0)
         {
-            box_grid_idxNbr_9 = box_grid_idx + 2 * grid_box_real_dim_X_head;
+            box_grid_idxNbr_9  = box_grid_idx + 2 * grid_box_real_dim_X_head;
             box_grid_idxNbr_10 = box_grid_idx - 2 * grid_box_real_dim_X_head;
-            box_grid_idxNbr_9 -= ptr_head->ptr_box[box_idx - 2 * box_real_dim_X_head] > -4 ? 0 : (1 << lv) * grid_box_real_dim_X_head;
-            box_grid_idxNbr_10 += ptr_head->ptr_box[box_idx - 2 * box_real_dim_X_head] > -4 ? (1 << lv) * grid_box_real_dim_X_head : 0;
+            box_grid_idxNbr_9  -= ptr_head->ptr_box[box_idx - 2 * box_real_dim_X_head] == -6 ? 0 : (1 << lv) * grid_box_real_dim_X_head;
+            box_grid_idxNbr_10 += ptr_head->ptr_box[box_idx - 2 * box_real_dim_X_head] == -6 ? (1 << lv) * grid_box_real_dim_X_head : 0;
             ptr_head->ptr_ay[box_grid_idx] = (ptr_head->ptr_pot[box_grid_idxNbr_4] - ptr_head->ptr_pot[box_grid_idxNbr_3]) * two_over_3H - (ptr_head->ptr_pot[box_grid_idxNbr_10] - ptr_head->ptr_pot[box_grid_idxNbr_9]) * one_over_12H;
         }
         else
@@ -185,8 +185,8 @@ static void computing_grid_acceleration_head2(struct node *ptr_head)
         {
             box_grid_idxNbr_11 = box_grid_idx + 2 * grid_box_real_dim_X_times_Y_head;
             box_grid_idxNbr_12 = box_grid_idx - 2 * grid_box_real_dim_X_times_Y_head;
-            box_grid_idxNbr_11 -= ptr_head->ptr_box[box_idx - 2 * box_real_dim_X_times_Y_head] > -4 ? 0 : (1 << lv) * grid_box_real_dim_X_times_Y_head;
-            box_grid_idxNbr_12 += ptr_head->ptr_box[box_idx - 2 * box_real_dim_X_times_Y_head] > -4 ? (1 << lv) * grid_box_real_dim_X_times_Y_head : 0;
+            box_grid_idxNbr_11 -= ptr_head->ptr_box[box_idx - 2 * box_real_dim_X_times_Y_head] == -6 ? 0 : (1 << lv) * grid_box_real_dim_X_times_Y_head;
+            box_grid_idxNbr_12 += ptr_head->ptr_box[box_idx - 2 * box_real_dim_X_times_Y_head] == -6 ? (1 << lv) * grid_box_real_dim_X_times_Y_head : 0;
             ptr_head->ptr_az[box_grid_idx] = (ptr_head->ptr_pot[box_grid_idxNbr_6] - ptr_head->ptr_pot[box_grid_idxNbr_5]) * two_over_3H - (ptr_head->ptr_pot[box_grid_idxNbr_12] - ptr_head->ptr_pot[box_grid_idxNbr_11]) * one_over_12H;
         }
         else
@@ -654,7 +654,7 @@ static void computing_grid_acceleration_branch2(struct node *ptr_node)
         check = false;
         if (ptr_node->ptr_box[box_idx_node - 2 * box_real_dim_X_node] > -4 && ptr_node->ptr_box[box_idx_node + box_real_dim_X_node] > -4)
         {
-            box_grid_idxNbr_9 = box_grid_idx + 2 * grid_box_real_dim_X_node;
+            box_grid_idxNbr_9  = box_grid_idx + 2 * grid_box_real_dim_X_node;
             box_grid_idxNbr_10 = box_grid_idx - 2 * grid_box_real_dim_X_node;
         }
         else if (ptr_node->pbc_crosses_the_whole_simulation_box_y == true)
@@ -663,7 +663,7 @@ static void computing_grid_acceleration_branch2(struct node *ptr_node)
             {
                 if (ptr_node->ptr_box[box_idx_node + (-2 + (1 << lv)) * box_real_dim_X_node] > -4)
                 {
-                    box_grid_idxNbr_9 = box_grid_idx + 2 * grid_box_real_dim_X_node;
+                    box_grid_idxNbr_9  = box_grid_idx + 2 * grid_box_real_dim_X_node;
                     box_grid_idxNbr_10 = box_grid_idx + (-2 + (1 << lv)) * grid_box_real_dim_X_node;
                     check = true;
                 }
@@ -672,7 +672,7 @@ static void computing_grid_acceleration_branch2(struct node *ptr_node)
             {
                 if (ptr_node->ptr_box[box_idx_node + (1 - (1 << lv)) * box_real_dim_X_node] > -4)
                 {
-                    box_grid_idxNbr_9 = box_grid_idx + (2 - (1 << lv)) * grid_box_real_dim_X_node;
+                    box_grid_idxNbr_9  = box_grid_idx + (2 - (1 << lv)) * grid_box_real_dim_X_node;
                     box_grid_idxNbr_10 = box_grid_idx - 2 * grid_box_real_dim_X_node;
                     check = true;
                 }

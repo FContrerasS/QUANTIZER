@@ -113,7 +113,13 @@ static int initializing_head_node(void)
 			}
 		}
 	}
-	
+
+	ptr_head->box_min_x = 0;
+	ptr_head->box_min_y = 0;
+	ptr_head->box_min_z = 0;
+	ptr_head->box_max_x = (1 << lmin) - 1;
+	ptr_head->box_max_y = (1 << lmin) - 1;
+	ptr_head->box_max_z = (1 << lmin) - 1;
 
 	ptr_head->box_dim_x = no_lmin_cell;
 	ptr_head->box_dim_y = no_lmin_cell;

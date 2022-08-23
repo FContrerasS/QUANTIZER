@@ -70,9 +70,12 @@ static void computing_grid_density_head(struct node *ptr_head)
         pos_z = GL_ptcl_z[i] * (1 << lv);
 
         // ** >> floor of the particles positions in the grid level **/
-        pos_x_floor = myfloor(pos_x);
-        pos_y_floor = myfloor(pos_y);
-        pos_z_floor = myfloor(pos_z);
+        // pos_x_floor = myfloor(pos_x);
+        // pos_y_floor = myfloor(pos_y);
+        // pos_z_floor = myfloor(pos_z);
+        pos_x_floor = (int)pos_x;
+        pos_y_floor = (int)pos_y;
+        pos_z_floor = (int)pos_z;
 
         //** >> Computing the weights of the nearest grid points of the particle **/
         // Each for cyle yields 2 options: X or 1-X, where X =  pos_x - pos_x_floor
@@ -168,9 +171,12 @@ static void computing_grid_density_branch(struct node *ptr_node)
             pos_z = GL_ptcl_z[ptcl_idx] * one_over_H;
 
             // ** >> floor of the particles positions in the grid level **/
-            pos_x_floor = myfloor(pos_x);
-            pos_y_floor = myfloor(pos_y);
-            pos_z_floor = myfloor(pos_z);
+            // pos_x_floor = myfloor(pos_x);
+            // pos_y_floor = myfloor(pos_y);
+            // pos_z_floor = myfloor(pos_z);
+            pos_x_floor = (int)pos_x;
+            pos_y_floor = (int)pos_y;
+            pos_z_floor = (int)pos_z;
 
             box_grid_idx_x = pos_x_floor - ptr_node->box_ts_x;
             box_grid_idx_y = pos_y_floor - ptr_node->box_ts_y;

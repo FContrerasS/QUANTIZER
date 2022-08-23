@@ -70,9 +70,12 @@ static void computing_particle_acceleration_head_only(const struct node *ptr_hea
         pos_z = GL_ptcl_z[i] * (1 << lv);
 
         //** >> Floor of the particles positions in the grid level **/
-        pos_x_floor = myfloor(pos_x);
-        pos_y_floor = myfloor(pos_y);
-        pos_z_floor = myfloor(pos_z);
+        // pos_x_floor = myfloor(pos_x);
+        // pos_y_floor = myfloor(pos_y);
+        // pos_z_floor = myfloor(pos_z);
+        pos_x_floor = (int)pos_x;
+        pos_y_floor = (int)pos_y;
+        pos_z_floor = (int)pos_z;
 
         //** >> Computing the weights of the nearest grid points of the particle **/
         w_x_1 = pos_x - pos_x_floor;
@@ -164,9 +167,12 @@ static void computing_particle_acceleration_head_plus_branches(const struct node
                 pos_z = GL_ptcl_z[ptcl_idx] * (1 << lv);
 
                 //** >> Floor of the particles positions in the grid level **/
-                pos_x_floor = myfloor(pos_x);
-                pos_y_floor = myfloor(pos_y);
-                pos_z_floor = myfloor(pos_z);
+                // pos_x_floor = myfloor(pos_x);
+                // pos_y_floor = myfloor(pos_y);
+                // pos_z_floor = myfloor(pos_z);
+                pos_x_floor = (int)pos_x;
+                pos_y_floor = (int)pos_y;
+                pos_z_floor = (int)pos_z;
 
                 //** >> Computing the weights of the nearest grid points of the particle **/
                 w_x_1 = pos_x - pos_x_floor;
@@ -244,9 +250,12 @@ static void computing_particle_acceleration_head_plus_branches(const struct node
                     pos_z = GL_ptcl_z[ptcl_idx] * (1 << lv);
 
                     //** >> Floor of the particles positions in the grid level **/
-                    pos_x_floor = myfloor(pos_x);
-                    pos_y_floor = myfloor(pos_y);
-                    pos_z_floor = myfloor(pos_z);
+                    // pos_x_floor = myfloor(pos_x);
+                    // pos_y_floor = myfloor(pos_y);
+                    // pos_z_floor = myfloor(pos_z);
+                    pos_x_floor = (int)pos_x;
+                    pos_y_floor = (int)pos_y;
+                    pos_z_floor = (int)pos_z;
 
                     //** >> Computing the weights of the nearest grid points of the particle **/
                     w_x_1 = pos_x - pos_x_floor;

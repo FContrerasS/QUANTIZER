@@ -190,7 +190,7 @@ static void
 init_global_constants(void)
 {
     //Constants
-    _User_BoxSize_ = 0.05L; //kpc
+    _User_BoxSize_ = 0.1; //kpc
     //_User_BoxSize_ = 0.1L; //kpc
     _PI_ = 3.14159265358979323846L;
     _Onesixth_ = 1.0L / 6.0L;
@@ -210,7 +210,7 @@ static void init_global_user_params(void)
 {
     BoxSize = 1.0L;
     lmin = 4;     //Coarset level of refinement
-    lmax = lmin + 4;  //Finest level of refinement
+    lmax = lmin + 1;  //Finest level of refinement
     no_lmin_cell = 1 << lmin; // Number of cells in the lmin level of refinement
     no_lmin_cell_pow2 = no_lmin_cell * no_lmin_cell;
     no_lmin_cell_pow3 = no_lmin_cell * no_lmin_cell * no_lmin_cell;
@@ -223,17 +223,17 @@ static void init_global_user_params(void)
     // meanmass = 100; //Currently only used on input.c
     //  GL_total_mass_initial = GL_no_ptcl * meanmass;
     //  GL_total_mass_initial = 0;
-    fr_output = 1000;
-    MaxIterations = 1000000;
+    fr_output = 1000000;
+    MaxIterations = 294;
     no_grid_pow2 = no_grid * no_grid;
     no_grid_pow3 = no_grid * no_grid * no_grid;
-    boundary_type = 1; // 0 = Periodic; 1 = Reflexive; 2 = Outflow
+    boundary_type = 0; // 0 = Periodic; 1 = Reflexive; 2 = Outflow
 }
 
 static void init_global_ref_crit(void)
 {
     ref_criterion_mass = 1.0e100; // meanmass * 7;
-    ref_criterion_ptcl = 1;
+    ref_criterion_ptcl = 2;
     n_exp = 1;   // n_exp = 0 is corrupted because particles can move between more than 1 level of refinement
     _CFL_ = 0.9; // CFL criteria 0.5
     _MAX_dt_ = _Mgyear_ * 1.0;
@@ -274,7 +274,7 @@ static void init_global_poisson_params(void)
     branches_maximal_node_number_to_activate_conjugate_gradient = 513; // 513, 216 = node with minimum size of 1 (+1 n_exp) size, (1 + 2*n_exp)^3 * 8
 
     head_pot_method = 0; // 0 = Multygrid, 1 = Conjugate gradient
-    branch_pot_method = 1; // 0 = SOR, 1 = Conjugate gradient
+    branch_pot_method = 0; // 0 = SOR, 1 = Conjugate gradient
 }
 
 static void init_global_force_params(void)
@@ -352,7 +352,7 @@ static void init_global_memory(void)
 
 static void init_global_garbage_collector_parameters(void)
 {
-    Garbage_Collector_iter = 10000000; // Number of time-steps between each garbage collector
+    Garbage_Collector_iter = 1000000; // Number of time-steps between each garbage collector
 }
 
 static void init_global_boundary_parameters(void)
