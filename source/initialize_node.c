@@ -169,5 +169,10 @@ void initialize_node(struct node *ptr_node)
 	ptr_node->pbc_crosses_the_whole_simulation_box_x = false;
 	ptr_node->pbc_crosses_the_whole_simulation_box_y = false;
 	ptr_node->pbc_crosses_the_whole_simulation_box_z = false;
+
+	// The following parameter is a flag used to correct box indexes used only in
+	// periodic boundary conditions, when the box pass from a crosses the whole simulation box
+	// to only crosees the boundary of the simulation and vice versa
+	ptr_node->pbc_corrections_due_to_change_from_croses_in_box_simulation = false;
 }
 

@@ -190,7 +190,7 @@ static void
 init_global_constants(void)
 {
     //Constants
-    _User_BoxSize_ = 0.1; //kpc
+    _User_BoxSize_ = 0.06; //kpc
     //_User_BoxSize_ = 0.1L; //kpc
     _PI_ = 3.14159265358979323846L;
     _Onesixth_ = 1.0L / 6.0L;
@@ -209,8 +209,8 @@ init_global_constants(void)
 static void init_global_user_params(void)
 {
     BoxSize = 1.0L;
-    lmin = 4;     //Coarset level of refinement
-    lmax = lmin + 1;  //Finest level of refinement
+    lmin = 5;     //Coarset level of refinement
+    lmax = lmin + 2;  //Finest level of refinement
     no_lmin_cell = 1 << lmin; // Number of cells in the lmin level of refinement
     no_lmin_cell_pow2 = no_lmin_cell * no_lmin_cell;
     no_lmin_cell_pow3 = no_lmin_cell * no_lmin_cell * no_lmin_cell;
@@ -219,12 +219,12 @@ static void init_global_user_params(void)
     GL_no_ptcl_final = GL_no_ptcl_initial;
     //GL_no_ptcl = 7550; // 2995865; // 299586; // 231299 // 298159
     // GL_no_ptcl = 10000;
-    Maxdt = 50.0 * _Mgyear_;
+    Maxdt = 100 * _Mgyear_;
     // meanmass = 100; //Currently only used on input.c
     //  GL_total_mass_initial = GL_no_ptcl * meanmass;
     //  GL_total_mass_initial = 0;
     fr_output = 1000000;
-    MaxIterations = 294;
+    MaxIterations = 1000000;
     no_grid_pow2 = no_grid * no_grid;
     no_grid_pow3 = no_grid * no_grid * no_grid;
     boundary_type = 0; // 0 = Periodic; 1 = Reflexive; 2 = Outflow
@@ -279,7 +279,7 @@ static void init_global_poisson_params(void)
 
 static void init_global_force_params(void)
 {
-    force_stencil = 1;  // 0 = 3-points, 1 = 5-points
+    force_stencil = 0;  // 0 = 3-points, 1 = 5-points
 }
 
 static void init_global_energies_params(void)

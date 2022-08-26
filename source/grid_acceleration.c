@@ -480,9 +480,11 @@ static void computing_grid_acceleration_branch2(struct node *ptr_node)
     bool check;
 
     //** >> Simulation Boundary grid points **/
+    //printf("Node lv = %d, ID = %d, Comp simulation boundary grid points\n",ptr_node->lv,ptr_node->ID);
     computing_simulation_boundary_grid_point_acceleration(ptr_node);
 
     //** >> Border grid points **/
+    //printf("Node lv = %d, ID = %d, Comp border grid points\n", ptr_node->lv, ptr_node->ID);
     for (int i = 0; i < ptr_node->grid_bder_size; i++)
     {
         box_grid_idx = ptr_node->ptr_bder_box_grid_idx[i];
@@ -568,6 +570,7 @@ static void computing_grid_acceleration_branch2(struct node *ptr_node)
     }
 
     //** >> Interior grid points **/
+    //printf("Node lv = %d, ID = %d, Comp simulation interior grid points\n", ptr_node->lv, ptr_node->ID);
     for (int i = 0; i < ptr_node->grid_intr_size; i++)
     {
         //** >> Box grid index **/
@@ -697,20 +700,20 @@ static void computing_grid_acceleration_branch2(struct node *ptr_node)
             box_grid_idxNbr_11 = box_grid_idx + 2 * grid_box_real_dim_X_times_Y_node;
             box_grid_idxNbr_12 = box_grid_idx - 2 * grid_box_real_dim_X_times_Y_node;
         }
-        else if (ptr_node->pbc_crosses_the_whole_simulation_box_y == true)
+        else if (ptr_node->pbc_crosses_the_whole_simulation_box_z == true)
         {
-            if (ptr_node->ptr_box[box_idx_node - 2 * grid_box_real_dim_X_times_Y_node] == -6 && ptr_node->ptr_box[box_idx_node + grid_box_real_dim_X_times_Y_node] > -4)
+            if (ptr_node->ptr_box[box_idx_node - 2 * box_real_dim_X_times_Y_node] == -6 && ptr_node->ptr_box[box_idx_node + box_real_dim_X_times_Y_node] > -4)
             {
-                if (ptr_node->ptr_box[box_idx_node + (-2 + (1 << lv)) * grid_box_real_dim_X_times_Y_node] > -4)
+                if (ptr_node->ptr_box[box_idx_node + (-2 + (1 << lv)) * box_real_dim_X_times_Y_node] > -4)
                 {
                     box_grid_idxNbr_11 = box_grid_idx + 2 * grid_box_real_dim_X_times_Y_node;
                     box_grid_idxNbr_12 = box_grid_idx + (-2 + (1 << lv)) * grid_box_real_dim_X_times_Y_node;
                     check = true;
                 }
             }
-            else if (ptr_node->ptr_box[box_idx_node + grid_box_real_dim_X_times_Y_node] == -6 && ptr_node->ptr_box[box_idx_node - 2 * grid_box_real_dim_X_times_Y_node] > -4)
+            else if (ptr_node->ptr_box[box_idx_node + box_real_dim_X_times_Y_node] == -6 && ptr_node->ptr_box[box_idx_node - 2 * box_real_dim_X_times_Y_node] > -4)
             {
-                if (ptr_node->ptr_box[box_idx_node + (1 - (1 << lv)) * grid_box_real_dim_X_times_Y_node] > -4)
+                if (ptr_node->ptr_box[box_idx_node + (1 - (1 << lv)) * box_real_dim_X_times_Y_node] > -4)
                 {
                     box_grid_idxNbr_11 = box_grid_idx + (2 - (1 << lv)) * grid_box_real_dim_X_times_Y_node;
                     box_grid_idxNbr_12 = box_grid_idx - 2 * grid_box_real_dim_X_times_Y_node;
@@ -756,9 +759,11 @@ int grid_acceleration(void)
     else if (force_stencil == 1)
     {
         //** >> HEAD
+        //printf("computing Grid acceleration in Head\n");
         computing_grid_acceleration_head2(GL_tentacles[0][0]);
 
         //** >>  BRANCHES
+        //printf("computing Grid acceleration in Branches\n");
         for (int lv = 1; lv < GL_tentacles_level_max + 1; lv++)
         {
             // Number of parent of the level = GL_tentacles_size[lv];

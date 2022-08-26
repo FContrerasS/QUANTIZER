@@ -287,6 +287,7 @@ int main(int argc, char **argv) {
 		//printf("Finalized part updating B\n");
 
 		//** >> OUPUT SNAPSHOTS **/
+		//printf("Output and Observables:\n");
 		if (Number_timesteps % fr_output == 0 || actualtime >= Maxdt)
 		{
 			++Number_outputs;
@@ -303,7 +304,7 @@ int main(int argc, char **argv) {
 			GL_times[13] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 
 			//** >> OUPUT SNAPSHOTS **/
-			// printf("Output snapshots\n");
+			//printf("Output snapshots\n");
 			GL_clock_begin = clock();
 			if (output_snapshots(energies, actualtime, Number_outputs) == _FAILURE_)
 			{
@@ -315,10 +316,11 @@ int main(int argc, char **argv) {
 
 		
 		//** >> GARBAGE COLLECTOR **/
+		//printf("Garbage Collector\n");
 		GL_clock_begin = clock();
 		if ((Number_timesteps + 1) % Garbage_Collector_iter == 0 && lmin < lmax)
 		{
-			printf("Garbage Collector\n");
+			//printf("Garbage Collector\n");
 			if(garbage_collector() == _FAILURE_)
 			{
 				printf("\n\n Error running garbage_collector() function\n\n");
@@ -328,6 +330,7 @@ int main(int argc, char **argv) {
 		GL_times[14] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 
 		// BAR PROGRESS
+		//printf("Bar\n");
 		fflush(stdout);
 		printf("\r[");
 		for (int j = 0; j < 50; j++)
@@ -342,6 +345,8 @@ int main(int argc, char **argv) {
 		printf("] %.2f %%", (double)(actualtime * 100.0 / Maxdt));
 
 		Number_timesteps++; // Increasing the number of time-steps
+
+		//printf("end cycle\n");
 	}
 
 	printf("\n\n%sMaxdt = %1.3f Myr, Final time = %1.3f Myr %s\n\n", KRED, (double)(Maxdt / _Mgyear_), (double)(actualtime / _Mgyear_), KNRM);

@@ -113,6 +113,8 @@ static void re_initialize_node(struct node *ptr_node)
 	ptr_node->pbc_crosses_the_whole_simulation_box_x = false;
 	ptr_node->pbc_crosses_the_whole_simulation_box_y = false;
 	ptr_node->pbc_crosses_the_whole_simulation_box_z = false;
+
+	ptr_node->pbc_corrections_due_to_change_from_croses_in_box_simulation = false;
 }
 
 struct node *new_node(void)

@@ -77,6 +77,17 @@ void check_error(struct node *ptr_node, int type)
     int aux_idx_y;
     int aux_idx_z;
 
+
+    //Checking ID of children
+    for (int i = 0; i < ptr_node->chn_size; i++)
+    {
+        ptr_ch = ptr_node->pptr_chn[i];
+        if(ptr_ch->ID != i)
+        {
+            printf("\n error, child ID = %d, its different to his position as a child = %d\n",ptr_ch->ID, i);
+        }
+    }
+
     // Check ptr_box_idx
     // Children:
     for (int i = 0; i < ptr_node->chn_size; i++)
@@ -129,7 +140,9 @@ void check_error(struct node *ptr_node, int type)
                     printf("\npost check\n");
                 }
 
-                printf("\nError, child ptr_box_idx no es igual \n");
+                printf("Child node at lv = %d, ID = %d\n", ptr_ch->lv, ptr_ch->ID);
+                printf("\nError, child, ptr_box_idx no es igual \n");
+                printf("box_idx_ch from cell idx = %d, ptr_ch box_idx = %d\n", box_idx_ch, ptr_ch->ptr_box_idx[cell_idx]);
             }
         }
     }
@@ -162,13 +175,6 @@ void check_error(struct node *ptr_node, int type)
             {
                 box_idx_z_node -= (1 << lv);
             }
-
-            if (aux_idx_x > ptr_node->box_max_x || aux_idx_y > ptr_node->box_max_y || aux_idx_z > ptr_node->box_max_z)
-            {
-                printf("node box_min_x = %d, box_max_x = %d\n", ptr_node->box_min_x, ptr_node->box_max_x);
-                printf("node box_min_y = %d, box_max_y = %d\n", ptr_node->box_min_y, ptr_node->box_max_y);
-                printf("node box_min_z = %d, box_max_z = %d\n", ptr_node->box_min_z, ptr_node->box_max_z);
-            }
         }
 
         box_idx_node = box_idx_x_node + box_idx_y_node * box_real_dim_X_node + box_idx_z_node * box_real_dim_X_times_Y_node;
@@ -185,6 +191,7 @@ void check_error(struct node *ptr_node, int type)
                 printf("\npost check\n");
             }
 
+            printf("Parent node at lv = %d, ID = %d\n", ptr_node->lv, ptr_node->ID);
             printf("Error, parent ptr_box_idx no es igual \n");
         }
     }
@@ -253,6 +260,7 @@ void check_error(struct node *ptr_node, int type)
                 }
                 if(cntr2 != 8)
                 {
+                    printf("Child node at lv = %d, ID = %d\n", ptr_ch->lv, ptr_ch->ID);
                     printf("Error, En el nodo hijo no se encuentra la celda del padre\n");
                 }
             }
@@ -309,7 +317,8 @@ void check_error(struct node *ptr_node, int type)
             {
                 if (ptr_ch->ptr_cell_struct[j].cell_mass > 0 || ptr_ch->ptr_cell_struct[j].ptcl_size > 0)
                 {
-                    printf("error, child has a box cell with status of No-Exist but with particles inside\n");
+                    printf("Child node at lv = %d, ID = %d\n", ptr_ch->lv, ptr_ch->ID);
+                    printf("error, child, has a box cell with status of No-Exist but with particles inside\n");
                     printf("ptcl size = %d, cell mass = %f\n", ptr_ch->ptr_cell_struct[j].ptcl_size, ptr_ch->ptr_cell_struct[j].cell_mass);
                     ptcl_idx = ptr_ch->ptr_cell_struct[j].ptr_ptcl[0];
                     printf("ptcl id = %d, pos_x = %f, pos_y = %f, pos_z = %f\n", GL_ptcl_ID[ptcl_idx], (double)GL_ptcl_x[ptcl_idx], (double)GL_ptcl_y[ptcl_idx], (double)GL_ptcl_z[ptcl_idx]);
@@ -359,14 +368,15 @@ void check_error(struct node *ptr_node, int type)
 
             if (ptr_ch->ptr_cell_struct[box_idx_ch].cell_mass != ptr_ch->ptr_cell_struct[box_idx_ch].ptcl_size * 100.0 || ptr_ch->ptr_cell_struct[box_idx_ch].ptcl_size < 0)
             {
+                printf("Child node at lv = %d, ID = %d\n", ptr_ch->lv, ptr_ch->ID);
                 printf("Error, child, box_idx = %d\n", box_idx_ch);
-                printf("lv = %d, ID = %d, ptcl_size = %d, cell_mass = %f\n", ptr_ch->lv, ptr_ch->ID, ptr_ch->ptr_cell_struct[box_idx_ch].ptcl_size, (double)ptr_ch->ptr_cell_struct[box_idx_ch].cell_mass);
+                printf("ptcl_size = %d, cell_mass = %f\n", ptr_ch->ptr_cell_struct[box_idx_ch].ptcl_size, (double)ptr_ch->ptr_cell_struct[box_idx_ch].cell_mass);
             }
         }
 
         if (ptr_ch->local_no_ptcl < ref_criterion_ptcl && type == 2)
         {
-            printf("\nHijo at lv = %d, ID = %d\n", ptr_ch->lv, ptr_ch->ID);
+            printf("\nchild at lv = %d, ID = %d\n", ptr_ch->lv, ptr_ch->ID);
             printf("error, child no ptcl = %d is less than ref_criterion_ptcl = %d\n", ptr_ch->local_no_ptcl, ref_criterion_ptcl);
         }
     }
@@ -404,8 +414,9 @@ void check_error(struct node *ptr_node, int type)
 
         if (ptr_node->ptr_cell_struct[box_idx_node].cell_mass != ptr_node->ptr_cell_struct[box_idx_node].ptcl_size * 100.0 || ptr_node->ptr_cell_struct[box_idx_node].ptcl_size < 0)
         {
+            printf("Parent node at lv = %d, ID = %d\n", ptr_node->lv, ptr_node->ID);
             printf("Error, parent, box_idx = %d\n", box_idx_node);
-            printf("lv = %d, ID = %d, ptcl_size = %d, cell_mass = %f\n", ptr_node->lv, ptr_node->ID, ptr_node->ptr_cell_struct[box_idx_node].ptcl_size, (double) ptr_node->ptr_cell_struct[box_idx_node].cell_mass );
+            printf("ptcl_size = %d, cell_mass = %f\n", ptr_node->ptr_cell_struct[box_idx_node].ptcl_size, (double) ptr_node->ptr_cell_struct[box_idx_node].cell_mass );
         }
     }
     // Notes: the parent node can have less particles than the ref_criterion becasue 
@@ -425,15 +436,186 @@ void check_error(struct node *ptr_node, int type)
             ptr_ch->box_max_y - ptr_ch->box_min_y >= (1 << (lv + 1)) ||
             ptr_ch->box_max_z - ptr_ch->box_min_z >= (1 << (lv + 1)))
         {
-            printf("error, child node has a dimension bigger than the simulation box\n");
+            printf("Child node at lv = %d, ID = %d\n", ptr_ch->lv, ptr_ch->ID);
+            printf("error, child, node has a dimension bigger than the simulation box\n");
         }
     }
     //Parent
     if (ptr_node->box_max_x - ptr_node->box_min_x >= (1 << lv) ||
         ptr_node->box_max_y - ptr_node->box_min_y >= (1 << lv) ||
         ptr_node->box_max_z - ptr_node->box_min_z >= (1 << lv)  ) 
-    {  
+    {
+        printf("Parent node at lv = %d, ID = %d\n", ptr_node->lv, ptr_node->ID );
         printf("error, parent node has a dimension bigger than the simulation box\n");
+    }
+
+    //Checking maximum box dimensions:
+    //Children
+    for (int i = 0; i < ptr_node->chn_size; i++)
+    {
+        ptr_ch = ptr_node->pptr_chn[i];
+        if (ptr_ch->box_max_x - ptr_ch->box_min_x + 1 != ptr_ch->box_dim_x ||
+            ptr_ch->box_max_y - ptr_ch->box_min_y + 1 != ptr_ch->box_dim_y  ||
+            ptr_ch->box_max_z - ptr_ch->box_min_z + 1 != ptr_ch->box_dim_z )
+        {
+            printf("Child node at lv = %d, ID = %d\n", ptr_ch->lv, ptr_ch->ID);
+            printf("error, child node has a box_dim different to max - min + 1 \n");
+        }
+
+        if (ptr_ch->box_max_x >= (1 << (lv + 1)) || ptr_ch->box_max_y >= (1 << (lv + 1)) || ptr_ch->box_max_z >= (1 << (lv + 1)))
+        {
+            printf("Child node at lv = %d, ID = %d\n", ptr_ch->lv, ptr_ch->ID);
+            printf("error, child node box_max > max allow of %d \n", (1 << (lv + 1)));
+        }
+
+        if (ptr_ch->pbc_crosses_the_boundary_simulation_box_x == false && ptr_ch->box_min_x < 0)
+        {
+            printf("Child node at lv = %d, ID = %d\n", ptr_ch->lv, ptr_ch->ID);
+            printf("error, child node box_min_x < 0, but flag of crosees sim == false\n");
+        }
+        if (ptr_ch->pbc_crosses_the_boundary_simulation_box_y == false && ptr_ch->box_min_y < 0)
+        {
+            printf("Child node at lv = %d, ID = %d\n", ptr_ch->lv, ptr_ch->ID);
+            printf("error, child node box_min_y < 0, but flag of crosees sim == false\n");
+        }
+        if (ptr_ch->pbc_crosses_the_boundary_simulation_box_z == false && ptr_ch->box_min_z < 0)
+        {
+            printf("Child node at lv = %d, ID = %d\n", ptr_ch->lv, ptr_ch->ID);
+            printf("error, child node box_min_z < 0, but flag of crosees sim == false\n");
+        }
+
+        if (ptr_ch->boundary_simulation_contact != (ptr_ch->boundary_simulation_contact_x || ptr_ch->boundary_simulation_contact_y || ptr_ch->boundary_simulation_contact_z))
+        {
+            printf("Child node at lv = %d, ID = %d\n", ptr_ch->lv, ptr_ch->ID);
+            printf("error, child node simulation contact flag dont match with simulation contact flag by direcction\n");
+        }
+
+        if (ptr_ch->pbc_crosses_the_boundary_simulation_box != (ptr_ch->pbc_crosses_the_boundary_simulation_box_x || ptr_ch->pbc_crosses_the_boundary_simulation_box_y || ptr_ch->pbc_crosses_the_boundary_simulation_box_z))
+        {
+            printf("Child node at lv = %d, ID = %d\n", ptr_ch->lv, ptr_ch->ID);
+            printf("error, child node crosses the boundary simulation box flag dont match with simulation contact flag by direcction\n");
+        }
+
+        if (ptr_ch->pbc_crosses_the_whole_simulation_box != (ptr_ch->pbc_crosses_the_whole_simulation_box_x || ptr_ch->pbc_crosses_the_whole_simulation_box_y || ptr_ch->pbc_crosses_the_whole_simulation_box_z))
+        {
+            printf("Child node at lv = %d, ID = %d\n", ptr_ch->lv, ptr_ch->ID);
+            printf("error, child node crosses the whole simulation box flag dont match with simulation contact flag by direcction\n");
+        }
+
+        if (ptr_ch->pbc_crosses_the_whole_simulation_box == true)
+        {
+            if (ptr_ch->pbc_crosses_the_whole_simulation_box_x == true)
+            {
+                if (ptr_ch->box_min_x != 0 && ptr_ch->box_max_x != (1 << (lv + 1)) - 1)
+                {
+                    printf("Child node at lv = %d, ID = %d\n", ptr_ch->lv, ptr_ch->ID);
+                    printf("error, child node, the x direcction crosses the whole simulation box, but it has wrond box dim:\n");
+                    printf("box_dim_x = %d, box_min_x = %d, box_max_x = %d\n", ptr_ch->box_dim_x, ptr_ch->box_min_x, ptr_ch->box_max_x);
+                }
+            }
+
+            if (ptr_ch->pbc_crosses_the_whole_simulation_box_y == true)
+            {
+                if (ptr_ch->box_min_y != 0 && ptr_ch->box_max_y != (1 << (lv + 1)) - 1)
+                {
+                    printf("Child node at lv = %d, ID = %d\n", ptr_ch->lv, ptr_ch->ID);
+                    printf("error, child node, the y direcction crosses the whole simulation box, but it has wrond box dim:\n");
+                    printf("box_dim_y = %d, box_min_y = %d, box_max_y = %d\n", ptr_ch->box_dim_y, ptr_ch->box_min_y, ptr_ch->box_max_y);
+                }
+            }
+
+            if (ptr_ch->pbc_crosses_the_whole_simulation_box_z == true)
+            {
+                if (ptr_ch->box_dim_z != 0 && ptr_ch->box_max_z != (1 << (lv + 1)) - 1)
+                {
+                    printf("Child node at lv = %d, ID = %d\n", ptr_ch->lv, ptr_ch->ID);
+                    printf("error, child node, the z direcction crosses the whole simulation box, but it has wrond box dim:\n");
+                    printf("box_dim_z = %d, box_min_z = %d, box_max_z = %d\n", ptr_ch->box_dim_z, ptr_ch->box_min_z, ptr_ch->box_max_z);
+                }
+            }
+        }
+    }
+
+    //Parent
+    if (ptr_node->box_max_x - ptr_node->box_min_x + 1 != ptr_node->box_dim_x ||
+        ptr_node->box_max_y - ptr_node->box_min_y + 1 != ptr_node->box_dim_y ||
+        ptr_node->box_max_z - ptr_node->box_min_z + 1 != ptr_node->box_dim_z)
+    {
+        printf("Parent node at lv = %d, ID = %d\n", ptr_node->lv, ptr_node->ID);
+        printf("error, Parent node has a box_dim different to max - min + 1 \n");
+    }
+
+    if (ptr_node->box_max_x >= (1 << lv) || ptr_node->box_max_y >= (1 << lv) || ptr_node->box_max_z >= (1 << lv))
+    {
+        printf("Parent node at lv = %d, ID = %d\n", ptr_node->lv, ptr_node->ID);
+        printf("error, Parent node box_max > max allow of %d \n", 1 << lv);
+    }
+
+    if (ptr_node->pbc_crosses_the_boundary_simulation_box_x == false && ptr_node->box_min_x < 0)
+    {
+        printf("Parent node at lv = %d, ID = %d\n", ptr_node->lv, ptr_node->ID);
+        printf("error, Parent node box_min_x < 0, but flag of crosees sim == false\n");
+    }
+    if (ptr_node->pbc_crosses_the_boundary_simulation_box_y == false && ptr_node->box_min_y < 0)
+    {
+        printf("Parent node at lv = %d, ID = %d\n", ptr_node->lv, ptr_node->ID);
+        printf("error, Parent node box_min_y < 0, but flag of crosees sim == false\n");
+    }
+    if (ptr_node->pbc_crosses_the_boundary_simulation_box_z == false && ptr_node->box_min_z < 0)
+    {
+        printf("Parent node at lv = %d, ID = %d\n", ptr_node->lv, ptr_node->ID);
+        printf("error, Parent node box_min_z < 0, but flag of crosees sim == false\n");
+    }
+
+    if (ptr_node->boundary_simulation_contact != (ptr_node->boundary_simulation_contact_x || ptr_node->boundary_simulation_contact_y || ptr_node->boundary_simulation_contact_z))
+    {
+        printf("Parent node at lv = %d, ID = %d\n", ptr_node->lv, ptr_node->ID);
+        printf("error, Parent node simulation contact flag dont match with simulation contact flag by direcction\n");
+    }
+
+    if (ptr_node->pbc_crosses_the_boundary_simulation_box != (ptr_node->pbc_crosses_the_boundary_simulation_box_x || ptr_node->pbc_crosses_the_boundary_simulation_box_y || ptr_node->pbc_crosses_the_boundary_simulation_box_z))
+    {
+        printf("Parent node at lv = %d, ID = %d\n", ptr_node->lv, ptr_node->ID);
+        printf("error, Parent node crosses the boundary simulation box flag dont match with simulation contact flag by direcction\n");
+    }
+
+    if (ptr_node->pbc_crosses_the_whole_simulation_box != (ptr_node->pbc_crosses_the_whole_simulation_box_x || ptr_node->pbc_crosses_the_whole_simulation_box_y || ptr_node->pbc_crosses_the_whole_simulation_box_z))
+    {
+        printf("Parent node at lv = %d, ID = %d\n", ptr_node->lv, ptr_node->ID);
+        printf("error, Parent node crosses the whole simulation box flag dont match with simulation contact flag by direcction\n");
+    }
+
+    if (ptr_node->pbc_crosses_the_whole_simulation_box == true)
+    {
+        if (ptr_node->pbc_crosses_the_whole_simulation_box_x == true)
+        {
+            if (ptr_node->box_min_x != 0 && ptr_node->box_max_x != (1 << lv) - 1)
+            {
+                printf("Parent node at lv = %d, ID = %d\n", ptr_node->lv, ptr_node->ID);
+                printf("error, Parent node, the x direcction crosses the whole simulation box, but it has wrond box dim:\n");
+                printf("box_dim_x = %d, box_min_x = %d, box_max_x = %d\n", ptr_node->box_dim_x, ptr_node->box_min_x, ptr_node->box_max_x);
+            }
+        }
+
+        if (ptr_node->pbc_crosses_the_whole_simulation_box_y == true)
+        {
+            if (ptr_node->box_max_y != 0 && ptr_node->box_max_y != (1 << lv) - 1)
+            {
+                printf("Parent node at lv = %d, ID = %d\n", ptr_node->lv, ptr_node->ID);
+                printf("error, Parent node, the y direcction crosses the whole simulation box, but it has wrond box dim:\n");
+                printf("box_dim_y = %d, box_min_y = %d, box_max_y = %d\n", ptr_node->box_dim_y, ptr_node->box_min_y, ptr_node->box_max_y);
+            }
+        }
+
+        if (ptr_node->pbc_crosses_the_whole_simulation_box_z == true)
+        {
+            if (ptr_node->box_max_z != 0 && ptr_node->box_max_z != (1 << lv) - 1)
+            {
+                printf("Parent node at lv = %d, ID = %d\n", ptr_node->lv, ptr_node->ID);
+                printf("error, Parent node, the z direcction crosses the whole simulation box, but it has wrond box dim:\n");
+                printf("box_dim_z = %d, box_min_z = %d, box_max_z = %d\n", ptr_node->box_dim_z, ptr_node->box_min_z, ptr_node->box_max_z);
+            }
+        }
     }
 
     //Particles are in the right cell
@@ -520,6 +702,7 @@ void check_error(struct node *ptr_node, int type)
                 {
                     printf("\npost check\n");
                 }
+                printf("Parent node at lv = %d, ID = %d\n", ptr_node->lv, ptr_node->ID);
                 printf("Error, Parent, particle is out of the cell\n");
             }
         }
@@ -561,8 +744,8 @@ void check_error(struct node *ptr_node, int type)
             {
                 printf("post check\n");
             }
-                
 
+            printf("child : lv = %d, ID = %d\n", ptr_ch->lv, ptr_ch->ID);
             printf("\nError, Child local mass diferente a mass en caja\n ");
             printf("cell mass = %f, box mass = %f, local mass = %f\n", (double) aux_mass1, (double) aux_mass2, (double) ptr_ch->local_mass);
 
@@ -869,15 +1052,19 @@ static int find_min_max_subzones_ref_PERIODIC_BOUNDARY(struct node *ptr_node, in
         ptr_node->ptr_box[box_idx_node] = -1;
     }
 
+    //printf("I am in min max subzones find function\n");
+
     //** >>  Changing the box status from REFINEMENT REQUIRED (-1) to the refinement subzone ID (>= 0) **/
     while (ptr_node->ptr_zone_size[zone_idx] > cntr_cell_add_all_subzones) // The loop while works as long as the number of cell addeed is less than the total refined cells
     {
+        //printf("Inside of the while cycle\n");
         // Notes that the initiality we inspect the elements in the refined cell array until an element has been found that is not found in any of the current refinement subzones
         cell_idx = ptr_node->pptr_zones[zone_idx][cell_ref_idx]; // Index of the cells array in the node
         box_idx_node = ptr_node->ptr_box_idx[cell_idx];
 
         if (ptr_node->ptr_box[box_idx_node] == -1) // A cell without subzone has been founded
         {
+            //printf("inside of the if ptr_box [] == -1\n");
             subzone_size = 0; // Initial number of element in the subzone
 
             //** >> Including the first element of the box to the auxiliary array ptr_aux_idx **/
@@ -960,6 +1147,12 @@ static int find_min_max_subzones_ref_PERIODIC_BOUNDARY(struct node *ptr_node, in
     // ptr_node->subzones_cap = subzone_idx_max; // Maximum amount of subzones
     ptr_node->subzones_size = subzone_idx; // Total amount of subzones
 
+    printf("subzone_idx = %d\n", subzone_idx);
+    if (ptr_node->subzones_size == 1)
+    {
+        printf("subzones == 1, we do not compute the min and max of the subzone\n");
+    }
+
     if (ptr_node->subzones_size > 1)
     {
         //** >> Space checking of refinement subzones min and max arrays  **/
@@ -970,55 +1163,50 @@ static int find_min_max_subzones_ref_PERIODIC_BOUNDARY(struct node *ptr_node, in
         }
 
         //** >> Initializing suzbones min and max
-        if (ptr_node->ptr_aux_bool_boundary_anomalies_x[zone_idx] == true)
+        // if (ptr_node->ptr_aux_bool_boundary_anomalies_x[zone_idx] == true)
+        // {
+        //     for (int i = 0; i < subzone_idx; i++)
+        //     {
+        //         ptr_node->ptr_aux_min_subzones_x[i] = INT_MAX;
+        //         ptr_node->ptr_aux_max_subzones_x[i] = INT_MIN;
+        //     }
+        // }
+
+        // if (ptr_node->ptr_aux_bool_boundary_anomalies_y[zone_idx] == true)
+        // {
+        //     for (int i = 0; i < subzone_idx; i++)
+        //     {
+        //         ptr_node->ptr_aux_min_subzones_y[i] = INT_MAX;
+        //         ptr_node->ptr_aux_max_subzones_y[i] = INT_MIN;
+        //     }
+        // }
+
+        // if (ptr_node->ptr_aux_bool_boundary_anomalies_z[zone_idx] == true)
+        // {
+        //     for (int i = 0; i < subzone_idx; i++)
+        //     {
+        //         ptr_node->ptr_aux_min_subzones_z[i] = INT_MAX;
+        //         ptr_node->ptr_aux_max_subzones_z[i] = INT_MIN;
+        //     }
+        // }
+
+        for (int i = 0; i < subzone_idx; i++)
         {
-            for (int i = 0; i < subzone_idx; i++)
-            {
-                ptr_node->ptr_aux_min_subzones_x[i] = INT_MAX;
-                ptr_node->ptr_aux_max_subzones_x[i] = INT_MIN;
-            }
+            ptr_node->ptr_aux_min_subzones_x[i] = INT_MAX;
+            ptr_node->ptr_aux_max_subzones_x[i] = INT_MIN;
         }
 
-        if (ptr_node->ptr_aux_bool_boundary_anomalies_y[zone_idx] == true)
+        for (int i = 0; i < subzone_idx; i++)
         {
-            for (int i = 0; i < subzone_idx; i++)
-            {
-                ptr_node->ptr_aux_min_subzones_y[i] = INT_MAX;
-                ptr_node->ptr_aux_max_subzones_y[i] = INT_MIN;
-            }
+            ptr_node->ptr_aux_min_subzones_y[i] = INT_MAX;
+            ptr_node->ptr_aux_max_subzones_y[i] = INT_MIN;
         }
 
-        if (ptr_node->ptr_aux_bool_boundary_anomalies_z[zone_idx] == true)
+        for (int i = 0; i < subzone_idx; i++)
         {
-            for (int i = 0; i < subzone_idx; i++)
-            {
-                ptr_node->ptr_aux_min_subzones_z[i] = INT_MAX;
-                ptr_node->ptr_aux_max_subzones_z[i] = INT_MIN;
-            }
+            ptr_node->ptr_aux_min_subzones_z[i] = INT_MAX;
+            ptr_node->ptr_aux_max_subzones_z[i] = INT_MIN;
         }
-
-            // for (int i = 0; i < subzone_idx; i++)
-            // {
-            //     ptr_node->ptr_aux_min_subzones_x[i] = INT_MAX;
-            //     ptr_node->ptr_aux_max_subzones_x[i] = INT_MIN;
-            // }
-        
-
-
-            // for (int i = 0; i < subzone_idx; i++)
-            // {
-            //     ptr_node->ptr_aux_min_subzones_y[i] = INT_MAX;
-            //     ptr_node->ptr_aux_max_subzones_y[i] = INT_MIN;
-            // }
-        
-
-
-            // for (int i = 0; i < subzone_idx; i++)
-            // {
-            //     ptr_node->ptr_aux_min_subzones_z[i] = INT_MAX;
-            //     ptr_node->ptr_aux_max_subzones_z[i] = INT_MIN;
-            // }
-        
 
         //** >> Adding the cells to the zone array pptr_zones **/
         for (int i = 0; i < ptr_node->ptr_zone_size[zone_idx]; i++)
@@ -1028,8 +1216,43 @@ static int find_min_max_subzones_ref_PERIODIC_BOUNDARY(struct node *ptr_node, in
             subzone_idx = ptr_node->ptr_box[box_idx_node];
 
             // Min and Max
-            if (ptr_node->ptr_aux_bool_boundary_anomalies_x[zone_idx] == true)
-            {
+            // if (ptr_node->ptr_aux_bool_boundary_anomalies_x[zone_idx] == true)
+            // {
+            //     if (ptr_node->ptr_aux_min_subzones_x[subzone_idx] > ptr_node->ptr_cell_idx_x[cell_idx])
+            //     {
+            //         ptr_node->ptr_aux_min_subzones_x[subzone_idx] = ptr_node->ptr_cell_idx_x[cell_idx];
+            //     }
+            //     if (ptr_node->ptr_aux_max_subzones_x[subzone_idx] < ptr_node->ptr_cell_idx_x[cell_idx])
+            //     {
+            //         ptr_node->ptr_aux_max_subzones_x[subzone_idx] = ptr_node->ptr_cell_idx_x[cell_idx];
+            //     }
+            // }
+
+            // if (ptr_node->ptr_aux_bool_boundary_anomalies_y[zone_idx] == true)
+            // {
+            //     if (ptr_node->ptr_aux_min_subzones_y[subzone_idx] > ptr_node->ptr_cell_idx_y[cell_idx])
+            //     {
+            //         ptr_node->ptr_aux_min_subzones_y[subzone_idx] = ptr_node->ptr_cell_idx_y[cell_idx];
+            //     }
+            //     if (ptr_node->ptr_aux_max_subzones_y[subzone_idx] < ptr_node->ptr_cell_idx_y[cell_idx])
+            //     {
+            //         ptr_node->ptr_aux_max_subzones_y[subzone_idx] = ptr_node->ptr_cell_idx_y[cell_idx];
+            //     }
+            // }
+
+            // if (ptr_node->ptr_aux_bool_boundary_anomalies_z[zone_idx] == true)
+            // {
+            //     if (ptr_node->ptr_aux_min_subzones_z[subzone_idx] > ptr_node->ptr_cell_idx_z[cell_idx])
+            //     {
+            //         ptr_node->ptr_aux_min_subzones_z[subzone_idx] = ptr_node->ptr_cell_idx_z[cell_idx];
+            //     }
+            //     if (ptr_node->ptr_aux_max_subzones_z[subzone_idx] < ptr_node->ptr_cell_idx_z[cell_idx])
+            //     {
+            //         ptr_node->ptr_aux_max_subzones_z[subzone_idx] = ptr_node->ptr_cell_idx_z[cell_idx];
+            //     }
+            // }
+
+            
                 if (ptr_node->ptr_aux_min_subzones_x[subzone_idx] > ptr_node->ptr_cell_idx_x[cell_idx])
                 {
                     ptr_node->ptr_aux_min_subzones_x[subzone_idx] = ptr_node->ptr_cell_idx_x[cell_idx];
@@ -1038,10 +1261,10 @@ static int find_min_max_subzones_ref_PERIODIC_BOUNDARY(struct node *ptr_node, in
                 {
                     ptr_node->ptr_aux_max_subzones_x[subzone_idx] = ptr_node->ptr_cell_idx_x[cell_idx];
                 }
-            }
 
-            if (ptr_node->ptr_aux_bool_boundary_anomalies_y[zone_idx] == true)
-            {
+
+
+            
                 if (ptr_node->ptr_aux_min_subzones_y[subzone_idx] > ptr_node->ptr_cell_idx_y[cell_idx])
                 {
                     ptr_node->ptr_aux_min_subzones_y[subzone_idx] = ptr_node->ptr_cell_idx_y[cell_idx];
@@ -1050,10 +1273,9 @@ static int find_min_max_subzones_ref_PERIODIC_BOUNDARY(struct node *ptr_node, in
                 {
                     ptr_node->ptr_aux_max_subzones_y[subzone_idx] = ptr_node->ptr_cell_idx_y[cell_idx];
                 }
-            }
+            
 
-            if (ptr_node->ptr_aux_bool_boundary_anomalies_z[zone_idx] == true)
-            {
+
                 if (ptr_node->ptr_aux_min_subzones_z[subzone_idx] > ptr_node->ptr_cell_idx_z[cell_idx])
                 {
                     ptr_node->ptr_aux_min_subzones_z[subzone_idx] = ptr_node->ptr_cell_idx_z[cell_idx];
@@ -1062,43 +1284,18 @@ static int find_min_max_subzones_ref_PERIODIC_BOUNDARY(struct node *ptr_node, in
                 {
                     ptr_node->ptr_aux_max_subzones_z[subzone_idx] = ptr_node->ptr_cell_idx_z[cell_idx];
                 }
-            }
-
-            
-                // if (ptr_node->ptr_aux_min_subzones_x[subzone_idx] > ptr_node->ptr_cell_idx_x[cell_idx])
-                // {
-                //     ptr_node->ptr_aux_min_subzones_x[subzone_idx] = ptr_node->ptr_cell_idx_x[cell_idx];
-                // }
-                // if (ptr_node->ptr_aux_max_subzones_x[subzone_idx] < ptr_node->ptr_cell_idx_x[cell_idx])
-                // {
-                //     ptr_node->ptr_aux_max_subzones_x[subzone_idx] = ptr_node->ptr_cell_idx_x[cell_idx];
-                // }
-
-
-
-            
-                // if (ptr_node->ptr_aux_min_subzones_y[subzone_idx] > ptr_node->ptr_cell_idx_y[cell_idx])
-                // {
-                //     ptr_node->ptr_aux_min_subzones_y[subzone_idx] = ptr_node->ptr_cell_idx_y[cell_idx];
-                // }
-                // if (ptr_node->ptr_aux_max_subzones_y[subzone_idx] < ptr_node->ptr_cell_idx_y[cell_idx])
-                // {
-                //     ptr_node->ptr_aux_max_subzones_y[subzone_idx] = ptr_node->ptr_cell_idx_y[cell_idx];
-                // }
-            
-
-
-                // if (ptr_node->ptr_aux_min_subzones_z[subzone_idx] > ptr_node->ptr_cell_idx_z[cell_idx])
-                // {
-                //     ptr_node->ptr_aux_min_subzones_z[subzone_idx] = ptr_node->ptr_cell_idx_z[cell_idx];
-                // }
-                // if (ptr_node->ptr_aux_max_subzones_z[subzone_idx] < ptr_node->ptr_cell_idx_z[cell_idx])
-                // {
-                //     ptr_node->ptr_aux_max_subzones_z[subzone_idx] = ptr_node->ptr_cell_idx_z[cell_idx];
-                // }
             
 
             ptr_node->ptr_box[box_idx_node] = zone_idx; // Returning the value zone_idx at the box in the zone partitioned
+
+
+
+        }
+
+        for (int i = 0; i < ptr_node->subzones_size; i++)
+        {
+            printf("\n subzone = %d\n", i);
+            printf("min_x = %d, max_x = %d, min_y = %d, max_y = %d, min_z = %d, max_z = %d\n\n", ptr_node->ptr_aux_min_subzones_x[i], ptr_node->ptr_aux_max_subzones_x[i], ptr_node->ptr_aux_min_subzones_y[i], ptr_node->ptr_aux_max_subzones_y[i], ptr_node->ptr_aux_min_subzones_z[i], ptr_node->ptr_aux_max_subzones_z[i]);
         }
     }
     else
@@ -1111,12 +1308,6 @@ static int find_min_max_subzones_ref_PERIODIC_BOUNDARY(struct node *ptr_node, in
             ptr_node->ptr_box[box_idx_node] = zone_idx;
         }
     }
-
-    // for (int i = 0; i < ptr_node->subzones_size; i++)
-    // {
-    //     printf("\n subzone = %d\n", i);
-    //     printf("min_x = %d, max_x = %d, min_y = %d, max_y = %d, min_z = %d, max_z = %d\n\n", ptr_node->ptr_aux_min_subzones_x[i], ptr_node->ptr_aux_max_subzones_x[i], ptr_node->ptr_aux_min_subzones_y[i], ptr_node->ptr_aux_max_subzones_y[i], ptr_node->ptr_aux_min_subzones_z[i], ptr_node->ptr_aux_max_subzones_z[i]);
-    // }
 
     return _SUCCESS_;
 }
@@ -2167,6 +2358,12 @@ static int adapt_child_nodes(struct node *ptr_node)
 
     int bder_box = 1 > n_exp ? 1 : n_exp;
 
+    bool movement_box_x;
+    bool movement_box_y;
+    bool movement_box_z;
+
+    int aux_box_ts;
+
     // Cycle over new refinement zones
     for (int zone_idx = 0; zone_idx < ptr_node->zones_size; zone_idx++)
     {
@@ -2240,6 +2437,14 @@ static int adapt_child_nodes(struct node *ptr_node)
             new_pbc_crosses_the_whole_simulation_box_y = false;
             new_pbc_crosses_the_whole_simulation_box_z = false;
 
+            ptr_ch->pbc_corrections_due_to_change_from_croses_in_box_simulation = false;
+
+            movement_box_x = false;
+            movement_box_y = false;
+            movement_box_z = false;
+
+            printf("\nAdapt child, lv = %d, ID = %d\n", ptr_ch->lv,ptr_ch->ID);
+
             //** >> The MIN and MAX of the set containig only the new cells to be refined
             // MIN and MAX cell indexes values of the node.
             if (boundary_type == 0 && ptr_node->pbc_crosses_the_whole_simulation_box == true &&
@@ -2248,10 +2453,12 @@ static int adapt_child_nodes(struct node *ptr_node)
                  ptr_node->ptr_aux_bool_boundary_anomalies_z[new_zone_idx] == true))
             {
 
-                // printf("\nthere are boundary anomalies\n");
-                // printf("ptr_node->ptr_aux_bool_boundary_anomalies_x[new_zone_idx] = %d\n", ptr_node->ptr_aux_bool_boundary_anomalies_x[new_zone_idx]);
-                // printf("ptr_node->ptr_aux_bool_boundary_anomalies_y[new_zone_idx] = %d\n", ptr_node->ptr_aux_bool_boundary_anomalies_y[new_zone_idx]);
-                // printf("ptr_node->ptr_aux_bool_boundary_anomalies_z[new_zone_idx] = %d\n", ptr_node->ptr_aux_bool_boundary_anomalies_z[new_zone_idx]);
+                printf("there are boundary anomalies\n");
+                printf("ptr_node->ptr_aux_bool_boundary_anomalies_x[new_zone_idx] = %d\n", ptr_node->ptr_aux_bool_boundary_anomalies_x[new_zone_idx]);
+                printf("ptr_node->ptr_aux_bool_boundary_anomalies_y[new_zone_idx] = %d\n", ptr_node->ptr_aux_bool_boundary_anomalies_y[new_zone_idx]);
+                printf("ptr_node->ptr_aux_bool_boundary_anomalies_z[new_zone_idx] = %d\n", ptr_node->ptr_aux_bool_boundary_anomalies_z[new_zone_idx]);
+
+                printf("Calling min and max subzones functionn\n");
 
                 if (find_min_max_subzones_ref_PERIODIC_BOUNDARY(ptr_node, new_zone_idx) == _FAILURE_)
                 {
@@ -2259,7 +2466,7 @@ static int adapt_child_nodes(struct node *ptr_node)
                     return _FAILURE_;
                 }
 
-                // printf("ptr_node->subzones_size = %d\n", ptr_node->subzones_size);
+                printf("ptr_node->subzones_size = %d\n", ptr_node->subzones_size);
             }
 
             //** >> X axis
@@ -2297,7 +2504,7 @@ static int adapt_child_nodes(struct node *ptr_node)
                         {
                             for (int j = i + 1; j < aux_subzones_analized; j++)
                             {
-                                if ((ptr_node->ptr_aux_max_subzones_x[j] >= ptr_node->ptr_aux_min_subzones_x[i] && ptr_node->ptr_aux_min_subzones_x[j] <= ptr_node->ptr_aux_max_subzones_x[i]))
+                                if ((ptr_node->ptr_aux_max_subzones_x[j] + 1 >= ptr_node->ptr_aux_min_subzones_x[i] && ptr_node->ptr_aux_min_subzones_x[j] <= 1 + ptr_node->ptr_aux_max_subzones_x[i]))
                                 {
                                     ptr_node->ptr_aux_min_subzones_x[i] = ptr_node->ptr_aux_min_subzones_x[i] < ptr_node->ptr_aux_min_subzones_x[j] ? ptr_node->ptr_aux_min_subzones_x[i] : ptr_node->ptr_aux_min_subzones_x[j];
                                     ptr_node->ptr_aux_max_subzones_x[i] = ptr_node->ptr_aux_max_subzones_x[i] > ptr_node->ptr_aux_max_subzones_x[j] ? ptr_node->ptr_aux_max_subzones_x[i] : ptr_node->ptr_aux_max_subzones_x[j];
@@ -2312,6 +2519,12 @@ static int adapt_child_nodes(struct node *ptr_node)
                             }
                         }
                     }
+
+                    if (aux_subzones_analized > 2 || aux_subzones_analized < 1)
+                    {
+                        printf("error, aux_subzones analized is bigger than 2 or lower than 1, it is equal to = %d\n", aux_subzones_analized);
+                    }
+                    printf("aux_subzones analized = %d\n", aux_subzones_analized);
 
                     // min and max between all subzones
                     if (aux_subzones_analized == 1)
@@ -2330,7 +2543,7 @@ static int adapt_child_nodes(struct node *ptr_node)
 
                 // Analysis of min and max of the refinement zone
                 // Case refinement zone crosses the whole simulation box
-                if (new_box_max_x - new_box_min_x >= (1 << lv) - 1)
+                if (new_box_max_x - new_box_min_x == (1 << lv) - 1)
                 {
                     new_boundary_simulation_contact = true;
                     new_boundary_simulation_contact_x = true;
@@ -2495,7 +2708,7 @@ static int adapt_child_nodes(struct node *ptr_node)
                         {
                             for (int j = i + 1; j < aux_subzones_analized; j++)
                             {
-                                if ((ptr_node->ptr_aux_max_subzones_y[j] >= ptr_node->ptr_aux_min_subzones_y[i] && ptr_node->ptr_aux_min_subzones_y[j] <= ptr_node->ptr_aux_max_subzones_y[i]))
+                                if ((ptr_node->ptr_aux_max_subzones_y[j] + 1 >= ptr_node->ptr_aux_min_subzones_y[i] && ptr_node->ptr_aux_min_subzones_y[j] <= 1 + ptr_node->ptr_aux_max_subzones_y[i]))
                                 {
                                     ptr_node->ptr_aux_min_subzones_y[i] = ptr_node->ptr_aux_min_subzones_y[i] < ptr_node->ptr_aux_min_subzones_y[j] ? ptr_node->ptr_aux_min_subzones_y[i] : ptr_node->ptr_aux_min_subzones_y[j];
                                     ptr_node->ptr_aux_max_subzones_y[i] = ptr_node->ptr_aux_max_subzones_y[i] > ptr_node->ptr_aux_max_subzones_y[j] ? ptr_node->ptr_aux_max_subzones_y[i] : ptr_node->ptr_aux_max_subzones_y[j];
@@ -2526,7 +2739,7 @@ static int adapt_child_nodes(struct node *ptr_node)
 
                 // Analysis of min and max of the refinement zone
                 // Case refinement zone crosses the whole simulation box
-                if (new_box_max_y - new_box_min_y >= (1 << lv) - 1)
+                if (new_box_max_y - new_box_min_y == (1 << lv) - 1)
                 {
                     new_boundary_simulation_contact = true;
                     new_boundary_simulation_contact_y = true;
@@ -2691,7 +2904,7 @@ static int adapt_child_nodes(struct node *ptr_node)
                         {
                             for (int j = i + 1; j < aux_subzones_analized; j++)
                             {
-                                if ((ptr_node->ptr_aux_max_subzones_z[j] >= ptr_node->ptr_aux_min_subzones_z[i] && ptr_node->ptr_aux_min_subzones_z[j] <= ptr_node->ptr_aux_max_subzones_z[i]))
+                                if ((ptr_node->ptr_aux_max_subzones_z[j] + 1 >= ptr_node->ptr_aux_min_subzones_z[i] && ptr_node->ptr_aux_min_subzones_z[j] <= 1 + ptr_node->ptr_aux_max_subzones_z[i]))
                                 {
                                     ptr_node->ptr_aux_min_subzones_z[i] = ptr_node->ptr_aux_min_subzones_z[i] < ptr_node->ptr_aux_min_subzones_z[j] ? ptr_node->ptr_aux_min_subzones_z[i] : ptr_node->ptr_aux_min_subzones_z[j];
                                     ptr_node->ptr_aux_max_subzones_z[i] = ptr_node->ptr_aux_max_subzones_z[i] > ptr_node->ptr_aux_max_subzones_z[j] ? ptr_node->ptr_aux_max_subzones_z[i] : ptr_node->ptr_aux_max_subzones_z[j];
@@ -2724,7 +2937,7 @@ static int adapt_child_nodes(struct node *ptr_node)
 
                 // Analysis of min and max of the refinement zone
                 // Case refinement zone crosses the whole simulation box
-                if (new_box_max_z - new_box_min_z >= (1 << lv) - 1)
+                if (new_box_max_z - new_box_min_z == (1 << lv) - 1)
                 {
                     new_boundary_simulation_contact = true;
                     new_boundary_simulation_contact_z = true;
@@ -2870,8 +3083,6 @@ static int adapt_child_nodes(struct node *ptr_node)
             new_box_max_y = 2 * new_box_max_y + 1;
             new_box_max_z = 2 * new_box_max_z + 1;
 
-
-
             aux_fix_min_x = new_box_min_x - ptr_ch->box_ts_x;
             aux_fix_min_y = new_box_min_y - ptr_ch->box_ts_y;
             aux_fix_min_z = new_box_min_z - ptr_ch->box_ts_z;
@@ -2882,63 +3093,84 @@ static int adapt_child_nodes(struct node *ptr_node)
 
             if (boundary_type == 0 && ptr_node->pbc_crosses_the_boundary_simulation_box == true)
             {
-                if (ptr_ch->box_min_x < 0 && new_box_min_x >= 0)
-                {
-                    if (new_box_min_x - ptr_ch->box_max_x > ptr_ch->box_min_x - new_box_max_x + (1 << (lv + 1)))
+                //  if (((ptr_ch->pbc_crosses_the_whole_simulation_box_x == true && new_pbc_crosses_the_boundary_simulation_box_x == true && new_pbc_crosses_the_whole_simulation_box_x == false) ||
+                //      (new_pbc_crosses_the_whole_simulation_box_x == true && ptr_ch->pbc_crosses_the_boundary_simulation_box_x == true && ptr_ch->pbc_crosses_the_whole_simulation_box_x == false)) == false)
+                //if (ptr_ch->box_real_dim_x <= (1 << (lv + 1)))
+                //{
+                    if (ptr_ch->box_min_x < 0 && new_box_min_x >= 0)
                     {
-                        aux_fix_min_x -= (1 << (lv + 1));
-                        aux_fix_max_x -= (1 << (lv + 1));
-                        ptr_ch->box_ts_x += (1 << (lv + 1));
+                        if (new_box_min_x - ptr_ch->box_max_x > ptr_ch->box_min_x - new_box_max_x + (1 << (lv + 1)))
+                        {
+                            aux_fix_min_x -= (1 << (lv + 1));
+                            aux_fix_max_x -= (1 << (lv + 1));
+                            ptr_ch->box_ts_x += (1 << (lv + 1));
+                            movement_box_x = true;
+                        }
                     }
-                }
-                else if (ptr_ch->box_min_x >= 0 && new_box_min_x < 0)
-                {
-                    if (ptr_ch->box_min_x - new_box_max_x > new_box_min_x - ptr_ch->box_max_x + (1 << (lv + 1)))
+                    else if (ptr_ch->box_min_x >= 0 && new_box_min_x < 0)
                     {
-                        aux_fix_min_x += (1 << (lv + 1));
-                        aux_fix_max_x += (1 << (lv + 1));
-                        ptr_ch->box_ts_x -= (1 << (lv + 1));
+                        if (ptr_ch->box_min_x - new_box_max_x > new_box_min_x - ptr_ch->box_max_x + (1 << (lv + 1)))
+                        {
+                            aux_fix_min_x += (1 << (lv + 1));
+                            aux_fix_max_x += (1 << (lv + 1));
+                            ptr_ch->box_ts_x -= (1 << (lv + 1));
+                            movement_box_x = true;
+                        }
                     }
-                }
+                //}
 
-                if (ptr_ch->box_min_y < 0 && new_box_min_y >= 0)
-                {
-                    if (new_box_min_y - ptr_ch->box_max_y > ptr_ch->box_min_y - new_box_max_y + (1 << (lv + 1)))
+                // if (((ptr_ch->pbc_crosses_the_whole_simulation_box_y == true && new_pbc_crosses_the_boundary_simulation_box_y == true && new_pbc_crosses_the_whole_simulation_box_y == false) ||
+                //      (new_pbc_crosses_the_whole_simulation_box_y == true && ptr_ch->pbc_crosses_the_boundary_simulation_box_y == true && ptr_ch->pbc_crosses_the_whole_simulation_box_y == false)) == false)
+                // {
+                    if (ptr_ch->box_min_y < 0 && new_box_min_y >= 0)
                     {
-                        aux_fix_min_y -= (1 << (lv + 1));
-                        aux_fix_max_y -= (1 << (lv + 1));
-                        ptr_ch->box_ts_y += (1 << (lv + 1));
+                        if (new_box_min_y - ptr_ch->box_max_y > ptr_ch->box_min_y - new_box_max_y + (1 << (lv + 1)))
+                        {
+                            aux_fix_min_y -= (1 << (lv + 1));
+                            aux_fix_max_y -= (1 << (lv + 1));
+                            ptr_ch->box_ts_y += (1 << (lv + 1));
+                            movement_box_y = true;
+                        }
                     }
-                }
-                else if (ptr_ch->box_min_y >= 0 && new_box_min_y < 0)
-                {
-                    if (ptr_ch->box_min_y - new_box_max_y > new_box_min_y - ptr_ch->box_max_y + (1 << (lv + 1)))
+                    else if (ptr_ch->box_min_y >= 0 && new_box_min_y < 0)
                     {
-                        aux_fix_min_y += (1 << (lv + 1));
-                        aux_fix_max_y += (1 << (lv + 1));
-                        ptr_ch->box_ts_y -= (1 << (lv + 1));
+                        if (ptr_ch->box_min_y - new_box_max_y > new_box_min_y - ptr_ch->box_max_y + (1 << (lv + 1)))
+                        {
+                            aux_fix_min_y += (1 << (lv + 1));
+                            aux_fix_max_y += (1 << (lv + 1));
+                            ptr_ch->box_ts_y -= (1 << (lv + 1));
+                            movement_box_y = true;
+                        }
                     }
-                }
+               // }
 
-                if (ptr_ch->box_min_z < 0 && new_box_min_z >= 0)
-                {
-                    if (new_box_min_z - ptr_ch->box_max_z > ptr_ch->box_min_z - new_box_max_z + (1 << (lv + 1)))
+                // if (((ptr_ch->pbc_crosses_the_whole_simulation_box_z == true && new_pbc_crosses_the_boundary_simulation_box_z == true && new_pbc_crosses_the_whole_simulation_box_z == false) ||
+                //      (new_pbc_crosses_the_whole_simulation_box_z == true && ptr_ch->pbc_crosses_the_boundary_simulation_box_z == true && ptr_ch->pbc_crosses_the_whole_simulation_box_z == false)) == false)
+                // {
+                    if (ptr_ch->box_min_z < 0 && new_box_min_z >= 0)
                     {
-                        aux_fix_min_z -= (1 << (lv + 1));
-                        aux_fix_max_z -= (1 << (lv + 1));
-                        ptr_ch->box_ts_y += (1 << (lv + 1));
+                        if (new_box_min_z - ptr_ch->box_max_z > ptr_ch->box_min_z - new_box_max_z + (1 << (lv + 1)))
+                        {
+                            aux_fix_min_z -= (1 << (lv + 1));
+                            aux_fix_max_z -= (1 << (lv + 1));
+                            ptr_ch->box_ts_z += (1 << (lv + 1));
+                            movement_box_z = true;
+                        }
                     }
-                }
-                else if (ptr_ch->box_min_z >= 0 && new_box_min_z < 0)
-                {
-                    if (ptr_ch->box_min_z - new_box_max_z > new_box_min_z - ptr_ch->box_max_z + (1 << (lv + 1)))
+                    else if (ptr_ch->box_min_z >= 0 && new_box_min_z < 0)
                     {
-                        aux_fix_min_z += (1 << (lv + 1));
-                        aux_fix_max_z += (1 << (lv + 1));
-                        ptr_ch->box_ts_z -= (1 << (lv + 1));
+                        if (ptr_ch->box_min_z - new_box_max_z > new_box_min_z - ptr_ch->box_max_z + (1 << (lv + 1)))
+                        {
+                            aux_fix_min_z += (1 << (lv + 1));
+                            aux_fix_max_z += (1 << (lv + 1));
+                            ptr_ch->box_ts_z -= (1 << (lv + 1));
+                            movement_box_z = true;
+                        }
                     }
-                }
+                //}
             }
+
+
 
             if (aux_fix_min_x < bder_box || 
                 aux_fix_min_y < bder_box || 
@@ -2948,6 +3180,86 @@ static int adapt_child_nodes(struct node *ptr_node)
                 aux_fix_max_z > ptr_ch->box_real_dim_z - bder_box)
             {
                 ptr_ch->box_check_fit = false;
+            }
+
+
+            //Correction flag in case the new cells require recompute his box indexes when they stay in the box
+            if (boundary_type == 0 && ptr_ch->box_check_fit == true)
+            {
+                // if (((ptr_ch->pbc_crosses_the_whole_simulation_box == true || ptr_ch->pbc_crosses_the_boundary_simulation_box == false) && new_pbc_crosses_the_boundary_simulation_box == true && new_pbc_crosses_the_whole_simulation_box == false) ||
+                //     ((new_pbc_crosses_the_whole_simulation_box == true || new_pbc_crosses_the_boundary_simulation_box == false) && ptr_ch->pbc_crosses_the_boundary_simulation_box == true && ptr_ch->pbc_crosses_the_whole_simulation_box == false))
+                // {
+                //     ptr_ch->pbc_corrections_due_to_change_from_croses_in_box_simulation = true;
+                // }
+
+                // X axis
+                if (new_box_min_x >= 0 && ptr_ch->box_min_x < 0)
+                {
+                    if (new_box_min_x <= ptr_ch->box_max_x && new_box_max_x >= ptr_ch->box_min_x + (1 << (lv + 1)))
+                    {
+                        ptr_ch->pbc_corrections_due_to_change_from_croses_in_box_simulation = true;
+                    }
+                }
+                else if (new_box_min_x < 0 && ptr_ch->box_min_x >= 0)
+                {
+                    if (ptr_ch->box_min_x <= new_box_max_x && ptr_ch->box_max_x >= new_box_min_x + (1 << (lv + 1)))
+                    {
+                        ptr_ch->pbc_corrections_due_to_change_from_croses_in_box_simulation = true;
+                    }
+                }
+                else if (new_box_min_x < 0 && ptr_ch->box_min_x < 0)
+                {
+                    if (new_box_min_x + (1 << (lv + 1)) <= ptr_ch->box_max_x || ptr_ch->box_min_x + (1 << (lv + 1)) <= new_box_max_x)
+                    {
+                        ptr_ch->pbc_corrections_due_to_change_from_croses_in_box_simulation = true;
+                    }
+                }
+
+                // Y axis
+                if (new_box_min_y >= 0 && ptr_ch->box_min_y < 0)
+                {
+                    if (new_box_min_y <= ptr_ch->box_max_y && new_box_max_y >= ptr_ch->box_min_y + (1 << (lv + 1)))
+                    {
+                        ptr_ch->pbc_corrections_due_to_change_from_croses_in_box_simulation = true;
+                    }
+                }
+                else if (new_box_min_y < 0 && ptr_ch->box_min_y >= 0)
+                {
+                    if (ptr_ch->box_min_y <= new_box_max_y && ptr_ch->box_max_y >= new_box_min_y + (1 << (lv + 1)))
+                    {
+                        ptr_ch->pbc_corrections_due_to_change_from_croses_in_box_simulation = true;
+                    }
+                }
+                else if (new_box_min_y < 0 && ptr_ch->box_min_y < 0)
+                {
+                    if (new_box_min_y + (1 << (lv + 1)) <= ptr_ch->box_max_y || ptr_ch->box_min_y + (1 << (lv + 1)) <= new_box_max_y)
+                    {
+                        ptr_ch->pbc_corrections_due_to_change_from_croses_in_box_simulation = true;
+                    }
+                }
+
+                // Z axis
+                if (new_box_min_z >= 0 && ptr_ch->box_min_z < 0)
+                {
+                    if (new_box_min_z <= ptr_ch->box_max_z && new_box_max_z >= ptr_ch->box_min_z + (1 << (lv + 1)))
+                    {
+                        ptr_ch->pbc_corrections_due_to_change_from_croses_in_box_simulation = true;
+                    }
+                }
+                else if (new_box_min_z < 0 && ptr_ch->box_min_z >= 0)
+                {
+                    if (ptr_ch->box_min_z <= new_box_max_z && ptr_ch->box_max_z >= new_box_min_z + (1 << (lv + 1)))
+                    {
+                        ptr_ch->pbc_corrections_due_to_change_from_croses_in_box_simulation = true;
+                    }
+                }
+                else if (new_box_min_z < 0 && ptr_ch->box_min_z < 0)
+                {
+                    if (new_box_min_z + (1 << (lv + 1)) <= ptr_ch->box_max_z || ptr_ch->box_min_z + (1 << (lv + 1)) <= new_box_max_z)
+                    {
+                        ptr_ch->pbc_corrections_due_to_change_from_croses_in_box_simulation = true;
+                    }
+                }
             }
 
             // Removing -6 and -5 to the box boundary when it corresponds
@@ -2963,19 +3275,27 @@ static int adapt_child_nodes(struct node *ptr_node)
                     // X axis
                     if (ptr_ch->pbc_crosses_the_whole_simulation_box_x == true && new_pbc_crosses_the_whole_simulation_box_x == false)
                     {
+
+                        aux_box_ts = ptr_ch->box_ts_x;
+
+                        if (movement_box_x == true)
+                        {
+                            aux_box_ts += new_box_min_x < 0 ? (1 << (lv + 1)) : -(1 << (lv + 1));
+                        }
+
                         for (int k = 0; k < ptr_ch->box_real_dim_z; k++)
                         {
                             for (int j = 0; j < ptr_ch->box_real_dim_y; j++)
                             {
                                 // for (int i = 0; i < (ptr_ch->box_real_dim_x - ptr_ch->box_dim_x) / 2; i++)
-                                for (int i = 0; i < ptr_ch->box_min_x - ptr_ch->box_ts_x; i++)
+                                for (int i = 0; i < ptr_ch->box_min_x - aux_box_ts; i++)
                                 {
                                     box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
                                     ptr_ch->ptr_box[box_idx_ch] = -4;
                                 }
 
                                 // for (int i = (ptr_ch->box_real_dim_x + ptr_ch->box_dim_x) / 2; i < ptr_ch->box_real_dim_x; i++)
-                                for (int i = ptr_ch->box_max_x + 1 - ptr_ch->box_ts_x; i < ptr_ch->box_real_dim_x; i++)
+                                for (int i = ptr_ch->box_max_x + 1 - aux_box_ts; i < ptr_ch->box_real_dim_x; i++)
                                 {
                                     box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
                                     ptr_ch->ptr_box[box_idx_ch] = -4;
@@ -2987,19 +3307,27 @@ static int adapt_child_nodes(struct node *ptr_node)
                     // Y axis
                     if (ptr_ch->pbc_crosses_the_whole_simulation_box_y == true && new_pbc_crosses_the_whole_simulation_box_y == false)
                     {
+
+                        aux_box_ts = ptr_ch->box_ts_y;
+
+                        if (movement_box_y == true)
+                        {
+                            aux_box_ts += new_box_min_y < 0 ? (1 << (lv + 1)) : -(1 << (lv + 1));
+                        }
+
                         for (int k = 0; k < ptr_ch->box_real_dim_z; k++)
                         {
                             for (int i = 0; i < ptr_ch->box_real_dim_x; i++)
                             {
                                 // for (int j = 0; j < (ptr_ch->box_real_dim_y - ptr_ch->box_dim_y) / 2; j++)
-                                for (int j = 0; j < ptr_ch->box_min_y - ptr_ch->box_ts_y; j++)
+                                for (int j = 0; j < ptr_ch->box_min_y - aux_box_ts; j++)
                                 {
                                     box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
                                     ptr_ch->ptr_box[box_idx_ch] = -4;
                                 }
 
                                 // for (int j = (ptr_ch->box_real_dim_y + ptr_ch->box_dim_y) / 2; j < ptr_ch->box_real_dim_y; j++)
-                                for (int j = ptr_ch->box_max_y + 1 - ptr_ch->box_ts_y; j < ptr_ch->box_real_dim_y; j++)
+                                for (int j = ptr_ch->box_max_y + 1 - aux_box_ts; j < ptr_ch->box_real_dim_y; j++)
                                 {
                                     box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
                                     ptr_ch->ptr_box[box_idx_ch] = -4;
@@ -3011,19 +3339,27 @@ static int adapt_child_nodes(struct node *ptr_node)
                     // Z axis
                     if (ptr_ch->pbc_crosses_the_whole_simulation_box_z == true && new_pbc_crosses_the_whole_simulation_box_z == false)
                     {
+
+                        aux_box_ts = ptr_ch->box_ts_z;
+
+                        if (movement_box_z == true)
+                        {
+                            aux_box_ts += new_box_min_z < 0 ? (1 << (lv + 1)) : -(1 << (lv + 1));
+                        }
+
                         for (int j = 0; j < ptr_ch->box_real_dim_y; j++)
                         {
                             for (int i = 0; i < ptr_ch->box_real_dim_x; i++)
                             {
                                 // for (int k = 0; k < (ptr_ch->box_real_dim_z - ptr_ch->box_dim_z) / 2; k++)
-                                for (int k = 0; k < ptr_ch->box_min_z - ptr_ch->box_ts_z; k++)
+                                for (int k = 0; k < ptr_ch->box_min_z - aux_box_ts; k++)
                                 {
                                     box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
                                     ptr_ch->ptr_box[box_idx_ch] = -4;
                                 }
 
                                 // for (int k = (ptr_ch->box_real_dim_z + ptr_ch->box_dim_z) / 2; k < ptr_ch->box_real_dim_z; k++)
-                                for (int k = ptr_ch->box_max_z + 1 - ptr_ch->box_ts_z; k < ptr_ch->box_real_dim_z; k++)
+                                for (int k = ptr_ch->box_max_z + 1 - aux_box_ts; k < ptr_ch->box_real_dim_z; k++)
                                 {
                                     box_idx_ch = i + j * box_real_dim_X_ch + k * box_real_dim_X_times_Y_ch;
                                     ptr_ch->ptr_box[box_idx_ch] = -4;
@@ -3147,6 +3483,16 @@ static int adapt_child_nodes(struct node *ptr_node)
                 }
             }
 
+            // if (new_boundary_simulation_contact == true)
+            // {
+            printf("check fit = %d\n", ptr_ch->box_check_fit);
+            printf("old box_min_x = %d, box_max_x = %d\n", ptr_ch->box_min_x, ptr_ch->box_max_x);
+            printf("old box_min_y = %d, box_max_y = %d\n", ptr_ch->box_min_y, ptr_ch->box_max_y);
+            printf("old box_min_z = %d, box_max_z = %d\n\n", ptr_ch->box_min_z, ptr_ch->box_max_z);
+            printf("new box_min_x = %d, box_max_x = %d\n", new_box_min_x, new_box_max_x);
+            printf("new box_min_y = %d, box_max_y = %d\n", new_box_min_y, new_box_max_y);
+            printf("new box_min_z = %d, box_max_z = %d\n\n", new_box_min_z, new_box_max_z);
+            //}
 
             //** >> Updating the The MIN and MAX of the set containig only the new cells to be refined
             ptr_ch->box_min_x = new_box_min_x;
@@ -3417,16 +3763,29 @@ static int adapt_child_nodes(struct node *ptr_node)
             ptr_ch->pbc_crosses_the_whole_simulation_box_y = new_pbc_crosses_the_whole_simulation_box_y;
             ptr_ch->pbc_crosses_the_whole_simulation_box_z = new_pbc_crosses_the_whole_simulation_box_z;
 
-            
-            //if (new_boundary_simulation_contact == true)
-            //{
-                // printf("\n child ID = %d:\n\n",ptr_ch->ID);
-                // printf("check fit = %d\n",ptr_ch->box_check_fit);
-                // printf("box_min_x = %d, box_max_x = %d\n", ptr_ch->box_min_x, ptr_ch->box_max_x);
-                // printf("box_min_y = %d, box_max_y = %d\n", ptr_ch->box_min_y, ptr_ch->box_max_y);
-                // printf("box_min_z = %d, box_max_z = %d\n", ptr_ch->box_min_z, ptr_ch->box_max_z);
-            //}
+            printf("box_real_dim_x = %d\n",ptr_ch->box_real_dim_x);
+            printf("box_real_dim_y = %d\n",ptr_ch->box_real_dim_y);
+            printf("box_real_dim_z = %d\n",ptr_ch->box_real_dim_z);
+            printf("box_ts_x = %d\n", ptr_ch->box_ts_x);
+            printf("box_ts_y = %d\n", ptr_ch->box_ts_y);
+            printf("box_ts_z = %d\n\n", ptr_ch->box_ts_z);
 
+            printf("movement_box_x = %d\n", movement_box_x);
+            printf("movement_box_y = %d\n", movement_box_y);
+            printf("movement_box_z = %d\n", movement_box_z);
+            printf("corrections = %d\n", ptr_ch->pbc_corrections_due_to_change_from_croses_in_box_simulation);
+            printf("ptr_ch->boundary_simulation_contact = %d\n", ptr_ch->boundary_simulation_contact);
+            printf("ptr_ch->boundary_simulation_contact_x = %d\n", ptr_ch->boundary_simulation_contact_x);
+            printf("ptr_ch->boundary_simulation_contact_y = %d\n", ptr_ch->boundary_simulation_contact_y);
+            printf("ptr_ch->boundary_simulation_contact_z = %d\n", ptr_ch->boundary_simulation_contact_z);
+            printf("ptr_ch->pbc_crosses_the_boundary_simulation_box = %d\n", ptr_ch->pbc_crosses_the_boundary_simulation_box);
+            printf("ptr_ch->pbc_crosses_the_boundary_simulation_box_x = %d\n", ptr_ch->pbc_crosses_the_boundary_simulation_box_x);
+            printf("ptr_ch->pbc_crosses_the_boundary_simulation_box_y = %d\n", ptr_ch->pbc_crosses_the_boundary_simulation_box_y);
+            printf("ptr_ch->pbc_crosses_the_boundary_simulation_box_z = %d\n", ptr_ch->pbc_crosses_the_boundary_simulation_box_z);
+            printf("ptr_ch->pbc_crosses_the_whole_simulation_box = %d\n", ptr_ch->pbc_crosses_the_whole_simulation_box);
+            printf("ptr_ch->pbc_crosses_the_whole_simulation_box_x = %d\n", ptr_ch->pbc_crosses_the_whole_simulation_box_x);
+            printf("ptr_ch->pbc_crosses_the_whole_simulation_box_y = %d\n", ptr_ch->pbc_crosses_the_whole_simulation_box_y);
+            printf("ptr_ch->pbc_crosses_the_whole_simulation_box_z = %d\n", ptr_ch->pbc_crosses_the_whole_simulation_box_z);
         }
     }
 
@@ -3471,6 +3830,8 @@ static int create_new_child_nodes(struct node *ptr_node)
     {
         ptr_ch = new_node();
 
+        
+
         new_zone_idx = ptr_node->ptr_links_new_ord_old[zone_idx];
 
         //** >> Global node properties **/
@@ -3487,6 +3848,8 @@ static int create_new_child_nodes(struct node *ptr_node)
             return _FAILURE_;
         }
 
+        //printf("\n Creating child, lv = %d, ID = %d\n", ptr_ch->lv,ptr_ch->ID);
+
         //** >> Boxes **/
         // MIN and MAX cell indexes values of the node.
         if (boundary_type == 0 && ptr_node->pbc_crosses_the_whole_simulation_box == true &&
@@ -3495,11 +3858,20 @@ static int create_new_child_nodes(struct node *ptr_node)
              ptr_node->ptr_aux_bool_boundary_anomalies_z[new_zone_idx] == true))
         {
 
+            printf("there are boundary anomalies\n");
+            printf("ptr_node->ptr_aux_bool_boundary_anomalies_x[new_zone_idx] = %d\n", ptr_node->ptr_aux_bool_boundary_anomalies_x[new_zone_idx]);
+            printf("ptr_node->ptr_aux_bool_boundary_anomalies_y[new_zone_idx] = %d\n", ptr_node->ptr_aux_bool_boundary_anomalies_y[new_zone_idx]);
+            printf("ptr_node->ptr_aux_bool_boundary_anomalies_z[new_zone_idx] = %d\n", ptr_node->ptr_aux_bool_boundary_anomalies_z[new_zone_idx]);
+
+            printf("Calling min and max subzones functionn\n");
+
             if (find_min_max_subzones_ref_PERIODIC_BOUNDARY(ptr_node, new_zone_idx) == _FAILURE_)
             {
                 printf("Error at function fill_subzones_ref_PERIODIC_BOUNDARY()\n");
                 return _FAILURE_;
             }
+
+            printf("ptr_node->subzones_size = %d\n", ptr_node->subzones_size);
         }
 
         //** >> X axis
@@ -3537,8 +3909,9 @@ static int create_new_child_nodes(struct node *ptr_node)
                     {
                         for (int j = i + 1; j < aux_subzones_analized; j++)
                         {
-                            if ((ptr_node->ptr_aux_min_subzones_x[j] <= ptr_node->ptr_aux_min_subzones_x[i] && ptr_node->ptr_aux_max_subzones_x[j] >= ptr_node->ptr_aux_min_subzones_x[i]) ||
-                                (ptr_node->ptr_aux_max_subzones_x[j] >= ptr_node->ptr_aux_max_subzones_x[i] && ptr_node->ptr_aux_min_subzones_x[j] <= ptr_node->ptr_aux_max_subzones_x[i]))
+                            // if ((ptr_node->ptr_aux_min_subzones_x[j] <= ptr_node->ptr_aux_min_subzones_x[i] && ptr_node->ptr_aux_max_subzones_x[j] >= ptr_node->ptr_aux_min_subzones_x[i]) ||
+                            //     (ptr_node->ptr_aux_max_subzones_x[j] >= ptr_node->ptr_aux_max_subzones_x[i] && ptr_node->ptr_aux_min_subzones_x[j] <= ptr_node->ptr_aux_max_subzones_x[i]))
+                            if((ptr_node->ptr_aux_max_subzones_x[j] + 1 >= ptr_node->ptr_aux_min_subzones_x[i] && ptr_node->ptr_aux_min_subzones_x[j] <= 1 + ptr_node->ptr_aux_max_subzones_x[i]))
                             {
                                 ptr_node->ptr_aux_min_subzones_x[i] = ptr_node->ptr_aux_min_subzones_x[i] < ptr_node->ptr_aux_min_subzones_x[j] ? ptr_node->ptr_aux_min_subzones_x[i] : ptr_node->ptr_aux_min_subzones_x[j];
                                 ptr_node->ptr_aux_max_subzones_x[i] = ptr_node->ptr_aux_max_subzones_x[i] > ptr_node->ptr_aux_max_subzones_x[j] ? ptr_node->ptr_aux_max_subzones_x[i] : ptr_node->ptr_aux_max_subzones_x[j];
@@ -3552,6 +3925,11 @@ static int create_new_child_nodes(struct node *ptr_node)
                             }
                         }
                     }
+                }
+
+                if (aux_subzones_analized > 2 || aux_subzones_analized < 1)
+                {
+                    printf("error, aux_subzones analized is bigger than 2 or lower than 1, it is equal to = %d\n", aux_subzones_analized);
                 }
 
                 // min and max between all subzones
@@ -3571,7 +3949,7 @@ static int create_new_child_nodes(struct node *ptr_node)
 
             // Analysis of min and max of the refinement zone
             // Case refinement zone crosses the whole simulation box
-            if (ptr_ch->box_max_x - ptr_ch->box_min_x >= (1 << lv) - 1)
+            if (ptr_ch->box_max_x - ptr_ch->box_min_x == (1 << lv) - 1)
             {
                 ptr_ch->boundary_simulation_contact = true;
                 ptr_ch->boundary_simulation_contact_x = true;
@@ -3703,8 +4081,9 @@ static int create_new_child_nodes(struct node *ptr_node)
                     {
                         for (int j = i + 1; j < aux_subzones_analized; j++)
                         {
-                            if ((ptr_node->ptr_aux_min_subzones_y[j] <= ptr_node->ptr_aux_min_subzones_y[i] && ptr_node->ptr_aux_max_subzones_y[j] >= ptr_node->ptr_aux_min_subzones_y[i]) ||
-                                (ptr_node->ptr_aux_max_subzones_y[j] >= ptr_node->ptr_aux_max_subzones_y[i] && ptr_node->ptr_aux_min_subzones_y[j] <= ptr_node->ptr_aux_max_subzones_y[i]))
+                            // if ((ptr_node->ptr_aux_min_subzones_y[j] <= ptr_node->ptr_aux_min_subzones_y[i] && ptr_node->ptr_aux_max_subzones_y[j] >= ptr_node->ptr_aux_min_subzones_y[i]) ||
+                            //     (ptr_node->ptr_aux_max_subzones_y[j] >= ptr_node->ptr_aux_max_subzones_y[i] && ptr_node->ptr_aux_min_subzones_y[j] <= ptr_node->ptr_aux_max_subzones_y[i]))
+                            if ((ptr_node->ptr_aux_max_subzones_y[j] + 1 >= ptr_node->ptr_aux_min_subzones_y[i] && ptr_node->ptr_aux_min_subzones_y[j] <= 1 + ptr_node->ptr_aux_max_subzones_y[i]))
                             {
                                 ptr_node->ptr_aux_min_subzones_y[i] = ptr_node->ptr_aux_min_subzones_y[i] < ptr_node->ptr_aux_min_subzones_y[j] ? ptr_node->ptr_aux_min_subzones_y[i] : ptr_node->ptr_aux_min_subzones_y[j];
                                 ptr_node->ptr_aux_max_subzones_y[i] = ptr_node->ptr_aux_max_subzones_y[i] > ptr_node->ptr_aux_max_subzones_y[j] ? ptr_node->ptr_aux_max_subzones_y[i] : ptr_node->ptr_aux_max_subzones_y[j];
@@ -3735,7 +4114,7 @@ static int create_new_child_nodes(struct node *ptr_node)
 
             // Analysis of min and max of the refinement zone
             // Case refinement zone crosses the whole simulation box
-            if (ptr_ch->box_max_y - ptr_ch->box_min_y >= (1 << lv) - 1)
+            if (ptr_ch->box_max_y - ptr_ch->box_min_y == (1 << lv) - 1)
             {
                 ptr_ch->boundary_simulation_contact = true;
                 ptr_ch->boundary_simulation_contact_y = true;
@@ -3867,8 +4246,9 @@ static int create_new_child_nodes(struct node *ptr_node)
                     {
                         for (int j = i + 1; j < aux_subzones_analized; j++)
                         {
-                            if ((ptr_node->ptr_aux_min_subzones_z[j] <= ptr_node->ptr_aux_min_subzones_z[i] && ptr_node->ptr_aux_max_subzones_z[j] >= ptr_node->ptr_aux_min_subzones_z[i]) ||
-                                (ptr_node->ptr_aux_max_subzones_z[j] >= ptr_node->ptr_aux_max_subzones_z[i] && ptr_node->ptr_aux_min_subzones_z[j] <= ptr_node->ptr_aux_max_subzones_z[i]))
+                            // if ((ptr_node->ptr_aux_min_subzones_z[j] <= ptr_node->ptr_aux_min_subzones_z[i] && ptr_node->ptr_aux_max_subzones_z[j] >= ptr_node->ptr_aux_min_subzones_z[i]) ||
+                            //     (ptr_node->ptr_aux_max_subzones_z[j] >= ptr_node->ptr_aux_max_subzones_z[i] && ptr_node->ptr_aux_min_subzones_z[j] <= ptr_node->ptr_aux_max_subzones_z[i]))
+                            if ((ptr_node->ptr_aux_max_subzones_z[j] + 1 >= ptr_node->ptr_aux_min_subzones_z[i] && ptr_node->ptr_aux_min_subzones_z[j] <= 1 + ptr_node->ptr_aux_max_subzones_z[i]))
                             {
                                 ptr_node->ptr_aux_min_subzones_z[i] = ptr_node->ptr_aux_min_subzones_z[i] < ptr_node->ptr_aux_min_subzones_z[j] ? ptr_node->ptr_aux_min_subzones_z[i] : ptr_node->ptr_aux_min_subzones_z[j];
                                 ptr_node->ptr_aux_max_subzones_z[i] = ptr_node->ptr_aux_max_subzones_z[i] > ptr_node->ptr_aux_max_subzones_z[j] ? ptr_node->ptr_aux_max_subzones_z[i] : ptr_node->ptr_aux_max_subzones_z[j];
@@ -3899,7 +4279,7 @@ static int create_new_child_nodes(struct node *ptr_node)
 
             // Analysis of min and max of the refinement zone
             // Case refinement zone crosses the whole simulation box
-            if (ptr_ch->box_max_z - ptr_ch->box_min_z >= (1 << lv) - 1)
+            if (ptr_ch->box_max_z - ptr_ch->box_min_z == (1 << lv) - 1)
             {
                 ptr_ch->boundary_simulation_contact = true;
                 ptr_ch->boundary_simulation_contact_z = true;
@@ -4195,6 +4575,29 @@ static int create_new_child_nodes(struct node *ptr_node)
         ptr_ch->ptr_pt = ptr_node;
         ptr_node->pptr_chn[zone_idx] = ptr_ch;
 
+        printf("check fit = %d\n", ptr_ch->box_check_fit);
+        printf("box_min_x = %d, box_max_x = %d\n", ptr_ch->box_min_x, ptr_ch->box_max_x);
+        printf("box_min_y = %d, box_max_y = %d\n", ptr_ch->box_min_y, ptr_ch->box_max_y);
+        printf("box_min_z = %d, box_max_z = %d\n\n", ptr_ch->box_min_z, ptr_ch->box_max_z);
+        printf("box_real_dim_x = %d\n", ptr_ch->box_real_dim_x);
+        printf("box_real_dim_y = %d\n", ptr_ch->box_real_dim_y);
+        printf("box_real_dim_z = %d\n", ptr_ch->box_real_dim_z);
+        printf("box_ts_x = %d\n", ptr_ch->box_ts_x);
+        printf("box_ts_y = %d\n", ptr_ch->box_ts_y);
+        printf("box_ts_z = %d\n", ptr_ch->box_ts_z);
+        printf("corrections = %d\n", ptr_ch->pbc_corrections_due_to_change_from_croses_in_box_simulation);
+        printf("ptr_ch->boundary_simulation_contact = %d\n", ptr_ch->boundary_simulation_contact);
+        printf("ptr_ch->boundary_simulation_contact_x = %d\n", ptr_ch->boundary_simulation_contact_x);
+        printf("ptr_ch->boundary_simulation_contact_y = %d\n", ptr_ch->boundary_simulation_contact_y);
+        printf("ptr_ch->boundary_simulation_contact_z = %d\n", ptr_ch->boundary_simulation_contact_z);
+        printf("ptr_ch->pbc_crosses_the_boundary_simulation_box = %d\n", ptr_ch->pbc_crosses_the_boundary_simulation_box);
+        printf("ptr_ch->pbc_crosses_the_boundary_simulation_box_x = %d\n", ptr_ch->pbc_crosses_the_boundary_simulation_box_x);
+        printf("ptr_ch->pbc_crosses_the_boundary_simulation_box_y = %d\n", ptr_ch->pbc_crosses_the_boundary_simulation_box_y);
+        printf("ptr_ch->pbc_crosses_the_boundary_simulation_box_z = %d\n", ptr_ch->pbc_crosses_the_boundary_simulation_box_z);
+        printf("ptr_ch->pbc_crosses_the_whole_simulation_box = %d\n", ptr_ch->pbc_crosses_the_whole_simulation_box);
+        printf("ptr_ch->pbc_crosses_the_whole_simulation_box_x = %d\n", ptr_ch->pbc_crosses_the_whole_simulation_box_x);
+        printf("ptr_ch->pbc_crosses_the_whole_simulation_box_y = %d\n", ptr_ch->pbc_crosses_the_whole_simulation_box_y);
+        printf("ptr_ch->pbc_crosses_the_whole_simulation_box_z = %d\n", ptr_ch->pbc_crosses_the_whole_simulation_box_z);
     }
     return _SUCCESS_;
 }
@@ -4388,6 +4791,71 @@ static int moving_old_child_to_new_child(struct node *ptr_node)
                     ptr_ch_B->cell_size += 8;
                     no_cells_ch_A -= 8;
                     cell_idx -= 8;
+                }
+                else if (boundary_type == 0 && ptr_ch_A->pbc_corrections_due_to_change_from_croses_in_box_simulation == true) //
+                {
+                    box_real_dim_X_ch_A = ptr_ch_A->box_real_dim_x;
+                    box_real_dim_X_times_Y_ch_A = ptr_ch_A->box_real_dim_x * ptr_ch_A->box_real_dim_y;
+
+                    aux_idx_x = ptr_ch_A->ptr_cell_idx_x[cell_idx];
+                    aux_idx_y = ptr_ch_A->ptr_cell_idx_y[cell_idx];
+                    aux_idx_z = ptr_ch_A->ptr_cell_idx_z[cell_idx];
+
+                    box_idx_x_ch_A = aux_idx_x - ptr_ch_A->box_ts_x;
+                    box_idx_y_ch_A = aux_idx_y - ptr_ch_A->box_ts_y;
+                    box_idx_z_ch_A = aux_idx_z - ptr_ch_A->box_ts_z;
+
+                    if (ptr_ch_A->pbc_crosses_the_boundary_simulation_box == true)
+                    {
+                        if (aux_idx_x > ptr_ch_A->box_max_x)
+                        {
+                            box_idx_x_ch_A -= (1 << (lv + 1));
+                        }
+
+                        if (aux_idx_y > ptr_ch_A->box_max_y)
+                        {
+                            box_idx_y_ch_A -= (1 << (lv + 1));
+                        }
+
+                        if (aux_idx_z > ptr_ch_A->box_max_z)
+                        {
+                            box_idx_z_ch_A -= (1 << (lv + 1));
+                        }
+                    }
+
+                    //This index corresponds to the corrected one
+                    box_idx_ch_A = box_idx_x_ch_A + box_idx_y_ch_A * box_real_dim_X_ch_A + box_idx_z_ch_A * box_real_dim_X_times_Y_ch_A;
+
+                    //** changing the box index and transfer cells
+                    if (ptr_ch_A->ptr_box[box_idx_ch_A] == -6)
+                    {
+                        printf("error, what!!!\n");
+                    }
+                    if (ptr_ch_A->ptr_box[box_idx_ch_A] == -4)
+                    {
+                        printf("correcting\n");
+                        for (int kk = 0; kk < 2; kk++)
+                        {
+                            for (int jj = 0; jj < 2; jj++)
+                            {
+                                for (int ii = 0; ii < 2; ii++)
+                                {
+                                    aux_int = cell_idx + ii + jj * 2 + kk * 4;
+                                    box_idxNbr_ch_A = box_idx_ch_A + ii + jj * box_real_dim_X_ch_A + kk * box_real_dim_X_times_Y_ch_A;
+                                    box_idxNbr_ch_A_old = ptr_ch_A->ptr_box_idx[aux_int];
+
+                                    ptr_ch_A->ptr_box[box_idxNbr_ch_A_old] = -4;      // Putting the status of No-EXIST (-4) in the old cell
+                                    ptr_ch_A->ptr_box[box_idxNbr_ch_A] = -3;          // Putting the status of EXIST (-3) in the corrected cell
+
+                                    ptr_ch_A->ptr_box_idx[aux_int] = box_idxNbr_ch_A; // Changing the new box index of the child node A
+
+                                    cell_struct_aux = ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A];
+                                    ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A] = ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A_old];
+                                    ptr_ch_A->ptr_cell_struct[box_idxNbr_ch_A_old] = cell_struct_aux;
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -6003,7 +6471,7 @@ int tree_adaptation(void)
             {
                 ptr_node = GL_tentacles[lv][i];
 
-                //printf("lv = %d, pt = %d, chn_size = %d\n", ptr_node->lv, i, ptr_node->chn_size);
+                printf("lv = %d, pt = %d, chn_size = %d\n", ptr_node->lv, i, ptr_node->chn_size);
 
                 //** Updating the box mass information **/
                 // printf("\n\nupdating_cell_struct\n\n");
@@ -6105,6 +6573,8 @@ int tree_adaptation(void)
                 //         }
                 //     }
                 // }
+
+                //printf("\nptr_node->zones size = %d, chn size = %d\n",ptr_node->zones_size,ptr_node->chn_size);
 
                 if (ptr_node->zones_size > 0)
                 {
@@ -6225,7 +6695,7 @@ int tree_adaptation(void)
                 }
 
                 //** >> Moved Unused child node to the stack of memory pool **/
-                // printf("\n\nMoved Unused child node to the stack of memory pool\n\n");
+                //printf("\n\nMoved Unused child node to the stack of memory pool\n\n");
                 aux_clock = clock();
                 moved_unused_child_node_to_memory_pool(ptr_node);
                 GL_times[46] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;

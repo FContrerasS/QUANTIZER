@@ -172,6 +172,11 @@ struct node
     bool pbc_crosses_the_whole_simulation_box_x;
     bool pbc_crosses_the_whole_simulation_box_y;
     bool pbc_crosses_the_whole_simulation_box_z;
+
+    //The following parameter is a flag used to correct box indexes used only in
+    // periodic boundary conditions, when the box pass from a crosses the whole simulation box
+    // to only crosees the boundary of the simulation and vice versa
+    bool pbc_corrections_due_to_change_from_croses_in_box_simulation;
 };
 
 
