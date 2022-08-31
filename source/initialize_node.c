@@ -75,7 +75,8 @@ void initialize_node(struct node *ptr_node)
 	//** >> Total mass in the node **/
 	ptr_node->local_mass = 0;
 	//** >> Total number of particles in the node
-	ptr_node->local_no_ptcl = 0; // Total mass in the node
+	ptr_node->local_no_ptcl_full_node = 0; // Total number of particles in the node
+	ptr_node->local_no_ptcl_to_use_outside_refinement_zones = 0; // Total number of particles to use or update in the part of the node outisde of the refinement zones
 
 	//** >> Grid points **/
 	ptr_node->ptr_intr_grid_cell_idx_x = NULL; // X index of the interior grid point

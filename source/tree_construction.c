@@ -1563,8 +1563,8 @@ static int fill_child_nodes(struct node *ptr_node)
 				}
 
                 ptr_ch->local_mass += ptr_node->ptr_cell_struct[box_idx_node].cell_mass; // Local mass
-                ptr_ch->local_no_ptcl += ptr_node->ptr_cell_struct[box_idx_node].ptcl_size; // Local number of particles
-            }
+				ptr_ch->local_no_ptcl_full_node += ptr_node->ptr_cell_struct[box_idx_node].ptcl_size; // Local number of particles
+			}
 		}
 
 		//size = ptr_ch->cell_size / 8 * 18 + 9; // 27 * N - 9 * (N-1)
@@ -1849,6 +1849,10 @@ static int fill_child_nodes(struct node *ptr_node)
 		ptr_node->pptr_chn[zone_idx] = ptr_ch; // Parent node pointing to child node i
 		ptr_ch->ptr_pt = ptr_node;             // Child node i pointig to parent node
 
+		// Filling number of particles to be updated outside of the refinement zones
+		ptr_ch->local_no_ptcl_to_use_outside_refinement_zones = ptr_ch->local_no_ptcl_full_node;
+		ptr_node->local_no_ptcl_to_use_outside_refinement_zones -= ptr_ch->local_no_ptcl_full_node;
+
 	} // End filling child nodes
 
 	return _SUCCESS_;
@@ -1864,7 +1868,7 @@ static void moved_unused_child_node_to_memory_pool(struct node *ptr_node)
 	//** >> Removing zones (children nodes) with 0 particles
 	for (int ch = 0; ch < ptr_node->chn_size; ch++)
 	{
-		if (ptr_node->pptr_chn[ch]->local_no_ptcl < ref_criterion_ptcl)
+		if (ptr_node->pptr_chn[ch]->local_no_ptcl_full_node < ref_criterion_ptcl)
 		{
 			//** >> Changing the ID of the replacement zone
 			ptr_node->pptr_chn[ptr_node->chn_size - 1]->ID = ch;

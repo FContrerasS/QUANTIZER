@@ -193,7 +193,8 @@ static int initializing_head_node(void)
 	//** >> Total mass in the node
 	ptr_head->local_mass = GL_total_mass_initial;
 	//** >> Total number of particles in the node
-	ptr_head->local_no_ptcl = GL_no_ptcl_initial;
+	ptr_head->local_no_ptcl_full_node = GL_no_ptcl_initial;
+	ptr_head->local_no_ptcl_to_use_outside_refinement_zones = GL_no_ptcl_initial;
 
 	//** >> Grid points **/
 	ptr_head->grid_intr_cap = (no_lmin_cell - 1) * (no_lmin_cell - 1) * (no_lmin_cell - 1);

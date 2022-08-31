@@ -90,14 +90,21 @@ static vtype timestep_computation_1(const struct node *ptr_node)
 
     myvmax = 0; // Minium velocity designated by the user
 
+    int counter_ptcl = 0;
+    int total_ptcl = ptr_node->local_no_ptcl_to_use_outside_refinement_zones;
+    int cell_ptcl;
+    int cell_idx = -1;
+
     //** >> Case no more child, the node is a leaf **/
     if (ptr_node->chn_size == 0)
     {
-        for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
+        while(counter_ptcl < total_ptcl)
         {
+            cell_idx++;
             box_idx = ptr_node->ptr_box_idx[cell_idx];
+            cell_ptcl = ptr_node->ptr_cell_struct[box_idx].ptcl_size;
 
-            for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
+            for (int j = 0; j < cell_ptcl; j++)
             {
                 ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
 
@@ -120,18 +127,22 @@ static vtype timestep_computation_1(const struct node *ptr_node)
                     myvmax = aux_v_pow2;
                 }
             }
+
+            counter_ptcl += cell_ptcl;
         }
     }
     //** >> Case there are more children, the node is a branch **/
     else
     {
-        for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
+        while (counter_ptcl < total_ptcl)
         {
+            cell_idx++;
             box_idx = ptr_node->ptr_box_idx[cell_idx];
+            cell_ptcl = ptr_node->ptr_cell_struct[box_idx].ptcl_size;
 
             if (ptr_node->ptr_box[box_idx] == -3)
             {
-                for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
+                for (int j = 0; j < cell_ptcl; j++)
                 {
                     ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
 
@@ -142,7 +153,7 @@ static vtype timestep_computation_1(const struct node *ptr_node)
                         myvmax = aux_v_pow2;
                     }
                     //** >> Velocity at y-axis
-                    aux_v_pow2 = myabs(GL_ptcl_vy[ptcl_idx]) ;
+                    aux_v_pow2 = myabs(GL_ptcl_vy[ptcl_idx]);
                     if (myvmax < aux_v_pow2)
                     {
                         myvmax = aux_v_pow2;
@@ -154,9 +165,78 @@ static vtype timestep_computation_1(const struct node *ptr_node)
                         myvmax = aux_v_pow2;
                     }
                 }
+
+                counter_ptcl += cell_ptcl;
             }
         }
     }
+
+    // if (ptr_node->chn_size == 0)
+    // {
+    //     for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
+    //     {
+    //         box_idx = ptr_node->ptr_box_idx[cell_idx];
+
+    //         for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
+    //         {
+    //             ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
+
+    //             //** >> Velocity at x-axis
+    //             aux_v_pow2 = myabs(GL_ptcl_vx[ptcl_idx]);
+    //             if (myvmax < aux_v_pow2)
+    //             {
+    //                 myvmax = aux_v_pow2;
+    //             }
+    //             //** >> Velocity at y-axis
+    //             aux_v_pow2 = myabs(GL_ptcl_vy[ptcl_idx]);
+    //             if (myvmax < aux_v_pow2)
+    //             {
+    //                 myvmax = aux_v_pow2;
+    //             }
+    //             //** >> Velocity at z-axis
+    //             aux_v_pow2 = myabs(GL_ptcl_vz[ptcl_idx]);
+    //             if (myvmax < aux_v_pow2)
+    //             {
+    //                 myvmax = aux_v_pow2;
+    //             }
+    //         }
+    //     }
+    // }
+    // //** >> Case there are more children, the node is a branch **/
+    // else
+    // {
+    //     for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
+    //     {
+    //         box_idx = ptr_node->ptr_box_idx[cell_idx];
+
+    //         if (ptr_node->ptr_box[box_idx] == -3)
+    //         {
+    //             for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
+    //             {
+    //                 ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
+
+    //                 //** >> Velocity at x-axis
+    //                 aux_v_pow2 = myabs(GL_ptcl_vx[ptcl_idx]);
+    //                 if (myvmax < aux_v_pow2)
+    //                 {
+    //                     myvmax = aux_v_pow2;
+    //                 }
+    //                 //** >> Velocity at y-axis
+    //                 aux_v_pow2 = myabs(GL_ptcl_vy[ptcl_idx]) ;
+    //                 if (myvmax < aux_v_pow2)
+    //                 {
+    //                     myvmax = aux_v_pow2;
+    //                 }
+    //                 //** >> Velocity at z-axis
+    //                 aux_v_pow2 = myabs(GL_ptcl_vz[ptcl_idx]);
+    //                 if (myvmax < aux_v_pow2)
+    //                 {
+    //                     myvmax = aux_v_pow2;
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 
     mydt = myvmax < (_CFL_ * H / _MAX_dt_) ? _MAX_dt_ : (_CFL_ * H / myvmax);
 

@@ -41,7 +41,6 @@ static vtype timestep_computation_2_HEAD_ONLY(const struct node *ptr_node)
 
     for (int i = 0; i < GL_no_ptcl_final; i++)
     {
-
         //** >> x-axis
         if (myabs(GL_ptcl_ax[i]) <= 1.0e-12)
         {
@@ -104,14 +103,21 @@ static vtype timestep_computation_2(const struct node *ptr_node)
 
     mydt = _MAX_dt_;
 
+    int counter_ptcl = 0;
+    int total_ptcl = ptr_node->local_no_ptcl_to_use_outside_refinement_zones;
+    int cell_ptcl;
+    int cell_idx = -1;
+
     //** >> Case no more child, the node is a leaf **/
     if (ptr_node->chn_size == 0)
     {
-        for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
+        while(counter_ptcl < total_ptcl)
         {
+            cell_idx++;
             box_idx = ptr_node->ptr_box_idx[cell_idx];
+            cell_ptcl = ptr_node->ptr_cell_struct[box_idx].ptcl_size;
 
-            for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
+            for (int j = 0; j < cell_ptcl; j++)
             {
                 ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
 
@@ -160,18 +166,21 @@ static vtype timestep_computation_2(const struct node *ptr_node)
                     mydt = mydt < aux_dt ? mydt : aux_dt;
                 }
             }
+            counter_ptcl += cell_ptcl;
         }
     }
     //** >> Case there are more children, the node is a branch **/
     else
     {
-        for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
+        while (counter_ptcl < total_ptcl)
         {
+            cell_idx++;
             box_idx = ptr_node->ptr_box_idx[cell_idx];
+            cell_ptcl = ptr_node->ptr_cell_struct[box_idx].ptcl_size;
 
             if (ptr_node->ptr_box[box_idx] == -3)
             {
-                for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
+                for (int j = 0; j < cell_ptcl; j++)
                 {
                     ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
 
@@ -220,9 +229,130 @@ static vtype timestep_computation_2(const struct node *ptr_node)
                         mydt = mydt < aux_dt ? mydt : aux_dt;
                     }
                 }
+
+                counter_ptcl += cell_ptcl;
             }
         }
     }
+
+    // if (ptr_node->chn_size == 0)
+    // {
+    //     for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
+    //     {
+    //         box_idx = ptr_node->ptr_box_idx[cell_idx];
+
+    //         for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
+    //         {
+    //             ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
+
+    //             //** >> x-axis
+    //             if (myabs(GL_ptcl_ax[ptcl_idx]) <= 1.0e-12)
+    //             {
+    //                 if (myabs(GL_ptcl_vx[ptcl_idx]) > 1.0e-12)
+    //                 {
+    //                     aux_dt = _CFL_ * H / myabs(GL_ptcl_vx[ptcl_idx]);
+    //                     mydt = mydt < aux_dt ? mydt : aux_dt;
+    //                 }
+    //             }
+    //             else
+    //             {
+    //                 aux_dt = (-myabs(GL_ptcl_vx[ptcl_idx]) + sqrt(GL_ptcl_vx[ptcl_idx] * GL_ptcl_vx[ptcl_idx] + 2 * myabs(GL_ptcl_ax[ptcl_idx]) * H * _CFL_)) / myabs(GL_ptcl_ax[ptcl_idx]);
+    //                 mydt = mydt < aux_dt ? mydt : aux_dt;
+    //             }
+
+    //             //** >> y-axis
+    //             if (myabs(GL_ptcl_ay[ptcl_idx]) <= 1.0e-12)
+    //             {
+    //                 if (myabs(GL_ptcl_vy[ptcl_idx]) > 1.0e-12)
+    //                 {
+    //                     aux_dt = _CFL_ * H / myabs(GL_ptcl_vy[ptcl_idx]);
+    //                     mydt = mydt < aux_dt ? mydt : aux_dt;
+    //                 }
+    //             }
+    //             else
+    //             {
+    //                 aux_dt = (-myabs(GL_ptcl_vy[ptcl_idx]) + sqrt(GL_ptcl_vy[ptcl_idx] * GL_ptcl_vy[ptcl_idx] + 2 * myabs(GL_ptcl_ay[ptcl_idx]) * H * _CFL_)) / myabs(GL_ptcl_ay[ptcl_idx]);
+    //                 mydt = mydt < aux_dt ? mydt : aux_dt;
+    //             }
+
+    //             //** >> z-axis
+    //             if (myabs(GL_ptcl_az[ptcl_idx]) <= 1.0e-12)
+    //             {
+    //                 if (myabs(GL_ptcl_vz[ptcl_idx]) > 1.0e-12)
+    //                 {
+    //                     aux_dt = _CFL_ * H / myabs(GL_ptcl_vz[ptcl_idx]);
+    //                     mydt = mydt < aux_dt ? mydt : aux_dt;
+    //                 }
+    //             }
+    //             else
+    //             {
+    //                 aux_dt = (-myabs(GL_ptcl_vz[ptcl_idx]) + sqrt(GL_ptcl_vz[ptcl_idx] * GL_ptcl_vz[ptcl_idx] + 2 * myabs(GL_ptcl_az[ptcl_idx]) * H * _CFL_)) / myabs(GL_ptcl_az[ptcl_idx]);
+    //                 mydt = mydt < aux_dt ? mydt : aux_dt;
+    //             }
+    //         }
+    //     }
+    // }
+    // //** >> Case there are more children, the node is a branch **/
+    // else
+    // {
+    //     for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
+    //     {
+    //         box_idx = ptr_node->ptr_box_idx[cell_idx];
+
+    //         if (ptr_node->ptr_box[box_idx] == -3)
+    //         {
+    //             for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
+    //             {
+    //                 ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
+
+    //                 //** >> x-axis
+    //                 if (myabs(GL_ptcl_ax[ptcl_idx]) <= 1.0e-12)
+    //                 {
+    //                     if (myabs(GL_ptcl_vx[ptcl_idx]) > 1.0e-12)
+    //                     {
+    //                         aux_dt = _CFL_ * H / myabs(GL_ptcl_vx[ptcl_idx]);
+    //                         mydt = mydt < aux_dt ? mydt : aux_dt;
+    //                     }
+    //                 }
+    //                 else
+    //                 {
+    //                     aux_dt = (-myabs(GL_ptcl_vx[ptcl_idx]) + sqrt(GL_ptcl_vx[ptcl_idx] * GL_ptcl_vx[ptcl_idx] + 2 * myabs(GL_ptcl_ax[ptcl_idx]) * H * _CFL_)) / myabs(GL_ptcl_ax[ptcl_idx]);
+    //                     mydt = mydt < aux_dt ? mydt : aux_dt;
+    //                 }
+
+    //                 //** >> y-axis
+    //                 if (myabs(GL_ptcl_ay[ptcl_idx]) <= 1.0e-12)
+    //                 {
+    //                     if (myabs(GL_ptcl_vy[ptcl_idx]) > 1.0e-12)
+    //                     {
+    //                         aux_dt = _CFL_ * H / myabs(GL_ptcl_vy[ptcl_idx]);
+    //                         mydt = mydt < aux_dt ? mydt : aux_dt;
+    //                     }
+    //                 }
+    //                 else
+    //                 {
+    //                     aux_dt = (-myabs(GL_ptcl_vy[ptcl_idx]) + sqrt(GL_ptcl_vy[ptcl_idx] * GL_ptcl_vy[ptcl_idx] + 2 * myabs(GL_ptcl_ay[ptcl_idx]) * H * _CFL_)) / myabs(GL_ptcl_ay[ptcl_idx]);
+    //                     mydt = mydt < aux_dt ? mydt : aux_dt;
+    //                 }
+
+    //                 //** >> z-axis
+    //                 if (myabs(GL_ptcl_az[ptcl_idx]) <= 1.0e-12)
+    //                 {
+    //                     if (myabs(GL_ptcl_vz[ptcl_idx]) > 1.0e-12)
+    //                     {
+    //                         aux_dt = _CFL_ * H / myabs(GL_ptcl_vz[ptcl_idx]);
+    //                         mydt = mydt < aux_dt ? mydt : aux_dt;
+    //                     }
+    //                 }
+    //                 else
+    //                 {
+    //                     aux_dt = (-myabs(GL_ptcl_vz[ptcl_idx]) + sqrt(GL_ptcl_vz[ptcl_idx] * GL_ptcl_vz[ptcl_idx] + 2 * myabs(GL_ptcl_az[ptcl_idx]) * H * _CFL_)) / myabs(GL_ptcl_az[ptcl_idx]);
+    //                     mydt = mydt < aux_dt ? mydt : aux_dt;
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 
     return mydt;
 }

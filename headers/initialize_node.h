@@ -78,7 +78,8 @@ struct node
     //** >> Total mass in the node
     vtype local_mass; // Total mass in the node
     //** >> Total number of particles in the node
-    int local_no_ptcl; // Total mass in the node
+    int local_no_ptcl_full_node; // Total mass in the node
+    int local_no_ptcl_to_use_outside_refinement_zones; // Total number of particles to use or update in the part of the node outisde of the refinement zones
 
     //** >> Grid points **/
     int *ptr_intr_grid_cell_idx_x; // X index of the interior grid point 

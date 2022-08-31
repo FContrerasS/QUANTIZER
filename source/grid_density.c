@@ -157,11 +157,18 @@ static void computing_grid_density_branch(struct node *ptr_node)
     int box_grid_idxNbr[8];
     int aux_int;
 
-    for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
-    {
-        box_idx = ptr_node->ptr_box_idx[cell_idx];
+    int counter_ptcl = 0;
+    int total_ptcl = ptr_node->local_no_ptcl_full_node;
+    int cell_ptcl;
+    int cell_idx = -1;
 
-        if (ptr_node->ptr_cell_struct[box_idx].ptcl_size > 0)
+    while(counter_ptcl < total_ptcl)
+    {
+        cell_idx++;
+        box_idx = ptr_node->ptr_box_idx[cell_idx];
+        cell_ptcl = ptr_node->ptr_cell_struct[box_idx].ptcl_size;
+
+        if (cell_ptcl > 0)
         {
             ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[0];
 
@@ -235,35 +242,145 @@ static void computing_grid_density_branch(struct node *ptr_node)
                     }
                 }
             }
-        }
 
-        for (int j = 1; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
-        {
-            ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
-
-            //** >> Computing the weights of the nearest grid points of the particle **/
-            w_x_1 = GL_ptcl_x[ptcl_idx] - pos_x_rel;
-            w_y_1 = GL_ptcl_y[ptcl_idx] - pos_y_rel;
-            w_z_1 = GL_ptcl_z[ptcl_idx] - pos_z_rel;
-            w_x_2 = H - w_x_1;
-            w_y_2 = H - w_y_1;
-            w_z_2 = H - w_z_1;
-            w[0] = w_x_2 * w_y_2 * w_z_2;
-            w[1] = w_x_1 * w_y_2 * w_z_2;
-            w[2] = w_x_2 * w_y_1 * w_z_2;
-            w[3] = w_x_1 * w_y_1 * w_z_2;
-            w[4] = w_x_2 * w_y_2 * w_z_1;
-            w[5] = w_x_1 * w_y_2 * w_z_1;
-            w[6] = w_x_2 * w_y_1 * w_z_1;
-            w[7] = w_x_1 * w_y_1 * w_z_1;
-
-            //** >> Particle density contributes to 8 enclosure grid points **/
-            for (int k = 0; k < 8; k++)
+            for (int j = 1; j < cell_ptcl; j++)
             {
-                ptr_node->ptr_d[box_grid_idxNbr[k]] += poisson_coeff_norm * GL_ptcl_mass[ptcl_idx] * w[k];
+                ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
+
+                //** >> Computing the weights of the nearest grid points of the particle **/
+                w_x_1 = GL_ptcl_x[ptcl_idx] - pos_x_rel;
+                w_y_1 = GL_ptcl_y[ptcl_idx] - pos_y_rel;
+                w_z_1 = GL_ptcl_z[ptcl_idx] - pos_z_rel;
+                w_x_2 = H - w_x_1;
+                w_y_2 = H - w_y_1;
+                w_z_2 = H - w_z_1;
+                w[0] = w_x_2 * w_y_2 * w_z_2;
+                w[1] = w_x_1 * w_y_2 * w_z_2;
+                w[2] = w_x_2 * w_y_1 * w_z_2;
+                w[3] = w_x_1 * w_y_1 * w_z_2;
+                w[4] = w_x_2 * w_y_2 * w_z_1;
+                w[5] = w_x_1 * w_y_2 * w_z_1;
+                w[6] = w_x_2 * w_y_1 * w_z_1;
+                w[7] = w_x_1 * w_y_1 * w_z_1;
+
+                //** >> Particle density contributes to 8 enclosure grid points **/
+                for (int k = 0; k < 8; k++)
+                {
+                    ptr_node->ptr_d[box_grid_idxNbr[k]] += poisson_coeff_norm * GL_ptcl_mass[ptcl_idx] * w[k];
+                }
             }
+            counter_ptcl += cell_ptcl;
         }
     }
+
+    // for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
+    // {
+    //     box_idx = ptr_node->ptr_box_idx[cell_idx];
+
+    //     if (ptr_node->ptr_cell_struct[box_idx].ptcl_size > 0)
+    //     {
+    //         ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[0];
+
+    //         //** >> Position of the particles in the grid level **/
+    //         pos_x = GL_ptcl_x[ptcl_idx] * one_over_H;
+    //         pos_y = GL_ptcl_y[ptcl_idx] * one_over_H;
+    //         pos_z = GL_ptcl_z[ptcl_idx] * one_over_H;
+
+    //         // ** >> floor of the particles positions in the grid level **/
+    //         // pos_x_floor = myfloor(pos_x);
+    //         // pos_y_floor = myfloor(pos_y);
+    //         // pos_z_floor = myfloor(pos_z);
+    //         pos_x_floor = (int)pos_x;
+    //         pos_y_floor = (int)pos_y;
+    //         pos_z_floor = (int)pos_z;
+
+    //         box_grid_idx_x = pos_x_floor - ptr_node->box_ts_x;
+    //         box_grid_idx_y = pos_y_floor - ptr_node->box_ts_y;
+    //         box_grid_idx_z = pos_z_floor - ptr_node->box_ts_z;
+
+    //         if (ptr_node->pbc_crosses_the_boundary_simulation_box == true)
+    //         {
+    //             if (pos_x_floor > ptr_node->box_max_x)
+    //             {
+    //                 box_grid_idx_x -= (1 << lv);
+    //             }
+
+    //             if (pos_y_floor > ptr_node->box_max_y)
+    //             {
+    //                 box_grid_idx_y -= (1 << lv);
+    //             }
+
+    //             if (pos_z_floor > ptr_node->box_max_z)
+    //             {
+    //                 box_grid_idx_z -= (1 << lv);
+    //             }
+    //         }
+
+    //         box_grid_idx = box_grid_idx_x + box_grid_idx_y * grid_box_real_dim_X + box_grid_idx_z * grid_box_real_dim_X_times_Y;
+
+    //         pos_x_rel = H * pos_x_floor;
+    //         pos_y_rel = H * pos_y_floor;
+    //         pos_z_rel = H * pos_z_floor;
+
+    //         //** >> Computing the weights of the nearest grid points of the particle **/
+    //         w_x_1 = GL_ptcl_x[ptcl_idx] - pos_x_rel;
+    //         w_y_1 = GL_ptcl_y[ptcl_idx] - pos_y_rel;
+    //         w_z_1 = GL_ptcl_z[ptcl_idx] - pos_z_rel;
+    //         w_x_2 = H - w_x_1;
+    //         w_y_2 = H - w_y_1;
+    //         w_z_2 = H - w_z_1;
+    //         w[0] = w_x_2 * w_y_2 * w_z_2;
+    //         w[1] = w_x_1 * w_y_2 * w_z_2;
+    //         w[2] = w_x_2 * w_y_1 * w_z_2;
+    //         w[3] = w_x_1 * w_y_1 * w_z_2;
+    //         w[4] = w_x_2 * w_y_2 * w_z_1;
+    //         w[5] = w_x_1 * w_y_2 * w_z_1;
+    //         w[6] = w_x_2 * w_y_1 * w_z_1;
+    //         w[7] = w_x_1 * w_y_1 * w_z_1;
+
+    //         //** >> Particle density contributes to 8 enclosure grid points **/
+    //         for (int kk = 0; kk < 2; kk++)
+    //         {
+    //             for (int jj = 0; jj < 2; jj++)
+    //             {
+    //                 for (int ii = 0; ii < 2; ii++)
+    //                 {
+    //                     aux_int = ii + 2 * jj + 4 * kk;
+    //                     box_grid_idxNbr[aux_int] = box_grid_idx + ii + jj * grid_box_real_dim_X + kk * grid_box_real_dim_X_times_Y;
+    //                     ptr_node->ptr_d[box_grid_idxNbr[aux_int]] += poisson_coeff_norm * GL_ptcl_mass[ptcl_idx] * w[aux_int];
+    //                 }
+    //             }
+    //         }
+    //     }
+
+    //     for (int j = 1; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
+    //     {
+    //         ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
+
+    //         //** >> Computing the weights of the nearest grid points of the particle **/
+    //         w_x_1 = GL_ptcl_x[ptcl_idx] - pos_x_rel;
+    //         w_y_1 = GL_ptcl_y[ptcl_idx] - pos_y_rel;
+    //         w_z_1 = GL_ptcl_z[ptcl_idx] - pos_z_rel;
+    //         w_x_2 = H - w_x_1;
+    //         w_y_2 = H - w_y_1;
+    //         w_z_2 = H - w_z_1;
+    //         w[0] = w_x_2 * w_y_2 * w_z_2;
+    //         w[1] = w_x_1 * w_y_2 * w_z_2;
+    //         w[2] = w_x_2 * w_y_1 * w_z_2;
+    //         w[3] = w_x_1 * w_y_1 * w_z_2;
+    //         w[4] = w_x_2 * w_y_2 * w_z_1;
+    //         w[5] = w_x_1 * w_y_2 * w_z_1;
+    //         w[6] = w_x_2 * w_y_1 * w_z_1;
+    //         w[7] = w_x_1 * w_y_1 * w_z_1;
+
+    //         //** >> Particle density contributes to 8 enclosure grid points **/
+    //         for (int k = 0; k < 8; k++)
+    //         {
+    //             ptr_node->ptr_d[box_grid_idxNbr[k]] += poisson_coeff_norm * GL_ptcl_mass[ptcl_idx] * w[k];
+    //         }
+    //     }
+    // }
+    
 }
 
 void grid_density(void)

@@ -378,6 +378,7 @@ void terminal_print(void)
         "reorganization_grandchild_node",
         "updating_ref_zones_grandchildren",
         "update_child_grid_points",
+        "filling_local_number_ptcl_outside_refinement_zones_child_node",
         "moved_unused_child_node_to_memory_pool",
         "tentacles_updating",
         "updating_tentacles_max_lv",
@@ -387,7 +388,7 @@ void terminal_print(void)
     printf("\n\n");
     //** >> TREE ADAPTATION TIME **/
     printf("\n\nTREE ADAPTATION TIME [s], Percentage over tree adaptation time\n\n");
-    for (int i = 30; i < 49; i++)
+    for (int i = 30; i < 50; i++)
     {
         printf("%d: %s = %1.2e ~ %.1f %%\n",i-30, Time_names_tree_adaptation[i - 30], GL_times[i],GL_times[i] * 100 / GL_times[10]);
     }

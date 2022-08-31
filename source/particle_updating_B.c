@@ -49,13 +49,20 @@ static void computing_particles_updating_B(struct node *ptr_node, vtype dt)
     int ptcl_idx; // Particle grid_idx in the node
     int box_idx;  // Box index of the node cell
 
+    int counter_ptcl = 0;
+    int total_ptcl = ptr_node->local_no_ptcl_to_use_outside_refinement_zones;
+    int cell_ptcl;
+    int cell_idx = -1;
+
     if (ptr_node->chn_size == 0)
     {
-        for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
+        while(counter_ptcl < total_ptcl)
         {
+            cell_idx++;
             box_idx = ptr_node->ptr_box_idx[cell_idx];
+            cell_ptcl = ptr_node->ptr_cell_struct[box_idx].ptcl_size;
 
-            for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
+            for (int j = 0; j < cell_ptcl; j++)
             {
                 ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
 
@@ -64,28 +71,73 @@ static void computing_particles_updating_B(struct node *ptr_node, vtype dt)
                 GL_ptcl_vy[ptcl_idx] += GL_ptcl_ay[ptcl_idx] * dt * 0.5;
                 GL_ptcl_vz[ptcl_idx] += GL_ptcl_az[ptcl_idx] * dt * 0.5;
             }
+
+            counter_ptcl += cell_ptcl;
         }
     }
     else
     {
-        for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
+
+        while (counter_ptcl < total_ptcl)
         {
+            cell_idx++;
             box_idx = ptr_node->ptr_box_idx[cell_idx];
+            cell_ptcl = ptr_node->ptr_cell_struct[box_idx].ptcl_size;
 
             if (ptr_node->ptr_box[box_idx] == -3)
             {
-                for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
+                for (int j = 0; j < cell_ptcl; j++)
                 {
                     ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
-                    
+
                     //** >> Updating the new velocity of the particle **/
                     GL_ptcl_vx[ptcl_idx] += GL_ptcl_ax[ptcl_idx] * dt * 0.5;
                     GL_ptcl_vy[ptcl_idx] += GL_ptcl_ay[ptcl_idx] * dt * 0.5;
                     GL_ptcl_vz[ptcl_idx] += GL_ptcl_az[ptcl_idx] * dt * 0.5;
                 }
+
+                counter_ptcl += cell_ptcl;
             }
         }
     }
+
+    // if (ptr_node->chn_size == 0)
+    // {
+    //     for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
+    //     {
+    //         box_idx = ptr_node->ptr_box_idx[cell_idx];
+
+    //         for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
+    //         {
+    //             ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
+
+    //             //** >> Updating the new velocity of the particle **/
+    //             GL_ptcl_vx[ptcl_idx] += GL_ptcl_ax[ptcl_idx] * dt * 0.5;
+    //             GL_ptcl_vy[ptcl_idx] += GL_ptcl_ay[ptcl_idx] * dt * 0.5;
+    //             GL_ptcl_vz[ptcl_idx] += GL_ptcl_az[ptcl_idx] * dt * 0.5;
+    //         }
+    //     }
+    // }
+    // else
+    // {
+    //     for (int cell_idx = 0; cell_idx < ptr_node->cell_size; cell_idx++)
+    //     {
+    //         box_idx = ptr_node->ptr_box_idx[cell_idx];
+
+    //         if (ptr_node->ptr_box[box_idx] == -3)
+    //         {
+    //             for (int j = 0; j < ptr_node->ptr_cell_struct[box_idx].ptcl_size; j++)
+    //             {
+    //                 ptcl_idx = ptr_node->ptr_cell_struct[box_idx].ptr_ptcl[j];
+                    
+    //                 //** >> Updating the new velocity of the particle **/
+    //                 GL_ptcl_vx[ptcl_idx] += GL_ptcl_ax[ptcl_idx] * dt * 0.5;
+    //                 GL_ptcl_vy[ptcl_idx] += GL_ptcl_ay[ptcl_idx] * dt * 0.5;
+    //                 GL_ptcl_vz[ptcl_idx] += GL_ptcl_az[ptcl_idx] * dt * 0.5;
+    //             }
+    //         }
+    //     }
+    // }
 }
 
 void particle_updating_B(vtype dt)
