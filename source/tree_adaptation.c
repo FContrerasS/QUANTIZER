@@ -952,10 +952,10 @@ void check_error(struct node *ptr_node, int type)
     }
 
     // Minimum amount of cell size
-    if (ptr_node->cell_size < 64)
-    {
-        printf("Error, Parent, cell size minimum amount of 64 broken = %d \n", ptr_node->cell_size);
-    }
+    // if (ptr_node->cell_size < 64)
+    // {
+    //     printf("Error, Parent, cell size minimum amount of 64 broken = %d \n", ptr_node->cell_size);
+    // }
 
     for (int i = 0; i < ptr_node->chn_size; i++)
     {
