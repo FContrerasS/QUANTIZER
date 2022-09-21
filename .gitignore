@@ -1,6 +1,11 @@
 #Folders
 
 Animations/
+MANUAL/Template/
+MANUAL/latex/
+MANUAL/html/
+MANUAL/doxygen
+MANUAL/AMR_initial_guide.pdf
 Images/
 output/
 tests/

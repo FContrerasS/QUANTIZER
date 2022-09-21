@@ -43,7 +43,7 @@
 
 #include "main.h"
 
-int main(int argc, char **argv) {
+int main() {
 
 	//printf(std::scientific);
 	//printf(std::setprecision(digits_precision));

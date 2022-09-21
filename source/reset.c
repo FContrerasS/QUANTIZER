@@ -1,4 +1,4 @@
-/*
+/**
  * reset.c
  *
  * Reset parameters before the new potential computation
