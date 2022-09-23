@@ -29,23 +29,23 @@
 int potential(void)
 {
 
-    //**>> POTENTIAL HEAD NODE **/
-    if (potential_head_node() == _FAILURE_)
-    {
-        printf("\n\n Error running potential_head_node() function \n\n ");
-        return _FAILURE_;
-    }
+  //* >> POTENTIAL HEAD NODE *//
+  if (potential_head_node() == _FAILURE_)
+  {
+    printf("\n\n Error running potential_head_node() function \n\n ");
+    return _FAILURE_;
+  }
 
-    //** >> POTENTIAL BRANCH NODES **/
-    if (lmin < lmax)
+  //*  >> POTENTIAL BRANCH NODES *//
+  if (lmin < lmax)
+  {
+    //* >> POTENTIAL HEAD NODE *//
+    if (potential_branches() == _FAILURE_)
     {
-        //**>> POTENTIAL HEAD NODE **/
-        if (potential_branches() == _FAILURE_)
-        {
-            printf("\n\n Error running potential_branches() function \n\n ");
-            return _FAILURE_;
-        }
+      printf("\n\n Error running potential_branches() function \n\n ");
+      return _FAILURE_;
     }
+  }
 
-    return _SUCCESS_;
+  return _SUCCESS_;
 }

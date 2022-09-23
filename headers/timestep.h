@@ -1,7 +1,7 @@
 /*
- * timestep_2.h
+ * timestep.h
  *
- * Header file of the timestep_2.c source file
+ * Header file of the timestep.c source file
  *
  * Felipe Contreras
  * felipe.contrerass@postgrado.uv.cl
@@ -24,11 +24,11 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __TIMESTEPCOMPUTE2__
-#define __TIMESTEPCOMPUTE2__
+#ifndef __TIMESTEPCOMPUTE__
+#define __TIMESTEPCOMPUTE__
 
 #include "common.h"
 
-int timestep_2(vtype *ptr_dt);
+int timestep(vtype *ptr_dt);
 
 #endif

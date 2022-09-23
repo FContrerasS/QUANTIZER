@@ -27,7 +27,7 @@
 #ifndef __COMMON__
 #define __COMMON__
 
-//** >> Standard Libraries **/
+//* >> Standard Libraries *//
 #include <stdlib.h>
 #include <stdio.h>
 #include <limits.h>
@@ -63,12 +63,12 @@ typedef double vtype;
 #define _TRUE_ 1  /* integer associated to true statement */
 #define _FALSE_ 0 /* integer associated to false statement */
 
-//** Tree structure **/
+//* Tree structure *//
 #include "initialize_cell_struct.h"
 #include "initialize_node.h"
 #include "ptcl_idx_to_box_idx.h"
 
-//** >> Terminal Colors **/
+//* >> Terminal Colors *//
 #define KNRM "\x1B[0m" // Normal
 #define KRED "\x1B[31m" // Red
 #define KGRN "\x1B[32m" // Green
@@ -80,8 +80,8 @@ typedef double vtype;
 
     // Abbreviation
 
-    // Constants
-    extern vtype _User_BoxSize_; // kpc
+// Constants
+extern vtype _User_BoxSize_; // kpc
 extern vtype _PI_;
 extern vtype _Onesixth_;
 extern vtype _kpc_to_m_;
@@ -111,17 +111,17 @@ extern int no_grid_pow2;
 extern int no_grid_pow3;
 
 
-//** >> Refinement criteria parameters **/
+//* >> Refinement criteria parameters *//
 extern vtype ref_criterion_mass;
 extern int ref_criterion_ptcl;
 extern int n_exp;
 extern vtype _CFL_; // CFL criteria 0.5
 extern vtype _MAX_dt_;
 
-//** >> Initial Center of Mass **/
+//* >> Initial Center of Mass *//
 extern vtype GL_cm[3]; // Center of mass
 
-//** >> Poisson parameters **/
+//* >> Poisson parameters *//
 // Relaxation solver at coarsest level
 extern int _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_;
 extern vtype _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_;
@@ -142,13 +142,16 @@ extern int branch_pot_method;
 extern int iter_between_check_potential_solution;
 extern int branches_maximal_node_number_to_activate_conjugate_gradient;
 
-//** >> Force parameters **/
+//* >> Time Step paramters *//
+extern int time_step_method;
+
+//* >> Force parameters *//
 extern int force_stencil;
 
-//** >> Initializing energy parameters **/
+//* >> Initializing energy parameters *//
 extern int potential_energy_type;
 
-//** >> Particles **/
+//* >> Particles *//
 extern vtype *GL_ptcl_mass;
 extern vtype *GL_ptcl_x;
 extern vtype *GL_ptcl_y;
@@ -163,30 +166,30 @@ extern vtype **GL_ptcl;
 extern bool *GL_ptcl_updating_flag;
 extern int *GL_ptcl_ID;
 
-//** >> Head or Main node **/
+//* >> Head or Main node *//
 extern struct node *GL_ptr_tree;
 
-//** >> Tentacles pointer **/
+//* >> Tentacles pointer *//
 extern struct node ***GL_tentacles; // Array of arrays of pointers. Organized first by levels, then by pointers
 extern int *GL_tentacles_cap;   // Capacity of pointers in each level
 extern int *GL_tentacles_size; // Number of pointers in each level
 extern int GL_tentacles_level_max; // Maximum level of refinement of the tentacles
 
-//** >> Pool of nodes **/
+//* >> Pool of nodes *//
 extern struct node *GL_pool_node_start;
 extern struct node *GL_pool_node_end;
 
-//** >> Outputs **/
+//* >> Outputs *//
 extern char file_data_name[1000];
 extern char folder_name[1000];
 extern bool folder_created;
 
 
-//** >> Timer **/
+//* >> Timer *//
 extern clock_t GL_clock_begin;
 extern double *GL_times;
 
-//** >> Border of the simulation box **/
+//* >> Border of the simulation box *//
 extern int bder_os_sim;        // Border outside the simulation box
 extern int box_side_lmin; // Side of the coarsest box
 extern int box_side_lmin_pow2;
@@ -214,7 +217,7 @@ extern vtype **pp_restxx;
 extern vtype **pp_dphixx;
 extern vtype **zeros_xx;
 
-//** >> Boundary parameters **/
+//* >> Boundary parameters *//
 extern int boundary_type;
 extern int GL_max_lv_ref_crosses_the_entire_simulation; // Maximum level of refinement such that it contains a zone of refinement which crosses the entire simulation
 

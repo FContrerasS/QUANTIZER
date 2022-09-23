@@ -1,4 +1,4 @@
-/**
+/*
  * reset.c
  *
  * Reset parameters before the new potential computation
@@ -28,37 +28,37 @@
 
 int reset(void)
 {
-	//Global Particles properties
+  // Global Particles properties
 
-	//Head and brances nodes
+  // Head and brances nodes
 
-	//** >> Global particle accelerations **/
-	for (int i = 0; i < GL_no_ptcl_final; i++)
-	{
-		GL_ptcl_ax[i] = 0;
-		GL_ptcl_ay[i] = 0;
-		GL_ptcl_az[i] = 0;
-	}
+  //* >> Global particle accelerations *//
+  for (int i = 0; i < GL_no_ptcl_final; i++)
+  {
+    GL_ptcl_ax[i] = 0;
+    GL_ptcl_ay[i] = 0;
+    GL_ptcl_az[i] = 0;
+  }
 
-	//** >> Head node **/
-	struct node *ptr_head = GL_ptr_tree;
+  //* >> Head node *//
+  struct node *ptr_head = GL_ptr_tree;
 
-	//** >> Potential, Acceleration and density of the grid **/
-	int cap = (ptr_head->box_real_dim_x + 1) * (ptr_head->box_real_dim_y + 1) * (ptr_head->box_real_dim_z + 1);
+  //* >> Potential, Acceleration and density of the grid *//
+  int cap = (ptr_head->box_real_dim_x + 1) * (ptr_head->box_real_dim_y + 1) * (ptr_head->box_real_dim_z + 1);
 
-	for (int i = 0; i < cap; i++)
-	{
-		ptr_head->ptr_d[i] = 0;
-	}
+  for (int i = 0; i < cap; i++)
+  {
+    ptr_head->ptr_d[i] = 0;
+  }
 
-	// for (int i = 0; i < cap; i++)
-	// {
-	// 	ptr_head->ptr_pot[i] = 0;
-	// }
+  // for (int i = 0; i < cap; i++)
+  // {
+  // 	ptr_head->ptr_pot[i] = 0;
+  // }
 
-	//** >> Initial values for the potential and acceleration **/
-	//** Here we are modified the boundary values of the potential and acceleration
-	//initial_potential_and_acceleration_head(ptr_head);
+  //* >> Initial values for the potential and acceleration *//
+  //* Here we are modified the boundary values of the potential and acceleration
+  // initial_potential_and_acceleration_head(ptr_head);
 
-	return _SUCCESS_;
+  return _SUCCESS_;
 }

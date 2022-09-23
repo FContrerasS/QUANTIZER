@@ -30,113 +30,110 @@
 int ptcl_idx_to_box_idx(struct node *ptr_node, int ptcl_idx)
 {
 
-    int lv;      // Level of refinement
+  int lv; // Level of refinement
 
-    vtype pos_x; // Particle position in the grid level
-    vtype pos_y;
-    vtype pos_z;
+  vtype pos_x; // Particle position in the grid level
+  vtype pos_y;
+  vtype pos_z;
 
-    int pos_x_floor; // floor of the particle position in the grid level
-    int pos_y_floor;
-    int pos_z_floor;
+  int pos_x_floor; // floor of the particle position in the grid level
+  int pos_y_floor;
+  int pos_z_floor;
 
-    int box_idx_x; // Box index in X direcction
-    int box_idx_y; // Box index in Y direcction
-    int box_idx_z; // Box index in Z direcction
-    int box_idx;   // Box index
+  int box_idx_x; // Box index in X direcction
+  int box_idx_y; // Box index in Y direcction
+  int box_idx_z; // Box index in Z direcction
+  int box_idx;   // Box index
 
-    int box_real_dim_X = ptr_node->box_real_dim_x;
-    int box_real_dim_X_times_Y = ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+  int box_real_dim_X = ptr_node->box_real_dim_x;
+  int box_real_dim_X_times_Y = ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
 
-    lv = ptr_node->lv;
+  lv = ptr_node->lv;
 
-    //** >> Position of the particles in the grid level of the current node before updating**/
-    pos_x = GL_ptcl_x[ptcl_idx] * (1 << lv);
-    pos_y = GL_ptcl_y[ptcl_idx] * (1 << lv);
-    pos_z = GL_ptcl_z[ptcl_idx] * (1 << lv);
+  //* >> Position of the particles in the grid level of the current node before updating *//
+  pos_x = GL_ptcl_x[ptcl_idx] * (1 << lv);
+  pos_y = GL_ptcl_y[ptcl_idx] * (1 << lv);
+  pos_z = GL_ptcl_z[ptcl_idx] * (1 << lv);
 
-    //** >> Floor of the particles positions in the grid level of the current node before updating**/
-    // pos_x_floor = myfloor(pos_x);
-    // pos_y_floor = myfloor(pos_y);
-    // pos_z_floor = myfloor(pos_z);
-    pos_x_floor = pos_x < 0 ? -1 : (int)pos_x;
-    pos_y_floor = pos_y < 0 ? -1 : (int)pos_y;
-    pos_z_floor = pos_z < 0 ? -1 : (int)pos_z;
+  //* >> Floor of the particles positions in the grid level of the current node before updating *//
+  // pos_x_floor = myfloor(pos_x);
+  // pos_y_floor = myfloor(pos_y);
+  // pos_z_floor = myfloor(pos_z);
+  pos_x_floor = pos_x < 0 ? -1 : (int)pos_x;
+  pos_y_floor = pos_y < 0 ? -1 : (int)pos_y;
+  pos_z_floor = pos_z < 0 ? -1 : (int)pos_z;
 
-    //** >> Box index in the current node before updating **/
-    box_idx_x = pos_x_floor - ptr_node->box_ts_x;
-    box_idx_y = pos_y_floor - ptr_node->box_ts_y;
-    box_idx_z = pos_z_floor - ptr_node->box_ts_z;
+  //* >> Box index in the current node before updating *//
+  box_idx_x = pos_x_floor - ptr_node->box_ts_x;
+  box_idx_y = pos_y_floor - ptr_node->box_ts_y;
+  box_idx_z = pos_z_floor - ptr_node->box_ts_z;
 
-    // Notes here that we require to add 1 to box_max_x, because some particles can be outside of the node
-    // Also is important to note that the case box_max + 1 can be applied to any part of the code including
-    // the grid part because the minimum distance are 2 cells!!! between subzones. So, it is possible to
-    // change the notion of box_max to "box_max + 1".
+  // Notes here that we require to add 1 to box_max_x, because some particles can be outside of the node
+  // Also is important to note that the case box_max + 1 can be applied to any part of the code including
+  // the grid part because the minimum distance are 2 cells!!! between subzones. So, it is possible to
+  // change the notion of box_max to "box_max + 1".
 
-    if (ptr_node->pbc_crosses_the_boundary_simulation_box == true)
+  if (ptr_node->pbc_crosses_the_boundary_simulation_box == true)
+  {
+    if (ptr_node->pbc_crosses_the_whole_simulation_box_x == false)
     {
-        if (ptr_node->pbc_crosses_the_whole_simulation_box_x == false)
-        {
-            if (ptr_node->pbc_crosses_the_boundary_simulation_box_x == true && pos_x_floor > ptr_node->box_max_x + 1)
-            {
-                box_idx_x -= (1 << lv);
-            }
-        }
-        else
-        {
-            if (GL_ptcl_x[ptcl_idx] < 0.)
-            {
-                box_idx_x += (1 << lv);
-            }
-            else if (GL_ptcl_x[ptcl_idx] >= 1.)
-            {
-                box_idx_x -= (1 << lv);
-            }
-        }
-
-        if (ptr_node->pbc_crosses_the_whole_simulation_box_y == false)
-        {
-            if (ptr_node->pbc_crosses_the_boundary_simulation_box_y == true && pos_y_floor > ptr_node->box_max_y + 1)
-            {
-                box_idx_y -= (1 << lv);
-            }
-        }
-        else
-        {
-            if (GL_ptcl_y[ptcl_idx] < 0.)
-            {
-                box_idx_y += (1 << lv);
-            }
-            else if (GL_ptcl_y[ptcl_idx] >= 1.)
-            {
-                box_idx_y -= (1 << lv);
-            }
-        }
-
-        if (ptr_node->pbc_crosses_the_whole_simulation_box_z == false)
-        {
-            if (ptr_node->pbc_crosses_the_boundary_simulation_box_z == true && pos_z_floor > ptr_node->box_max_z + 1)
-            {
-                box_idx_z -= (1 << lv);
-            }
-        }
-        else
-        {
-            if (GL_ptcl_z[ptcl_idx] < 0.)
-            {
-                box_idx_z += (1 << lv);
-            }
-            else if (GL_ptcl_z[ptcl_idx] >= 1.)
-            {
-                box_idx_z -= (1 << lv);
-            }
-        }
+      if (ptr_node->pbc_crosses_the_boundary_simulation_box_x == true && pos_x_floor > ptr_node->box_max_x + 1)
+      {
+        box_idx_x -= (1 << lv);
+      }
+    }
+    else
+    {
+      if (GL_ptcl_x[ptcl_idx] < 0.)
+      {
+        box_idx_x += (1 << lv);
+      }
+      else if (GL_ptcl_x[ptcl_idx] >= 1.)
+      {
+        box_idx_x -= (1 << lv);
+      }
     }
 
+    if (ptr_node->pbc_crosses_the_whole_simulation_box_y == false)
+    {
+      if (ptr_node->pbc_crosses_the_boundary_simulation_box_y == true && pos_y_floor > ptr_node->box_max_y + 1)
+      {
+        box_idx_y -= (1 << lv);
+      }
+    }
+    else
+    {
+      if (GL_ptcl_y[ptcl_idx] < 0.)
+      {
+        box_idx_y += (1 << lv);
+      }
+      else if (GL_ptcl_y[ptcl_idx] >= 1.)
+      {
+        box_idx_y -= (1 << lv);
+      }
+    }
 
+    if (ptr_node->pbc_crosses_the_whole_simulation_box_z == false)
+    {
+      if (ptr_node->pbc_crosses_the_boundary_simulation_box_z == true && pos_z_floor > ptr_node->box_max_z + 1)
+      {
+        box_idx_z -= (1 << lv);
+      }
+    }
+    else
+    {
+      if (GL_ptcl_z[ptcl_idx] < 0.)
+      {
+        box_idx_z += (1 << lv);
+      }
+      else if (GL_ptcl_z[ptcl_idx] >= 1.)
+      {
+        box_idx_z -= (1 << lv);
+      }
+    }
+  }
 
-    box_idx = box_idx_x + box_idx_y * box_real_dim_X + box_idx_z * box_real_dim_X_times_Y;
-    
+  box_idx = box_idx_x + box_idx_y * box_real_dim_X + box_idx_z * box_real_dim_X_times_Y;
 
-    return box_idx;
+  return box_idx;
 }

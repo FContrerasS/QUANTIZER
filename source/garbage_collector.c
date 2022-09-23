@@ -26,7 +26,7 @@
 
 #include "garbage_collector.h"
 
-//** >> Local Functions
+//* >> Local Functions
 static int computing_memory(void);
 static void free_memory_pool(void);
 static int free_nodes_voids(void);
@@ -34,413 +34,406 @@ static int free_nodes_voids(void);
 static int computing_memory(void)
 {
 
-	int no_pts;
-	struct node *ptr_node;
+  int no_pts;
+  struct node *ptr_node;
 
-	//** >> Tentacles **/
-	TOTAL_MEMORY_TENTACLES += (lmax - lmin + 1) * sizeof(struct node **);
+  //* >> Tentacles *//
+  TOTAL_MEMORY_TENTACLES += (lmax - lmin + 1) * sizeof(struct node **);
 
-	for (int lv = 0; lv < lmax - lmin + 1; lv++)
-	{
-		TOTAL_MEMORY_TENTACLES += GL_tentacles_cap[lv] * sizeof(struct node *);
-	}
+  for (int lv = 0; lv < lmax - lmin + 1; lv++)
+  {
+    TOTAL_MEMORY_TENTACLES += GL_tentacles_cap[lv] * sizeof(struct node *);
+  }
 
-	//** >> Global particles **/
-	TOTAL_MEMORY_PARTICLES += GL_no_ptcl_initial * (sizeof(bool) + sizeof(int) + 10 * sizeof(vtype)); // Global particles
+  //* >> Global particles *//
+  TOTAL_MEMORY_PARTICLES += GL_no_ptcl_initial * (sizeof(bool) + sizeof(int) + 10 * sizeof(vtype)); // Global particles
 
-	//** >> Node properties **/
-	for (int lv = 0; lv < GL_tentacles_level_max + 1; lv++)
-	{
-		no_pts = GL_tentacles_size[lv];
+  //* >> Node properties *//
+  for (int lv = 0; lv < GL_tentacles_level_max + 1; lv++)
+  {
+    no_pts = GL_tentacles_size[lv];
 
-		for (int i = 0; i < no_pts; i++)
-		{
-			ptr_node = GL_tentacles[lv][i];
-			TOTAL_MEMORY_CELDAS += 4 * ptr_node->cell_cap * sizeof(int);
+    for (int i = 0; i < no_pts; i++)
+    {
+      ptr_node = GL_tentacles[lv][i];
+      TOTAL_MEMORY_CELDAS += 4 * ptr_node->cell_cap * sizeof(int);
 
-			if (lmin < lmax)
-			{
-				TOTAL_MEMORY_CELL_STRUCT += ptr_node->box_cap * sizeof(struct cell_struct);
-				TOTAL_MEMORY_CELL_STRUCT += ptr_node->cell_struct_old_cap * sizeof(struct cell_struct);
-				if (ptr_node->ptr_cell_struct != NULL)
-				{
-					for (int j = 0; j < ptr_node->box_cap; j++)
-					{
-						TOTAL_MEMORY_CELL_STRUCT += ptr_node->ptr_cell_struct[j].ptcl_cap * sizeof(int);
-					}
-				}
+      if (lmin < lmax)
+      {
+        TOTAL_MEMORY_CELL_STRUCT += ptr_node->box_cap * sizeof(struct cell_struct);
+        TOTAL_MEMORY_CELL_STRUCT += ptr_node->cell_struct_old_cap * sizeof(struct cell_struct);
+        if (ptr_node->ptr_cell_struct != NULL)
+        {
+          for (int j = 0; j < ptr_node->box_cap; j++)
+          {
+            TOTAL_MEMORY_CELL_STRUCT += ptr_node->ptr_cell_struct[j].ptcl_cap * sizeof(int);
+          }
+        }
 
-				if (ptr_node->ptr_cell_struct_old != NULL)
-				{
-					for (int j = 0; j < ptr_node->cell_struct_old_cap; j++)
-					{
-						TOTAL_MEMORY_CELL_STRUCT += ptr_node->ptr_cell_struct_old[j].ptcl_cap * sizeof(int);
-					}
-				}
-			}
-			TOTAL_MEMORY_CAJAS += 2 * ptr_node->box_cap * (sizeof(int) + sizeof(vtype)); // Boxes and mass boxes
+        if (ptr_node->ptr_cell_struct_old != NULL)
+        {
+          for (int j = 0; j < ptr_node->cell_struct_old_cap; j++)
+          {
+            TOTAL_MEMORY_CELL_STRUCT += ptr_node->ptr_cell_struct_old[j].ptcl_cap * sizeof(int);
+          }
+        }
+      }
+      TOTAL_MEMORY_CAJAS += 2 * ptr_node->box_cap * (sizeof(int) + sizeof(vtype)); // Boxes and mass boxes
 
-			TOTAL_MEMORY_GRID_POINTS += 4 * (ptr_node->grid_bder_cap + ptr_node->grid_intr_cap + ptr_node->grid_SIMULATION_BOUNDARY_cap) * sizeof(int); // Grid interior, border and simulation boundary points
+      TOTAL_MEMORY_GRID_POINTS += 4 * (ptr_node->grid_bder_cap + ptr_node->grid_intr_cap + ptr_node->grid_SIMULATION_BOUNDARY_cap) * sizeof(int); // Grid interior, border and simulation boundary points
 
-			TOTAL_MEMORY_GRID_PROPERTIES += 6 * ptr_node->grid_properties_cap * sizeof(vtype); // Grid properties, accelerations, potential and density
-			TOTAL_MEMORY_AUX += ptr_node->zones_cap * sizeof(int *) ;
-			for (int j = 0; j < ptr_node->zones_cap; j++)
-			{
-				TOTAL_MEMORY_AUX += ptr_node->ptr_zone_cap[j] * sizeof(int);
-			}
-			TOTAL_MEMORY_AUX += ptr_node->aux_idx_cap * sizeof(int) ;
-			TOTAL_MEMORY_AUX += ptr_node->aux_bool_boundary_anomalies_cap * 3 * sizeof(bool);
+      TOTAL_MEMORY_GRID_PROPERTIES += 6 * ptr_node->grid_properties_cap * sizeof(vtype); // Grid properties, accelerations, potential and density
+      TOTAL_MEMORY_AUX += ptr_node->zones_cap * sizeof(int *);
+      for (int j = 0; j < ptr_node->zones_cap; j++)
+      {
+        TOTAL_MEMORY_AUX += ptr_node->ptr_zone_cap[j] * sizeof(int);
+      }
+      TOTAL_MEMORY_AUX += ptr_node->aux_idx_cap * sizeof(int);
+      TOTAL_MEMORY_AUX += ptr_node->aux_bool_boundary_anomalies_cap * 3 * sizeof(bool);
 
-			TOTAL_MEMORY_AUX += 4 * ptr_node->links_cap * sizeof(int);
+      TOTAL_MEMORY_AUX += 4 * ptr_node->links_cap * sizeof(int);
 
-        	//** Subzones
-			TOTAL_MEMORY_AUX += 6 * ptr_node->subzones_cap * sizeof(int);
-			//TOTAL_MEMORY_AUX += ptr_node->subzones_cap * sizeof(int *) ;
+      //* Subzones
+      TOTAL_MEMORY_AUX += 6 * ptr_node->subzones_cap * sizeof(int);
+      // TOTAL_MEMORY_AUX += ptr_node->subzones_cap * sizeof(int *) ;
 
-			// for(int j=0; j < ptr_node->subzones_cap; j++)
-        	// {
-            // 	TOTAL_MEMORY_AUX += ptr_node->ptr_subzone_cap[j] * sizeof(int);
-        	// }
+      // for(int j=0; j < ptr_node->subzones_cap; j++)
+      // {
+      // 	TOTAL_MEMORY_AUX += ptr_node->ptr_subzone_cap[j] * sizeof(int);
+      // }
+    }
+    TOTAL_MEMORY_NODES += no_pts * sizeof(struct node);
+  }
 
-		}
-		TOTAL_MEMORY_NODES += no_pts * sizeof(struct node);
-	}
+  // Stack of memory pool
+  int cntr_nodes_memory_pool = 0;
+  ptr_node = GL_pool_node_start;
+  while (ptr_node != NULL)
+  {
+    cntr_nodes_memory_pool++;
+    TOTAL_MEMORY_STACK += 4 * ptr_node->cell_cap * sizeof(int);
+    TOTAL_MEMORY_STACK += ptr_node->box_cap * sizeof(struct cell_struct);
 
-	// Stack of memory pool
-	int cntr_nodes_memory_pool = 0;
-	ptr_node = GL_pool_node_start;
-	while (ptr_node != NULL)
-	{
-		cntr_nodes_memory_pool++;
-		TOTAL_MEMORY_STACK += 4 * ptr_node->cell_cap * sizeof(int);
-		TOTAL_MEMORY_STACK += ptr_node->box_cap * sizeof(struct cell_struct);
+    TOTAL_MEMORY_STACK += ptr_node->box_cap * sizeof(struct cell_struct);
+    TOTAL_MEMORY_STACK += ptr_node->cell_struct_old_cap * sizeof(struct cell_struct);
+    if (ptr_node->ptr_cell_struct != NULL)
+    {
+      for (int j = 0; j < ptr_node->box_cap; j++)
+      {
+        TOTAL_MEMORY_STACK += ptr_node->ptr_cell_struct[j].ptcl_cap * sizeof(int);
+      }
+    }
 
-		TOTAL_MEMORY_STACK += ptr_node->box_cap * sizeof(struct cell_struct);
-		TOTAL_MEMORY_STACK += ptr_node->cell_struct_old_cap * sizeof(struct cell_struct);
-		if (ptr_node->ptr_cell_struct != NULL)
-		{
-			for (int j = 0; j < ptr_node->box_cap; j++)
-			{
-				TOTAL_MEMORY_STACK += ptr_node->ptr_cell_struct[j].ptcl_cap * sizeof(int);
-			}
-		}
+    if (ptr_node->ptr_cell_struct_old != NULL)
+    {
+      for (int j = 0; j < ptr_node->cell_struct_old_cap; j++)
+      {
+        TOTAL_MEMORY_STACK += ptr_node->ptr_cell_struct_old[j].ptcl_cap * sizeof(int);
+      }
+    }
 
-		if (ptr_node->ptr_cell_struct_old != NULL)
-		{
-			for (int j = 0; j < ptr_node->cell_struct_old_cap; j++)
-			{
-				TOTAL_MEMORY_STACK += ptr_node->ptr_cell_struct_old[j].ptcl_cap * sizeof(int);
-			}
-		}
+    TOTAL_MEMORY_STACK += 2 * ptr_node->box_cap * (sizeof(int) + sizeof(vtype));                                                          // Boxes and mass boxes
+    TOTAL_MEMORY_STACK += 4 * (ptr_node->grid_bder_cap + ptr_node->grid_intr_cap + ptr_node->grid_SIMULATION_BOUNDARY_cap) * sizeof(int); // Grid interior, border and simulation boundary points
+    TOTAL_MEMORY_STACK += 6 * ptr_node->grid_properties_cap * sizeof(vtype);                                                              // Grid properties, accelerations, potential and density
+    TOTAL_MEMORY_STACK += ptr_node->zones_cap * sizeof(int *);
+    for (int j = 0; j < ptr_node->zones_cap; j++)
+    {
+      TOTAL_MEMORY_STACK += ptr_node->ptr_zone_cap[j] * sizeof(int);
+    }
+    TOTAL_MEMORY_STACK += ptr_node->aux_idx_cap * sizeof(int);
+    TOTAL_MEMORY_STACK += ptr_node->aux_bool_boundary_anomalies_cap * 3 * sizeof(bool);
 
-		TOTAL_MEMORY_STACK += 2 * ptr_node->box_cap * (sizeof(int) + sizeof(vtype));				 // Boxes and mass boxes
-		TOTAL_MEMORY_STACK += 4 * (ptr_node->grid_bder_cap + ptr_node->grid_intr_cap + ptr_node->grid_SIMULATION_BOUNDARY_cap) * sizeof(int); // Grid interior, border and simulation boundary points
-		TOTAL_MEMORY_STACK += 6 * ptr_node->grid_properties_cap * sizeof(vtype);					 // Grid properties, accelerations, potential and density
-		TOTAL_MEMORY_STACK += ptr_node->zones_cap * sizeof(int *);
-		for (int j = 0; j < ptr_node->zones_cap; j++)
-		{
-			TOTAL_MEMORY_STACK += ptr_node->ptr_zone_cap[j] * sizeof(int);
-		}
-		TOTAL_MEMORY_STACK += ptr_node->aux_idx_cap * sizeof(int);
-		TOTAL_MEMORY_STACK += ptr_node->aux_bool_boundary_anomalies_cap * 3 * sizeof(bool);
+    TOTAL_MEMORY_STACK += 4 * ptr_node->links_cap * sizeof(int);
 
-		TOTAL_MEMORY_STACK += 4 * ptr_node->links_cap * sizeof(int);
+    //* Subzones
+    TOTAL_MEMORY_STACK += 6 * ptr_node->subzones_cap * sizeof(int);
+    // TOTAL_MEMORY_STACK += ptr_node->subzones_cap * sizeof(int *) ;
+    // for(int j=0; j < ptr_node->subzones_cap; j++)
+    // {
+    //     TOTAL_MEMORY_STACK += ptr_node->ptr_subzone_cap[j] * sizeof(int);
+    // }
 
-		//** Subzones
-		TOTAL_MEMORY_STACK += 6 * ptr_node->subzones_cap * sizeof(int);
-		// TOTAL_MEMORY_STACK += ptr_node->subzones_cap * sizeof(int *) ;
-		// for(int j=0; j < ptr_node->subzones_cap; j++)
-        // {
-        //     TOTAL_MEMORY_STACK += ptr_node->ptr_subzone_cap[j] * sizeof(int);
-        // }
+    TOTAL_MEMORY_STACK += sizeof(struct node);
 
-		TOTAL_MEMORY_STACK += sizeof(struct node);
-		
-		if (ptr_node == GL_pool_node_end)
-		{
-			ptr_node = NULL;
-		}
-		else
-		{
-			ptr_node = ptr_node->ptr_pt;
-		}
-	}
+    if (ptr_node == GL_pool_node_end)
+    {
+      ptr_node = NULL;
+    }
+    else
+    {
+      ptr_node = ptr_node->ptr_pt;
+    }
+  }
 
-	return cntr_nodes_memory_pool;
+  return cntr_nodes_memory_pool;
 }
 
 static void free_memory_pool(void)
 {
-	// Stack of memory pool
-	struct node *ptr_node = GL_pool_node_start;
-	while (ptr_node != NULL)
-	{
-		//** >> Boxes **/
-		free(ptr_node->ptr_box); 
-		free(ptr_node->ptr_box_old);
+  // Stack of memory pool
+  struct node *ptr_node = GL_pool_node_start;
+  while (ptr_node != NULL)
+  {
+    //* >> Boxes *//
+    free(ptr_node->ptr_box);
+    free(ptr_node->ptr_box_old);
 
-		//** >> Cells in the node **/
-		free(ptr_node->ptr_cell_idx_x);
-		free(ptr_node->ptr_cell_idx_y);
-		free(ptr_node->ptr_cell_idx_z);
-		free(ptr_node->ptr_box_idx);
+    //* >> Cells in the node *//
+    free(ptr_node->ptr_cell_idx_x);
+    free(ptr_node->ptr_cell_idx_y);
+    free(ptr_node->ptr_cell_idx_z);
+    free(ptr_node->ptr_box_idx);
 
-		// //** >> Struct of cells (Particles and cell mass)
-		for (int i = 0; i < ptr_node->box_cap; i++)
-		{
-			free(ptr_node->ptr_cell_struct[i].ptr_ptcl);
-		}
-		free(ptr_node->ptr_cell_struct);
-		if (ptr_node->ptr_cell_struct_old !=NULL)
-		{
-			for (int i = 0; i < ptr_node->cell_struct_old_cap; i++)
-			{
-				if (ptr_node->ptr_cell_struct_old[i].ptr_ptcl != NULL)
-				{
-					free(ptr_node->ptr_cell_struct_old[i].ptr_ptcl);
-				}
-			}
-			free(ptr_node->ptr_cell_struct_old);
-		}
+    // //* >> Struct of cells (Particles and cell mass)
+    for (int i = 0; i < ptr_node->box_cap; i++)
+    {
+      free(ptr_node->ptr_cell_struct[i].ptr_ptcl);
+    }
+    free(ptr_node->ptr_cell_struct);
+    if (ptr_node->ptr_cell_struct_old != NULL)
+    {
+      for (int i = 0; i < ptr_node->cell_struct_old_cap; i++)
+      {
+        if (ptr_node->ptr_cell_struct_old[i].ptr_ptcl != NULL)
+        {
+          free(ptr_node->ptr_cell_struct_old[i].ptr_ptcl);
+        }
+      }
+      free(ptr_node->ptr_cell_struct_old);
+    }
 
-		//** >> Grid points **/
-		free(ptr_node->ptr_intr_grid_cell_idx_x);
-		free(ptr_node->ptr_intr_grid_cell_idx_y);
-		free(ptr_node->ptr_intr_grid_cell_idx_z);
-		free(ptr_node->ptr_intr_box_grid_idx);
+    //* >> Grid points *//
+    free(ptr_node->ptr_intr_grid_cell_idx_x);
+    free(ptr_node->ptr_intr_grid_cell_idx_y);
+    free(ptr_node->ptr_intr_grid_cell_idx_z);
+    free(ptr_node->ptr_intr_box_grid_idx);
 
-		if (ptr_node->grid_bder_cap != 0)
-		{
-			free(ptr_node->ptr_bder_grid_cell_idx_x);
-			free(ptr_node->ptr_bder_grid_cell_idx_y);
-			free(ptr_node->ptr_bder_grid_cell_idx_z);
-			free(ptr_node->ptr_bder_box_grid_idx);
-		}
+    if (ptr_node->grid_bder_cap != 0)
+    {
+      free(ptr_node->ptr_bder_grid_cell_idx_x);
+      free(ptr_node->ptr_bder_grid_cell_idx_y);
+      free(ptr_node->ptr_bder_grid_cell_idx_z);
+      free(ptr_node->ptr_bder_box_grid_idx);
+    }
 
-		if (ptr_node->grid_SIMULATION_BOUNDARY_cap != 0)
-		{
-			free(ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_x);
-			free(ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_y);
-			free(ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_z);
-			free(ptr_node->ptr_SIMULATION_BOUNDARY_box_grid_idx);
-		}
+    if (ptr_node->grid_SIMULATION_BOUNDARY_cap != 0)
+    {
+      free(ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_x);
+      free(ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_y);
+      free(ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_z);
+      free(ptr_node->ptr_SIMULATION_BOUNDARY_box_grid_idx);
+    }
 
-		//** >> Potential, acceleration and density of the grid **/
-		free(ptr_node->ptr_pot);
-		free(ptr_node->ptr_pot_old);
-		free(ptr_node->ptr_ax);
-		free(ptr_node->ptr_ay);
-		free(ptr_node->ptr_az);
-		free(ptr_node->ptr_d);
+    //* >> Potential, acceleration and density of the grid *//
+    free(ptr_node->ptr_pot);
+    free(ptr_node->ptr_pot_old);
+    free(ptr_node->ptr_ax);
+    free(ptr_node->ptr_ay);
+    free(ptr_node->ptr_az);
+    free(ptr_node->ptr_d);
 
-		//** >> Auxililary arrays to go from old box to new box **/
-		if (ptr_node->ptr_cell_ref != NULL)
-		{
-			free(ptr_node->ptr_cell_ref);
-		}
-		
-		for(int i = 0; i< ptr_node->zones_cap;i++)
-		{
-			if (ptr_node->pptr_zones[i] !=NULL)
-			{
-				free(ptr_node->pptr_zones[i]);
-			}
-		}
+    //* >> Auxililary arrays to go from old box to new box *//
+    if (ptr_node->ptr_cell_ref != NULL)
+    {
+      free(ptr_node->ptr_cell_ref);
+    }
 
-		if (ptr_node->ptr_zone_cap != NULL)
-		{
-			free(ptr_node->ptr_zone_cap);
-			free(ptr_node->ptr_zone_size);
-			free(ptr_node->pptr_zones);
-		}
-		
-		//Subzones
-		// for(int i = 0; i< ptr_node->subzones_cap;i++)
-		// {
-		// 	if(ptr_node->pptr_subzones[i] != NULL)
-		// 	{
-		// 		free(ptr_node->pptr_subzones[i]);
-		// 	}
-		// }
-		if (ptr_node->subzones_cap != 0)
-		{
-			// free(ptr_node->ptr_subzone_cap);
-			// free(ptr_node->ptr_subzone_size);
-			free(ptr_node->ptr_aux_min_subzones_x);
-			free(ptr_node->ptr_aux_max_subzones_x);
-			free(ptr_node->ptr_aux_min_subzones_y);
-			free(ptr_node->ptr_aux_max_subzones_y);
-			free(ptr_node->ptr_aux_min_subzones_z);
-			free(ptr_node->ptr_aux_max_subzones_z);
-		}
+    for (int i = 0; i < ptr_node->zones_cap; i++)
+    {
+      if (ptr_node->pptr_zones[i] != NULL)
+      {
+        free(ptr_node->pptr_zones[i]);
+      }
+    }
 
+    if (ptr_node->ptr_zone_cap != NULL)
+    {
+      free(ptr_node->ptr_zone_cap);
+      free(ptr_node->ptr_zone_size);
+      free(ptr_node->pptr_zones);
+    }
 
+    // Subzones
+    //  for(int i = 0; i< ptr_node->subzones_cap;i++)
+    //  {
+    //  	if(ptr_node->pptr_subzones[i] != NULL)
+    //  	{
+    //  		free(ptr_node->pptr_subzones[i]);
+    //  	}
+    //  }
+    if (ptr_node->subzones_cap != 0)
+    {
+      // free(ptr_node->ptr_subzone_cap);
+      // free(ptr_node->ptr_subzone_size);
+      free(ptr_node->ptr_aux_min_subzones_x);
+      free(ptr_node->ptr_aux_max_subzones_x);
+      free(ptr_node->ptr_aux_min_subzones_y);
+      free(ptr_node->ptr_aux_max_subzones_y);
+      free(ptr_node->ptr_aux_min_subzones_z);
+      free(ptr_node->ptr_aux_max_subzones_z);
+    }
 
-		if (ptr_node->ptr_aux_idx != NULL)
-		{
-			free(ptr_node->ptr_aux_idx);
-		}
-		if (ptr_node->aux_bool_boundary_anomalies_cap != 0)
-		{
-			free(ptr_node->ptr_aux_bool_boundary_anomalies_x);
-			free(ptr_node->ptr_aux_bool_boundary_anomalies_y);
-			free(ptr_node->ptr_aux_bool_boundary_anomalies_z);
-		}
+    if (ptr_node->ptr_aux_idx != NULL)
+    {
+      free(ptr_node->ptr_aux_idx);
+    }
+    if (ptr_node->aux_bool_boundary_anomalies_cap != 0)
+    {
+      free(ptr_node->ptr_aux_bool_boundary_anomalies_x);
+      free(ptr_node->ptr_aux_bool_boundary_anomalies_y);
+      free(ptr_node->ptr_aux_bool_boundary_anomalies_z);
+    }
 
-		//** >> Links in Tree adaptation **/
-		if (ptr_node->links_cap != 0)
-		{
-			free(ptr_node->ptr_links_old_ord_old);
-			free(ptr_node->ptr_links_new_ord_old);
-			free(ptr_node->ptr_links_old_ord_new);
-			free(ptr_node->ptr_links_new_ord_new);
-		}
+    //* >> Links in Tree adaptation *//
+    if (ptr_node->links_cap != 0)
+    {
+      free(ptr_node->ptr_links_old_ord_old);
+      free(ptr_node->ptr_links_new_ord_old);
+      free(ptr_node->ptr_links_old_ord_new);
+      free(ptr_node->ptr_links_new_ord_new);
+    }
 
+    if (ptr_node == GL_pool_node_end)
+    {
+      ptr_node = NULL;
+    }
+    else
+    {
+      ptr_node = ptr_node->ptr_pt;
+    }
+    free(GL_pool_node_start);
+    GL_pool_node_start = ptr_node;
+  }
 
-
-		if (ptr_node == GL_pool_node_end)
-		{
-			ptr_node = NULL;
-		}
-		else
-		{
-			ptr_node = ptr_node->ptr_pt;
-		}
-		free(GL_pool_node_start);
-		GL_pool_node_start = ptr_node;
-	}
-
-	GL_pool_node_start = NULL;
-	GL_pool_node_end = NULL;
+  GL_pool_node_start = NULL;
+  GL_pool_node_end = NULL;
 }
 
 static int free_nodes_voids(void)
 {
 
-	struct node *ptr_node;
-	int no_pts;
+  struct node *ptr_node;
+  int no_pts;
 
-	int *ptr_aux;
+  int *ptr_aux;
 
-	for (int lv = 0; lv < GL_tentacles_level_max + 1; lv++)
-	{
-		no_pts = GL_tentacles_size[lv];
+  for (int lv = 0; lv < GL_tentacles_level_max + 1; lv++)
+  {
+    no_pts = GL_tentacles_size[lv];
 
-		for (int i = 0; i < no_pts; i++)
-		{
-			ptr_node = GL_tentacles[lv][i];
+    for (int i = 0; i < no_pts; i++)
+    {
+      ptr_node = GL_tentacles[lv][i];
 
-			for (int j = 0; j < ptr_node->box_cap; j++)
-			{
-				if (ptr_node->ptr_cell_struct[j].ptcl_cap > ptr_node->ptr_cell_struct[j].ptcl_size)
-				{
-					
-					if (ptr_node->ptr_cell_struct[j].ptcl_size == 0)
-					{
-						free(ptr_node->ptr_cell_struct[j].ptr_ptcl);
-						ptr_node->ptr_cell_struct[j].ptr_ptcl = NULL;
-					}
-					else
-					{
-						ptr_aux = NULL;
-						ptr_aux = (int *)realloc(ptr_node->ptr_cell_struct[j].ptr_ptcl, ptr_node->ptr_cell_struct[j].ptcl_size * sizeof(int));
-						if (ptr_aux == NULL)
-						{
-							printf("\nError in the realocation of ptr_int\n");
-							return _FAILURE_;
-						}
-						else
-						{
-							ptr_node->ptr_cell_struct[j].ptr_ptcl = ptr_aux;
-						}
-					}
-					
-					ptr_node->ptr_cell_struct[j].ptcl_cap = ptr_node->ptr_cell_struct[j].ptcl_size;
-				}
-			}
+      for (int j = 0; j < ptr_node->box_cap; j++)
+      {
+        if (ptr_node->ptr_cell_struct[j].ptcl_cap > ptr_node->ptr_cell_struct[j].ptcl_size)
+        {
 
-			if (ptr_node->ptr_cell_struct_old != NULL)
-			{
-				for (int j = 0; j < ptr_node->cell_struct_old_cap; j++)
-				{
-					if (ptr_node->ptr_cell_struct_old[j].ptr_ptcl != NULL)
-					{
-						free(ptr_node->ptr_cell_struct_old[j].ptr_ptcl);
-						ptr_node->ptr_cell_struct_old[j].ptr_ptcl = NULL;
-					}
-				}
-				free(ptr_node->ptr_cell_struct_old);
-				ptr_node->ptr_cell_struct_old = NULL;
-				ptr_node->cell_struct_old_cap = 0;
-			}
-		}
-	}
+          if (ptr_node->ptr_cell_struct[j].ptcl_size == 0)
+          {
+            free(ptr_node->ptr_cell_struct[j].ptr_ptcl);
+            ptr_node->ptr_cell_struct[j].ptr_ptcl = NULL;
+          }
+          else
+          {
+            ptr_aux = NULL;
+            ptr_aux = (int *)realloc(ptr_node->ptr_cell_struct[j].ptr_ptcl, ptr_node->ptr_cell_struct[j].ptcl_size * sizeof(int));
+            if (ptr_aux == NULL)
+            {
+              printf("\nError in the realocation of ptr_int\n");
+              return _FAILURE_;
+            }
+            else
+            {
+              ptr_node->ptr_cell_struct[j].ptr_ptcl = ptr_aux;
+            }
+          }
 
-	return _SUCCESS_;
+          ptr_node->ptr_cell_struct[j].ptcl_cap = ptr_node->ptr_cell_struct[j].ptcl_size;
+        }
+      }
+
+      if (ptr_node->ptr_cell_struct_old != NULL)
+      {
+        for (int j = 0; j < ptr_node->cell_struct_old_cap; j++)
+        {
+          if (ptr_node->ptr_cell_struct_old[j].ptr_ptcl != NULL)
+          {
+            free(ptr_node->ptr_cell_struct_old[j].ptr_ptcl);
+            ptr_node->ptr_cell_struct_old[j].ptr_ptcl = NULL;
+          }
+        }
+        free(ptr_node->ptr_cell_struct_old);
+        ptr_node->ptr_cell_struct_old = NULL;
+        ptr_node->cell_struct_old_cap = 0;
+      }
+    }
+  }
+
+  return _SUCCESS_;
 }
 
 int garbage_collector(void)
 {
 
-	TOTAL_MEMORY_NODES = 0;
-	TOTAL_MEMORY_CELDAS = 0;
-	TOTAL_MEMORY_PARTICLES = 0;
-	TOTAL_MEMORY_CELL_STRUCT = 0;
-	TOTAL_MEMORY_CAJAS = 0;
-	TOTAL_MEMORY_GRID_POINTS = 0;
-	TOTAL_MEMORY_GRID_PROPERTIES = 0;
-	TOTAL_MEMORY_AUX = 0;
-	TOTAL_MEMORY_TENTACLES = 0;
-	TOTAL_MEMORY_STACK = 0;
+  TOTAL_MEMORY_NODES = 0;
+  TOTAL_MEMORY_CELDAS = 0;
+  TOTAL_MEMORY_PARTICLES = 0;
+  TOTAL_MEMORY_CELL_STRUCT = 0;
+  TOTAL_MEMORY_CAJAS = 0;
+  TOTAL_MEMORY_GRID_POINTS = 0;
+  TOTAL_MEMORY_GRID_PROPERTIES = 0;
+  TOTAL_MEMORY_AUX = 0;
+  TOTAL_MEMORY_TENTACLES = 0;
+  TOTAL_MEMORY_STACK = 0;
 
-	int cntr_nodes_memory_pool;
-	cntr_nodes_memory_pool = computing_memory();
+  int cntr_nodes_memory_pool;
+  cntr_nodes_memory_pool = computing_memory();
 
-	double sum = TOTAL_MEMORY_NODES + TOTAL_MEMORY_CELDAS + TOTAL_MEMORY_PARTICLES + TOTAL_MEMORY_CELL_STRUCT + TOTAL_MEMORY_CAJAS + TOTAL_MEMORY_GRID_POINTS + TOTAL_MEMORY_GRID_PROPERTIES + TOTAL_MEMORY_AUX + TOTAL_MEMORY_TENTACLES + TOTAL_MEMORY_STACK;
+  double sum = TOTAL_MEMORY_NODES + TOTAL_MEMORY_CELDAS + TOTAL_MEMORY_PARTICLES + TOTAL_MEMORY_CELL_STRUCT + TOTAL_MEMORY_CAJAS + TOTAL_MEMORY_GRID_POINTS + TOTAL_MEMORY_GRID_PROPERTIES + TOTAL_MEMORY_AUX + TOTAL_MEMORY_TENTACLES + TOTAL_MEMORY_STACK;
 
-	printf("\n\n%sMEMORY [MB]:%s\n\n", KRED, KNRM);
+  printf("\n\n%sMEMORY [MB]:%s\n\n", KRED, KNRM);
 
-	double Total_memory[10] = {TOTAL_MEMORY_NODES,
-							   TOTAL_MEMORY_CELDAS,
-							   TOTAL_MEMORY_PARTICLES,
-							   TOTAL_MEMORY_CELL_STRUCT,
-							   TOTAL_MEMORY_CAJAS,
-							   TOTAL_MEMORY_GRID_POINTS,
-							   TOTAL_MEMORY_GRID_PROPERTIES,
-							   TOTAL_MEMORY_AUX,
-							   TOTAL_MEMORY_TENTACLES,
-							   TOTAL_MEMORY_STACK};
+  double Total_memory[10] = {TOTAL_MEMORY_NODES,
+                             TOTAL_MEMORY_CELDAS,
+                             TOTAL_MEMORY_PARTICLES,
+                             TOTAL_MEMORY_CELL_STRUCT,
+                             TOTAL_MEMORY_CAJAS,
+                             TOTAL_MEMORY_GRID_POINTS,
+                             TOTAL_MEMORY_GRID_PROPERTIES,
+                             TOTAL_MEMORY_AUX,
+                             TOTAL_MEMORY_TENTACLES,
+                             TOTAL_MEMORY_STACK};
 
-	char Memory_names[50][100] = {
-		"Nodes",
-		"Celdas",
-		"Particulas",
-		"Cell struct",
-		"Cajas",
-		"Grid Points",
-		"Grid Properties",
-		"Auxiliary",
-		"Tentacles",
-		"Memory Pool",
-	};
+  char Memory_names[50][100] = {
+      "Nodes",
+      "Celdas",
+      "Particulas",
+      "Cell struct",
+      "Cajas",
+      "Grid Points",
+      "Grid Properties",
+      "Auxiliary",
+      "Tentacles",
+      "Memory Pool",
+  };
 
-	for (int i = 0; i < 10; i++)
-	{
-		printf("%s = %f ~ %.1f %%\n", Memory_names[i], Total_memory[i] / 1000000, Total_memory[i] * 100 / sum);
-		
-	}
-	printf("Nodes in memory pool = %d\n", cntr_nodes_memory_pool);
+  for (int i = 0; i < 10; i++)
+  {
+    printf("%s = %f ~ %.1f %%\n", Memory_names[i], Total_memory[i] / 1000000, Total_memory[i] * 100 / sum);
+  }
+  printf("Nodes in memory pool = %d\n", cntr_nodes_memory_pool);
 
-	printf("\n%sTOTAL = %f MB%s\n\n", KMAG, sum / 1000000, KNRM);
+  printf("\n%sTOTAL = %f MB%s\n\n", KMAG, sum / 1000000, KNRM);
 
-	free_memory_pool();
+  free_memory_pool();
 
+  if (free_nodes_voids() == _FAILURE_)
+  {
+    printf("\n\n Error running free_nodes_voids() function\n\n");
+    return _FAILURE_;
+  }
 
-	if (free_nodes_voids() == _FAILURE_)
-	{
-		printf("\n\n Error running free_nodes_voids() function\n\n");
-		return _FAILURE_;
-	}
-
-	return _SUCCESS_;
+  return _SUCCESS_;
 }
