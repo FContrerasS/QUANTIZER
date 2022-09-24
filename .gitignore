@@ -11,6 +11,7 @@ output/
 tests/
 Galaxy_merger_data/
 .vscode/
+doxygen
 
 # Text Files
 

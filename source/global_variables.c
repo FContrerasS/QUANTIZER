@@ -122,7 +122,9 @@ int time_step_method;
 int force_stencil;
 
 //* >> Initializing energy parameters *//
+bool compute_energies_FLAG;
 int potential_energy_type;
+vtype *GL_energies;
 
 //* >> Defining Particles Parameters *//
 vtype *GL_ptcl_mass; // Mass
@@ -293,7 +295,16 @@ static void init_global_force_params(void)
 
 static void init_global_energies_params(void)
 {
+  compute_energies_FLAG = true;
   potential_energy_type = 1; // 0 = Exact, 1 = approximation using potential grid
+  // OBSERVABLES:
+  //   Energies[0] = Kinetic
+  //   Energies[1] = Potential
+  //   Energies[2] = Total = K + P
+  if (compute_energies_FLAG)
+  {
+    GL_energies = (vtype *)malloc(3 * sizeof(vtype));
+  }
 }
 
 static void init_global_ptcl(void)

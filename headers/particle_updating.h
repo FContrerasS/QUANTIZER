@@ -1,7 +1,7 @@
 /*
- * particle_updating_A.h
+ * particle_updating.h
  *
- * Header file of the particle_updating_A.c source file
+ * Header file of the particle_updating.c source file
  *
  * Felipe Contreras
  * felipe.contrerass@postgrado.uv.cl
@@ -24,12 +24,13 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PARTICLEUPDATINGA__
-#define __PARTICLEUPDATINGA__
+#ifndef __PARTICLEUPDATING__
+#define __PARTICLEUPDATING__
 
 #include "common.h"
 #include "space_check.h"
 
 int particle_updating_A(vtype dt);
+void particle_updating_B(vtype dt);
 
 #endif

@@ -1,13 +1,4 @@
 /*
- * tree_adaptation.c
- *
- * Adapting the tree to the next time-step iteration
- *
- * Felipe Contreras
- * felipe.contrerass@postgrado.uv.cl
- */
-
-/*
  * Copyright(c) 2022 Felipe Contreras
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -22,6 +13,34 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ * @file tree_adaptation.c ******************** Documented \e "tree_adaptation.c" module ******************** \n
+ * @brief Your brief summary is here
+ *
+ * \b VERSION \b INFORMATION: Felipe Contreras, 2022-10-01, version 1.0.
+ *
+ * \b SHORT \b DESCRIPTION: not more than 5 lines.
+ *
+ * \b PREREQUISITES: Always used.
+ *
+ * @param[in] z
+ *
+ * \b RETURN: No parameter is returned.
+ *
+ * \b LONG \b DESCRIPTION:
+ *
+ * Here put your long description.
+ *
+ * \li \b ILUSTRATIVE \b EXAMPLES:
+ * - [1]  Trivial.
+ *
+ * \li \b RATIONALES:
+ * - [1]  Trivial.
+ *
+ * \li \b NOTES:
+ * - [1]  Trivial.
  */
 
 #include "tree_adaptation.h"
@@ -49,6 +68,34 @@ static void filling_local_number_ptcl_outside_refinement_zones(struct node *ptr_
 static void moved_unused_child_node_to_memory_pool(struct node *ptr_node);
 static int tentacles_updating(struct node *ptr_node, int tentacle_lv);
 static void updating_tentacles_max_lv(void);
+
+/**
+ * @brief This is the check error function
+ *
+ * \b SHORT \b DESCRIPTION: Check error function.
+ *
+ * \b PREREQUISITES: Always used.
+ * 
+ * @param[in] ptr_node
+ * 
+ * @param[in] type
+ * 
+ * \b RETURN: No parameter is returned.
+ *
+ * \b LONG \b DESCRIPTION:
+ *
+ * check error.
+ *
+ * \b ILUSTRATIVE \b EXAMPLES:
+ * - [1]  Trivial.
+ *
+ * \b RATIONALES:
+ * - [1]  Trivial.
+ *
+ * \b NOTES:
+ * - [1]  Trivial.
+ */
+
 
 void check_error(struct node *ptr_node, int type)
 {

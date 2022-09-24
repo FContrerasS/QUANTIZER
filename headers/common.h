@@ -149,7 +149,9 @@ extern int time_step_method;
 extern int force_stencil;
 
 //* >> Initializing energy parameters *//
+extern bool compute_energies_FLAG;
 extern int potential_energy_type;
+extern vtype *GL_energies;
 
 //* >> Particles *//
 extern vtype *GL_ptcl_mass;

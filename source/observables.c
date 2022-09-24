@@ -28,13 +28,13 @@
 #include "space_check.h"
 
 //* >> Local Functions
-static void kinetic_energy(vtype *energies);
-static void potential_energy_exact(vtype *energies);
-static void computing_particle_potential_head_only(const struct node *ptr_head, vtype *energies);
-static void computing_particle_potential_head_plus_branches(const struct node *ptr_node, vtype *energies);
-static void potential_energy_approximation(vtype *energies);
+static void kinetic_energy();
+static void potential_energy_exact();
+static void computing_particle_potential_head_only(const struct node *ptr_head);
+static void computing_particle_potential_head_plus_branches(const struct node *ptr_node);
+static void potential_energy_approximation();
 
-static void kinetic_energy(vtype *energies)
+static void kinetic_energy()
 {
   vtype _one_over_User_BoxSize = 1.0L / _User_BoxSize_;
 
@@ -45,13 +45,13 @@ static void kinetic_energy(vtype *energies)
     // Kinetic Energy
     particle_v_pow_2 = GL_ptcl_vx[i] * GL_ptcl_vx[i] + GL_ptcl_vy[i] * GL_ptcl_vy[i] + GL_ptcl_vz[i] * GL_ptcl_vz[i];
     // Adding Kinetic energy of the particle
-    energies[0] += GL_ptcl_mass[i] * particle_v_pow_2;
+    GL_energies[0] += GL_ptcl_mass[i] * particle_v_pow_2;
   }
 
-  energies[0] = energies[0] * 0.5 * _one_over_User_BoxSize;
+  GL_energies[0] = GL_energies[0] * 0.5 * _one_over_User_BoxSize;
 }
 
-static void potential_energy_exact(vtype *energies)
+static void potential_energy_exact()
 {
 
   vtype distance_x, distance_y, distance_z; // Axial distance between 2 particles
@@ -73,14 +73,14 @@ static void potential_energy_exact(vtype *energies)
       distance = sqrt(distance);
 
       // Adding Potential energy of the particle
-      energies[1] += GL_ptcl_mass[i] * GL_ptcl_mass[j] / (distance);
+      GL_energies[1] += GL_ptcl_mass[i] * GL_ptcl_mass[j] / (distance);
     }
   }
 
-  energies[1] = -energies[1] * _G_ * _one_over_User_BoxSize;
+  GL_energies[1] = -GL_energies[1] * _G_ * _one_over_User_BoxSize;
 }
 
-static void computing_particle_potential_head_only(const struct node *ptr_head, vtype *energies)
+static void computing_particle_potential_head_only(const struct node *ptr_head)
 {
   int aux_idx;
 
@@ -165,11 +165,11 @@ static void computing_particle_potential_head_only(const struct node *ptr_head, 
       }
     }
     // Energy computation:
-    energies[1] += GL_ptcl_mass[i] * aux_pot;
+    GL_energies[1] += GL_ptcl_mass[i] * aux_pot;
   }
 }
 
-static void computing_particle_potential_head_plus_branches(const struct node *ptr_node, vtype *energies)
+static void computing_particle_potential_head_plus_branches(const struct node *ptr_node)
 {
   int box_idx; // Box index of the node cell
 
@@ -293,7 +293,7 @@ static void computing_particle_potential_head_plus_branches(const struct node *p
         }
 
         // Energy computation:
-        energies[1] += GL_ptcl_mass[ptcl_idx] * aux_pot;
+        GL_energies[1] += GL_ptcl_mass[ptcl_idx] * aux_pot;
       }
       counter_ptcl += cell_ptcl;
     }
@@ -381,7 +381,7 @@ static void computing_particle_potential_head_plus_branches(const struct node *p
           }
 
           // Energy computation:
-          energies[1] += GL_ptcl_mass[ptcl_idx] * aux_pot;
+          GL_energies[1] += GL_ptcl_mass[ptcl_idx] * aux_pot;
         }
         counter_ptcl += cell_ptcl;
       }
@@ -465,7 +465,7 @@ static void computing_particle_potential_head_plus_branches(const struct node *p
   //             }
 
   //             // Energy computation:
-  //             energies[1] += GL_ptcl_mass[ptcl_idx] * aux_pot;
+  //             GL_energies[1] += GL_ptcl_mass[ptcl_idx] * aux_pot;
   //         }
   //     }
   // }
@@ -550,14 +550,14 @@ static void computing_particle_potential_head_plus_branches(const struct node *p
   //                 }
 
   //                 // Energy computation:
-  //                 energies[1] += GL_ptcl_mass[ptcl_idx] * aux_pot;
+  //                 GL_energies[1] += GL_ptcl_mass[ptcl_idx] * aux_pot;
   //             }
   //         }
   //     }
   // }
 }
 
-static void potential_energy_approximation(vtype *energies)
+static void potential_energy_approximation()
 {
   vtype _one_over_User_BoxSize = 1.0L / _User_BoxSize_;
 
@@ -570,33 +570,33 @@ static void potential_energy_approximation(vtype *energies)
       {
         // ptr_node = GL_tentacles[lv][i];
 
-        computing_particle_potential_head_plus_branches(GL_tentacles[lv][i], energies);
+        computing_particle_potential_head_plus_branches(GL_tentacles[lv][i]);
       }
     }
   }
   else
   {
-    computing_particle_potential_head_only(GL_tentacles[0][0], energies);
+    computing_particle_potential_head_only(GL_tentacles[0][0]);
   }
 
-  energies[1] = energies[1] * 0.5 * _G_ * _one_over_User_BoxSize;
+  GL_energies[1] = GL_energies[1] * 0.5 * _G_ * _one_over_User_BoxSize;
 }
 
-int observables(vtype *energies)
+int observables()
 {
-  energies[0] = 0; // Kinetic
-  energies[1] = 0; // Potential
-  energies[2] = 0; // Total
+  GL_energies[0] = 0; // Kinetic
+  GL_energies[1] = 0; // Potential
+  GL_energies[2] = 0; // Total
 
-  kinetic_energy(energies);
+  kinetic_energy();
 
   if (potential_energy_type == 0)
   {
-    potential_energy_exact(energies);
+    potential_energy_exact();
   }
   else if (potential_energy_type == 1)
   {
-    potential_energy_approximation(energies);
+    potential_energy_approximation();
   }
   else
   {
@@ -604,7 +604,7 @@ int observables(vtype *energies)
     return _FAILURE_;
   }
 
-  energies[2] = energies[0] + energies[1];
+  GL_energies[2] = GL_energies[0] + GL_energies[1];
 
   return _SUCCESS_;
 }

@@ -1,5 +1,5 @@
 PROJECT_NAME     = "New Code"
-#OUTPUT_DIRECTORY   = examples/
+OUTPUT_DIRECTORY   = MANUAL/
 
 #EXTRACT_ALL            = YES
 QUIET              = YES
@@ -13,14 +13,14 @@ HTML_COLORSTYLE    = LIGHT
 #@INCLUDE = baseexample.cfg
 HTML_OUTPUT      = html
 LATEX_OUTPUT     = latex
-INPUT            = 	../source \ 
-			../headers \
+INPUT            = 	source \ 
+										headers \
 			
 			
 			
 			
 FILE_PATTERNS            = *.c \
-			   *.h
+			   										*.h
 
 FILE_PATTERNS            = 
 RECURSIVE              = YES

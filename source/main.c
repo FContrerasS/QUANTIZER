@@ -21,43 +21,138 @@
  *
  * \b VERSION \b INFORMATION: Felipe Contreras, 2022-10-01, version 1.0.
  *
- * \b SHORT \b DESCRIPTION: The code Begins and ends with in this scrip. The
- * main function executes all modules; those who are executed only (a) \b one
+ * \b SHORT \b DESCRIPTION: The code Begins and ends in this scrip. The main.c
+ * script executes all modules; those who are executed only (a) \b one
  * \b time: global_variables.c, input.c, initialization.c, tree_construction.c,
  * and those who are executed (b) \b cyclically: grid_density.c, potential.c,
  * grid_acceleration.c, particle_acceleration.c observables.c,
- * output_snapshots.c, timestep.c, particle_updating_A.c, tree_adaptation.c, and
- * particle_updating_B.c.
- *
+ * output_snapshots.c, timestep.c, particle_updating.c, and tree_adaptation.c
  *
  * \b PREREQUISITES: Always used.
  *
- * \b RETURN: There is no return parameter.
+ * \b RETURN: No parameter is returned.
  *
  * \b LONG \b DESCRIPTION:
  *
- * Here put your long description.
+ * The goal of the main.c script is to call every module in the code to perform
+ * the whole N-body simulation. The flux can be see it in the figure (work in 
+ * progress), and it is explained below:
  *
- * \li \b ILUSTRATIVE \b EXAMPLES:
- * - [1] Trivial.
+ * - [0]  <b> THE N-BODY SIMULATION STARTS....</b>
  *
- * \li \b RATIONALES:
- * - [1] Trivial.
+ * - [1]  Reading global variables and the input parameters with the module
+ *        global_variables.c.
  *
- * \li \b NOTES:
- * - [1] Trivial.
+ * - [2]  Reading the user's initial particle distribution with the module
+ *        input.c.
+ *
+ * - [3]  Using the module initialization.c, \b (a) some particles global
+ *        parameters, \b (b) the coarsest level of refinement, also known as the
+ *        header node, and \b (c) the tentacles which go through all the nodes
+ *        in the tree are initialized.
+ *
+ * - [4]  If there is more than 1 level of refinement, the tree of nodes is
+ *        built with the module tree_construction.c.
+ *
+ * - [5]  Using the initial particle distribution given by the user, the grid
+ *        density in every node is computed through the module grid_density.c.
+ *        Currently the only method to perform this is the Cloud In Cell (CIC)
+ *        scheme.
+ *
+ * - [6]  Using the grid density as input in the Poisson equation, the module
+ *        potential.c computes the grid potential for every node. Currently the
+ *        methods implemented to perform this task are the method of Multigrid
+ *        with Gauss-Saidel or Jacoby, and the Successive Over Relaxation method
+ *        (SOR).
+ *
+ * - [7]  Using the density in every node the grid acceleration is computing
+ *        through the module grid_acceleration.c. There are 2 methods currently
+ *        implemented, 3-stencil and 5-stencil points. However, the boundary
+ *        grid points only use the 3-stencil scheme.
+ *
+ * - [8]  In the module particle_acceleration.c, the acceleration of the
+ *        particles is computed with the Cloud In Cell (CIC) scheme.
+ *
+ * - [9]  The observables are computed using the module observables.c. It is
+ *        possible to compute the potential energy using the exact method of
+ *        particle to particle interaction of order O(N^2) or with an
+ *        approximation of order O(N) using the grid potential obtained through
+ *        the Poisson equation.
+ *
+ * - [10] The particle properties and observables are exported using the module
+ *        output_snapshots.c. At this point, the code has computed the 0
+ *        time-step.
+ *
+ * - [11] Now, a while cycle is performed running until reaching the final time
+ *        or the maximum number of time-steps, both given by the user. The
+ *        steps of the cycle while below:
+ *
+ * - [12] Using the Courant-Friedrichs-Levy number given by the user, the next
+ *        time-step is computed through the module timestep.c. Currently there
+ *        are two methods to perform this: using the velocity only or using the
+ *        velocity and the acceleration.
+ *
+ * - [13] In the scheme of Leapfrog, the particles are updated by a half-step of
+ *        of velocity (kick) and by a step of position (drift), also known as
+ *        the \e "Predictor step", through the module particle_updating.c.
+ *
+ * - [14] The particle acceleration and the grid density of the coarsest level
+ *        of refinement are reset in the module reset.c.
+ *
+ * - [15] The well known \e "Adaptive Mesh Refinement" (AMR) scheme is performed
+ *        through the adaptation of the tree structure of nodes in the module
+ *        tree_adaptation.c.
+ *
+ * - [16] Same as the step [5], the grid density is recomputed using the module
+ *        grid_density.c
+ *
+ * - [17] Same as the step [6], the grid potential is recomputed using the
+ *        module potential.c
+ *
+ * - [18] Same as the step [7], the grid acceleration is recomputed using the
+ *        module grid_acceleration.c
+ *
+ * - [19] Same as the step [8], the the acceleration of the particles is
+ *        recomputed using the module particle_acceleration.c
+ *
+ * - [20] Similar the step [13], the particle velocity is updated by the
+ *        remaining half-step of the Leapfrog scheme (kick). This update is also
+ *        known as the \e "Corrector step", and it is executed in the module
+ *        particle_updating.c.
+ *
+ * - [21] Same as the step [9], the observables are recomputed using the module
+ *        observables.c
+ *
+ * - [22] Same as the step [10], the particle properties and observables are
+ *        recomputed using the module output_snapshots.c
+ *
+ * - [23] If the user deems it convenient, a Garbage Collector of RAM is
+ *        performed through the function garbage_collector().
+ *
+ * - [24] At this point a time-step cycle has been performed. Steps [12] to
+ *        step [23] are repeated until reaching the final time or the maximum
+ *        number of time-steps, both given by the user.
+ *
+ * - [25] Finished the previous cycle while, a .txt file with the main
+ *        parameters used in the simulation are exported through the function
+ *        output_main_parameters().
+ *
+ * - [26] <b> THE N-BODY SIMULATION ENDS....</b>
+ *
+ * \b RATIONALES:
+ *  - [1] Trivial.
+ *
+ * \b NOTES:
+ *  - [1] Trivial.
  */
 
 #include "main.h"
 
 /**
- * @brief The main.c function
+ * @brief Make the calls of all the modules for each N-body simulation.
  *
- * \b SHORT \b DESCRIPTION: not more than 5 lines.
- *
- * \li \b NOTES:
- * - [1] Note 1.
- * - [2] Note 2.
+ * \b SHORT \b DESCRIPTION: Make the calls of all the modules for each 
+ * simulation.
  *
  * <b> SEE main.c FOR A WHOLE DESCRIPTION.</b>
  */
@@ -83,11 +178,9 @@ int main()
    */
 
   // OBSERVABLES:
-  //   Energies[0] = Kinetic
-  //   Energies[1] = Potential
-  //   Energies[2] = Total = K + P
-  vtype *energies;
-  energies = (vtype *)calloc(3, sizeof(vtype));
+  //   GL_energies[0] = Kinetic
+  //   GL_energies[1] = Potential
+  //   GL_energies[2] = Total = K + P
 
   //* >> GLOBAL VARIABLES **/
   // printf("Global variables\n");
@@ -204,13 +297,20 @@ int main()
   //* >> OBSERVABLES **/
   // printf("Initial Observables\n");
   GL_clock_begin = clock();
-  observables(energies);
+  if (compute_energies_FLAG)
+  {
+    if (observables() == _FAILURE_)
+    {
+      printf("\n\n Error running observables() function\n\n");
+      return _FAILURE_;
+    }
+  }
   GL_times[13] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 
   //* >> OUPUT SNAPSHOTS **/
   // printf("Initial Snapshot output\n");
   GL_clock_begin = clock();
-  if (output_snapshots(energies, actualtime, Number_outputs) == _FAILURE_)
+  if (output_snapshots(actualtime, Number_outputs) == _FAILURE_)
   {
     printf("\n\n Error running output_snapshots() function\n\n");
     return _FAILURE_;
@@ -315,18 +415,20 @@ int main()
       //* >> OBSERVABLES **/
       // printf("Observables\n");
       GL_clock_begin = clock();
-      if (observables(energies) == _FAILURE_)
+      if (compute_energies_FLAG)
       {
-        printf("\n\n Error running observables() function\n\n");
-        return _FAILURE_;
+        if (observables() == _FAILURE_)
+        {
+          printf("\n\n Error running observables() function\n\n");
+          return _FAILURE_;
+        }
       }
-
       GL_times[13] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
 
       //* >> OUPUT SNAPSHOTS **/
       // printf("Output snapshots\n");
       GL_clock_begin = clock();
-      if (output_snapshots(energies, actualtime, Number_outputs) == _FAILURE_)
+      if (output_snapshots(actualtime, Number_outputs) == _FAILURE_)
       {
         printf("\n\n Error running output_snapshots() function\n\n");
         return _FAILURE_;

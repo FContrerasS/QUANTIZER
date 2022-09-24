@@ -138,7 +138,7 @@ static int create_output_folders(void)
   return _SUCCESS_;
 }
 
-int output_snapshots(const vtype *energies, vtype actualtime, int snapshot)
+int output_snapshots(vtype actualtime, int snapshot)
 {
 
   int size = GL_no_ptcl_final * sizeof(vtype);
@@ -207,7 +207,10 @@ int output_snapshots(const vtype *energies, vtype actualtime, int snapshot)
   fwrite(GL_ptcl_vx_conversion, size, 1, file);
   fwrite(GL_ptcl_vy_conversion, size, 1, file);
   fwrite(GL_ptcl_vz_conversion, size, 1, file);
-  fwrite(energies, 3 * sizeof(vtype), 1, file);
+  if (compute_energies_FLAG)
+  {
+    fwrite(GL_energies, 3 * sizeof(vtype), 1, file);
+  }
   fwrite(&time_Megayear, sizeof(vtype), 1, file);
   fclose(file);
 
