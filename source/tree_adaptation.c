@@ -17,30 +17,181 @@
 
 /**
  * @file tree_adaptation.c ******************** Documented \e "tree_adaptation.c" module ******************** \n
- * @brief Your brief summary is here
+ * @brief Adaptation of the tree to the new particle configuration.
  *
  * \b VERSION \b INFORMATION: Felipe Contreras, 2022-10-01, version 1.0.
  *
- * \b SHORT \b DESCRIPTION: not more than 5 lines.
+ * \b Reminder:
+ * - [a] \b Node: The most basic structure of the tree which represent an
+ *                isolated refinement zone at a given level of refinement.
  *
- * \b PREREQUISITES: Always used.
+ * - [b] \b Tentacles:  Pointer structure which has access to every node in
+ *                      every level of refinement in the tree.
  *
- * @param[in] z
+ * \b SHORT \b DESCRIPTION: Adaptation of the tree of refinement zones to the
+ * new particle configuration. The nodes are created, removed, or adapted
+ * according to the new refinement zones. The structure of tentacles is modified
+ * to pointer to the new configurations of nodes of the tree.
+ *
+ * \b PREREQUISITES: Always called, but only used if the user uses more than one
+ * level of refinement, i.e. \f$ l_{min} < l_{max} \f$.
  *
  * \b RETURN: No parameter is returned.
  *
  * \b LONG \b DESCRIPTION:
  *
- * Here put your long description.
+ * The goal of the tree_adaptation.c module is to perform the adaptation of the
+ * tree of refinements, creating, removing, and adapting the nodes. In this
+ * module, the tentacles structure is also adapted to the new node
+ * configuration. The modifications go from the finest level of refinement to
+ * the coarsest one, running over every node of those levels. How this process
+ * should be understood is by considering the parent node which is the current
+ * node of the cycle, its child nodes, and its grandchild nodes. In every cycle
+ * over a node, the parent node performs modifications over the spatial geometry
+ * of its child nodes without modifying its geometry or the grandchild geometry,
+ * but only modifying his refinement zones and who will be the new parents of
+ * its grandchild nodes. The flux can be seen in the figure (work in progress),
+ * and it is explained below:
+ *
+ * - [0]  <b> THE tree_adaptation.c MODULE STARTS....</b>
+ *
+ * - [1]  The tree_adaptation() begins to work.
+ *
+ * - [2]  Some useful parameters are defined.
+ *
+ * - [3]  A for cycle running over the level of refinement begins but avoids
+ *        the finest level of refinement. The cycle goes from finner to coarser
+ *        level of refinement.
+ *
+ * - [4]  The number of tentacles in the next level of refinement and the number
+ *        of parent nodes in the actual level of refinement are reinitialized.
+ *
+ * - [5]  A for cycle over all the nodes in the level of refinement begins. From
+ *        now on we will call these nodes parent nodes.
+ *
+ * - [6]  The cell structure of the parent node is updated using the child nodes
+ *        through the function updating_cell_struct(). Here the cell information
+ *        of the parent node for every cell in a refinement zone is updated.
+ *
+ * - [7]  Using the function initialization_node_boxes(), the box associated
+ *        with the parent node is reinitialized, and the old box is stored in an
+ *        auxiliary box.
+ *
+ * - [8]  With the new configuration of the particles obtained in the
+ *        particle_updating.c module, cells in the parent node are labeled as
+ *        refinement cells (-1 in the code language) in the reinitialized box
+ *        through the function fill_cell_ref().
+ *
+ * - [9]  Using the new map of refinement cells, the different refinement zones
+ *        (blocks in code language) in the parent node are built through the
+ *        function fill_zones_ref(). Every one of these zones is independent of
+ *        the other.
+ *
+ * - [10] Using the old map of refinement and the new map of refinement of the
+ *        parent node (old and new boxes), a link between the old zones and new
+ *        zones of refinement is created through the function create_links().
+ *        Every old zone of refinement is associated with a single
+ *        non-associated new zone of refinement. In the following steps the old
+ *        refinement zones associated with a new one will be adapted, and for
+ *        the new zones without association new child nodes will be created to
+ *        match with these zones. Remember that refinement zones correspond to
+ *        child nodes of the parent node.
+ *
+ * - [11] Cells that previously required refinement but are no anymore removed
+ *        from the child node associated with that refinement zone of the parent
+ *        node using the function remov_cells_nolonger_require_refinement().
+ *
+ * - [12] Using the function adapt_child_nodes(), the already child nodes
+ *        corresponding to the old refinement zones linked with a new refinement
+ *        zone are adapted in their parameter to fit with the new zone of
+ *        refinement.
+ *
+ * - [13] Using the function create_new_child_nodes(), the new refinement zones
+ *        without a link with any old zone are fitted in a new child node
+ *        obtained using the memory pool.
+ *
+ * - [14] Every new refinement zone is associated with an old child node or with
+ *        a new child node, but the cell structure of these child nodes needs
+ *        to be inserted. Using the function moving_old_child_to_new_child(),
+ *        the old child cells which belong to old refinement zones are
+ *        transferred to their new child node which corresponds to the linked
+ *        new zone of refinement. Another way to understand the goal of this
+ *        function is that it moves cells from one child node to another child
+ *        node.
+ *
+ * - [15] Some cells require refinement in the new map but didn't on the old
+ *        map. These cells are put in the corresponding new child nodes through
+ *        the function moving_new_zones_to_new_child().
+ *
+ * - [16] As the new can have different IDs of identification, they require to
+ *        be sorted properly. The function reorganization_child_node() do that
+ *        task.
+ *
+ * - [17] Similar to the step before, the grandchild nodes need to be sorted
+ *        properly. The function reorganization_grandchild_node() connect every
+ *        grandchild node with its right child node.
+ *
+ * - [18] Thanks to the previous step, the grandchild nodes are put in the right
+ *        child node. However, they are not necessarily sorted according to the
+ *        child box status of the refinement zone. So, the function
+ *        updating_ref_zones_grandchildren() is in charge of modifying the child
+ *        box status to add the right grandchild node identification.
+ *
+ * - [19] Besides to contain the status of every cell in the node as No-Exist
+ *        (-4), exist (-3), refinement (\f$ \geq \f$ 0), the boxes of the nodes
+ *        contains the information if the node is in the boundary of the
+ *        simulation box. To add this information, the function
+ *        adding_boundary_simulation_box_status_to_children_nodes() is called.
+ *
+ * - [20] Using the function update_child_grid_points() the grid points of the
+ *        child nodes are updated.
+ *
+ * - [21] In a for cycle, using the function
+ *        filling_local_number_ptcl_outside_refinement_zones() the number of
+ *        particles outside of the refinement zones in every child node is
+ *        computed.
+ *
+ * - [22] Using the function moved_unused_child_node_to_memory_pool() the child
+ *        nodes which was removed from the parent node are put in the memory
+ *        pool to be used in the future for any other parent node as its child
+ *        node.
+ *
+ * - [23] Using the function tentacles_updating() the tentacles structure is
+ *        updated with the new chlild node distribution.
+ *
+ * - [24] At this point the cycle over the level of refinement and the cycle
+ *        over the parent nodes end. The cycles went from step [3]
+ *        to step [23].
+ *
+ * - [25] The particles in the Head node, which represent the whole coarsest
+ *        level of refinement, are computed as in the step [21] using the
+ *        function filling_local_number_ptcl_outside_refinement_zones().
+ *
+ * - [26] The new maximum number of level of refinement is updated through the
+ *        function updating_tentacles_max_lv().
+ *
+ * - [27] <b> THE tree_adaptation.c MODULE ENDS....</b>
  *
  * \li \b ILUSTRATIVE \b EXAMPLES:
  * - [1]  Trivial.
  *
  * \li \b RATIONALES:
- * - [1]  Trivial.
- *
+ * - [1]  It is possible to join several functions in only one function, as
+ *        for example the functions fill_cell_ref() and fill_zones_ref(), which
+ *        are in charge of labeling the new box of the parent node with the 
+ *        cells to be refined, and create the refinement zones using this new
+ *        map of refinement respetively. However, we decide to separate the more
+ *        possible the function in order to increase the modularity and the 
+ *        cleaness of the code.
+ * 
  * \li \b NOTES:
- * - [1]  Trivial.
+ * - [1]  The order in what some functions are called by the code is important.
+ *        For example, the function which remove cells from old child nodes
+ *        remov_cells_nolonger_require_refinement(), must be called before to
+ *        the function which adapts the old child nodes to fit the new ones
+ *        adapt_child_nodes(). This is because the adaptation of the old child
+ *        nodes can rebuilt the old box to a new one erasing the old
+ *        information.
  */
 
 #include "tree_adaptation.h"
@@ -61,8 +212,8 @@ static int moving_old_child_to_new_child(struct node *ptr_node);
 static int moving_new_zones_to_new_child(struct node *ptr_node);
 static void reorganization_child_node(struct node *ptr_node);
 static int reorganization_grandchild_node(struct node *ptr_node);
-static void adding_boundary_simulation_box_status_to_children_nodes(struct node *ptr_node);
 static void updating_ref_zones_grandchildren(struct node *ptr_node);
+static void adding_boundary_simulation_box_status_to_children_nodes(struct node *ptr_node);
 static int update_child_grid_points(struct node *ptr_node);
 static void filling_local_number_ptcl_outside_refinement_zones(struct node *ptr_node);
 static void moved_unused_child_node_to_memory_pool(struct node *ptr_node);
@@ -5512,6 +5663,76 @@ static int reorganization_grandchild_node(struct node *ptr_node)
   return _SUCCESS_;
 }
 
+static void updating_ref_zones_grandchildren(struct node *ptr_node)
+{
+  struct node *ptr_ch;
+  struct node *ptr_grandch;
+
+  int box_idx_x_ch; // Box index in X direcction of the child cell
+  int box_idx_y_ch; // Box index in Y direcction of the child cell
+  int box_idx_z_ch; // Box index in Z direcction of the child cell
+  int box_idx_ch;   // Box index of the child cell
+
+  int aux_idx_x;
+  int aux_idx_y;
+  int aux_idx_z;
+
+  int lv = ptr_node->lv;
+
+  int box_real_dim_X_ch;
+  int box_real_dim_X_times_Y_ch;
+
+  for (int ch = 0; ch < ptr_node->zones_size; ch++)
+  {
+    ptr_ch = ptr_node->pptr_chn[ch];
+
+    box_real_dim_X_ch = ptr_ch->box_real_dim_x;
+    box_real_dim_X_times_Y_ch = ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
+
+    for (int grandch = 0; grandch < ptr_ch->chn_size; grandch++)
+    {
+      ptr_grandch = ptr_ch->pptr_chn[grandch];
+      for (int cell_idx = 0; cell_idx < ptr_grandch->cell_size; cell_idx += 8)
+      {
+
+        aux_idx_x = ptr_grandch->ptr_cell_idx_x[cell_idx] >> 1;
+        aux_idx_y = ptr_grandch->ptr_cell_idx_y[cell_idx] >> 1;
+        aux_idx_z = ptr_grandch->ptr_cell_idx_z[cell_idx] >> 1;
+
+        box_idx_x_ch = aux_idx_x - ptr_ch->box_ts_x;
+        box_idx_y_ch = aux_idx_y - ptr_ch->box_ts_y;
+        box_idx_z_ch = aux_idx_z - ptr_ch->box_ts_z;
+
+        if (ptr_ch->pbc_crosses_the_boundary_simulation_box == true)
+        {
+          if (aux_idx_x > ptr_ch->box_max_x)
+          {
+            box_idx_x_ch -= (1 << (lv + 1));
+          }
+
+          if (aux_idx_y > ptr_ch->box_max_y)
+          {
+            box_idx_y_ch -= (1 << (lv + 1));
+          }
+
+          if (aux_idx_z > ptr_ch->box_max_z)
+          {
+            box_idx_z_ch -= (1 << (lv + 1));
+          }
+        }
+
+        box_idx_ch = box_idx_x_ch + box_idx_y_ch * box_real_dim_X_ch + box_idx_z_ch * box_real_dim_X_times_Y_ch;
+
+        // box_idx_x_ch = (ptr_grandch->ptr_cell_idx_x[cell_idx] >> 1) - ptr_ch->box_ts_x;
+        // box_idx_y_ch = (ptr_grandch->ptr_cell_idx_y[cell_idx] >> 1) - ptr_ch->box_ts_y;
+        // box_idx_z_ch = (ptr_grandch->ptr_cell_idx_z[cell_idx] >> 1) - ptr_ch->box_ts_z;
+        // box_idx_ch = box_idx_x_ch + box_idx_y_ch * box_real_dim_X_ch + box_idx_z_ch * box_real_dim_X_times_Y_ch;
+        ptr_ch->ptr_box[box_idx_ch] = grandch;
+      }
+    }
+  }
+}
+
 static void adding_boundary_simulation_box_status_to_children_nodes(struct node *ptr_node)
 {
 
@@ -5720,76 +5941,6 @@ static void adding_boundary_simulation_box_status_to_children_nodes(struct node 
             }
           }
         }
-      }
-    }
-  }
-}
-
-static void updating_ref_zones_grandchildren(struct node *ptr_node)
-{
-  struct node *ptr_ch;
-  struct node *ptr_grandch;
-
-  int box_idx_x_ch; // Box index in X direcction of the child cell
-  int box_idx_y_ch; // Box index in Y direcction of the child cell
-  int box_idx_z_ch; // Box index in Z direcction of the child cell
-  int box_idx_ch;   // Box index of the child cell
-
-  int aux_idx_x;
-  int aux_idx_y;
-  int aux_idx_z;
-
-  int lv = ptr_node->lv;
-
-  int box_real_dim_X_ch;
-  int box_real_dim_X_times_Y_ch;
-
-  for (int ch = 0; ch < ptr_node->zones_size; ch++)
-  {
-    ptr_ch = ptr_node->pptr_chn[ch];
-
-    box_real_dim_X_ch = ptr_ch->box_real_dim_x;
-    box_real_dim_X_times_Y_ch = ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
-
-    for (int grandch = 0; grandch < ptr_ch->chn_size; grandch++)
-    {
-      ptr_grandch = ptr_ch->pptr_chn[grandch];
-      for (int cell_idx = 0; cell_idx < ptr_grandch->cell_size; cell_idx += 8)
-      {
-
-        aux_idx_x = ptr_grandch->ptr_cell_idx_x[cell_idx] >> 1;
-        aux_idx_y = ptr_grandch->ptr_cell_idx_y[cell_idx] >> 1;
-        aux_idx_z = ptr_grandch->ptr_cell_idx_z[cell_idx] >> 1;
-
-        box_idx_x_ch = aux_idx_x - ptr_ch->box_ts_x;
-        box_idx_y_ch = aux_idx_y - ptr_ch->box_ts_y;
-        box_idx_z_ch = aux_idx_z - ptr_ch->box_ts_z;
-
-        if (ptr_ch->pbc_crosses_the_boundary_simulation_box == true)
-        {
-          if (aux_idx_x > ptr_ch->box_max_x)
-          {
-            box_idx_x_ch -= (1 << (lv + 1));
-          }
-
-          if (aux_idx_y > ptr_ch->box_max_y)
-          {
-            box_idx_y_ch -= (1 << (lv + 1));
-          }
-
-          if (aux_idx_z > ptr_ch->box_max_z)
-          {
-            box_idx_z_ch -= (1 << (lv + 1));
-          }
-        }
-
-        box_idx_ch = box_idx_x_ch + box_idx_y_ch * box_real_dim_X_ch + box_idx_z_ch * box_real_dim_X_times_Y_ch;
-
-        // box_idx_x_ch = (ptr_grandch->ptr_cell_idx_x[cell_idx] >> 1) - ptr_ch->box_ts_x;
-        // box_idx_y_ch = (ptr_grandch->ptr_cell_idx_y[cell_idx] >> 1) - ptr_ch->box_ts_y;
-        // box_idx_z_ch = (ptr_grandch->ptr_cell_idx_z[cell_idx] >> 1) - ptr_ch->box_ts_z;
-        // box_idx_ch = box_idx_x_ch + box_idx_y_ch * box_real_dim_X_ch + box_idx_z_ch * box_real_dim_X_times_Y_ch;
-        ptr_ch->ptr_box[box_idx_ch] = grandch;
       }
     }
   }
@@ -6555,62 +6706,6 @@ int tree_adaptation(void)
         }
         GL_times[34] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
-        // if (ptr_node->ID == 0 && ptr_node->lv == 8 && ptr_node->zones_size == 41)
-        // {
-        //     printf("zones size = %d\n",ptr_node->zones_size);
-        //     int box_idx_node;
-        //     printf("Information just after create the nez reifnment zones of ");
-        //     printf("the parent of the ID 35 issue\n");
-        //     printf("box_real_dim_x = %d\n", ptr_node->box_real_dim_x);
-        //     printf("box_real_dim_y = %d\n", ptr_node->box_real_dim_y);
-        //     printf("box_real_dim_z = %d\n", ptr_node->box_real_dim_z);
-        //     for (int j = 0; j < ptr_node->ptr_zone_size[35]; j++)
-        //     {
-        //         box_idx_node = ptr_node->ptr_box_idx[ptr_node->pptr_zones[35][j]];
-        //         printf("element = %d, box_idx = %d, box value = %d\n", j, box_idx_node, ptr_node->ptr_box[box_idx_node]);
-        //         printf("cell_idx_x = %d, cell_idx_y = %d, cell_idx_z = %d\n", ptr_node->ptr_cell_idx_x[ptr_node->pptr_zones[35][j]], ptr_node->ptr_cell_idx_y[ptr_node->pptr_zones[35][j]], ptr_node->ptr_cell_idx_z[ptr_node->pptr_zones[35][j]] );
-        //         printf("cell ptcl = %d, cell mass = %f\n", ptr_node->ptr_cell_struct[box_idx_node].ptcl_size, (double)ptr_node->ptr_cell_struct[box_idx_node].cell_mass);
-        //     }
-
-        //     printf("\nmid box = 168656, Analizing neibhoring in box\n");
-
-        //     for (int kk = -1; kk < 2;kk++)
-        //     {
-        //         for (int jj = -1; jj < 2;jj++)
-        //         {
-        //             for (int ii = -1; ii < 2;ii++)
-        //             {
-        //                 box_idx_node = ptr_node->ptr_box_idx[ptr_node->pptr_zones[35][0]] + ii + jj * ptr_node->box_real_dim_x + kk * ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
-        //                 printf("\n ");
-        //                 if (ii == -1)
-        //                     printf("-x ");
-        //                 else if(ii == 0)
-        //                     printf("x ");
-        //                 else
-        //                     printf("+x ");
-
-        //                 if (jj == -1)
-        //                     printf("-y ");
-        //                 else if (jj == 0)
-        //                     printf("y ");
-        //                 else
-        //                     printf("+y ");
-
-        //                 if (kk == -1)
-        //                     printf("-z ");
-        //                 else if (kk == 0)
-        //                     printf("z ");
-        //                 else
-        //                     printf("+z ");
-
-        //                 printf("value: box_idx = %d, box value = %d, cell ptcl = %d, cell mass = %f\n\n", box_idx_node, ptr_node->ptr_box[box_idx_node], ptr_node->ptr_cell_struct[box_idx_node].ptcl_size, (double)ptr_node->ptr_cell_struct[box_idx_node].cell_mass);
-        //             }
-        //         }
-        //     }
-        // }
-
-        // printf("\nptr_node->zones size = %d, chn size = %d\n",ptr_node->zones_size,ptr_node->chn_size);
-
         if (ptr_node->zones_size > 0)
         {
           //* >> Create links *//
@@ -6701,12 +6796,6 @@ int tree_adaptation(void)
           }
           GL_times[43] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
-          //* >> Adding boundary simulation box information
-          // printf("\n\nAdding boundary simulation box information\n\n");
-          aux_clock = clock();
-          adding_boundary_simulation_box_status_to_children_nodes(ptr_node);
-          GL_times[41] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
-
           //* >> Updating refinement zones of the grandchildren *//
           // printf("\n\nUpdating refinement zones of the grandchildren\n\n");
           aux_clock = clock();
@@ -6715,6 +6804,12 @@ int tree_adaptation(void)
             updating_ref_zones_grandchildren(ptr_node);
           }
           GL_times[44] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+
+          //* >> Adding boundary simulation box information
+          // printf("\n\nAdding boundary simulation box information\n\n");
+          aux_clock = clock();
+          adding_boundary_simulation_box_status_to_children_nodes(ptr_node);
+          GL_times[41] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
           //* >> Updating children grid points *//
           // printf("\n\nUpdating children grid points\n\n");

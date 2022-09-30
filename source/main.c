@@ -21,6 +21,12 @@
  *
  * \b VERSION \b INFORMATION: Felipe Contreras, 2022-10-01, version 1.0.
  *
+ * - [a] \b Node: The most basic structure of the tree which represent an
+ *                isolated refinement zone at a given level of refinement.
+ *
+ * - [b] \b Tentacles:  Pointer structure which has access to every node in
+ *                      every level of refinement in the tree.
+ *
  * \b SHORT \b DESCRIPTION: The code Begins and ends in this scrip. The main.c
  * script executes all modules; those who are executed only (a) \b one
  * \b time: global_variables.c, input.c, initialization.c, tree_construction.c,
@@ -35,7 +41,7 @@
  * \b LONG \b DESCRIPTION:
  *
  * The goal of the main.c script is to call every module in the code to perform
- * the whole N-body simulation. The flux can be see it in the figure (work in 
+ * the whole N-body simulation. The flux can be seen in the figure (work in
  * progress), and it is explained below:
  *
  * - [0]  <b> THE N-BODY SIMULATION STARTS....</b>
