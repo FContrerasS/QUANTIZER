@@ -151,7 +151,7 @@ static vtype timestep_computation_vel_only(const struct node *ptr_node)
   myvmax = 0; // Minium velocity designated by the user
 
   int counter_ptcl = 0;
-  int total_ptcl = ptr_node->local_no_ptcl_to_use_outside_refinement_zones;
+  int total_ptcl = ptr_node->no_ptcl_outs_ref_zones;
   int cell_ptcl;
   int cell_idx = -1;
 
@@ -317,7 +317,7 @@ static vtype timestep_computation_vel_plus_accel(const struct node *ptr_node)
   mydt = _MAX_dt_;
 
   int counter_ptcl = 0;
-  int total_ptcl = ptr_node->local_no_ptcl_to_use_outside_refinement_zones;
+  int total_ptcl = ptr_node->no_ptcl_outs_ref_zones;
   int cell_ptcl;
   int cell_idx = -1;
 

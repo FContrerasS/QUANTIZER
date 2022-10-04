@@ -1,13 +1,4 @@
 /*
- * initialize_node.h
- *
- * Header file of the initialize_node.c source file
- *
- * Felipe Contreras
- * felipe.contrerass@postgrado.uv.cl
- */
-
-/*
  * Copyright(c) 2022 Felipe Contreras
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -24,160 +15,235 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @file initialize_node.h ******************** Documented \e "initialize_node.h" header ******************** \n
+ *
+ * @brief This is the header file of the initialize_node.c script.
+ *
+ * **VERSION INFORMATION**: Felipe Contreras, 2022-10-01, version 1.0.
+ *
+ * **DESCRIPTION**: This is the header file of the initialize_node.c script.
+ *
+ * **PREREQUISITES**: Always used.
+ */
+
 #ifndef __INITIALIZENODE__
 #define __INITIALIZENODE__
 
 #include "common.h"
 
+/**
+ * @brief Stand-alone unit representing a refinement zone of its parent node.
+ *
+ * **SHORT DESCRIPTION**: Stand-alone unit to other nodes in the same
+ * level of refinement. Nodes represent a refinement zone of their parent node.
+ *
+ * **Key Concepts**:
+ * - [a] **Capacity**: Maximum amount of elements that can be held in an array.
+ *
+ * - [b] **Size**: Current number of elements in an array.
+ *
+ * - [c] **Smallest Box**:  Logical array with box geometry containing all the
+ * existing cells of the node, that is, cells with status \f$ > -4 \f$, using
+ * the smallest possible space.
+ *
+ * - [d] **Code Space**: In a typical simulation, the user chooses the coarsest
+ * level of refinement \f$ l_{min}\f$, the maximum level \f$ l_{max}\f$, and the
+ * simulation box with any length unit, and any coordinate system. But, the code
+ * always transforms the user box in the coarsest level of refinement 
+ * \f$ l_{min}\f$ to fit in a cube of side equal to \f$ 2^{l_{min}} \f$ 
+ * localized at the position (0,0,0) in a coordinate system, so the cube can be 
+ * described as the set of points which belong to \f$ [0,2^{l_{min}})\times 
+ * [0,2^{l_{min}})\times [0,2^{l_{min}})\f$. The 3-Dimensional space which goes 
+ * from \f$ (-\infty,\infty)\times (-\infty,\infty)\times (-\infty,\infty)\f$ 
+ * contains this cube of side \f$ 2^{l_{min}} \f$ localized at (0,0,0) is called 
+ * the \f${\color{red} \mathbf{ Code\ Space\ of\ refinement\ l_{min} }}\f$. For 
+ * any level of refinement *l*, the box is localized in the same coordinate 
+ * (0,0,0) but using a space equal to \f$ [0,2^l)^3\f$.
+ *
+ * - [e] **Logical Space**: Because of the enormous memory space required to 
+ * store a full level of refinement *l* of size \f$ (2^{l})^3 \f$, the concept 
+ * of boxes is implemented in every node. Boxes are logical entities that 
+ * represent only a small piece of space of the *Code Space of refinement level 
+ * l*, where *l* is the level of refinement of the node. This representation of 
+ * the space is called the \f${\color{red} \mathbf{ Logical\ Space}}\f$. For 
+ * every node at every level of refinement, this *Logical Space* has dimensions 
+ * of \f$ [0,A)\times[0,B)\times[0,C) \f$, where *A, B, C* are the dimensions of 
+ * the box of the node.
+ *
+ * **LONG DESCRIPTION**:
+ *
+ * The node structure is a Stand-alone unit to other nodes in the same level of
+ * refinement. They can be almost completely updated without the use of any 
+ * other exterior information except for the boundary conditions which come from
+ * external agents, such as its parent node or the user's initial conditions. 
+ * The basic idea of the nodes is to represent a refinement zone of the parent 
+ * node. So, as these zones live in the parent node, its refinement cells live 
+ * in the child node as if they were normal cells.
+ *
+ * **ILLUSTRATIVE EXAMPLES**:
+ * - [a]  Trivial.
+ *
+ * **RATIONALES**:
+ * - [a]  a
+ *
+ * **NOTES**:
+ * - [a]  a
+ */
+
 struct node
 {
   //* >> Global node properties *//
-  int ID; // Node ID
-  int lv; // Level of refinement
+
+  int ID; /**< Number \f$(\geq 0)\f$ of identification*/
+  int lv; /**< Level of refinement*/
 
   //* >> Boxes *//
-  int *ptr_box;       // Box contaning the cells status of the minimal box cells and more
-  int *ptr_box_old;   // Auxiliary box contaning used to adatp the box to a new time-step
-  int box_cap;        // Maximum capacity of the box
-  int box_real_dim_x; // Real dimension X of the box
-  int box_real_dim_y; // Real dimension Y of the box
-  int box_real_dim_z; // Real dimension Z of the box
+  int *ptr_box;       /**< Array containing the Box of the cells status */
+  int *ptr_box_old;   /**< Array containing the old box of the cell status of a previous time-step, and used to adapt the box ::ptr_box to a new time-step */
+  int box_cap;        /**< *Capacity* (see \ref node "Key Concepts [a]") of the boxes ::ptr_box and ::ptr_box_old */
+  int box_real_dim_x; /**< Dimension X of the boxes ::ptr_box and ::ptr_box_old */
+  int box_real_dim_y; /**< Same as ::box_real_dim_x but in the Y direction */
+  int box_real_dim_z; /**< Same as ::box_real_dim_x but in the Z direction */
   // int box_real_dim_x_old; // Auxiliary real dimension X of the box
   // int box_real_dim_y_old; // Auxiliary real dimension X of the box
   // int box_real_dim_z_old; // Auxiliary real dimension X of the box
-  int box_dim_x; // Dimension X of the box (new and old)
-  int box_dim_y; // Dimension Y of the box (new and old)
-  int box_dim_z; // Dimension Z of the box (new and old)
-  int box_ts_x;  // Index translation from real local index cell to box index at dimension X
-  int box_ts_y;  // Index translation from real local index cell to box index at dimension Y
-  int box_ts_z;  // Index translation from real local index cell to box index at dimension Z
+
+  int box_dim_x; /**< Dimension X of the *Smallest Box* (see \ref node "Key Concepts [c]") of the boxes ::ptr_box and ::ptr_box_old */
+  int box_dim_y; /**< Same as ::box_dim_x but in the Y direction */
+  int box_dim_z; /**< Same as ::box_dim_x but in the Z direction */
+
+  int box_ts_x;  /**< Translation constant between the cell index in the *Code Space* and the box index in the *Logical Space* (see \ref node "Key Concepts [d,e]") in the X direction */
+  int box_ts_y;  /**< Same as ::box_ts_x but in the Y direction */
+  int box_ts_z;  /**< Same as ::box_ts_x but in the Z direction */
   // int box_ts_x_old;       // Auxiliary index translation from real local index cell to box index at dimension X
   // int box_ts_y_old;       // Auxiliary ndex translation from real local index cell to box index at dimension Y
   // int box_ts_z_old;       // Auxiliary ndex translation from real local index cell to box index at dimension Z
-  int box_min_x;      // Already minimal box value index in the real local space at the dimension X
-  int box_min_y;      // Already minimal box value index in the real local space at the dimension Y
-  int box_min_z;      // Already minimal box value index in the real local space at the dimension Z
-  int box_max_x;      // Already maximum box value index in the real local space at the dimension X
-  int box_max_y;      // Already maximum box value index in the real local space at the dimension Y
-  int box_max_z;      // Already maximum box value index in the real local space at the dimension Z
-  bool box_check_fit; // Check if the new box will fit in the old one
+  int box_min_x;      /**< Minimum cell index at the dimension X in the *Code Space* (see \ref node "Key Concepts [d]") that defines the *Smallest Box* (see \ref node "Key Concepts [c]") associated with the boxes ::ptr_box and ::ptr_box_old */
+  int box_min_y;      /**< Same as ::box_min_x but in the Y direction */
+  int box_min_z;      /**< Same as ::box_min_x but in the Z direction */
+  int box_max_x;      /**< Maximum cell index at the dimension X in the *Code Space* (see \ref node "Key Concepts [d]") that defines the *Smallest Box* (see \ref node "Key Concepts [c]") associated with the boxes ::ptr_box and ::ptr_box_old */
+  int box_max_y;      /**< Same as ::box_max_x but in the Y direction */
+  int box_max_z;      /**< Same as ::box_max_x but in the Z direction */
+  bool box_check_fit; /**< Check if the new box fits in the old one */
 
   //* >> Cells in the node *//
-  int *ptr_cell_idx_x; // X index position of the cells in the node at level l
-  int *ptr_cell_idx_y; // Y index position of the cells in the node at level l
-  int *ptr_cell_idx_z; // Z index position of the cells in the node at level l
-  int *ptr_box_idx;
-  int cell_cap;  // Maximum capacity of the array of cells in the node
-  int cell_size; // Number of existing cells in the node
+  int *ptr_cell_idx_x; /**< Cell index at X in the *Code Space* (see \ref node "Key Concepts [d]") of the cells in the node */
+  int *ptr_cell_idx_y; /**< Same as ::ptr_cell_idx_x but in the Y direction */
+  int *ptr_cell_idx_z; /**< Same as ::ptr_cell_idx_x but in the Z direction */
+  int *ptr_box_idx;    /**< Box index in the *Logical Space* (see \ref node "Key Concepts [e]") of the cells in the node  */
+  int cell_cap;        /**< *Capacity* (see \ref node "Key Concepts [a]") of cell arrays ::ptr_cell_idx_x (\ref ::ptr_cell_idx_y "y", \ref ::ptr_cell_idx_z "z"), and ::ptr_box_idx   */
+  int cell_size;       /**< *Size* (see \ref node "Key Concepts [b]") of cell arrays ::ptr_cell_idx_x (\ref ::ptr_cell_idx_y "y", \ref ::ptr_cell_idx_z "z"), and ::ptr_box_idx */
 
   //* >> Struct of cells (Particles and cell mass)
-  struct cell_struct *ptr_cell_struct;
-  struct cell_struct *ptr_cell_struct_old;
-  int cell_struct_old_cap;
+  struct cell_struct *ptr_cell_struct; /**< Array containing the cell structures of the node */
+  struct cell_struct *ptr_cell_struct_old; /**< Array containing the old cell structures of the node, and used to adapt the cell structure array ::ptr_cell_struct to a new time-step */
+  int cell_struct_old_cap;                 /**< *Capacity* (see \ref node "Key Concepts [a]") of the cell structure arrays ::ptr_cell_struct and ::ptr_cell_struct_old */
 
   //* >> Total mass in the node
-  vtype local_mass; // Total mass in the node
+  vtype node_mass; /**< Total mass of the particles inside of the node */
+
   //* >> Total number of particles in the node
-  int local_no_ptcl_full_node;                       // Total mass in the node
-  int local_no_ptcl_to_use_outside_refinement_zones; // Total number of particles to use or update in the part of the node outisde of the refinement zones
+  int no_ptcl_full_node;                       /**< Total number of particles in the node*/
+  int no_ptcl_outs_ref_zones; /**< Total number of particles outisde of the refinement zones of the node */
 
   //* >> Grid points *//
-  int *ptr_intr_grid_cell_idx_x; // X index of the interior grid point
-  int *ptr_intr_grid_cell_idx_y; // Y index position of the cells in the node at level l
-  int *ptr_intr_grid_cell_idx_z; // Z index position of the cells in the node at level l
-  int *ptr_intr_box_grid_idx;    // Indexes of the interior grid points of the block
+  int *ptr_intr_grid_cell_idx_x; /**< Grid cell index at X in the *Code Space* (see \ref node "Key Concepts [d]") of the interior grid points in the node */
+  int *ptr_intr_grid_cell_idx_y; /**< Same as ::ptr_intr_grid_cell_idx_x but in the Y direction */
+  int *ptr_intr_grid_cell_idx_z; /**< Same as ::ptr_intr_grid_cell_idx_x but in the Z direction */
+  int *ptr_intr_box_grid_idx;    /**< Box grid index in the *Logical Space* (see \ref node "Key Concepts [e]") of the interior grid points in the node */
+  int grid_intr_cap;             /**< *Capacity* (see \ref node "Key Concepts [a]") of the interior grid points arrays ::ptr_intr_grid_cell_idx_x (\ref ::ptr_bdry_grid_cell_idx_y "y", \ref ::ptr_bdry_grid_cell_idx_z "z"), and ::ptr_intr_box_grid_idx */
+  int grid_intr_size;            /**< *Size* (see \ref node "Key Concepts [b]") of the interior grid points arrays ::ptr_intr_grid_cell_idx_x (\ref ::ptr_bdry_grid_cell_idx_y "y", \ref ::ptr_bdry_grid_cell_idx_z "z"), and ::ptr_intr_box_grid_idx */
 
-  int *ptr_bder_grid_cell_idx_x; // X index of the interior grid point
-  int *ptr_bder_grid_cell_idx_y; // Y index position of the cells in the node at level l
-  int *ptr_bder_grid_cell_idx_z; // Z index position of the cells in the node at level l
-  int *ptr_bder_box_grid_idx;    // Indexes of the interior grid points of the block
+  int *ptr_bdry_grid_cell_idx_x; /**< Grid cell index at X in the *Code Space* (see \ref node "Key Concepts [d]") of the boundary grid points in the node */
+  int *ptr_bdry_grid_cell_idx_y; /**< Same as ::ptr_bdry_grid_cell_idx_x but in the Y direction */
+  int *ptr_bdry_grid_cell_idx_z; /**< Same as ::ptr_bdry_grid_cell_idx_x but in the Z direction */
+  int *ptr_bdry_box_grid_idx;    /**< Box grid index in the *Logical Space* (see \ref node "Key Concepts [e]") of the boundary grid points in the node */
+  int grid_bdry_cap;             /**< *Capacity* (see \ref node "Key Concepts [a]") of the boundary points arrays ::ptr_bdry_grid_cell_idx_x (\ref ::ptr_bdry_grid_cell_idx_y "y", \ref ::ptr_bdry_grid_cell_idx_z "z"), and ::ptr_bdry_box_grid_idx */
+  int grid_bdry_size;            /**< *Size* (see \ref node "Key Concepts [b]") of the boundary points arrays ::ptr_bdry_grid_cell_idx_x (\ref ::ptr_bdry_grid_cell_idx_y "y", \ref ::ptr_bdry_grid_cell_idx_z "z"), and ::ptr_bdry_box_grid_idx */
 
-  int *ptr_SIMULATION_BOUNDARY_grid_cell_idx_x; // X index of the boundary of the simulation grid point
-  int *ptr_SIMULATION_BOUNDARY_grid_cell_idx_y; // Y index position of the cells in the node at level l
-  int *ptr_SIMULATION_BOUNDARY_grid_cell_idx_z; // Z index position of the cells in the node at level l
-  int *ptr_SIMULATION_BOUNDARY_box_grid_idx;
+  int *ptr_sim_bdry_grid_cell_idx_x; /**< Grid cell index at X in the *Code Space* (see \ref node "Key Concepts [d]") of the *boundary simulation* grid points in the node */
+  int *ptr_sim_bdry_grid_cell_idx_y; /**< Same as ::ptr_sim_bdry_grid_cell_idx_x but in the Y direction */
+  int *ptr_sim_bdry_grid_cell_idx_z; /**< Same as ::ptr_sim_bdry_grid_cell_idx_x but in the Z direction */
+  int *ptr_sim_bdry_box_grid_idx;    /**< Box grid index in the *Logical Space* (see \ref node "Key Concepts [e]") of the *boundary simulation* grid points in the node */
+  int grid_sim_bdry_cap;             /**< *Capacity* (see \ref node "Key Concepts [a]") of the *boundary simulation* points arrays ::ptr_sim_bdry_grid_cell_idx_x (\ref ::ptr_sim_bdry_grid_cell_idx_y "y", \ref ::ptr_sim_bdry_grid_cell_idx_z "z"), and ::ptr_sim_bdry_box_grid_idx */
+  int grid_sim_bdry_size;            /**< *Size* (see \ref node "Key Concepts [b]") of the *boundary simulation* points arrays ::ptr_sim_bdry_grid_cell_idx_x (\ref ::ptr_sim_bdry_grid_cell_idx_y "y", \ref ::ptr_sim_bdry_grid_cell_idx_z "z"), and ::ptr_sim_bdry_box_grid_idx */
 
-  int grid_intr_cap;  // Maximum cap of the grid interior points array of the block
-  int grid_bder_cap;  // Maximum cap of the grid border points array of the block
-  int grid_intr_size; // Number of existing grid interior points in the block
-  int grid_bder_size; // Number of existing grid border points in the block
-
-  int grid_SIMULATION_BOUNDARY_cap;  // Maximum cap of the boundary simulation grid points array of the block
-  int grid_SIMULATION_BOUNDARY_size; // Number of the boundary simulation grid points array of the block
-
-  //* Potential, Acceleration and density of the grid *//
-  vtype *ptr_pot; // Array with the potential of the node. It is of the same size than the real box grid points
-  vtype *ptr_pot_old;
-  vtype *ptr_ax;           // Same as potential but with the acceleration
-  vtype *ptr_ay;           // Same as potential but with the acceleration
-  vtype *ptr_az;           // Same as potential but with the acceleration
-  vtype *ptr_d;            // Array with the density grid of the node.
-  int grid_properties_cap; // Maximum cap of the grid properties
+  //* Potential, Acceleration, and density of the grid *//
+  vtype *ptr_pot; /**< Array containing the potential of the box grid points in the node */
+  vtype *ptr_pot_old;      /**< Array containing the previous time-step potential of the box grid points in the node, used to compute the error of the solution of the Poisson equation */
+  vtype *ptr_ax;           /**< Array containing the acceleration in the X direction of the box grid points in the node  */
+  vtype *ptr_ay;           /**< Same as ::ptr_ax but in the Y direction */
+  vtype *ptr_az;           /**< Same as ::ptr_ax but in the Z direction */
+  vtype *ptr_d;            /**< Array containing the density of the box grid points in the node */
+  int grid_properties_cap; /**< *Capacity* (see \ref node "Key Concepts [a]") of the grid potentials ::ptr_pot, ::ptr_pot_old, accelerations ::ptr_ax, ::ptr_ay, ::ptr_az, and density ptr_d */
 
   //* >> Tree structure *//
-  struct node **pptr_chn; // Pointer to children pointers
-  struct node *ptr_pt;    // Pointer to parent node
-  int chn_cap;            // Maximum capacity in the number of children nodes
-  int chn_size;           // Number of children of the node
+  struct node **pptr_chn; /**< Pointer to child nodes pointer array */
+  struct node *ptr_pt;    /**< Pointer to parent node */
+  int chn_cap;            /**< *Capacity* (see \ref node "Key Concepts [a]") of the child nodes array ::pptr_chn */
+  int chn_size;           /**< *Size* (see \ref node "Key Concepts [b]") of the child nodes array ::pptr_chn  */
 
-  //* >> Auxililary arrays to go from old box to new box *//
-  int *ptr_cell_ref;  // Index of the cell to be refined in the node cells array
-  int cell_ref_cap;   // capacity of the refined cell array
-  int cell_ref_size;  // Number of cells to be refined
-  int **pptr_zones;   // Pointer to refined zones in the node. Each zone contain the cell index of ptr_cell_idx_X,Y,Z of it
-  int zones_cap;      // capacity in the number of refined zones in the node
-  int zones_size;     // Number of refined zones in the node
-  int *ptr_zone_cap;  // capacity of each refined zone
-  int *ptr_zone_size; // Number of cells in each refined zone
+  //* >> Auxiliary arrays to go from old box to new box *//
+  int *ptr_cell_ref;  /**< Auxiliary array containing the positional indices of the node's cell arrays, for example ::ptr_cell_idx_x, which will require refinement */
+  int cell_ref_cap;   /**< *Capacity* (see \ref node "Key Concepts [a]") of the auxiliary array of positional indices of cell to refine ::ptr_cell_ref */
+  int cell_ref_size;  /**< *Size* (see \ref node "Key Concepts [b]") of the auxiliary array of positional indices of cell to refine ::ptr_cell_ref */
+  int **pptr_zones;   /**< Auxiliary pointer to the array of pointers to the refined zones. Each zone contains the same type of positional indies as the auxiliary array ::ptr_cell_ref */
+  int zones_cap;      /**< *Capacity* (see \ref node "Key Concepts [a]") of the refined zones auxiliary pointer array ::pptr_zones */
+  int zones_size;     /**< *Size* (see \ref node "Key Concepts [b]") of the refined zones auxiliary pointer array ::pptr_zones */
+  int *ptr_zone_cap;  /**< Auxiliary array of the *Capacities* (see \ref node "Key Concepts [a]") of each refined zone pointed by the array ::pptr_zones */
+  int *ptr_zone_size; /**< Auxiliary array of the *Sizes* (see \ref node "Key Concepts [b]") of each refined zone pointed by the array ::pptr_zones */
 
-  int *ptr_aux_idx;                        // Auxiliary array, is used in the initial tree structure to save the index of the boxes elements and other
-  bool *ptr_aux_bool_boundary_anomalies_x; // Only for periodic boundary conditions, it sais if the corresponding refinement zone crosses the simulation at X axis.
-  bool *ptr_aux_bool_boundary_anomalies_y;
-  bool *ptr_aux_bool_boundary_anomalies_z;
-  int aux_idx_cap;
-  int aux_bool_boundary_anomalies_cap;
+  int *ptr_aux_idx;                    /**< Auxiliary array, multiple uses */
+  int aux_idx_cap;                     /**< *Capacity* (see \ref node "Key Concepts [a]") of the auxiliary array ::ptr_aux_idx */
+  bool *ptr_pbc_bool_bdry_anomalies_x; /**< Only for periodic boundary conditions (pbc). Flag array saying if the corresponding refinement zone crosses the simulation box at the X axis. */
+  bool *ptr_pbc_bool_bdry_anomalies_y; /**< Same as ::ptr_pbc_bool_bdry_anomalies_x but in the Y direction */
+  bool *ptr_pbc_bool_bdry_anomalies_z; /**< Same as ::ptr_pbc_bool_bdry_anomalies_x but in the Z direction */
+  int pbc_bool_bdry_anomalies_cap;     /**< *Capacity* (see \ref node "Key Concepts [a]") of the boolean anomaly arrays ::ptr_pbc_bool_bdry_anomalies_x (\ref ::ptr_pbc_bool_bdry_anomalies_y "y", \ref ::ptr_pbc_bool_bdry_anomalies_z "z") */
 
   // Sub zones for periodic boundary conditions
   // int **pptr_subzones;    // Pointer to refined subzones in the node
-  int subzones_cap;  // capacity in the number of refined subzones in the node
-  int subzones_size; // Number of refined subzones in the node
-                     // int *ptr_subzone_cap;  // capacity of each refined subzone
-                     // int *ptr_subzone_size; // Number of cells in each refined subzone
-  int *ptr_aux_min_subzones_x;
-  int *ptr_aux_max_subzones_x;
-  int *ptr_aux_min_subzones_y;
-  int *ptr_aux_max_subzones_y;
-  int *ptr_aux_min_subzones_z;
-  int *ptr_aux_max_subzones_z;
+  int *ptr_pbc_min_subzones_x; /**< Only for periodic boundary conditions (pbc). Minimum cell index at the dimension X in the *Code Space* (see \ref node "Key Concepts [d]") that defines the *Smallest Box* (see \ref node "Key Concepts [c]") associated with the corresponding subzone */
+  int *ptr_pbc_min_subzones_y; /**< Same as ::ptr_pbc_min_subzones_x but in the Y direction */
+  int *ptr_pbc_min_subzones_z; /**< Same as ::ptr_pbc_min_subzones_x but in the Z direction */
+  int *ptr_pbc_max_subzones_x; /**< Only for periodic boundary conditions (pbc). Maximum cell index at the dimension X in the *Code Space* (see \ref node "Key Concepts [d]") that defines the *Smallest Box* (see \ref node "Key Concepts [c]") associated with the corresponding subzone */
+  int *ptr_pbc_max_subzones_y; /**< Same as ::ptr_pbc_max_subzones_x but in the Y direction */
+  int *ptr_pbc_max_subzones_z; /**< Same as ::ptr_pbc_max_subzones_x but in the Z direction */
+  int pbc_subzones_cap;        /**< *Capacity* (see \ref node "Key Concepts [a]") of minimum and maximum cell indices arrays ::ptr_pbc_min_subzones_x (\ref ::ptr_pbc_min_subzones_y "y", \ref ::ptr_pbc_min_subzones_z "z"), and ::ptr_pbc_max_subzones_x (\ref ::ptr_pbc_max_subzones_y "y", \ref ::ptr_pbc_max_subzones_z "z") */
+  int pbc_subzones_size;       /**< *Size* (see \ref node "Key Concepts [b]") of minimum and maximum cell indices arrays ::ptr_pbc_min_subzones_x (\ref ::ptr_pbc_min_subzones_y "y", \ref ::ptr_pbc_min_subzones_z "z"), and ::ptr_pbc_max_subzones_x (\ref ::ptr_pbc_max_subzones_y "y", \ref ::ptr_pbc_max_subzones_z "z")*/
 
   //* >> Links in Tree adaptation *//
-  int *ptr_links_old_ord_old;
-  int *ptr_links_new_ord_old;
-  int *ptr_links_old_ord_new;
-  int *ptr_links_new_ord_new;
-  int links_cap;
+  int *ptr_links_old_ord_old; /**< Array of non-negative integer values sorted from least to greatest, representing the identification ID of the old zones to be matched with the new zones in the node */
+  int *ptr_links_new_ord_new; /**< Array of non-negative integer values sorted from least to greatest, representing the identification ID of the new zones to be matched with the old zones in the node */
+  int *ptr_links_new_ord_old; /**< Array of non-negative integer values sorted by the old zone order ::ptr_links_old_ord_old, representing the identification ID of the new zones to be matched with the old zones in the node */
+  int *ptr_links_old_ord_new; /**< Array of non-negative integer values sorted by the new zone order ::ptr_links_new_ord_new, representing the identification ID of the old zones to be matched with the new zones in the node */
+  int links_cap;              /**< *Capacity* (see \ref node "Key Concepts [a]") of the links arrays ::ptr_links_old_ord_old, ::ptr_links_new_ord_new, ::ptr_links_new_ord_old, and ::ptr_links_old_ord_new  */
 
   //* >> Boundary of the simulation box *//
-  bool boundary_simulation_contact;
-  bool boundary_simulation_contact_x;
-  bool boundary_simulation_contact_y;
-  bool boundary_simulation_contact_z;
+  bool sim_bdry_contact;   /**< Flag saying if the node touch the simulation box boundary */
+  bool sim_bdry_contact_x; /**< Flag saying if the node touch the simulation box boundary at the X axis */
+  bool sim_bdry_contact_y; /**< Same as ::sim_bdry_contact_x but in the Y direction */
+  bool sim_bdry_contact_z; /**< Same as ::sim_bdry_contact_x but in the Z direction */
 
   // The following parameters are only used for the Periodic boundary conditions (boundary_type = 0), pbc = periodic boundary conditions
-  bool pbc_crosses_the_boundary_simulation_box;
-  bool pbc_crosses_the_boundary_simulation_box_x;
-  bool pbc_crosses_the_boundary_simulation_box_y;
-  bool pbc_crosses_the_boundary_simulation_box_z;
+  bool pbc_crosses_sim_box_bdry;   /**< Only for periodic boundary conditions (pbc). Flag saying if the node crosses the simulation box boundary, i.e. the node has at least one cell inside of the box and another outside of it */
+  bool pbc_crosses_sim_box_bdry_x; /**< Only for periodic boundary conditions (pbc). Flag saying if the node crosses the simulation box boundary at the X axis, i.e. the node has at least one cell inside of the box and another outside of it in the X axis */
+  bool pbc_crosses_sim_box_bdry_y; /**< Same as ::pbc_crosses_sim_box_bdry_x but in the Y direction */
+  bool pbc_crosses_sim_box_bdry_z; /**< Same as ::pbc_crosses_sim_box_bdry_x but in the Z direction */
 
-  bool pbc_crosses_the_whole_simulation_box;
-  bool pbc_crosses_the_whole_simulation_box_x;
-  bool pbc_crosses_the_whole_simulation_box_y;
-  bool pbc_crosses_the_whole_simulation_box_z;
+  bool pbc_crosses_whole_sim_box;   /**< Only for periodic boundary conditions (pbc). Flag saying if the node has at least one of its dimensions the same size as the simulation box at that refinement level */
+  bool pbc_crosses_whole_sim_box_x; /**< Only for periodic boundary conditions (pbc). Flag saying if the node has the same size X dimension than the simulation box at that refinement level */
+  bool pbc_crosses_whole_sim_box_y; /**< Same as ::pbc_crosses_whole_sim_box_x but in the Y direction */
+  bool pbc_crosses_whole_sim_box_z; /**< Same as ::pbc_crosses_whole_sim_box_x but in the Z direction */
 
-  // The following parameter is a flag used to correct box indexes used only in
-  //  periodic boundary conditions, when the box pass from a crosses the whole simulation box
-  //  to only crosees the boundary of the simulation and vice versa
-  bool pbc_corrections_due_to_change_from_croses_in_box_simulation;
+  /*
+   * The following parameter pbc_correction_due_pbc_flag is a flag used to 
+   * correct box indices used only in periodic boundary conditions when the box 
+   * pass from a crosses the whole simulation box to just cross the boundary 
+   * of the simulation and vice versa.
+   */
+
+  bool pbc_correction_due_pbc_flag; /**< Only for periodic boundary conditions (pbc). Flag saying if required to do corrections in the function moving_old_child_to_new_child() of the tree_adaptation.c module to the node cells because of changes in the pbc flags */
 };
 
 void initialize_node(struct node *ptr_head);

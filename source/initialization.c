@@ -92,7 +92,7 @@ static int initializing_head_node(void)
   ptr_head->ptr_box = (int *)malloc(box_side_lmin_pow3 * sizeof(int));
   ptr_head->ptr_box_old = (int *)malloc(box_side_lmin_pow3 * sizeof(int));
   int box_idx; // Index in the box
-  //-6 = teleport cell (Only for boundary_type 0) ; -5 = cell outside of the box simulation (Only for boundary_type 1 or 2); -4 = cell out of the node, the cell is in the parent node
+  //-6 = teleport cell (Only for bdry_cond_type 0) ; -5 = cell outside of the box simulation (Only for bdry_cond_type 1 or 2); -4 = cell out of the node, the cell is in the parent node
   for (int k = 0; k < box_side_lmin; k++)
   {
     for (int j = 0; j < box_side_lmin; j++)
@@ -102,7 +102,7 @@ static int initializing_head_node(void)
         box_idx = i + j * box_side_lmin + k * box_side_lmin_pow2;
         if (i <= bder_os_sim - 1 || i >= box_side_lmin - bder_os_sim || j <= bder_os_sim - 1 || j >= box_side_lmin - bder_os_sim || k <= bder_os_sim - 1 || k >= box_side_lmin - bder_os_sim)
         {
-          ptr_head->ptr_box[box_idx] = boundary_type == 0 ? -6 : -5;
+          ptr_head->ptr_box[box_idx] = bdry_cond_type == 0 ? -6 : -5;
         }
         else
         {
@@ -187,10 +187,10 @@ static int initializing_head_node(void)
   }
 
   //* >> Total mass in the node
-  ptr_head->local_mass = GL_total_mass_initial;
+  ptr_head->node_mass = GL_total_mass_initial;
   //* >> Total number of particles in the node
-  ptr_head->local_no_ptcl_full_node = GL_no_ptcl_initial;
-  ptr_head->local_no_ptcl_to_use_outside_refinement_zones = GL_no_ptcl_initial;
+  ptr_head->no_ptcl_full_node = GL_no_ptcl_initial;
+  ptr_head->no_ptcl_outs_ref_zones = GL_no_ptcl_initial;
 
   //* >> Grid points *//
   ptr_head->grid_intr_cap = (no_lmin_cell - 1) * (no_lmin_cell - 1) * (no_lmin_cell - 1);
@@ -200,14 +200,14 @@ static int initializing_head_node(void)
   ptr_head->ptr_intr_grid_cell_idx_z = (int *)malloc(ptr_head->grid_intr_cap * sizeof(int));
   ptr_head->ptr_intr_box_grid_idx = (int *)malloc(ptr_head->grid_intr_cap * sizeof(int));
 
-  ptr_head->grid_SIMULATION_BOUNDARY_cap = (no_lmin_cell + 1) * (no_lmin_cell + 1) * (no_lmin_cell + 1) - ptr_head->grid_intr_cap;
-  ptr_head->grid_SIMULATION_BOUNDARY_size = 0;
-  ptr_head->ptr_SIMULATION_BOUNDARY_grid_cell_idx_x = (int *)malloc(ptr_head->grid_SIMULATION_BOUNDARY_cap * sizeof(int));
-  ptr_head->ptr_SIMULATION_BOUNDARY_grid_cell_idx_y = (int *)malloc(ptr_head->grid_SIMULATION_BOUNDARY_cap * sizeof(int));
-  ptr_head->ptr_SIMULATION_BOUNDARY_grid_cell_idx_z = (int *)malloc(ptr_head->grid_SIMULATION_BOUNDARY_cap * sizeof(int));
-  ptr_head->ptr_SIMULATION_BOUNDARY_box_grid_idx = (int *)malloc(ptr_head->grid_SIMULATION_BOUNDARY_cap * sizeof(int));
+  ptr_head->grid_sim_bdry_cap = (no_lmin_cell + 1) * (no_lmin_cell + 1) * (no_lmin_cell + 1) - ptr_head->grid_intr_cap;
+  ptr_head->grid_sim_bdry_size = 0;
+  ptr_head->ptr_sim_bdry_grid_cell_idx_x = (int *)malloc(ptr_head->grid_sim_bdry_cap * sizeof(int));
+  ptr_head->ptr_sim_bdry_grid_cell_idx_y = (int *)malloc(ptr_head->grid_sim_bdry_cap * sizeof(int));
+  ptr_head->ptr_sim_bdry_grid_cell_idx_z = (int *)malloc(ptr_head->grid_sim_bdry_cap * sizeof(int));
+  ptr_head->ptr_sim_bdry_box_grid_idx = (int *)malloc(ptr_head->grid_sim_bdry_cap * sizeof(int));
 
-  //* Filling grid points indexes *//
+  //* Filling grid points indices *//
 
   for (int k = bder_os_sim; k < box_side_lmin + 1 - bder_os_sim; k++)
   {
@@ -219,11 +219,11 @@ static int initializing_head_node(void)
         //* >> Border grid point *//
         if (i == bder_os_sim || i == box_side_lmin - bder_os_sim || j == bder_os_sim || j == box_side_lmin - bder_os_sim || k == bder_os_sim || k == box_side_lmin - bder_os_sim)
         {
-          ptr_head->ptr_SIMULATION_BOUNDARY_grid_cell_idx_x[ptr_head->grid_SIMULATION_BOUNDARY_size] = i + ptr_head->box_ts_x;
-          ptr_head->ptr_SIMULATION_BOUNDARY_grid_cell_idx_y[ptr_head->grid_SIMULATION_BOUNDARY_size] = j + ptr_head->box_ts_y;
-          ptr_head->ptr_SIMULATION_BOUNDARY_grid_cell_idx_z[ptr_head->grid_SIMULATION_BOUNDARY_size] = k + ptr_head->box_ts_z;
-          ptr_head->ptr_SIMULATION_BOUNDARY_box_grid_idx[ptr_head->grid_SIMULATION_BOUNDARY_size] = box_grid_idx;
-          ptr_head->grid_SIMULATION_BOUNDARY_size += 1; // Increasing the border grid points
+          ptr_head->ptr_sim_bdry_grid_cell_idx_x[ptr_head->grid_sim_bdry_size] = i + ptr_head->box_ts_x;
+          ptr_head->ptr_sim_bdry_grid_cell_idx_y[ptr_head->grid_sim_bdry_size] = j + ptr_head->box_ts_y;
+          ptr_head->ptr_sim_bdry_grid_cell_idx_z[ptr_head->grid_sim_bdry_size] = k + ptr_head->box_ts_z;
+          ptr_head->ptr_sim_bdry_box_grid_idx[ptr_head->grid_sim_bdry_size] = box_grid_idx;
+          ptr_head->grid_sim_bdry_size += 1; // Increasing the border grid points
         }
         //* >> Interior grid point *//
         else
@@ -252,22 +252,22 @@ static int initializing_head_node(void)
   initial_potential_and_acceleration_head(ptr_head);
 
   //* >> Boundary of the simulation box *//
-  ptr_head->boundary_simulation_contact = true;
-  ptr_head->boundary_simulation_contact_x = true;
-  ptr_head->boundary_simulation_contact_y = true;
-  ptr_head->boundary_simulation_contact_z = true;
+  ptr_head->sim_bdry_contact = true;
+  ptr_head->sim_bdry_contact_x = true;
+  ptr_head->sim_bdry_contact_y = true;
+  ptr_head->sim_bdry_contact_z = true;
 
-  if (boundary_type == 0)
+  if (bdry_cond_type == 0)
   {
-    ptr_head->pbc_crosses_the_boundary_simulation_box = true;
-    ptr_head->pbc_crosses_the_boundary_simulation_box_x = true;
-    ptr_head->pbc_crosses_the_boundary_simulation_box_y = true;
-    ptr_head->pbc_crosses_the_boundary_simulation_box_z = true;
+    ptr_head->pbc_crosses_sim_box_bdry = true;
+    ptr_head->pbc_crosses_sim_box_bdry_x = true;
+    ptr_head->pbc_crosses_sim_box_bdry_y = true;
+    ptr_head->pbc_crosses_sim_box_bdry_z = true;
 
-    ptr_head->pbc_crosses_the_whole_simulation_box = true;
-    ptr_head->pbc_crosses_the_whole_simulation_box_x = true;
-    ptr_head->pbc_crosses_the_whole_simulation_box_y = true;
-    ptr_head->pbc_crosses_the_whole_simulation_box_z = true;
+    ptr_head->pbc_crosses_whole_sim_box = true;
+    ptr_head->pbc_crosses_whole_sim_box_x = true;
+    ptr_head->pbc_crosses_whole_sim_box_y = true;
+    ptr_head->pbc_crosses_whole_sim_box_z = true;
   }
 
   return _SUCCESS_;

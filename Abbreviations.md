@@ -46,13 +46,15 @@ children = chn
 
 parent = pt
 
-border = bder
+bounder = bdre
+
+boundary = bdry
 
 interior = intr
 
 simulation = sim
 
-outside = os
+outside = outs
 
 counter = cntr
 

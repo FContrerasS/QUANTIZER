@@ -38,7 +38,7 @@ static void computing_particles_updating_B(struct node *ptr_node, vtype dt);
 
 static int computing_particles_updating_A_HEAD_ONLY(struct node *ptr_node, vtype dt)
 {
-  switch (boundary_type)
+  switch (bdry_cond_type)
   {
   case 0:
   {
@@ -163,8 +163,8 @@ static int computing_particles_updating_A_HEAD_ONLY(struct node *ptr_node, vtype
 
         GL_total_mass_final -= GL_ptcl_mass[i];
         GL_no_ptcl_final--;
-        ptr_node->local_mass -= GL_ptcl_mass[i];
-        (ptr_node->local_no_ptcl_full_node)--;
+        ptr_node->node_mass -= GL_ptcl_mass[i];
+        (ptr_node->no_ptcl_full_node)--;
         GL_ptcl_x[i] = GL_ptcl_x[GL_no_ptcl_final];
         GL_ptcl_y[i] = GL_ptcl_y[GL_no_ptcl_final];
         GL_ptcl_z[i] = GL_ptcl_z[GL_no_ptcl_final];
@@ -188,7 +188,7 @@ static int computing_particles_updating_A_HEAD_ONLY(struct node *ptr_node, vtype
 
   default:
   {
-    printf("Error! the boundary_type paramter = %d is different to 0, 1 or 2\n", boundary_type);
+    printf("Error! the bdry_cond_type paramter = %d is different to 0, 1 or 2\n", bdry_cond_type);
     return _FAILURE_;
   }
   }
@@ -213,7 +213,7 @@ static int computing_particles_updating_A_PERIODIC(struct node *ptr_node, vtype 
   int box_idx_ch;       // Box index of the child node
 
   int counter_ptcl = 0;
-  int total_ptcl = ptr_node->local_no_ptcl_to_use_outside_refinement_zones;
+  int total_ptcl = ptr_node->no_ptcl_outs_ref_zones;
   int cell_ptcl;
   int cell_idx = -1;
 
@@ -247,7 +247,7 @@ static int computing_particles_updating_A_PERIODIC(struct node *ptr_node, vtype 
           box_idx_node_new = ptcl_idx_to_box_idx(ptr_node, ptcl_idx);
 
           //* >> Checking if the particle is reflected with the boundary of the box simulation *//
-          if (ptr_node->boundary_simulation_contact == true)
+          if (ptr_node->sim_bdry_contact == true)
           {
             //* >> Checking if the particle is translated with the boundary of the box simulation *//
             if (GL_ptcl_x[ptcl_idx] < 0.)
@@ -352,8 +352,8 @@ static int computing_particles_updating_A_PERIODIC(struct node *ptr_node, vtype 
                 ptr_node_sib->ptr_cell_struct[box_idx_sib].ptr_ptcl[ptr_node_sib->ptr_cell_struct[box_idx_sib].ptcl_size] = ptcl_idx;
                 ptr_node_sib->ptr_cell_struct[box_idx_sib].ptcl_size += 1;
                 ptr_node_sib->ptr_cell_struct[box_idx_sib].cell_mass += GL_ptcl_mass[ptcl_idx]; // Cell mass
-                ptr_node_sib->local_mass += GL_ptcl_mass[ptcl_idx];
-                (ptr_node_sib->local_no_ptcl_full_node)++;
+                ptr_node_sib->node_mass += GL_ptcl_mass[ptcl_idx];
+                (ptr_node_sib->no_ptcl_full_node)++;
               }
               //* If the particle is only in the parent node *//
               else
@@ -371,8 +371,8 @@ static int computing_particles_updating_A_PERIODIC(struct node *ptr_node, vtype 
               }
 
               //* The local mass is reduced *//
-              ptr_node->local_mass -= GL_ptcl_mass[ptcl_idx];
-              (ptr_node->local_no_ptcl_full_node)--;
+              ptr_node->node_mass -= GL_ptcl_mass[ptcl_idx];
+              (ptr_node->no_ptcl_full_node)--;
             }
             //* >> The particle stay in the node *//
             else // So ptr_node->ptr_box[box_idx_node_new] == -3
@@ -437,7 +437,7 @@ static int computing_particles_updating_A_PERIODIC(struct node *ptr_node, vtype 
             box_idx_node_new = ptcl_idx_to_box_idx(ptr_node, ptcl_idx);
 
             //* >> Checking if the particle is reflected with the boundary of the box simulation *//
-            if (ptr_node->boundary_simulation_contact == true)
+            if (ptr_node->sim_bdry_contact == true)
             {
               //* >> Checking if the particle is translated with the boundary of the box simulation *//
               if (GL_ptcl_x[ptcl_idx] < 0.)
@@ -532,8 +532,8 @@ static int computing_particles_updating_A_PERIODIC(struct node *ptr_node, vtype 
                 ptr_node_ch->ptr_cell_struct[box_idx_ch].ptr_ptcl[ptr_node_ch->ptr_cell_struct[box_idx_ch].ptcl_size] = ptcl_idx;
                 ptr_node_ch->ptr_cell_struct[box_idx_ch].ptcl_size += 1;
                 ptr_node_ch->ptr_cell_struct[box_idx_ch].cell_mass += GL_ptcl_mass[ptcl_idx]; // Cell mass
-                ptr_node_ch->local_mass += GL_ptcl_mass[ptcl_idx];
-                (ptr_node_ch->local_no_ptcl_full_node)++;
+                ptr_node_ch->node_mass += GL_ptcl_mass[ptcl_idx];
+                (ptr_node_ch->no_ptcl_full_node)++;
               }
               //* >> The particle moves towards its parent node or towards some sibling node  *//
               else if (ptr_node->ptr_box[box_idx_node_new] == -4)
@@ -561,8 +561,8 @@ static int computing_particles_updating_A_PERIODIC(struct node *ptr_node, vtype 
                   ptr_node_sib->ptr_cell_struct[box_idx_sib].ptr_ptcl[ptr_node_sib->ptr_cell_struct[box_idx_sib].ptcl_size] = ptcl_idx;
                   ptr_node_sib->ptr_cell_struct[box_idx_sib].ptcl_size += 1;
                   ptr_node_sib->ptr_cell_struct[box_idx_sib].cell_mass += GL_ptcl_mass[ptcl_idx]; // Cell mass
-                  ptr_node_sib->local_mass += GL_ptcl_mass[ptcl_idx];
-                  (ptr_node_sib->local_no_ptcl_full_node)++;
+                  ptr_node_sib->node_mass += GL_ptcl_mass[ptcl_idx];
+                  (ptr_node_sib->no_ptcl_full_node)++;
                 }
                 //* If the particle is only in the parent node *//
                 else
@@ -580,8 +580,8 @@ static int computing_particles_updating_A_PERIODIC(struct node *ptr_node, vtype 
                 }
 
                 //* The local mass of the node is reduced *//
-                ptr_node->local_mass -= GL_ptcl_mass[ptcl_idx];
-                (ptr_node->local_no_ptcl_full_node)--;
+                ptr_node->node_mass -= GL_ptcl_mass[ptcl_idx];
+                (ptr_node->no_ptcl_full_node)--;
               }
               //* >> The particle stay in the node *//
               else
@@ -638,7 +638,7 @@ static int computing_particles_updating_A_REFLEXIVE(struct node *ptr_node, vtype
   int box_idx_ch;       // Box index of the child node
 
   int counter_ptcl = 0;
-  int total_ptcl = ptr_node->local_no_ptcl_to_use_outside_refinement_zones;
+  int total_ptcl = ptr_node->no_ptcl_outs_ref_zones;
   int cell_ptcl;
   int cell_idx = -1;
 
@@ -755,8 +755,8 @@ static int computing_particles_updating_A_REFLEXIVE(struct node *ptr_node, vtype
                 ptr_node_sib->ptr_cell_struct[box_idx_sib].ptr_ptcl[ptr_node_sib->ptr_cell_struct[box_idx_sib].ptcl_size] = ptcl_idx;
                 ptr_node_sib->ptr_cell_struct[box_idx_sib].ptcl_size += 1;
                 ptr_node_sib->ptr_cell_struct[box_idx_sib].cell_mass += GL_ptcl_mass[ptcl_idx]; // Cell mass
-                ptr_node_sib->local_mass += GL_ptcl_mass[ptcl_idx];
-                (ptr_node_sib->local_no_ptcl_full_node)++;
+                ptr_node_sib->node_mass += GL_ptcl_mass[ptcl_idx];
+                (ptr_node_sib->no_ptcl_full_node)++;
               }
               //* If the particle is only in the parent node *//
               else
@@ -774,8 +774,8 @@ static int computing_particles_updating_A_REFLEXIVE(struct node *ptr_node, vtype
               }
 
               //* The local mass is reduced *//
-              ptr_node->local_mass -= GL_ptcl_mass[ptcl_idx];
-              (ptr_node->local_no_ptcl_full_node)--;
+              ptr_node->node_mass -= GL_ptcl_mass[ptcl_idx];
+              (ptr_node->no_ptcl_full_node)--;
             }
             //* >> The particle stay in the node *//
             else
@@ -919,8 +919,8 @@ static int computing_particles_updating_A_REFLEXIVE(struct node *ptr_node, vtype
                 ptr_node_ch->ptr_cell_struct[box_idx_ch].ptr_ptcl[ptr_node_ch->ptr_cell_struct[box_idx_ch].ptcl_size] = ptcl_idx;
                 ptr_node_ch->ptr_cell_struct[box_idx_ch].ptcl_size += 1;
                 ptr_node_ch->ptr_cell_struct[box_idx_ch].cell_mass += GL_ptcl_mass[ptcl_idx]; // Cell mass
-                ptr_node_ch->local_mass += GL_ptcl_mass[ptcl_idx];
-                (ptr_node_ch->local_no_ptcl_full_node)++;
+                ptr_node_ch->node_mass += GL_ptcl_mass[ptcl_idx];
+                (ptr_node_ch->no_ptcl_full_node)++;
               }
               //* >> The particle moves towards its parent node or towards some sibling node  *//
               else if (ptr_node->ptr_box[box_idx_node_new] == -4)
@@ -948,8 +948,8 @@ static int computing_particles_updating_A_REFLEXIVE(struct node *ptr_node, vtype
                   ptr_node_sib->ptr_cell_struct[box_idx_sib].ptr_ptcl[ptr_node_sib->ptr_cell_struct[box_idx_sib].ptcl_size] = ptcl_idx;
                   ptr_node_sib->ptr_cell_struct[box_idx_sib].ptcl_size += 1;
                   ptr_node_sib->ptr_cell_struct[box_idx_sib].cell_mass += GL_ptcl_mass[ptcl_idx]; // Cell mass
-                  ptr_node_sib->local_mass += GL_ptcl_mass[ptcl_idx];
-                  (ptr_node_sib->local_no_ptcl_full_node)++;
+                  ptr_node_sib->node_mass += GL_ptcl_mass[ptcl_idx];
+                  (ptr_node_sib->no_ptcl_full_node)++;
                 }
                 //* If the particle is only in the parent node *//
                 else
@@ -967,8 +967,8 @@ static int computing_particles_updating_A_REFLEXIVE(struct node *ptr_node, vtype
                 }
 
                 //* The local mass of the node is reduced *//
-                ptr_node->local_mass -= GL_ptcl_mass[ptcl_idx];
-                (ptr_node->local_no_ptcl_full_node)--;
+                ptr_node->node_mass -= GL_ptcl_mass[ptcl_idx];
+                (ptr_node->no_ptcl_full_node)--;
               }
               //* >> The particle stay in the node *//
               else
@@ -1116,8 +1116,8 @@ static int computing_particles_updating_A_REFLEXIVE(struct node *ptr_node, vtype
   //                             ptr_node_sib->ptr_cell_struct[box_idx_sib].ptr_ptcl[ptr_node_sib->ptr_cell_struct[box_idx_sib].ptcl_size] = ptcl_idx;
   //                             ptr_node_sib->ptr_cell_struct[box_idx_sib].ptcl_size += 1;
   //                             ptr_node_sib->ptr_cell_struct[box_idx_sib].cell_mass += GL_ptcl_mass[ptcl_idx]; // Cell mass
-  //                             ptr_node_sib->local_mass += GL_ptcl_mass[ptcl_idx];
-  //                             (ptr_node_sib->local_no_ptcl_full_node)++;
+  //                             ptr_node_sib->node_mass += GL_ptcl_mass[ptcl_idx];
+  //                             (ptr_node_sib->no_ptcl_full_node)++;
   //                         }
   //                         //* If the particle is only in the parent node *//
   //                         else
@@ -1135,8 +1135,8 @@ static int computing_particles_updating_A_REFLEXIVE(struct node *ptr_node, vtype
   //                         }
 
   //                         //* The local mass is reduced *//
-  //                         ptr_node->local_mass -= GL_ptcl_mass[ptcl_idx];
-  //                         (ptr_node->local_no_ptcl_full_node)--;
+  //                         ptr_node->node_mass -= GL_ptcl_mass[ptcl_idx];
+  //                         (ptr_node->no_ptcl_full_node)--;
   //                     }
   //                     //* >> The particle stay in the node *//
   //                     else
@@ -1278,8 +1278,8 @@ static int computing_particles_updating_A_REFLEXIVE(struct node *ptr_node, vtype
   //                             ptr_node_ch->ptr_cell_struct[box_idx_ch].ptr_ptcl[ptr_node_ch->ptr_cell_struct[box_idx_ch].ptcl_size] = ptcl_idx;
   //                             ptr_node_ch->ptr_cell_struct[box_idx_ch].ptcl_size += 1;
   //                             ptr_node_ch->ptr_cell_struct[box_idx_ch].cell_mass += GL_ptcl_mass[ptcl_idx]; // Cell mass
-  //                             ptr_node_ch->local_mass += GL_ptcl_mass[ptcl_idx];
-  //                             (ptr_node_ch->local_no_ptcl_full_node)++;
+  //                             ptr_node_ch->node_mass += GL_ptcl_mass[ptcl_idx];
+  //                             (ptr_node_ch->no_ptcl_full_node)++;
   //                         }
   //                         //* >> The particle moves towards its parent node or towards some sibling node  *//
   //                         else if (ptr_node->ptr_box[box_idx_node_new] == -4)
@@ -1307,8 +1307,8 @@ static int computing_particles_updating_A_REFLEXIVE(struct node *ptr_node, vtype
   //                                 ptr_node_sib->ptr_cell_struct[box_idx_sib].ptr_ptcl[ptr_node_sib->ptr_cell_struct[box_idx_sib].ptcl_size] = ptcl_idx;
   //                                 ptr_node_sib->ptr_cell_struct[box_idx_sib].ptcl_size += 1;
   //                                 ptr_node_sib->ptr_cell_struct[box_idx_sib].cell_mass += GL_ptcl_mass[ptcl_idx]; // Cell mass
-  //                                 ptr_node_sib->local_mass += GL_ptcl_mass[ptcl_idx];
-  //                                 (ptr_node_sib->local_no_ptcl_full_node)++;
+  //                                 ptr_node_sib->node_mass += GL_ptcl_mass[ptcl_idx];
+  //                                 (ptr_node_sib->no_ptcl_full_node)++;
   //                             }
   //                             //* If the particle is only in the parent node *//
   //                             else
@@ -1326,8 +1326,8 @@ static int computing_particles_updating_A_REFLEXIVE(struct node *ptr_node, vtype
   //                             }
 
   //                             //* The local mass of the node is reduced *//
-  //                             ptr_node->local_mass -= GL_ptcl_mass[ptcl_idx];
-  //                             (ptr_node->local_no_ptcl_full_node)--;
+  //                             ptr_node->node_mass -= GL_ptcl_mass[ptcl_idx];
+  //                             (ptr_node->no_ptcl_full_node)--;
   //                         }
   //                         //* >> The particle stay in the node *//
   //                         else
@@ -1390,7 +1390,7 @@ static int computing_particles_updating_A_OUTFLOW(struct node *ptr_node, vtype d
   // int aux_box_idx_node_new;
 
   int counter_ptcl = 0;
-  int total_ptcl = ptr_node->local_no_ptcl_to_use_outside_refinement_zones;
+  int total_ptcl = ptr_node->no_ptcl_outs_ref_zones;
   int cell_ptcl;
   int cell_idx = -1;
 
@@ -1442,10 +1442,10 @@ static int computing_particles_updating_A_OUTFLOW(struct node *ptr_node, vtype d
           //     printf("box_ts_z = %d\n", ptr_node->box_ts_z);
 
           //     printf("true = %d, false = %d\n", true, false);
-          //     printf("contact = %d\n", ptr_node->boundary_simulation_contact);
-          //     printf("contact_x = %d\n", ptr_node->boundary_simulation_contact_x);
-          //     printf("contact_y = %d\n", ptr_node->boundary_simulation_contact_y);
-          //     printf("contact_z = %d\n", ptr_node->boundary_simulation_contact_z);
+          //     printf("contact = %d\n", ptr_node->sim_bdry_contact);
+          //     printf("contact_x = %d\n", ptr_node->sim_bdry_contact_x);
+          //     printf("contact_y = %d\n", ptr_node->sim_bdry_contact_y);
+          //     printf("contact_z = %d\n", ptr_node->sim_bdry_contact_z);
           // }
 
           //* >> Checking if the particle exits the simulation *//
@@ -1460,8 +1460,8 @@ static int computing_particles_updating_A_OUTFLOW(struct node *ptr_node, vtype d
             while (ptr_node_aux != GL_ptr_tree)
             {
               ptr_node_aux = ptr_node_aux->ptr_pt;
-              ptr_node_aux->local_mass -= aux_mass;
-              (ptr_node_aux->local_no_ptcl_full_node)--;
+              ptr_node_aux->node_mass -= aux_mass;
+              (ptr_node_aux->no_ptcl_full_node)--;
             }
 
             // Notes that if ptcl_idx == GL_no_ptcl_final -1, then the function ptcl_idx_to_box_idx will return a different box_idx because the particle has already been updated
@@ -1507,8 +1507,8 @@ static int computing_particles_updating_A_OUTFLOW(struct node *ptr_node, vtype d
             GL_no_ptcl_final--;
 
             //* >> Removing the particle from the local cell node *//
-            ptr_node->local_mass -= aux_mass;
-            (ptr_node->local_no_ptcl_full_node)--;
+            ptr_node->node_mass -= aux_mass;
+            (ptr_node->no_ptcl_full_node)--;
             ptr_node->ptr_cell_struct[box_idx_node_old].ptr_ptcl[j] = ptr_node->ptr_cell_struct[box_idx_node_old].ptr_ptcl[cell_ptcl - 1];
             cell_ptcl--; // The total number of particle decrease
             j--;         // The last element that was just moved to the current position should also must be analized
@@ -1539,8 +1539,8 @@ static int computing_particles_updating_A_OUTFLOW(struct node *ptr_node, vtype d
           //     printf("\n Particle ID = %d, local id = %d, exits the simulation\n", GL_ptcl_ID[ptcl_idx], ptcl_idx);
 
           //     //* >> Removing the particle from the local cell node *//
-          //     ptr_node->local_mass -= GL_ptcl_mass[ptcl_idx];
-          //     ptr_node->local_no_ptcl_full_node--;
+          //     ptr_node->node_mass -= GL_ptcl_mass[ptcl_idx];
+          //     ptr_node->no_ptcl_full_node--;
           //     ptr_node->ptr_cell_struct[box_idx_node_old].ptr_ptcl[j] = ptr_node->ptr_cell_struct[box_idx_node_old].ptr_ptcl[no_ptcl - 1];
           //     no_ptcl--; // The total number of particle decrease
           //     j--;       // The last element that was just moved to the current position should also must be analized
@@ -1551,8 +1551,8 @@ static int computing_particles_updating_A_OUTFLOW(struct node *ptr_node, vtype d
           //     while (ptr_node_aux != GL_ptr_tree)
           //     {
           //         ptr_node_aux = ptr_node_aux->ptr_pt;
-          //         ptr_node_aux->local_mass -= GL_ptcl_mass[ptcl_idx];
-          //         ptr_node_aux->local_no_ptcl_full_node--;
+          //         ptr_node_aux->node_mass -= GL_ptcl_mass[ptcl_idx];
+          //         ptr_node_aux->no_ptcl_full_node--;
           //     }
 
           //     if (ptcl_idx != GL_no_ptcl_final - 1)
@@ -1630,8 +1630,8 @@ static int computing_particles_updating_A_OUTFLOW(struct node *ptr_node, vtype d
                   ptr_node_sib->ptr_cell_struct[box_idx_sib].ptr_ptcl[ptr_node_sib->ptr_cell_struct[box_idx_sib].ptcl_size] = ptcl_idx;
                   ptr_node_sib->ptr_cell_struct[box_idx_sib].ptcl_size += 1;
                   ptr_node_sib->ptr_cell_struct[box_idx_sib].cell_mass += GL_ptcl_mass[ptcl_idx]; // Cell mass
-                  ptr_node_sib->local_mass += GL_ptcl_mass[ptcl_idx];
-                  (ptr_node_sib->local_no_ptcl_full_node)++;
+                  ptr_node_sib->node_mass += GL_ptcl_mass[ptcl_idx];
+                  (ptr_node_sib->no_ptcl_full_node)++;
                 }
                 //* If the particle is only in the parent node *//
                 else
@@ -1649,8 +1649,8 @@ static int computing_particles_updating_A_OUTFLOW(struct node *ptr_node, vtype d
                 }
 
                 //* The local mass is reduced *//
-                ptr_node->local_mass -= GL_ptcl_mass[ptcl_idx];
-                (ptr_node->local_no_ptcl_full_node)--;
+                ptr_node->node_mass -= GL_ptcl_mass[ptcl_idx];
+                (ptr_node->no_ptcl_full_node)--;
               }
               //* >> The particle stay in the node *//
               else
@@ -1729,8 +1729,8 @@ static int computing_particles_updating_A_OUTFLOW(struct node *ptr_node, vtype d
               while (ptr_node_aux != GL_ptr_tree)
               {
                 ptr_node_aux = ptr_node_aux->ptr_pt;
-                ptr_node_aux->local_mass -= aux_mass;
-                (ptr_node_aux->local_no_ptcl_full_node)--;
+                ptr_node_aux->node_mass -= aux_mass;
+                (ptr_node_aux->no_ptcl_full_node)--;
               }
 
               // Notes that if ptcl_idx == GL_no_ptcl_final -1, then the function ptcl_idx_to_box_idx will return a different box_idx because the particle has already been updated
@@ -1776,8 +1776,8 @@ static int computing_particles_updating_A_OUTFLOW(struct node *ptr_node, vtype d
               GL_no_ptcl_final--;
 
               //* >> Removing the particle from the local cell node *//
-              ptr_node->local_mass -= aux_mass;
-              (ptr_node->local_no_ptcl_full_node)--;
+              ptr_node->node_mass -= aux_mass;
+              (ptr_node->no_ptcl_full_node)--;
               ptr_node->ptr_cell_struct[box_idx_node_old].ptr_ptcl[j] = ptr_node->ptr_cell_struct[box_idx_node_old].ptr_ptcl[cell_ptcl - 1];
               cell_ptcl--; // The total number of particle decrease
               j--;         // The last element that was just moved to the current position should also must be analized
@@ -1808,8 +1808,8 @@ static int computing_particles_updating_A_OUTFLOW(struct node *ptr_node, vtype d
             //     GL_total_mass_final -= GL_ptcl_mass[ptcl_idx];
 
             //     //* >> Removing the particle from the local cell node *//
-            //     ptr_node->local_mass -= GL_ptcl_mass[ptcl_idx];
-            //     ptr_node->local_no_ptcl_full_node--;
+            //     ptr_node->node_mass -= GL_ptcl_mass[ptcl_idx];
+            //     ptr_node->no_ptcl_full_node--;
             //     ptr_node->ptr_cell_struct[box_idx_node_old].ptr_ptcl[j] = ptr_node->ptr_cell_struct[box_idx_node_old].ptr_ptcl[no_ptcl - 1];
             //     no_ptcl--; // The total number of particle decrease
             //     j--;       // The last element that was just moved to the current position should also must be analized
@@ -1820,8 +1820,8 @@ static int computing_particles_updating_A_OUTFLOW(struct node *ptr_node, vtype d
             //     while (ptr_node_aux != GL_ptr_tree)
             //     {
             //         ptr_node_aux = ptr_node_aux->ptr_pt;
-            //         ptr_node_aux->local_mass -= GL_ptcl_mass[ptcl_idx];
-            //         ptr_node_aux->local_no_ptcl_full_node--;
+            //         ptr_node_aux->node_mass -= GL_ptcl_mass[ptcl_idx];
+            //         ptr_node_aux->no_ptcl_full_node--;
             //     }
 
             //     if (ptcl_idx != GL_no_ptcl_final - 1)
@@ -1894,8 +1894,8 @@ static int computing_particles_updating_A_OUTFLOW(struct node *ptr_node, vtype d
                   ptr_node_ch->ptr_cell_struct[box_idx_ch].ptr_ptcl[ptr_node_ch->ptr_cell_struct[box_idx_ch].ptcl_size] = ptcl_idx;
                   ptr_node_ch->ptr_cell_struct[box_idx_ch].ptcl_size += 1;
                   ptr_node_ch->ptr_cell_struct[box_idx_ch].cell_mass += GL_ptcl_mass[ptcl_idx]; // Cell mass
-                  ptr_node_ch->local_mass += GL_ptcl_mass[ptcl_idx];
-                  (ptr_node_ch->local_no_ptcl_full_node)++;
+                  ptr_node_ch->node_mass += GL_ptcl_mass[ptcl_idx];
+                  (ptr_node_ch->no_ptcl_full_node)++;
                 }
                 //* >> The particle moves towards its parent node or towards some sibling node  *//
                 else if (ptr_node->ptr_box[box_idx_node_new] == -4)
@@ -1923,8 +1923,8 @@ static int computing_particles_updating_A_OUTFLOW(struct node *ptr_node, vtype d
                     ptr_node_sib->ptr_cell_struct[box_idx_sib].ptr_ptcl[ptr_node_sib->ptr_cell_struct[box_idx_sib].ptcl_size] = ptcl_idx;
                     ptr_node_sib->ptr_cell_struct[box_idx_sib].ptcl_size += 1;
                     ptr_node_sib->ptr_cell_struct[box_idx_sib].cell_mass += GL_ptcl_mass[ptcl_idx]; // Cell mass
-                    ptr_node_sib->local_mass += GL_ptcl_mass[ptcl_idx];
-                    (ptr_node_sib->local_no_ptcl_full_node)++;
+                    ptr_node_sib->node_mass += GL_ptcl_mass[ptcl_idx];
+                    (ptr_node_sib->no_ptcl_full_node)++;
                   }
                   //* If the particle is only in the parent node *//
                   else
@@ -1942,8 +1942,8 @@ static int computing_particles_updating_A_OUTFLOW(struct node *ptr_node, vtype d
                   }
 
                   //* The local mass of the node is reduced *//
-                  ptr_node->local_mass -= GL_ptcl_mass[ptcl_idx];
-                  (ptr_node->local_no_ptcl_full_node)--;
+                  ptr_node->node_mass -= GL_ptcl_mass[ptcl_idx];
+                  (ptr_node->no_ptcl_full_node)--;
                 }
                 //* >> The particle stay in the node: Cell status = -3 *//
                 else
@@ -2027,10 +2027,10 @@ static int computing_particles_updating_A_OUTFLOW(struct node *ptr_node, vtype d
   //                 //     printf("box_ts_z = %d\n", ptr_node->box_ts_z);
 
   //                 //     printf("true = %d, false = %d\n", true, false);
-  //                 //     printf("contact = %d\n", ptr_node->boundary_simulation_contact);
-  //                 //     printf("contact_x = %d\n", ptr_node->boundary_simulation_contact_x);
-  //                 //     printf("contact_y = %d\n", ptr_node->boundary_simulation_contact_y);
-  //                 //     printf("contact_z = %d\n", ptr_node->boundary_simulation_contact_z);
+  //                 //     printf("contact = %d\n", ptr_node->sim_bdry_contact);
+  //                 //     printf("contact_x = %d\n", ptr_node->sim_bdry_contact_x);
+  //                 //     printf("contact_y = %d\n", ptr_node->sim_bdry_contact_y);
+  //                 //     printf("contact_z = %d\n", ptr_node->sim_bdry_contact_z);
   //                 // }
 
   //                 //* >> Checking if the particle exits the simulation *//
@@ -2045,8 +2045,8 @@ static int computing_particles_updating_A_OUTFLOW(struct node *ptr_node, vtype d
   //                     while (ptr_node_aux != GL_ptr_tree)
   //                     {
   //                         ptr_node_aux = ptr_node_aux->ptr_pt;
-  //                         ptr_node_aux->local_mass -= aux_mass;
-  //                         (ptr_node_aux->local_no_ptcl_full_node)--;
+  //                         ptr_node_aux->node_mass -= aux_mass;
+  //                         (ptr_node_aux->no_ptcl_full_node)--;
   //                     }
 
   //                     //Notes that if ptcl_idx == GL_no_ptcl_final -1, then the function ptcl_idx_to_box_idx will return a different box_idx because the particle has already been updated
@@ -2092,8 +2092,8 @@ static int computing_particles_updating_A_OUTFLOW(struct node *ptr_node, vtype d
   //                     GL_no_ptcl_final--;
 
   //                     //* >> Removing the particle from the local cell node *//
-  //                     ptr_node->local_mass -= aux_mass;
-  //                     (ptr_node->local_no_ptcl_full_node)--;
+  //                     ptr_node->node_mass -= aux_mass;
+  //                     (ptr_node->no_ptcl_full_node)--;
   //                     ptr_node->ptr_cell_struct[box_idx_node_old].ptr_ptcl[j] = ptr_node->ptr_cell_struct[box_idx_node_old].ptr_ptcl[no_ptcl - 1];
   //                     no_ptcl--; // The total number of particle decrease
   //                     j--;       // The last element that was just moved to the current position should also must be analized
@@ -2124,8 +2124,8 @@ static int computing_particles_updating_A_OUTFLOW(struct node *ptr_node, vtype d
   //                 //     printf("\n Particle ID = %d, local id = %d, exits the simulation\n", GL_ptcl_ID[ptcl_idx], ptcl_idx);
 
   //                 //     //* >> Removing the particle from the local cell node *//
-  //                 //     ptr_node->local_mass -= GL_ptcl_mass[ptcl_idx];
-  //                 //     ptr_node->local_no_ptcl_full_node--;
+  //                 //     ptr_node->node_mass -= GL_ptcl_mass[ptcl_idx];
+  //                 //     ptr_node->no_ptcl_full_node--;
   //                 //     ptr_node->ptr_cell_struct[box_idx_node_old].ptr_ptcl[j] = ptr_node->ptr_cell_struct[box_idx_node_old].ptr_ptcl[no_ptcl - 1];
   //                 //     no_ptcl--; // The total number of particle decrease
   //                 //     j--;       // The last element that was just moved to the current position should also must be analized
@@ -2136,8 +2136,8 @@ static int computing_particles_updating_A_OUTFLOW(struct node *ptr_node, vtype d
   //                 //     while (ptr_node_aux != GL_ptr_tree)
   //                 //     {
   //                 //         ptr_node_aux = ptr_node_aux->ptr_pt;
-  //                 //         ptr_node_aux->local_mass -= GL_ptcl_mass[ptcl_idx];
-  //                 //         ptr_node_aux->local_no_ptcl_full_node--;
+  //                 //         ptr_node_aux->node_mass -= GL_ptcl_mass[ptcl_idx];
+  //                 //         ptr_node_aux->no_ptcl_full_node--;
   //                 //     }
 
   //                 //     if (ptcl_idx != GL_no_ptcl_final - 1)
@@ -2215,8 +2215,8 @@ static int computing_particles_updating_A_OUTFLOW(struct node *ptr_node, vtype d
   //                                 ptr_node_sib->ptr_cell_struct[box_idx_sib].ptr_ptcl[ptr_node_sib->ptr_cell_struct[box_idx_sib].ptcl_size] = ptcl_idx;
   //                                 ptr_node_sib->ptr_cell_struct[box_idx_sib].ptcl_size += 1;
   //                                 ptr_node_sib->ptr_cell_struct[box_idx_sib].cell_mass += GL_ptcl_mass[ptcl_idx]; // Cell mass
-  //                                 ptr_node_sib->local_mass += GL_ptcl_mass[ptcl_idx];
-  //                                 (ptr_node_sib->local_no_ptcl_full_node)++;
+  //                                 ptr_node_sib->node_mass += GL_ptcl_mass[ptcl_idx];
+  //                                 (ptr_node_sib->no_ptcl_full_node)++;
   //                             }
   //                             //* If the particle is only in the parent node *//
   //                             else
@@ -2234,8 +2234,8 @@ static int computing_particles_updating_A_OUTFLOW(struct node *ptr_node, vtype d
   //                             }
 
   //                             //* The local mass is reduced *//
-  //                             ptr_node->local_mass -= GL_ptcl_mass[ptcl_idx];
-  //                             (ptr_node->local_no_ptcl_full_node)--;
+  //                             ptr_node->node_mass -= GL_ptcl_mass[ptcl_idx];
+  //                             (ptr_node->no_ptcl_full_node)--;
   //                         }
   //                         //* >> The particle stay in the node *//
   //                         else
@@ -2311,8 +2311,8 @@ static int computing_particles_updating_A_OUTFLOW(struct node *ptr_node, vtype d
   //                         while (ptr_node_aux != GL_ptr_tree)
   //                         {
   //                             ptr_node_aux = ptr_node_aux->ptr_pt;
-  //                             ptr_node_aux->local_mass -= aux_mass;
-  //                             (ptr_node_aux->local_no_ptcl_full_node)--;
+  //                             ptr_node_aux->node_mass -= aux_mass;
+  //                             (ptr_node_aux->no_ptcl_full_node)--;
   //                         }
 
   //                         // Notes that if ptcl_idx == GL_no_ptcl_final -1, then the function ptcl_idx_to_box_idx will return a different box_idx because the particle has already been updated
@@ -2358,8 +2358,8 @@ static int computing_particles_updating_A_OUTFLOW(struct node *ptr_node, vtype d
   //                         GL_no_ptcl_final--;
 
   //                         //* >> Removing the particle from the local cell node *//
-  //                         ptr_node->local_mass -= aux_mass;
-  //                         (ptr_node->local_no_ptcl_full_node)--;
+  //                         ptr_node->node_mass -= aux_mass;
+  //                         (ptr_node->no_ptcl_full_node)--;
   //                         ptr_node->ptr_cell_struct[box_idx_node_old].ptr_ptcl[j] = ptr_node->ptr_cell_struct[box_idx_node_old].ptr_ptcl[no_ptcl - 1];
   //                         no_ptcl--; // The total number of particle decrease
   //                         j--;       // The last element that was just moved to the current position should also must be analized
@@ -2390,8 +2390,8 @@ static int computing_particles_updating_A_OUTFLOW(struct node *ptr_node, vtype d
   //                     //     GL_total_mass_final -= GL_ptcl_mass[ptcl_idx];
 
   //                     //     //* >> Removing the particle from the local cell node *//
-  //                     //     ptr_node->local_mass -= GL_ptcl_mass[ptcl_idx];
-  //                     //     ptr_node->local_no_ptcl_full_node--;
+  //                     //     ptr_node->node_mass -= GL_ptcl_mass[ptcl_idx];
+  //                     //     ptr_node->no_ptcl_full_node--;
   //                     //     ptr_node->ptr_cell_struct[box_idx_node_old].ptr_ptcl[j] = ptr_node->ptr_cell_struct[box_idx_node_old].ptr_ptcl[no_ptcl - 1];
   //                     //     no_ptcl--; // The total number of particle decrease
   //                     //     j--;       // The last element that was just moved to the current position should also must be analized
@@ -2402,8 +2402,8 @@ static int computing_particles_updating_A_OUTFLOW(struct node *ptr_node, vtype d
   //                     //     while (ptr_node_aux != GL_ptr_tree)
   //                     //     {
   //                     //         ptr_node_aux = ptr_node_aux->ptr_pt;
-  //                     //         ptr_node_aux->local_mass -= GL_ptcl_mass[ptcl_idx];
-  //                     //         ptr_node_aux->local_no_ptcl_full_node--;
+  //                     //         ptr_node_aux->node_mass -= GL_ptcl_mass[ptcl_idx];
+  //                     //         ptr_node_aux->no_ptcl_full_node--;
   //                     //     }
 
   //                     //     if (ptcl_idx != GL_no_ptcl_final - 1)
@@ -2476,8 +2476,8 @@ static int computing_particles_updating_A_OUTFLOW(struct node *ptr_node, vtype d
   //                                 ptr_node_ch->ptr_cell_struct[box_idx_ch].ptr_ptcl[ptr_node_ch->ptr_cell_struct[box_idx_ch].ptcl_size] = ptcl_idx;
   //                                 ptr_node_ch->ptr_cell_struct[box_idx_ch].ptcl_size += 1;
   //                                 ptr_node_ch->ptr_cell_struct[box_idx_ch].cell_mass += GL_ptcl_mass[ptcl_idx]; // Cell mass
-  //                                 ptr_node_ch->local_mass += GL_ptcl_mass[ptcl_idx];
-  //                                 (ptr_node_ch->local_no_ptcl_full_node)++;
+  //                                 ptr_node_ch->node_mass += GL_ptcl_mass[ptcl_idx];
+  //                                 (ptr_node_ch->no_ptcl_full_node)++;
   //                             }
   //                             //* >> The particle moves towards its parent node or towards some sibling node  *//
   //                             else if (ptr_node->ptr_box[box_idx_node_new] == -4)
@@ -2505,8 +2505,8 @@ static int computing_particles_updating_A_OUTFLOW(struct node *ptr_node, vtype d
   //                                     ptr_node_sib->ptr_cell_struct[box_idx_sib].ptr_ptcl[ptr_node_sib->ptr_cell_struct[box_idx_sib].ptcl_size] = ptcl_idx;
   //                                     ptr_node_sib->ptr_cell_struct[box_idx_sib].ptcl_size += 1;
   //                                     ptr_node_sib->ptr_cell_struct[box_idx_sib].cell_mass += GL_ptcl_mass[ptcl_idx]; // Cell mass
-  //                                     ptr_node_sib->local_mass += GL_ptcl_mass[ptcl_idx];
-  //                                     (ptr_node_sib->local_no_ptcl_full_node)++;
+  //                                     ptr_node_sib->node_mass += GL_ptcl_mass[ptcl_idx];
+  //                                     (ptr_node_sib->no_ptcl_full_node)++;
   //                                 }
   //                                 //* If the particle is only in the parent node *//
   //                                 else
@@ -2524,8 +2524,8 @@ static int computing_particles_updating_A_OUTFLOW(struct node *ptr_node, vtype d
   //                                 }
 
   //                                 //* The local mass of the node is reduced *//
-  //                                 ptr_node->local_mass -= GL_ptcl_mass[ptcl_idx];
-  //                                 (ptr_node->local_no_ptcl_full_node)--;
+  //                                 ptr_node->node_mass -= GL_ptcl_mass[ptcl_idx];
+  //                                 (ptr_node->no_ptcl_full_node)--;
   //                             }
   //                             //* >> The particle stay in the node: Cell status = -3 *//
   //                             else
@@ -2581,7 +2581,7 @@ int particle_updating_A(vtype dt)
 
     status = !GL_ptcl_updating_flag[0];
 
-    switch (boundary_type)
+    switch (bdry_cond_type)
     {
     case 0:
     {
@@ -2641,7 +2641,7 @@ int particle_updating_A(vtype dt)
 
     default:
     {
-      printf("Error! the boundary_type paramter = %d is different to 0, 1 or 2\n", boundary_type);
+      printf("Error! the bdry_cond_type paramter = %d is different to 0, 1 or 2\n", bdry_cond_type);
       return _FAILURE_;
     }
     }
@@ -2677,7 +2677,7 @@ static void computing_particles_updating_B(struct node *ptr_node, vtype dt)
   int box_idx;  // Box index of the node cell
 
   int counter_ptcl = 0;
-  int total_ptcl = ptr_node->local_no_ptcl_to_use_outside_refinement_zones;
+  int total_ptcl = ptr_node->no_ptcl_outs_ref_zones;
   int cell_ptcl;
   int cell_idx = -1;
 

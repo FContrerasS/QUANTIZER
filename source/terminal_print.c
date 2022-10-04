@@ -79,7 +79,7 @@ static int computing_memory(void)
       }
       TOTAL_MEMORY_CAJAS += 2 * ptr_node->box_cap * (sizeof(int) + sizeof(vtype)); // Boxes and mass boxes
 
-      TOTAL_MEMORY_GRID_POINTS += 4 * (ptr_node->grid_bder_cap + ptr_node->grid_intr_cap + ptr_node->grid_SIMULATION_BOUNDARY_cap) * sizeof(int); // Grid interior and border points
+      TOTAL_MEMORY_GRID_POINTS += 4 * (ptr_node->grid_bdry_cap + ptr_node->grid_intr_cap + ptr_node->grid_sim_bdry_cap) * sizeof(int); // Grid interior and border points
 
       TOTAL_MEMORY_GRID_PROPERTIES += 6 * ptr_node->grid_properties_cap * sizeof(vtype); // Grid properties, accelerations, potential and density
       TOTAL_MEMORY_AUX += ptr_node->zones_cap * sizeof(int *);
@@ -88,14 +88,14 @@ static int computing_memory(void)
         TOTAL_MEMORY_AUX += ptr_node->ptr_zone_cap[j] * sizeof(int);
       }
       TOTAL_MEMORY_AUX += ptr_node->aux_idx_cap * sizeof(int);
-      TOTAL_MEMORY_AUX += ptr_node->aux_bool_boundary_anomalies_cap * 3 * sizeof(bool);
+      TOTAL_MEMORY_AUX += ptr_node->pbc_bool_bdry_anomalies_cap * 3 * sizeof(bool);
 
       TOTAL_MEMORY_AUX += 4 * ptr_node->links_cap * sizeof(int);
 
       //* Subzones
-      TOTAL_MEMORY_AUX += 6 * ptr_node->subzones_cap * sizeof(int);
-      // TOTAL_MEMORY_AUX += ptr_node->subzones_cap * sizeof(int *);
-      // for(int j=0; j < ptr_node->subzones_cap; j++)
+      TOTAL_MEMORY_AUX += 6 * ptr_node->pbc_subzones_cap * sizeof(int);
+      // TOTAL_MEMORY_AUX += ptr_node->pbc_subzones_cap * sizeof(int *);
+      // for(int j=0; j < ptr_node->pbc_subzones_cap; j++)
       // {
       //     TOTAL_MEMORY_AUX += ptr_node->ptr_subzone_cap[j] * sizeof(int);
       // }
@@ -131,7 +131,7 @@ static int computing_memory(void)
     }
 
     TOTAL_MEMORY_STACK += 2 * ptr_node->box_cap * (sizeof(int) + sizeof(vtype));                                                          // Boxes and mass boxes
-    TOTAL_MEMORY_STACK += 4 * (ptr_node->grid_bder_cap + ptr_node->grid_intr_cap + ptr_node->grid_SIMULATION_BOUNDARY_cap) * sizeof(int); // Grid interior, border and simulation boundary grid points
+    TOTAL_MEMORY_STACK += 4 * (ptr_node->grid_bdry_cap + ptr_node->grid_intr_cap + ptr_node->grid_sim_bdry_cap) * sizeof(int);     // Grid interior, border and simulation boundary grid points
     TOTAL_MEMORY_STACK += 6 * ptr_node->grid_properties_cap * sizeof(vtype);                                                              // Grid properties, accelerations, potential and density
     TOTAL_MEMORY_STACK += ptr_node->zones_cap * sizeof(int *);
     for (int j = 0; j < ptr_node->zones_cap; j++)
@@ -139,15 +139,15 @@ static int computing_memory(void)
       TOTAL_MEMORY_STACK += ptr_node->ptr_zone_cap[j] * sizeof(int);
     }
     TOTAL_MEMORY_STACK += ptr_node->aux_idx_cap * sizeof(int);
-    TOTAL_MEMORY_STACK += ptr_node->aux_bool_boundary_anomalies_cap * 3 * sizeof(bool);
+    TOTAL_MEMORY_STACK += ptr_node->pbc_bool_bdry_anomalies_cap * 3 * sizeof(bool);
     TOTAL_MEMORY_STACK += sizeof(struct node);
 
     TOTAL_MEMORY_STACK += 4 * ptr_node->links_cap * sizeof(int);
 
     //* Subzones
-    TOTAL_MEMORY_STACK += 6 * ptr_node->subzones_cap * sizeof(int);
-    // TOTAL_MEMORY_STACK += ptr_node->subzones_cap * sizeof(int *);
-    // for(int j=0; j < ptr_node->subzones_cap; j++)
+    TOTAL_MEMORY_STACK += 6 * ptr_node->pbc_subzones_cap * sizeof(int);
+    // TOTAL_MEMORY_STACK += ptr_node->pbc_subzones_cap * sizeof(int *);
+    // for(int j=0; j < ptr_node->pbc_subzones_cap; j++)
     // {
     //     TOTAL_MEMORY_STACK += ptr_node->ptr_subzone_cap[j] * sizeof(int);
     // }

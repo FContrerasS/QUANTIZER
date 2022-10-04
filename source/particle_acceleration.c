@@ -152,7 +152,7 @@ static void computing_particle_acceleration_head_plus_branches(const struct node
   int grid_box_real_dim_X_times_Y = (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1);
 
   int counter_ptcl = 0;
-  int total_ptcl = ptr_node->local_no_ptcl_to_use_outside_refinement_zones;
+  int total_ptcl = ptr_node->no_ptcl_outs_ref_zones;
   int cell_ptcl;
   int cell_idx = -1;
 
@@ -202,7 +202,7 @@ static void computing_particle_acceleration_head_plus_branches(const struct node
         box_grid_idx_y = pos_y_floor - ptr_node->box_ts_y;
         box_grid_idx_z = pos_z_floor - ptr_node->box_ts_z;
 
-        if (ptr_node->pbc_crosses_the_boundary_simulation_box == true)
+        if (ptr_node->pbc_crosses_sim_box_bdry == true)
         {
           if (pos_x_floor > ptr_node->box_max_x)
           {
@@ -288,7 +288,7 @@ static void computing_particle_acceleration_head_plus_branches(const struct node
           box_grid_idx_y = pos_y_floor - ptr_node->box_ts_y;
           box_grid_idx_z = pos_z_floor - ptr_node->box_ts_z;
 
-          if (ptr_node->pbc_crosses_the_boundary_simulation_box == true)
+          if (ptr_node->pbc_crosses_sim_box_bdry == true)
           {
             if (pos_x_floor > ptr_node->box_max_x)
             {

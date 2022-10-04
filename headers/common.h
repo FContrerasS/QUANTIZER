@@ -220,7 +220,7 @@ extern vtype **pp_dphixx;
 extern vtype **zeros_xx;
 
 //* >> Boundary parameters *//
-extern int boundary_type;
+extern int bdry_cond_type;
 extern int GL_max_lv_ref_crosses_the_entire_simulation; // Maximum level of refinement such that it contains a zone of refinement which crosses the entire simulation
 
 #endif

@@ -67,7 +67,7 @@ void initial_potential_and_acceleration_head(struct node *ptr_head)
   int border_grid_points = 0;
   int interior_grid_points = 0;
 
-  if (boundary_type == 0)
+  if (bdry_cond_type == 0)
   {
     vtype dis_periodic[8] = {0, 0, 0, 0, 0, 0, 0, 0};
     vtype aux_ijk = (grid_limit - bder_os_sim) * H;
@@ -86,7 +86,7 @@ void initial_potential_and_acceleration_head(struct node *ptr_head)
 
           if (i == bder_os_sim)
           {
-            // Adding the box grid indexes
+            // Adding the box grid indices
             box_grid_idx_periodic[0] = i + j * grid_side + k * grid_side * grid_side;
             box_grid_idx_periodic[1] = grid_limit + j * grid_side + k * grid_side * grid_side;
 
@@ -105,7 +105,7 @@ void initial_potential_and_acceleration_head(struct node *ptr_head)
           }
           if (j == bder_os_sim)
           {
-            // Adding the box grid indexes
+            // Adding the box grid indices
             if (counter == 0)
             {
               box_grid_idx_periodic[0] = i + j * grid_side + k * grid_side * grid_side;
@@ -141,7 +141,7 @@ void initial_potential_and_acceleration_head(struct node *ptr_head)
           }
           if (k == bder_os_sim)
           {
-            // Adding the box grid indexes
+            // Adding the box grid indices
             if (counter == 0)
             {
               box_grid_idx_periodic[0] = i + j * grid_side + k * grid_side * grid_side;

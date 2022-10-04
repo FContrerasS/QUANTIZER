@@ -80,7 +80,7 @@ static int computing_memory(void)
       }
       TOTAL_MEMORY_CAJAS += 2 * ptr_node->box_cap * (sizeof(int) + sizeof(vtype)); // Boxes and mass boxes
 
-      TOTAL_MEMORY_GRID_POINTS += 4 * (ptr_node->grid_bder_cap + ptr_node->grid_intr_cap + ptr_node->grid_SIMULATION_BOUNDARY_cap) * sizeof(int); // Grid interior, border and simulation boundary points
+      TOTAL_MEMORY_GRID_POINTS += 4 * (ptr_node->grid_bdry_cap + ptr_node->grid_intr_cap + ptr_node->grid_sim_bdry_cap) * sizeof(int); // Grid interior, border and simulation boundary points
 
       TOTAL_MEMORY_GRID_PROPERTIES += 6 * ptr_node->grid_properties_cap * sizeof(vtype); // Grid properties, accelerations, potential and density
       TOTAL_MEMORY_AUX += ptr_node->zones_cap * sizeof(int *);
@@ -89,15 +89,15 @@ static int computing_memory(void)
         TOTAL_MEMORY_AUX += ptr_node->ptr_zone_cap[j] * sizeof(int);
       }
       TOTAL_MEMORY_AUX += ptr_node->aux_idx_cap * sizeof(int);
-      TOTAL_MEMORY_AUX += ptr_node->aux_bool_boundary_anomalies_cap * 3 * sizeof(bool);
+      TOTAL_MEMORY_AUX += ptr_node->pbc_bool_bdry_anomalies_cap * 3 * sizeof(bool);
 
       TOTAL_MEMORY_AUX += 4 * ptr_node->links_cap * sizeof(int);
 
       //* Subzones
-      TOTAL_MEMORY_AUX += 6 * ptr_node->subzones_cap * sizeof(int);
-      // TOTAL_MEMORY_AUX += ptr_node->subzones_cap * sizeof(int *) ;
+      TOTAL_MEMORY_AUX += 6 * ptr_node->pbc_subzones_cap * sizeof(int);
+      // TOTAL_MEMORY_AUX += ptr_node->pbc_subzones_cap * sizeof(int *) ;
 
-      // for(int j=0; j < ptr_node->subzones_cap; j++)
+      // for(int j=0; j < ptr_node->pbc_subzones_cap; j++)
       // {
       // 	TOTAL_MEMORY_AUX += ptr_node->ptr_subzone_cap[j] * sizeof(int);
       // }
@@ -133,7 +133,7 @@ static int computing_memory(void)
     }
 
     TOTAL_MEMORY_STACK += 2 * ptr_node->box_cap * (sizeof(int) + sizeof(vtype));                                                          // Boxes and mass boxes
-    TOTAL_MEMORY_STACK += 4 * (ptr_node->grid_bder_cap + ptr_node->grid_intr_cap + ptr_node->grid_SIMULATION_BOUNDARY_cap) * sizeof(int); // Grid interior, border and simulation boundary points
+    TOTAL_MEMORY_STACK += 4 * (ptr_node->grid_bdry_cap + ptr_node->grid_intr_cap + ptr_node->grid_sim_bdry_cap) * sizeof(int); // Grid interior, border and simulation boundary points
     TOTAL_MEMORY_STACK += 6 * ptr_node->grid_properties_cap * sizeof(vtype);                                                              // Grid properties, accelerations, potential and density
     TOTAL_MEMORY_STACK += ptr_node->zones_cap * sizeof(int *);
     for (int j = 0; j < ptr_node->zones_cap; j++)
@@ -141,14 +141,14 @@ static int computing_memory(void)
       TOTAL_MEMORY_STACK += ptr_node->ptr_zone_cap[j] * sizeof(int);
     }
     TOTAL_MEMORY_STACK += ptr_node->aux_idx_cap * sizeof(int);
-    TOTAL_MEMORY_STACK += ptr_node->aux_bool_boundary_anomalies_cap * 3 * sizeof(bool);
+    TOTAL_MEMORY_STACK += ptr_node->pbc_bool_bdry_anomalies_cap * 3 * sizeof(bool);
 
     TOTAL_MEMORY_STACK += 4 * ptr_node->links_cap * sizeof(int);
 
     //* Subzones
-    TOTAL_MEMORY_STACK += 6 * ptr_node->subzones_cap * sizeof(int);
-    // TOTAL_MEMORY_STACK += ptr_node->subzones_cap * sizeof(int *) ;
-    // for(int j=0; j < ptr_node->subzones_cap; j++)
+    TOTAL_MEMORY_STACK += 6 * ptr_node->pbc_subzones_cap * sizeof(int);
+    // TOTAL_MEMORY_STACK += ptr_node->pbc_subzones_cap * sizeof(int *) ;
+    // for(int j=0; j < ptr_node->pbc_subzones_cap; j++)
     // {
     //     TOTAL_MEMORY_STACK += ptr_node->ptr_subzone_cap[j] * sizeof(int);
     // }
@@ -208,20 +208,20 @@ static void free_memory_pool(void)
     free(ptr_node->ptr_intr_grid_cell_idx_z);
     free(ptr_node->ptr_intr_box_grid_idx);
 
-    if (ptr_node->grid_bder_cap != 0)
+    if (ptr_node->grid_bdry_cap != 0)
     {
-      free(ptr_node->ptr_bder_grid_cell_idx_x);
-      free(ptr_node->ptr_bder_grid_cell_idx_y);
-      free(ptr_node->ptr_bder_grid_cell_idx_z);
-      free(ptr_node->ptr_bder_box_grid_idx);
+      free(ptr_node->ptr_bdry_grid_cell_idx_x);
+      free(ptr_node->ptr_bdry_grid_cell_idx_y);
+      free(ptr_node->ptr_bdry_grid_cell_idx_z);
+      free(ptr_node->ptr_bdry_box_grid_idx);
     }
 
-    if (ptr_node->grid_SIMULATION_BOUNDARY_cap != 0)
+    if (ptr_node->grid_sim_bdry_cap != 0)
     {
-      free(ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_x);
-      free(ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_y);
-      free(ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_z);
-      free(ptr_node->ptr_SIMULATION_BOUNDARY_box_grid_idx);
+      free(ptr_node->ptr_sim_bdry_grid_cell_idx_x);
+      free(ptr_node->ptr_sim_bdry_grid_cell_idx_y);
+      free(ptr_node->ptr_sim_bdry_grid_cell_idx_z);
+      free(ptr_node->ptr_sim_bdry_box_grid_idx);
     }
 
     //* >> Potential, acceleration and density of the grid *//
@@ -254,34 +254,34 @@ static void free_memory_pool(void)
     }
 
     // Subzones
-    //  for(int i = 0; i< ptr_node->subzones_cap;i++)
+    //  for(int i = 0; i< ptr_node->pbc_subzones_cap;i++)
     //  {
     //  	if(ptr_node->pptr_subzones[i] != NULL)
     //  	{
     //  		free(ptr_node->pptr_subzones[i]);
     //  	}
     //  }
-    if (ptr_node->subzones_cap != 0)
+    if (ptr_node->pbc_subzones_cap != 0)
     {
       // free(ptr_node->ptr_subzone_cap);
       // free(ptr_node->ptr_subzone_size);
-      free(ptr_node->ptr_aux_min_subzones_x);
-      free(ptr_node->ptr_aux_max_subzones_x);
-      free(ptr_node->ptr_aux_min_subzones_y);
-      free(ptr_node->ptr_aux_max_subzones_y);
-      free(ptr_node->ptr_aux_min_subzones_z);
-      free(ptr_node->ptr_aux_max_subzones_z);
+      free(ptr_node->ptr_pbc_min_subzones_x);
+      free(ptr_node->ptr_pbc_max_subzones_x);
+      free(ptr_node->ptr_pbc_min_subzones_y);
+      free(ptr_node->ptr_pbc_max_subzones_y);
+      free(ptr_node->ptr_pbc_min_subzones_z);
+      free(ptr_node->ptr_pbc_max_subzones_z);
     }
 
     if (ptr_node->ptr_aux_idx != NULL)
     {
       free(ptr_node->ptr_aux_idx);
     }
-    if (ptr_node->aux_bool_boundary_anomalies_cap != 0)
+    if (ptr_node->pbc_bool_bdry_anomalies_cap != 0)
     {
-      free(ptr_node->ptr_aux_bool_boundary_anomalies_x);
-      free(ptr_node->ptr_aux_bool_boundary_anomalies_y);
-      free(ptr_node->ptr_aux_bool_boundary_anomalies_z);
+      free(ptr_node->ptr_pbc_bool_bdry_anomalies_x);
+      free(ptr_node->ptr_pbc_bool_bdry_anomalies_y);
+      free(ptr_node->ptr_pbc_bool_bdry_anomalies_z);
     }
 
     //* >> Links in Tree adaptation *//

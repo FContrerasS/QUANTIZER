@@ -189,7 +189,7 @@ vtype **pp_dphixx;
 vtype **zeros_xx;
 
 //* >> Boundary parameters *//
-int boundary_type;
+int bdry_cond_type;
 int GL_max_lv_ref_crosses_the_entire_simulation; // Maximum level of refinement such that it contains a zone of refinement which crosses the entire simulation
 
 static void
@@ -233,7 +233,7 @@ static void init_global_user_params(void)
   MaxIterations = 1000000;
   no_grid_pow2 = no_grid * no_grid;
   no_grid_pow3 = no_grid * no_grid * no_grid;
-  boundary_type = 1; // 0 = Periodic; 1 = Reflexive; 2 = Outflow
+  bdry_cond_type = 1; // 0 = Periodic; 1 = Reflexive; 2 = Outflow
 }
 
 static void init_global_ref_crit(void)
@@ -377,7 +377,7 @@ static void init_global_garbage_collector_parameters(void)
 
 static void init_global_boundary_parameters(void)
 {
-  if (lmin < lmax && boundary_type == 0)
+  if (lmin < lmax && bdry_cond_type == 0)
   {
     GL_max_lv_ref_crosses_the_entire_simulation = lmin; // Maximum level of refinement such that it contains a zone of refinement which crosses the entire simulation
   }

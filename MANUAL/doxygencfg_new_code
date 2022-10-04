@@ -29,7 +29,7 @@ RECURSIVE              = YES
 REPEAT_BRIEF           = NO
 ABBREVIATE_BRIEF       =
 FULL_PATH_NAMES        = NO
-#OPTIMIZE_OUTPUT_FOR_C  = YES
+OPTIMIZE_OUTPUT_FOR_C  = YES
 BUILTIN_STL_SUPPORT    = YES
 INLINE_SIMPLE_STRUCTS  = YES
 TYPEDEF_HIDES_STRUCT   = YES
@@ -95,3 +95,6 @@ CALL_GRAPH             = YES
 CALLER_GRAPH           = YES
 DOT_IMAGE_FORMAT       = svg
 INTERACTIVE_SVG        = YES
+
+
+EXTRACT_STATIC         = YES	#Including static functions and variables

@@ -77,7 +77,7 @@ void output_main_parameters(vtype final_time, int Number_timesteps, int Number_o
   // fprintf(file, "Mass_unit Solar_mass\n");
   fprintf(file, "Time_unit %1.5e\n", (double)tt);
   fprintf(file, "G %1.5e\n", (double)_G_);
-  fprintf(file, "boundary_type %d\n", (int)boundary_type);
+  fprintf(file, "boundary_type %d\n", (int)bdry_cond_type);
   fprintf(file, "GL_total_mass_initial %f\n", (double)GL_total_mass_initial);
   fprintf(file, "GL_total_mass_final %f\n", (double)GL_total_mass_final);
 

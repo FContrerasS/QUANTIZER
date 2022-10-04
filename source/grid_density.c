@@ -158,7 +158,7 @@ static void computing_grid_density_branch(struct node *ptr_node)
   int aux_int;
 
   int counter_ptcl = 0;
-  int total_ptcl = ptr_node->local_no_ptcl_full_node;
+  int total_ptcl = ptr_node->no_ptcl_full_node;
   int cell_ptcl;
   int cell_idx = -1;
 
@@ -189,7 +189,7 @@ static void computing_grid_density_branch(struct node *ptr_node)
       box_grid_idx_y = pos_y_floor - ptr_node->box_ts_y;
       box_grid_idx_z = pos_z_floor - ptr_node->box_ts_z;
 
-      if (ptr_node->pbc_crosses_the_boundary_simulation_box == true)
+      if (ptr_node->pbc_crosses_sim_box_bdry == true)
       {
         if (pos_x_floor > ptr_node->box_max_x)
         {
@@ -298,7 +298,7 @@ static void computing_grid_density_branch(struct node *ptr_node)
   //         box_grid_idx_y = pos_y_floor - ptr_node->box_ts_y;
   //         box_grid_idx_z = pos_z_floor - ptr_node->box_ts_z;
 
-  //         if (ptr_node->pbc_crosses_the_boundary_simulation_box == true)
+  //         if (ptr_node->pbc_crosses_sim_box_bdry == true)
   //         {
   //             if (pos_x_floor > ptr_node->box_max_x)
   //             {

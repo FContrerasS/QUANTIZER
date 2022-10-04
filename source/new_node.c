@@ -54,15 +54,15 @@ static void re_initialize_node(struct node *ptr_node)
   ptr_node->cell_size = 0; // Number of existing cells in the node
 
   //* >> Total mass in the node *//
-  ptr_node->local_mass = 0;
+  ptr_node->node_mass = 0;
   //* >> Total number of particles in the node
-  ptr_node->local_no_ptcl_full_node = 0;
-  ptr_node->local_no_ptcl_to_use_outside_refinement_zones = 0;
+  ptr_node->no_ptcl_full_node = 0;
+  ptr_node->no_ptcl_outs_ref_zones = 0;
 
   //* >> Grid points *//
   ptr_node->grid_intr_size = 0;                // Number of existing grid interior points in the block
-  ptr_node->grid_bder_size = 0;                // Number of existing grid border points in the block
-  ptr_node->grid_SIMULATION_BOUNDARY_size = 0; // Number of the boundary simulation grid points array of the block
+  ptr_node->grid_bdry_size = 0;                // Number of existing grid border points in the block
+  ptr_node->grid_sim_bdry_size = 0;     // Number of the boundary simulation grid points array of the block
 
   //* >> Potential, acceleration and density of the grid *//
 
@@ -85,11 +85,11 @@ static void re_initialize_node(struct node *ptr_node)
   // ptr_node->zones_size = 0;		// Number of refined zones in the node
 
   // auxiliary booleans
-  for (int j = 0; j < ptr_node->aux_bool_boundary_anomalies_cap; j++)
+  for (int j = 0; j < ptr_node->pbc_bool_bdry_anomalies_cap; j++)
   {
-    ptr_node->ptr_aux_bool_boundary_anomalies_x[j] = false;
-    ptr_node->ptr_aux_bool_boundary_anomalies_y[j] = false;
-    ptr_node->ptr_aux_bool_boundary_anomalies_z[j] = false;
+    ptr_node->ptr_pbc_bool_bdry_anomalies_x[j] = false;
+    ptr_node->ptr_pbc_bool_bdry_anomalies_y[j] = false;
+    ptr_node->ptr_pbc_bool_bdry_anomalies_z[j] = false;
   }
 
   // Subzones
@@ -100,22 +100,22 @@ static void re_initialize_node(struct node *ptr_node)
   // ptr_node->subzones_size = 0;	//NUmber of refined subzones in the node
 
   //* >> Boundary of the simulation box *//
-  ptr_node->boundary_simulation_contact = false;
-  ptr_node->boundary_simulation_contact_x = false;
-  ptr_node->boundary_simulation_contact_y = false;
-  ptr_node->boundary_simulation_contact_z = false;
+  ptr_node->sim_bdry_contact = false;
+  ptr_node->sim_bdry_contact_x = false;
+  ptr_node->sim_bdry_contact_y = false;
+  ptr_node->sim_bdry_contact_z = false;
 
-  ptr_node->pbc_crosses_the_boundary_simulation_box = false;
-  ptr_node->pbc_crosses_the_boundary_simulation_box_x = false; // when one node croses the simulation box at X direcction
-  ptr_node->pbc_crosses_the_boundary_simulation_box_y = false;
-  ptr_node->pbc_crosses_the_boundary_simulation_box_z = false;
+  ptr_node->pbc_crosses_sim_box_bdry = false;
+  ptr_node->pbc_crosses_sim_box_bdry_x = false; // when one node croses the simulation box at X direcction
+  ptr_node->pbc_crosses_sim_box_bdry_y = false;
+  ptr_node->pbc_crosses_sim_box_bdry_z = false;
 
-  ptr_node->pbc_crosses_the_whole_simulation_box = false;
-  ptr_node->pbc_crosses_the_whole_simulation_box_x = false;
-  ptr_node->pbc_crosses_the_whole_simulation_box_y = false;
-  ptr_node->pbc_crosses_the_whole_simulation_box_z = false;
+  ptr_node->pbc_crosses_whole_sim_box = false;
+  ptr_node->pbc_crosses_whole_sim_box_x = false;
+  ptr_node->pbc_crosses_whole_sim_box_y = false;
+  ptr_node->pbc_crosses_whole_sim_box_z = false;
 
-  ptr_node->pbc_corrections_due_to_change_from_croses_in_box_simulation = false;
+  ptr_node->pbc_correction_due_pbc_flag = false;
 }
 
 struct node *new_node(void)

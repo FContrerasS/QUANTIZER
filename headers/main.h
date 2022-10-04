@@ -20,11 +20,11 @@
  *
  * @brief This is the header file of the main.c script.
  *
- * \b VERSION \b INFORMATION: Felipe Contreras, 2022-10-01, version 1.0.
+ * **VERSION INFORMATION**: Felipe Contreras, 2022-10-01, version 1.0.
  *
- * \b DESCRIPTION: This is the header file of the main.c script.
+ * **DESCRIPTION**: This is the header file of the main.c script.
  *
- * \b PREREQUISITES: Always used.
+ * **PREREQUISITES**: Always used.
  */
 
 #ifndef __MAIN__

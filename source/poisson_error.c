@@ -79,7 +79,7 @@ static bool poisson_error_mehod_0(const struct node *ptr_node)
   vtype one_over_H_pow_2 = 1.0L / (H * H);
   int size = ptr_node->cell_size; // Number of cells in the node
 
-  vtype rhomean_times_4piG = 4 * _G_ * _PI_ * ptr_node->local_mass / (size * H * H * H);
+  vtype rhomean_times_4piG = 4 * _G_ * _PI_ * ptr_node->node_mass / (size * H * H * H);
 
   error = 0;
 
@@ -133,7 +133,7 @@ static bool poisson_error_mehod_1(const struct node *ptr_node)
   vtype one_over_H_pow_2 = 1.0L / (H * H);
   int size = ptr_node->cell_size; // Number of cells in the node
 
-  vtype rhomean_times_4piG = 4 * _G_ * _PI_ * ptr_node->local_mass / (size * H * H * H);
+  vtype rhomean_times_4piG = 4 * _G_ * _PI_ * ptr_node->node_mass / (size * H * H * H);
 
   int grid_box_real_dim_X = ptr_node->box_real_dim_x + 1;
   int grid_box_real_dim_X_times_Y = (ptr_node->box_real_dim_x + 1) * (ptr_node->box_real_dim_y + 1);
@@ -178,7 +178,7 @@ static bool poisson_error_mehod_2(const struct node *ptr_node)
   vtype one_over_H_pow_2 = 1.0L / (H * H);
   int size = ptr_node->cell_size; // Number of cells in the node
 
-  vtype rhomean_times_4piG = 4 * _G_ * _PI_ * ptr_node->local_mass / (size * H * H * H);
+  vtype rhomean_times_4piG = 4 * _G_ * _PI_ * ptr_node->node_mass / (size * H * H * H);
 
   error = 0;
 
@@ -216,7 +216,7 @@ static bool conj_grad_error(struct node *ptr_node, vtype *error, vtype error_tot
 
   vtype H = 1.0L / (1 << ptr_node->lv);
 
-  vtype rhomean_times_4piG = 4 * _G_ * _PI_ * ptr_node->local_mass / (ptr_node->cell_size * H * H * H);
+  vtype rhomean_times_4piG = 4 * _G_ * _PI_ * ptr_node->node_mass / (ptr_node->cell_size * H * H * H);
 
   if (check_poisson_error_method == 0)
   {

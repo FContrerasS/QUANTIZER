@@ -73,11 +73,11 @@ int ptcl_idx_to_box_idx(struct node *ptr_node, int ptcl_idx)
   // the grid part because the minimum distance are 2 cells!!! between subzones. So, it is possible to
   // change the notion of box_max to "box_max + 1".
 
-  if (ptr_node->pbc_crosses_the_boundary_simulation_box == true)
+  if (ptr_node->pbc_crosses_sim_box_bdry == true)
   {
-    if (ptr_node->pbc_crosses_the_whole_simulation_box_x == false)
+    if (ptr_node->pbc_crosses_whole_sim_box_x == false)
     {
-      if (ptr_node->pbc_crosses_the_boundary_simulation_box_x == true && pos_x_floor > ptr_node->box_max_x + 1)
+      if (ptr_node->pbc_crosses_sim_box_bdry_x == true && pos_x_floor > ptr_node->box_max_x + 1)
       {
         box_idx_x -= (1 << lv);
       }
@@ -94,9 +94,9 @@ int ptcl_idx_to_box_idx(struct node *ptr_node, int ptcl_idx)
       }
     }
 
-    if (ptr_node->pbc_crosses_the_whole_simulation_box_y == false)
+    if (ptr_node->pbc_crosses_whole_sim_box_y == false)
     {
-      if (ptr_node->pbc_crosses_the_boundary_simulation_box_y == true && pos_y_floor > ptr_node->box_max_y + 1)
+      if (ptr_node->pbc_crosses_sim_box_bdry_y == true && pos_y_floor > ptr_node->box_max_y + 1)
       {
         box_idx_y -= (1 << lv);
       }
@@ -113,9 +113,9 @@ int ptcl_idx_to_box_idx(struct node *ptr_node, int ptcl_idx)
       }
     }
 
-    if (ptr_node->pbc_crosses_the_whole_simulation_box_z == false)
+    if (ptr_node->pbc_crosses_whole_sim_box_z == false)
     {
-      if (ptr_node->pbc_crosses_the_boundary_simulation_box_z == true && pos_z_floor > ptr_node->box_max_z + 1)
+      if (ptr_node->pbc_crosses_sim_box_bdry_z == true && pos_z_floor > ptr_node->box_max_z + 1)
       {
         box_idx_z -= (1 << lv);
       }

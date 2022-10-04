@@ -29,7 +29,7 @@
 //* >> Local Functions
 static void computing_grid_acceleration_head(struct node *ptr_head);
 static void computing_grid_acceleration_head2(struct node *ptr_head);
-static void computing_simulation_boundary_grid_point_acceleration(struct node *ptr_node);
+static void computing_sim_bdry_grid_point_acceleration(struct node *ptr_node);
 static void computing_grid_acceleration_branch(struct node *ptr_node);
 static void computing_grid_acceleration_branch2(struct node *ptr_node);
 
@@ -60,7 +60,7 @@ static void computing_grid_acceleration_head(struct node *ptr_head)
     //* >> Box grid index *//
     box_grid_idx = ptr_head->ptr_intr_box_grid_idx[i];
 
-    //* >> Neighboring box grid indexes *//
+    //* >> Neighboring box grid indices *//
     box_grid_idxNbr_1 = box_grid_idx + 1;
     box_grid_idxNbr_2 = box_grid_idx - 1;
     box_grid_idxNbr_3 = box_grid_idx + grid_box_real_dim_X_head;
@@ -125,7 +125,7 @@ static void computing_grid_acceleration_head2(struct node *ptr_head)
 
     box_idx = box_idx_x + box_idx_y * ptr_head->box_real_dim_x + box_idx_z * ptr_head->box_real_dim_x * ptr_head->box_real_dim_y;
 
-    //* >> Neighboring box grid indexes *//
+    //* >> Neighboring box grid indices *//
     box_grid_idxNbr_1 = box_grid_idx + 1;
     box_grid_idxNbr_2 = box_grid_idx - 1;
     box_grid_idxNbr_3 = box_grid_idx + grid_box_real_dim_X_head;
@@ -141,7 +141,7 @@ static void computing_grid_acceleration_head2(struct node *ptr_head)
       box_grid_idxNbr_8 = box_grid_idx - 2;
       ptr_head->ptr_ax[box_grid_idx] = (ptr_head->ptr_pot[box_grid_idxNbr_2] - ptr_head->ptr_pot[box_grid_idxNbr_1]) * two_over_3H - (ptr_head->ptr_pot[box_grid_idxNbr_8] - ptr_head->ptr_pot[box_grid_idxNbr_7]) * one_over_12H;
     }
-    else if (boundary_type == 0)
+    else if (bdry_cond_type == 0)
     {
       box_grid_idxNbr_7 = box_grid_idx + 2;
       box_grid_idxNbr_8 = box_grid_idx - 2;
@@ -161,7 +161,7 @@ static void computing_grid_acceleration_head2(struct node *ptr_head)
       box_grid_idxNbr_10 = box_grid_idx - 2 * grid_box_real_dim_X_head;
       ptr_head->ptr_ay[box_grid_idx] = (ptr_head->ptr_pot[box_grid_idxNbr_4] - ptr_head->ptr_pot[box_grid_idxNbr_3]) * two_over_3H - (ptr_head->ptr_pot[box_grid_idxNbr_10] - ptr_head->ptr_pot[box_grid_idxNbr_9]) * one_over_12H;
     }
-    else if (boundary_type == 0)
+    else if (bdry_cond_type == 0)
     {
       box_grid_idxNbr_9 = box_grid_idx + 2 * grid_box_real_dim_X_head;
       box_grid_idxNbr_10 = box_grid_idx - 2 * grid_box_real_dim_X_head;
@@ -181,7 +181,7 @@ static void computing_grid_acceleration_head2(struct node *ptr_head)
       box_grid_idxNbr_12 = box_grid_idx - 2 * grid_box_real_dim_X_times_Y_head;
       ptr_head->ptr_az[box_grid_idx] = (ptr_head->ptr_pot[box_grid_idxNbr_6] - ptr_head->ptr_pot[box_grid_idxNbr_5]) * two_over_3H - (ptr_head->ptr_pot[box_grid_idxNbr_12] - ptr_head->ptr_pot[box_grid_idxNbr_11]) * one_over_12H;
     }
-    else if (boundary_type == 0)
+    else if (bdry_cond_type == 0)
     {
       box_grid_idxNbr_11 = box_grid_idx + 2 * grid_box_real_dim_X_times_Y_head;
       box_grid_idxNbr_12 = box_grid_idx - 2 * grid_box_real_dim_X_times_Y_head;
@@ -196,7 +196,7 @@ static void computing_grid_acceleration_head2(struct node *ptr_head)
   }
 }
 
-static void computing_simulation_boundary_grid_point_acceleration(struct node *ptr_node)
+static void computing_sim_bdry_grid_point_acceleration(struct node *ptr_node)
 {
   int lv = ptr_node->lv;
 
@@ -214,38 +214,38 @@ static void computing_simulation_boundary_grid_point_acceleration(struct node *p
   vtype aux_coeff_2;
 
   //* >> Simulation Boundary grid points *//
-  for (int i = 0; i < ptr_node->grid_SIMULATION_BOUNDARY_size; i++)
+  for (int i = 0; i < ptr_node->grid_sim_bdry_size; i++)
   {
-    box_grid_idx = ptr_node->ptr_SIMULATION_BOUNDARY_box_grid_idx[i];
+    box_grid_idx = ptr_node->ptr_sim_bdry_box_grid_idx[i];
 
-    if (ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_x[i] == 0 ||
-        ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_x[i] == (1 << lv))
+    if (ptr_node->ptr_sim_bdry_grid_cell_idx_x[i] == 0 ||
+        ptr_node->ptr_sim_bdry_grid_cell_idx_x[i] == (1 << lv))
     {
       aux_i = GL_cm[0] < 0.5 ? 0 : (1 << lv) * H;
     }
     else
     {
-      aux_i = ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_x[i] * H;
+      aux_i = ptr_node->ptr_sim_bdry_grid_cell_idx_x[i] * H;
     }
 
-    if (ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_y[i] == 0 ||
-        ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_y[i] == (1 << lv))
+    if (ptr_node->ptr_sim_bdry_grid_cell_idx_y[i] == 0 ||
+        ptr_node->ptr_sim_bdry_grid_cell_idx_y[i] == (1 << lv))
     {
       aux_j = GL_cm[1] < 0.5 ? 0 : (1 << lv) * H;
     }
     else
     {
-      aux_j = ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_y[i];
+      aux_j = ptr_node->ptr_sim_bdry_grid_cell_idx_y[i];
     }
 
-    if (ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_z[i] == 0 ||
-        ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_z[i] == (1 << lv))
+    if (ptr_node->ptr_sim_bdry_grid_cell_idx_z[i] == 0 ||
+        ptr_node->ptr_sim_bdry_grid_cell_idx_z[i] == (1 << lv))
     {
       aux_k = GL_cm[2] < 0.5 ? 0 : (1 << lv) * H;
     }
     else
     {
-      aux_k = ptr_node->ptr_SIMULATION_BOUNDARY_grid_cell_idx_z[i] * H;
+      aux_k = ptr_node->ptr_sim_bdry_grid_cell_idx_z[i] * H;
     }
 
     dist = (aux_i - GL_cm[0]) * (aux_i - GL_cm[0]) + (aux_j - GL_cm[1]) * (aux_j - GL_cm[1]) + (aux_k - GL_cm[2]) * (aux_k - GL_cm[2]);
@@ -301,21 +301,21 @@ static void computing_grid_acceleration_branch(struct node *ptr_node)
   int grid_box_real_dim_X_times_Y_pt = (ptr_pt->box_real_dim_x + 1) * (ptr_pt->box_real_dim_y + 1);
 
   //* >> Simulation Boundary grid points *//
-  computing_simulation_boundary_grid_point_acceleration(ptr_node);
+  computing_sim_bdry_grid_point_acceleration(ptr_node);
 
   //* >> Border grid points *//
-  for (int i = 0; i < ptr_node->grid_bder_size; i++)
+  for (int i = 0; i < ptr_node->grid_bdry_size; i++)
   {
     // Notes here that a middle grid child grid point will never be a border grid point because the child cells are
     //  composed by 8 grid cells where that grid point is in the middle.
-    box_grid_idx = ptr_node->ptr_bder_box_grid_idx[i];
+    box_grid_idx = ptr_node->ptr_bdry_box_grid_idx[i];
 
-    aux_idx_1_x = ptr_node->ptr_bder_grid_cell_idx_x[i] >> 1;
-    aux_idx_1_y = ptr_node->ptr_bder_grid_cell_idx_y[i] >> 1;
-    aux_idx_1_z = ptr_node->ptr_bder_grid_cell_idx_z[i] >> 1;
-    aux_idx_2_x = (ptr_node->ptr_bder_grid_cell_idx_x[i] + 1) >> 1;
-    aux_idx_2_y = (ptr_node->ptr_bder_grid_cell_idx_y[i] + 1) >> 1;
-    aux_idx_2_z = (ptr_node->ptr_bder_grid_cell_idx_z[i] + 1) >> 1;
+    aux_idx_1_x = ptr_node->ptr_bdry_grid_cell_idx_x[i] >> 1;
+    aux_idx_1_y = ptr_node->ptr_bdry_grid_cell_idx_y[i] >> 1;
+    aux_idx_1_z = ptr_node->ptr_bdry_grid_cell_idx_z[i] >> 1;
+    aux_idx_2_x = (ptr_node->ptr_bdry_grid_cell_idx_x[i] + 1) >> 1;
+    aux_idx_2_y = (ptr_node->ptr_bdry_grid_cell_idx_y[i] + 1) >> 1;
+    aux_idx_2_z = (ptr_node->ptr_bdry_grid_cell_idx_z[i] + 1) >> 1;
 
     box_idx_1_x_pt = aux_idx_1_x - ptr_pt->box_ts_x;
     box_idx_1_y_pt = aux_idx_1_y - ptr_pt->box_ts_y;
@@ -324,7 +324,7 @@ static void computing_grid_acceleration_branch(struct node *ptr_node)
     box_idx_2_y_pt = aux_idx_2_y - ptr_pt->box_ts_y;
     box_idx_2_z_pt = aux_idx_2_z - ptr_pt->box_ts_z;
 
-    if (ptr_pt->pbc_crosses_the_boundary_simulation_box == true)
+    if (ptr_pt->pbc_crosses_sim_box_bdry == true)
     {
       if (aux_idx_1_x > ptr_pt->box_max_x)
       {
@@ -345,12 +345,12 @@ static void computing_grid_acceleration_branch(struct node *ptr_node)
       }
     }
 
-    // box_idx_1_x_node = (ptr_node->ptr_bder_grid_cell_idx_x[i] >> 1) - ptr_pt->box_ts_x;
-    // box_idx_2_x_node = ((ptr_node->ptr_bder_grid_cell_idx_x[i] + 1) >> 1) - ptr_pt->box_ts_x;
-    // box_idx_1_y_node = (ptr_node->ptr_bder_grid_cell_idx_y[i] >> 1) - ptr_pt->box_ts_y;
-    // box_idx_2_y_node = ((ptr_node->ptr_bder_grid_cell_idx_y[i] + 1) >> 1) - ptr_pt->box_ts_y;
-    // box_idx_1_z_node = (ptr_node->ptr_bder_grid_cell_idx_z[i] >> 1) - ptr_pt->box_ts_z;
-    // box_idx_2_z_node = ((ptr_node->ptr_bder_grid_cell_idx_z[i] + 1) >> 1) - ptr_pt->box_ts_z;
+    // box_idx_1_x_node = (ptr_node->ptr_bdry_grid_cell_idx_x[i] >> 1) - ptr_pt->box_ts_x;
+    // box_idx_2_x_node = ((ptr_node->ptr_bdry_grid_cell_idx_x[i] + 1) >> 1) - ptr_pt->box_ts_x;
+    // box_idx_1_y_node = (ptr_node->ptr_bdry_grid_cell_idx_y[i] >> 1) - ptr_pt->box_ts_y;
+    // box_idx_2_y_node = ((ptr_node->ptr_bdry_grid_cell_idx_y[i] + 1) >> 1) - ptr_pt->box_ts_y;
+    // box_idx_1_z_node = (ptr_node->ptr_bdry_grid_cell_idx_z[i] >> 1) - ptr_pt->box_ts_z;
+    // box_idx_2_z_node = ((ptr_node->ptr_bdry_grid_cell_idx_z[i] + 1) >> 1) - ptr_pt->box_ts_z;
 
     box_grid_idx_1_pt = box_idx_1_x_pt + box_idx_1_y_pt * grid_box_real_dim_X_pt + box_idx_1_z_pt * grid_box_real_dim_X_times_Y_pt;
     box_grid_idx_2_pt = box_idx_2_x_pt + box_idx_1_y_pt * grid_box_real_dim_X_pt + box_idx_1_z_pt * grid_box_real_dim_X_times_Y_pt;
@@ -478,20 +478,20 @@ static void computing_grid_acceleration_branch2(struct node *ptr_node)
 
   //* >> Simulation Boundary grid points *//
   // printf("Node lv = %d, ID = %d, Comp simulation boundary grid points\n",ptr_node->lv,ptr_node->ID);
-  computing_simulation_boundary_grid_point_acceleration(ptr_node);
+  computing_sim_bdry_grid_point_acceleration(ptr_node);
 
   //* >> Border grid points *//
   // printf("Node lv = %d, ID = %d, Comp border grid points\n", ptr_node->lv, ptr_node->ID);
-  for (int i = 0; i < ptr_node->grid_bder_size; i++)
+  for (int i = 0; i < ptr_node->grid_bdry_size; i++)
   {
-    box_grid_idx = ptr_node->ptr_bder_box_grid_idx[i];
+    box_grid_idx = ptr_node->ptr_bdry_box_grid_idx[i];
 
-    aux_idx_1_x = ptr_node->ptr_bder_grid_cell_idx_x[i] >> 1;
-    aux_idx_1_y = ptr_node->ptr_bder_grid_cell_idx_y[i] >> 1;
-    aux_idx_1_z = ptr_node->ptr_bder_grid_cell_idx_z[i] >> 1;
-    aux_idx_2_x = (ptr_node->ptr_bder_grid_cell_idx_x[i] + 1) >> 1;
-    aux_idx_2_y = (ptr_node->ptr_bder_grid_cell_idx_y[i] + 1) >> 1;
-    aux_idx_2_z = (ptr_node->ptr_bder_grid_cell_idx_z[i] + 1) >> 1;
+    aux_idx_1_x = ptr_node->ptr_bdry_grid_cell_idx_x[i] >> 1;
+    aux_idx_1_y = ptr_node->ptr_bdry_grid_cell_idx_y[i] >> 1;
+    aux_idx_1_z = ptr_node->ptr_bdry_grid_cell_idx_z[i] >> 1;
+    aux_idx_2_x = (ptr_node->ptr_bdry_grid_cell_idx_x[i] + 1) >> 1;
+    aux_idx_2_y = (ptr_node->ptr_bdry_grid_cell_idx_y[i] + 1) >> 1;
+    aux_idx_2_z = (ptr_node->ptr_bdry_grid_cell_idx_z[i] + 1) >> 1;
 
     box_idx_1_x_pt = aux_idx_1_x - ptr_pt->box_ts_x;
     box_idx_1_y_pt = aux_idx_1_y - ptr_pt->box_ts_y;
@@ -500,7 +500,7 @@ static void computing_grid_acceleration_branch2(struct node *ptr_node)
     box_idx_2_y_pt = aux_idx_2_y - ptr_pt->box_ts_y;
     box_idx_2_z_pt = aux_idx_2_z - ptr_pt->box_ts_z;
 
-    if (ptr_pt->pbc_crosses_the_boundary_simulation_box == true)
+    if (ptr_pt->pbc_crosses_sim_box_bdry == true)
     {
       if (aux_idx_1_x > ptr_node->box_max_x)
       {
@@ -585,7 +585,7 @@ static void computing_grid_acceleration_branch2(struct node *ptr_node)
     box_idx_y_node = aux_idx_y - ptr_node->box_ts_y;
     box_idx_z_node = aux_idx_z - ptr_node->box_ts_z;
 
-    if (ptr_node->pbc_crosses_the_boundary_simulation_box == true)
+    if (ptr_node->pbc_crosses_sim_box_bdry == true)
     {
       if (aux_idx_x > ptr_node->box_max_x)
       {
@@ -605,7 +605,7 @@ static void computing_grid_acceleration_branch2(struct node *ptr_node)
 
     box_idx_node = box_idx_x_node + box_idx_y_node * box_real_dim_X_node + box_idx_z_node * box_real_dim_X_times_Y_node;
 
-    //* >> Neighboring box grid indexes *//
+    //* >> Neighboring box grid indices *//
     box_grid_idxNbr_1 = box_grid_idx + 1;
     box_grid_idxNbr_2 = box_grid_idx - 1;
     box_grid_idxNbr_3 = box_grid_idx + grid_box_real_dim_X_node;
@@ -622,7 +622,7 @@ static void computing_grid_acceleration_branch2(struct node *ptr_node)
       box_grid_idxNbr_8 = box_grid_idx - 2;
       check = true;
     }
-    else if (ptr_node->pbc_crosses_the_whole_simulation_box_x == true)
+    else if (ptr_node->pbc_crosses_whole_sim_box_x == true)
     {
       if (ptr_node->ptr_box[box_idx_node - 2] == -6 && ptr_node->ptr_box[box_idx_node + 1] > -4)
       {
@@ -657,7 +657,7 @@ static void computing_grid_acceleration_branch2(struct node *ptr_node)
       box_grid_idxNbr_9 = box_grid_idx + 2 * grid_box_real_dim_X_node;
       box_grid_idxNbr_10 = box_grid_idx - 2 * grid_box_real_dim_X_node;
     }
-    else if (ptr_node->pbc_crosses_the_whole_simulation_box_y == true)
+    else if (ptr_node->pbc_crosses_whole_sim_box_y == true)
     {
       if (ptr_node->ptr_box[box_idx_node - 2 * box_real_dim_X_node] == -6 && ptr_node->ptr_box[box_idx_node + box_real_dim_X_node] > -4)
       {
@@ -695,7 +695,7 @@ static void computing_grid_acceleration_branch2(struct node *ptr_node)
       box_grid_idxNbr_11 = box_grid_idx + 2 * grid_box_real_dim_X_times_Y_node;
       box_grid_idxNbr_12 = box_grid_idx - 2 * grid_box_real_dim_X_times_Y_node;
     }
-    else if (ptr_node->pbc_crosses_the_whole_simulation_box_z == true)
+    else if (ptr_node->pbc_crosses_whole_sim_box_z == true)
     {
       if (ptr_node->ptr_box[box_idx_node - 2 * box_real_dim_X_times_Y_node] == -6 && ptr_node->ptr_box[box_idx_node + box_real_dim_X_times_Y_node] > -4)
       {
