@@ -1,13 +1,4 @@
 /*
- * common.h 
- *
- * Header file with the most common parameters declared
- *
- * Felipe Contreras
- * felipe.contrerass@postgrado.uv.cl
- */
-
-/*
  * Copyright(c) 2022 Felipe Contreras
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -24,6 +15,19 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @file common.h ******************** Documented \e "common.h" header ******************** \n
+ *
+ * @brief Header file with multiple commen paramter and global variables
+ *
+ * **VERSION INFORMATION**: Felipe Contreras, 2022-10-01, version 1.0.
+ *
+ * **DESCRIPTION**: This is the header file with multiple commen paramter and 
+ * global variables.
+ *
+ * **PREREQUISITES**: Always used.
+ */
+
 #ifndef __COMMON__
 #define __COMMON__
 
@@ -38,21 +42,21 @@
 #include <stdbool.h>
 #include <stdarg.h>
 
-#define _VTYPE_ 2
+#define _VTYPE_ 2 /**< Defining type of data: 1 = float; 2 = double; 3 = long double. other number = double */
 #if _VTYPE_ == 1
-typedef float vtype;
-#define myabs fabsf
+typedef float vtype; /**< Type of date \f${\color{red} \mathbf{float}}\f$ assigned by the user in the macros \ref _VTYPE_ */
+#define myabs fabsf 
 #define myfloor floorf
 #elif _VTYPE_ == 2
-typedef double vtype;
+typedef double vtype; /**< Type of date \f${\color{red} \mathbf{double}}\f$ assigned by the user in the macros \ref _VTYPE_ */
 #define myabs fabs
 #define myfloor floor
 #elif _VTYPE_ == 3
-typedef long double vtype;
+typedef long double vtype; /**< Type of date \f${\color{red} \mathbf{long double}}\f$ assigned by the user in the macros \ref _VTYPE_ */
 #define myabs fabsl
 #define myfloor floorl
 #else
-typedef double vtype;
+typedef double vtype; /**< Type of date \f${\color{red} \mathbf{double}}\f$ assigned by the user in the macros \ref _VTYPE_ */
 #define myabs fabs
 #define myfloor floor
 #endif
@@ -78,18 +82,17 @@ typedef double vtype;
 #define KCYN "\x1B[36m" // Cyan 
 #define KWHT "\x1B[37m" // White
 
-    // Abbreviation
+// Abbreviation
 
 // Constants
-extern vtype _User_BoxSize_; // kpc
-extern vtype _PI_;
-extern vtype _Onesixth_;
-extern vtype _kpc_to_m_;
-extern vtype _Msolar_to_kg_;
-extern vtype tt;
-extern vtype _Mgyear_;
-extern vtype _G_;
- 
+extern vtype _User_BoxSize_; /**< Global Variable Constants: User boxsize in kpc unit.*/
+extern vtype _PI_;           /**< Global Variable Constants: Pi value. */
+extern vtype _Onesixth_;     /**< Global Variable Constants: The value of \f$1\over 6\f$. */
+extern vtype _kpc_to_m_;     /**< Global Variable Constants: The dimensionless \f$x\f$ value in the relation \f$1\textrm{ kpc} = x \cdot 1\textrm{ m}\f$. */
+extern vtype _Msolar_to_kg_; /**< \public Global Variable Constants: The dimensionless \f$x\f$ value in the relation \f$1 \textup{ M}_\odot = x \cdot 1\textrm{ kg}\f$. */
+extern vtype tt;             /**< \public Global Variable Constants: The unit of time in code units, such that #_G_ = 1 in these code units. */
+extern vtype _Mgyear_;       /**< \public Global Variable Constants: The value of one Mega year in seconds */
+extern vtype _G_;            /**< \public Global Variable Constants: The gravitational constant *G* in units of \f${\textrm{m}^3\over \textrm{kg s}^2} \f$ */
 
 // Initial Parameters
 extern vtype BoxSize;
@@ -173,9 +176,9 @@ extern struct node *GL_ptr_tree;
 
 //* >> Tentacles pointer *//
 extern struct node ***GL_tentacles; // Array of arrays of pointers. Organized first by levels, then by pointers
-extern int *GL_tentacles_cap;   // Capacity of pointers in each level
-extern int *GL_tentacles_size; // Number of pointers in each level
-extern int GL_tentacles_level_max; // Maximum level of refinement of the tentacles
+extern int *GL_tentacles_cap;       /**< Global Variable Tentacles: Array of *Capacities* (see Key Concepts \ref Key_Concepts_Capacity "Capacity") at every level of the \ref tree_adaptation__REMINDER__Tentacles "Tentacles" */
+extern int *GL_tentacles_size;  /**< Global Variable Tentacles: Array of *Sizes* (see Key Concepts \ref Key_Concepts_Size "Size") at every level of the \ref tree_adaptation__REMINDER__Tentacles "Tentacles" */
+extern int GL_tentacles_level_max; /**< Maximum level of refinement of the \ref tree_adaptation__REMINDER__Tentacles "Tentacles" */
 
 //* >> Pool of nodes *//
 extern struct node *GL_pool_node_start;

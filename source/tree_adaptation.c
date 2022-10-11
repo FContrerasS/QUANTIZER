@@ -22,18 +22,19 @@
  * **VERSION INFORMATION**: Felipe Contreras, 2022-10-01, version 1.0.
  *
  * **Reminder**:
- * - [a] **Node**: The most basic structure of the tree which represent an
- *                 isolated refinement zone at a given level of refinement.
+ * - [a] **Node**: The most basic structure of the tree which represents an
+ * isolated refinement zone at a given level of refinement.
  *
- * - [b] **Tentacles**: Pointer structure which has access to every node in 
- *                      every level of refinement in the tree.
+ * - \anchor tree_adaptation__REMINDER__Tentacles [b] **Tentacles**: Pointer
+ * structure which has access to every node in every level of refinement in the
+ * tree.
  *
  * **SHORT DESCRIPTION**: Adaptation of the tree of refinement zones to the new
- * particle configuration. The nodes are created, removed, or adapted according 
- * to the new refinement zones. The structure of tentacles is modified to 
+ * particle configuration. The nodes are created, removed, or adapted according
+ * to the new refinement zones. The structure of tentacles is modified to
  * pointer to the new configurations of nodes of the tree.
  *
- * **PREREQUISITES**: Always called, but only used if the user uses more than 
+ * **PREREQUISITES**: Always called, but only used if the user uses more than
  * one level of refinement, i.e. \f$ l_{min} < l_{max} \f$.
  *
  * **RETURN**: The error status.
@@ -46,12 +47,14 @@
  * configuration. The modifications go from the finest level of refinement to
  * the coarsest one, running over every node of those levels. How this process
  * should be understood is by considering the parent node which is the current
- * node of the cycle, its child nodes, and its grandchild nodes. In every cycle
+ * node of the loop, its child nodes, and its grandchild nodes. In every loop
  * over a node, the parent node performs modifications over the spatial geometry
  * of its child nodes without modifying its geometry or the grandchild geometry,
  * but only modifying his refinement zones and who will be the new parents of
- * its grandchild nodes. The flux can be seen in the figure (work in progress),
- * and it is explained below:
+ * its grandchild nodes.
+ *
+ * The flux of this function can be seen in the figure (work in progress), and
+ * it is explained below:
  *
  * - [0]  <b> THE tree_adaptation.c MODULE STARTS....</b>
  *
@@ -59,105 +62,106 @@
  *
  * - [2]  Some useful parameters are defined.
  *
- * - [3]  A "for" cycle running over the level of refinement begins but avoids 
- * the finest level of refinement. The cycle goes from finner to coarser level 
- * of refinement.
+ * - [3]  Run a "for" loop over the refinement levels but avoiding the finest 
+ * refinement level. The loop goes from a finer refinement level to a coarser 
+ * one.
  *
- * - [4]  The number of tentacles in the next level of refinement and the number 
+ * - [4]  The number of tentacles in the next level of refinement and the number
  * of parent nodes in the actual level of refinement are reinitialized.
  *
- * - [5]  A "for" cycle over all the nodes in the level of refinement begins. 
- * From now on we will call these nodes parent nodes.
+ * - [5]  Run a "for" loop over all the nodes in the level of refinement
+ * begins. From now on we will call these nodes parent nodes.
  *
- * - [6]  The cell structure of the parent node is updated using the child nodes 
+ * - [6]  The cell structure of the parent node is updated using the child nodes
  * through the function updating_cell_struct(). Here the cell information of the
  *  parent node for every cell in a refinement zone is updated.
  *
- * - [7]  Using the function initialization_node_boxes(), the box associated 
- * with the parent node is reinitialized, and the old box is stored in an 
+ * - [7]  Using the function initialization_node_boxes(), the box associated
+ * with the parent node is reinitialized, and the old box is stored in an
  * auxiliary box.
  *
- * - [8]  With the new configuration of the particles obtained in the 
- * particle_updating.c module, cells in the parent node are labeled as 
- * refinement cells (-1 in the code language) in the reinitialized box through 
+ * - [8]  With the new configuration of the particles obtained in the
+ * particle_updating.c module, cells in the parent node are labeled as
+ * refinement cells (-1 in the code language) in the reinitialized box through
  * the function fill_cell_ref().
  *
- * - [9]  Using the new map of refinement cells, the different refinement zones 
- * (blocks in code language) in the parent node are built through the function 
+ * - [9]  Using the new map of refinement cells, the different refinement zones
+ * (blocks in code language) in the parent node are built through the function
  * fill_zones_ref(). Every one of these zones is independent of the other.
  *
- * - [10] Using the old map of refinement and the new map of refinement of the 
- * parent node (old and new boxes), a link between the old zones and new zones 
- * of refinement is created through the function create_links(). Every old zone 
+ * - [10] Using the old map of refinement and the new map of refinement of the
+ * parent node (old and new boxes), a link between the old zones and new zones
+ * of refinement is created through the function create_links(). Every old zone
  * of refinement is associated with a single non-associated new zone of
- * refinement. In the following steps the old refinement zones associated with a 
- * new one will be adapted, and for the new zones without association new child 
- * nodes will be created to match with these zones. Remember that refinement 
+ * refinement. In the following steps the old refinement zones associated with a
+ * new one will be adapted, and for the new zones without association new child
+ * nodes will be created to match with these zones. Remember that refinement
  * zones correspond to child nodes of the parent node.
  *
- * - [11] Cells that previously required refinement but are no anymore removed 
- * from the child node associated with that refinement zone of the parent node 
+ * - [11] Cells that previously required refinement but are no anymore removed
+ * from the child node associated with that refinement zone of the parent node
  * using the function remov_cells_nolonger_require_refinement().
  *
- * - [12] Using the function adapt_child_nodes(), the already child nodes 
- * corresponding to the old refinement zones linked with a new refinement zone 
+ * - [12] Using the function adapt_child_nodes(), the already child nodes
+ * corresponding to the old refinement zones linked with a new refinement zone
  * are adapted in their parameter to fit with the new zone of refinement.
  *
- * - [13] Using the function create_new_child_nodes(), the new refinement zones 
- * without a link with any old zone are fitted in a new child node obtained 
+ * - [13] Using the function create_new_child_nodes(), the new refinement zones
+ * without a link with any old zone are fitted in a new child node obtained
  * using the memory pool.
  *
- * - [14] Every new refinement zone is associated with an old child node or with 
+ * - [14] Every new refinement zone is associated with an old child node or with
  * a new child node, but the cell structure of these child nodes needs to be
- * inserted. Using the function moving_old_child_to_new_child(), the old child
- * cells which belong to old refinement zones are transferred to their new child 
- * node which corresponds to the linked new zone of refinement. Another way to 
- * understand the goal of this function is that it moves cells from one child 
- * node to another child node.
+ * inserted. Using the function transferring_old_child_to_new_child(), the old 
+ * child cells which belong to old refinement zones are transferred to their new 
+ * child node which corresponds to the linked new zone of refinement. Another 
+ * way to understand the goal of this function is that it moves cells from one 
+ * child node to another child node.
  *
- * - [15] Some cells require refinement in the new map but didn't on the old 
- * map. These cells are put in the corresponding new child nodes through the 
- * function moving_new_zones_to_new_child().
+ * - [15] Some cells require refinement in the new map but didn't on the old
+ * map. These cells are put in the corresponding new child nodes through the
+ * function transferring_new_zones_to_new_child().
  *
- * - [16] As the new can have different IDs of identification, they require to 
- * be sorted properly. The function reorganization_child_node() do that task.
+ * - [16] As the new child nodes can have different IDs of identification, they
+ * require to be sorted properly. The function reorganization_child_node() do
+ * that task.
  *
  * - [17] Similar to the step before, the grandchild nodes need to be sorted
- * properly. The function reorganization_grandchild_node() connect every 
+ * properly. The function reorganization_grandchild_node() connect every
  * grandchild node with its right child node.
  *
  * - [18] Thanks to the previous step, the grandchild nodes are put in the right
- * child node. However, they are not necessarily sorted according to the child 
- * box status of the refinement zone. So, the function 
- * updating_ref_zones_grandchildren() is in charge of modifying the child box 
+ * child node. However, they are not necessarily sorted according to the child
+ * box status of the refinement zone. So, the function
+ * updating_ref_zones_children() is in charge of modifying the child box
  * status to add the right grandchild node identification.
  *
  * - [19] Besides to contain the status of every cell in the node as No-Exist
- * (-4), exist (-3), refinement (\f$ \geq \f$ 0), the boxes of the nodes 
- * contains the information if the node is in the boundary of the simulation 
- * box. To add this information, the function 
+ * (-4), exist (-3), refinement (\f$ \geq \f$ 0), the boxes of the nodes
+ * contains the information if the node is in the boundary of the simulation
+ * box. To add this information, the function
  * adding_boundary_simulation_box_status_to_children_nodes() is called.
  *
- * - [20] Using the function update_child_grid_points() the grid points of the
- * child nodes are updated.
+ * - [20] Using the function filling_child_grid_point_arrays() the grid points 
+ * of the child nodes are updated.
  *
- * - [21] In a "for" cycle, using the function
- * filling_local_number_ptcl_outside_refinement_zones() the number of particles 
+ * - [21] In a "for" loop, using the function
+ * computing_no_ptcl_outside_refinement_zones() the number of particles
  * outside of the refinement zones in every child node is computed.
  *
- * - [22] Using the function moved_unused_child_node_to_memory_pool() the child
- * nodes which was removed from the parent node are put in the memory pool to be 
- * used in the future for any other parent node as its child node.
+ * - [22] Using the function transferring_unused_child_node_to_memory_pool() the 
+ * child nodes which was removed from the parent node are put in the memory pool 
+ * to be used in the future for any other parent node as its child node.
  *
  * - [23] Using the function tentacles_updating() the tentacles structure is
  * updated with the new chlild node distribution.
  *
- * - [24] At this point the cycle over the level of refinement and the cycle
- * over the parent nodes end. The cycles went from step [3] to step [23].
+ * - [24] At this point the loop over the level of refinement and the loop over
+ * the parent nodes end. The loops went from step [3] to step [23].
  *
  * - [25] The particles in the Head node, which represent the whole coarsest
- * level of refinement, are computed as in the step [21] using the function 
- * filling_local_number_ptcl_outside_refinement_zones().
+ * level of refinement, are computed as in the step [21] using the function
+ * computing_no_ptcl_outside_refinement_zones().
  *
  * - [26] The new maximum number of level of refinement is updated through the
  * function updating_tentacles_max_lv().
@@ -169,18 +173,18 @@
  *
  * **RATIONALES**:
  * - [a]  It is possible to join several functions in only one function, for
- * example, the functions fill_cell_ref() and fill_zones_ref(), which are in 
- * charge of labeling the new box of the parent node with the cells to be 
- * refined, and create the refinement zones using this new map of refinement 
- * respectively. However, we decide to separate the functions as much as 
+ * example, the functions fill_cell_ref() and fill_zones_ref(), which are in
+ * charge of labeling the new box of the parent node with the cells to be
+ * refined, and create the refinement zones using this new map of refinement
+ * respectively. However, we decide to separate the functions as much as
  * possible to increase the modularity and the cleanness of the code.
  *
  * **NOTES**:
  * - [a]  The order in which some functions are called by the code is important.
- * For example, the function which removes cells from old child nodes 
- * remov_cells_nolonger_require_refinement(), must be called before the function 
- * which adapts the old child nodes to fit the new ones adapt_child_nodes(). 
- * This is because the adaptation of the old child nodes can rebuild the old box 
+ * For example, the function which removes cells from old child nodes
+ * remov_cells_nolonger_require_refinement(), must be called before the function
+ * which adapts the old child nodes to fit the new ones adapt_child_nodes().
+ * This is because the adaptation of the old child nodes can rebuild the old box
  * to a new one erasing the old information.
  *
  */
@@ -188,29 +192,26 @@
 #include "tree_adaptation.h"
 
 //* >> Local Functions
-
-
 void check_error(struct node *ptr_node, int type);
 static int find_min_max_subzones_ref_PERIODIC_BOUNDARY(struct node *ptr_node, int zone_idx);
 static int updating_cell_struct(struct node *ptr_node);
 static void initialization_node_boxes(struct node *ptr_node);
-// static void initialization_ref_aux(struct node *ptr_node);
 static int fill_cell_ref(struct node *ptr_node);
 static int fill_zones_ref(struct node *ptr_node);
 static int create_links(struct node *ptr_node);
 static void remov_cells_nolonger_require_refinement(struct node *ptr_node);
 static int adapt_child_nodes(struct node *ptr_node);
 static int create_new_child_nodes(struct node *ptr_node);
-static int moving_old_child_to_new_child(struct node *ptr_node);
-static int moving_new_zones_to_new_child(struct node *ptr_node);
+static int transferring_old_child_to_new_child(struct node *ptr_node);
+static int transferring_new_zones_to_new_child(struct node *ptr_node);
 static void reorganization_child_node(struct node *ptr_node);
 static int reorganization_grandchild_node(struct node *ptr_node);
-static void updating_ref_zones_grandchildren(struct node *ptr_node);
+static void updating_ref_zones_children(struct node *ptr_node);
 static void adding_boundary_simulation_box_status_to_children_nodes(struct node *ptr_node);
-static int update_child_grid_points(struct node *ptr_node);
-static void filling_local_number_ptcl_outside_refinement_zones(struct node *ptr_node);
-static void moved_unused_child_node_to_memory_pool(struct node *ptr_node);
-static int tentacles_updating(struct node *ptr_node, int tentacle_lv);
+static int filling_child_grid_point_arrays(struct node *ptr_node);
+static void computing_no_ptcl_outside_refinement_zones(struct node *ptr_node);
+static void transferring_unused_child_node_to_memory_pool(struct node *ptr_node);
+static int tentacles_updating(const struct node *ptr_node, int tentacle_lv);
 static void updating_tentacles_max_lv(void);
 
 void check_error(struct node *ptr_node, int type)
@@ -963,7 +964,7 @@ void check_error(struct node *ptr_node, int type)
   // Boxes:
   //   Children
   int cntr_Periodic_boundary;
-  int cntr_border_simulation;
+  int cntr_bdry_simulation;
   int cntr_No_exist;
   int cntr_Exist;
   int cntr_chn;
@@ -972,7 +973,7 @@ void check_error(struct node *ptr_node, int type)
   {
     ptr_ch = ptr_node->pptr_chn[i];
     cntr_Periodic_boundary = 0;
-    cntr_border_simulation = 0;
+    cntr_bdry_simulation = 0;
     cntr_No_exist = 0;
     cntr_Exist = 0;
     cntr_chn = 0;
@@ -1000,7 +1001,7 @@ void check_error(struct node *ptr_node, int type)
       }
       else if (ptr_ch->ptr_box[cell_idx] == -5)
       {
-        cntr_border_simulation++;
+        cntr_bdry_simulation++;
       }
       else if (ptr_ch->ptr_box[cell_idx] == -4)
       {
@@ -1027,7 +1028,7 @@ void check_error(struct node *ptr_node, int type)
       printf("Error, Hijo, cell size diferente la valor \n");
       printf("cell size = %d, exist + cntr_chn = %d\n", ptr_ch->cell_size, cntr_Exist + cntr_chn);
       printf("status -6 = %d\n", cntr_Periodic_boundary);
-      printf("status -5 = %d\n", cntr_border_simulation);
+      printf("status -5 = %d\n", cntr_bdry_simulation);
       printf("status -4 = %d\n", cntr_No_exist);
       printf("status -3 = %d\n", cntr_Exist);
       printf("status >=0 = %d\n", cntr_chn);
@@ -1053,7 +1054,7 @@ void check_error(struct node *ptr_node, int type)
 
   //   Parent
   cntr_Periodic_boundary = 0;
-  cntr_border_simulation = 0;
+  cntr_bdry_simulation = 0;
   cntr_No_exist = 0;
   cntr_Exist = 0;
   cntr_chn = 0;
@@ -1079,7 +1080,7 @@ void check_error(struct node *ptr_node, int type)
     }
     else if (ptr_node->ptr_box[cell_idx] == -5)
     {
-      cntr_border_simulation++;
+      cntr_bdry_simulation++;
     }
     else if (ptr_node->ptr_box[cell_idx] == -4)
     {
@@ -1177,10 +1178,11 @@ void check_error(struct node *ptr_node, int type)
 /**
  * @brief Find the minimum and maximum cell indices of the subzone \e zone_idx.
  *
- * **SHORT DESCRIPTION**: Find the minimum and maximum cell indices in the *Code
- * Space* (see \ref node "key Concepts [d]") that defines the *Smallest Box*
- * (see \ref node "Key Concepts [c]") associated with the corresponding subzone
- * \e zone_idx.
+ * **SHORT DESCRIPTION**: Find the minimum and maximum cell indices in the 
+ * *Code Space* (see Key Concepts \ref Key_Concepts_Code_Space "Code Space") 
+ * that defines the *Smallest Box* (see Key Concepts \ref 
+ * Key_Concepts_Smallest_Box "Smallest Box") associated with the corresponding 
+ * subzone \e zone_idx.
  *
  * **PREREQUISITES**: Only used if periodic boundary conditions (pbc) are used.
  * Only called if the new refinement map of the parent node crosses the boundary
@@ -1194,15 +1196,18 @@ void check_error(struct node *ptr_node, int type)
  *
  * **LONG DESCRIPTION**:
  *
- * Find the minimum and maximum cell indices in the *Code Space* (see \ref node
- * "Key Concepts [d]") that defines the *Smallest Box* (see \ref node
- * "Key Concepts [c]") associated with the corresponding subzone \e zone_idx.,
+ * Find the minimum and maximum cell indices in the *Code Space* (see Key 
+ * Concepts \ref Key_Concepts_Code_Space "Code Space") that defines the 
+ * *Smallest Box* (see Key Concepts \ref Key_Concepts_Smallest_Box 
+ * "Smallest Box") ssociated with the corresponding subzone \e zone_idx., 
  * storing them in the parent node structure parameters \ref
  * node::ptr_pbc_min_subzones_x "ptr_pbc_min_subzones_x" (\ref
  * node::ptr_pbc_min_subzones_y "y", \ref node::ptr_pbc_min_subzones_z "z"), and
  * \ref node::ptr_pbc_max_subzones_x "ptr_pbc_max_subzones_x" (\ref
- * node::ptr_pbc_max_subzones_y "y", \ref node::ptr_pbc_max_subzones_z "z"). The
- * flux can be seen in the figure (work in progress), and it is explained below:
+ * node::ptr_pbc_max_subzones_y "y", \ref node::ptr_pbc_max_subzones_z "z").
+ *
+ * The flux of this function can be seen in the figure (work in progress), and
+ * it is explained below:
  *
  * - [0]  <b> THE find_min_max_subzones_ref_PERIODIC_BOUNDARY() FUNCTION STARTS....</b>
  *
@@ -1219,24 +1224,26 @@ void check_error(struct node *ptr_node, int type)
  * subzone of refinement. The first one accepts that a refinement zone crosses
  * the box of the simulation, while the second one does not.
  *
- * - [4]  A "while" cycle runs over all cells in the zone of refinement of ID
+ * - [4]  A "while" loop runs over all cells in the zone of refinement of ID
  * \e zone_idx that have not been tagged to any subzone. A counter is used to
  * perform this task.
  *
- * - [5]  In every step of the "while" cycle over the cells, we ask if the cell
+ * - [5]  In every step of the "while" loop over the cells, we ask if the cell
  * belongs to a subzone of refinement (box value \f$ \geq 0 \f$). If it belongs,
  * we continue asking to the next cell, if it does not belong (box value
- * \f$ = -1 \f$), we pass to the step [6].
+ * \f$ = -1 \f$), we change its box satus to "zone_idx" and pass to the next
+ * step.
  *
  * - [6]  Having found a cell with no subzone, we are going to create an entire
  * new subzone starting with this cell as the foundation stone. To perform this,
- * a new "while" cycle is executed running until there are no more cells without
+ * a new "while" loop is executed running until there are no more cells without
  * analysis in the subzone, i.e. the final state of the block found is a solid
- * piece completely isolated from the other subzones.
+ * piece completely isolated from the other subzones, labeled with the
+ * "subzone_idx" value in the parent node box.
  *
- * - [7]  At this point both "while" cycles end, the "while" cycle of the steps
- * [4] and [6]. Now, using the box with this new information the minimum and
- * maximum of every subzone of the zone \e zone_idx are found.
+ * - [7]  At this point both "while" loops of the steps [4] and [6] end. Now,
+ * using the box with this new information the minimum and maximum of every
+ * subzone of the zone \e zone_idx are found.
  *
  * - [8]  Finally, the box status of the parent node is returned to its initial
  * state, putting the value of \e zone_idx in the corresponding cell of the new
@@ -1299,7 +1306,7 @@ int static find_min_max_subzones_ref_PERIODIC_BOUNDARY(struct node *ptr_node, in
   //* >>  Changing the box status from REFINEMENT REQUIRED (-1) to the refinement subzone ID (>= 0) *//
   while (ptr_node->ptr_zone_size[zone_idx] > cntr_cell_add_all_subzones) // The loop while works as long as the number of cell addeed is less than the total refined cells
   {
-    // printf("Inside of the while cycle\n");
+    // printf("Inside of the "while" loop\n");
     //  Notes that the initiality we inspect the elements in the refined cell array until an element has been found that is not found in any of the current refinement subzones
     cell_idx = ptr_node->pptr_zones[zone_idx][cell_ref_idx]; // Index of the cells array in the node
     box_idx_node = ptr_node->ptr_box_idx[cell_idx];
@@ -1320,7 +1327,7 @@ int static find_min_max_subzones_ref_PERIODIC_BOUNDARY(struct node *ptr_node, in
 
       //* >> Building of the subzone of ID = subzone_idx *//
       cntr_insp = 0;                                                                           // Counter for the number of elements inspectioned in the current subzone array
-      while (subzone_size > cntr_insp && ptr_node->cell_ref_size > cntr_cell_add_all_subzones) // The cycle ends when all the elements of the subzone have been inspected or when the number of cells in the zone is equal to the total number of cells added in all the subzones.
+      while (subzone_size > cntr_insp && ptr_node->cell_ref_size > cntr_cell_add_all_subzones) // The loop ends when all the elements of the subzone have been inspected or when the number of cells in the zone is equal to the total number of cells added in all the subzones.
       {
         // Note that the number of elements in the subzone increases if the neighbors of the inspected cell must be added to the subzone
 
@@ -1380,7 +1387,7 @@ int static find_min_max_subzones_ref_PERIODIC_BOUNDARY(struct node *ptr_node, in
         subzone_size += cntr_cell_add;               // Increasing the number of cells in the subzone
         cntr_cell_add_all_subzones += cntr_cell_add; // Increasing the number of cells added to the subzones
         cntr_insp++;                                 // Increasing the number of inspections
-      }                                              // End while cycle, now the box contains the the information about all cells of the subzone "subzone_idx"
+      }                                              // End "while" loop, now the box contains the the information about all cells of the subzone "subzone_idx"
       subzone_idx++;                                 // Increasing the subzone number
     }                                                // subZone defined in the box
     cell_ref_idx++;
@@ -1506,25 +1513,27 @@ int static find_min_max_subzones_ref_PERIODIC_BOUNDARY(struct node *ptr_node, in
  * zone (so they are in a child node), can have incorrect information in the
  * cell structure of the parent node. This function is in charge of update the
  * information of the cells which belong to any refinement zone using the
- * child nodes of the parent node. The flux can be seen in the figure (work
- * in progress), and it is explained below:
+ * child nodes of the parent node. 
+ * 
+ * The flux of this function can be seen in the figure (work in progress), and 
+ * it is explained below:
  *
  * - [0]  <b> THE updating_cell_struct() FUNCTION STARTS....</b>
  *
  * - [1]  Defining some internal useful parameters.
  *
- * - [2]  Run a "for" cycle over the child nodes.
+ * - [2]  Run a "for" loop over the child nodes.
  *
- * - [3]  Run a "for" cycle over the cells in every child node. The cycle runs
+ * - [3]  Run a "for" loop over the cells in every child node. The loop runs
  * each 8 cells which correspond to one cell in the parent node.
  *
  * - [4]  The parent box index associated to this package of 8 child cells is
- *        computed.
+ * computed.
  *
  * - [5]  The total mass and particles are copied from the 8 child cells to the
  * respective parent node cell.
  *
- * - [6]  The "for" cycles ends.
+ * - [6]  The "for" loops ends.
  *
  * - [7]  <b> THE updating_cell_struct() FUNCTION ENDS....</b>
  *
@@ -1566,10 +1575,10 @@ static int updating_cell_struct(struct node *ptr_node)
 
   int lv = ptr_node->lv;
 
-  for (int i = 0; i < no_chn; i++) // Cycle over children
+  for (int i = 0; i < no_chn; i++) // Loop over children
   {
     ptr_ch = ptr_node->pptr_chn[i];
-    for (int j = 0; j < ptr_ch->cell_size; j += 8) // Cycle over packeges of 8 cells
+    for (int j = 0; j < ptr_ch->cell_size; j += 8) // Loop over packeges of 8 cells
     {
       //* >> Computing the mass of the 8 child cells *//
 
@@ -1624,7 +1633,7 @@ static int updating_cell_struct(struct node *ptr_node)
       }
 
       ptr_int_aux = ptr_node->ptr_cell_struct[box_idx_node].ptr_ptcl;
-      //* >> Transfering particles *//
+      //* >> Transferring particles *//
       for (int k = j; k < j + 8; k++)
       {
         box_idx_ch = ptr_ch->ptr_box_idx[k];
@@ -1661,8 +1670,10 @@ static int updating_cell_struct(struct node *ptr_node)
  * Store the box array \ref node::ptr_box "ptr_box" in the old_box array \ref
  * node::ptr_box_old "ptr_box_old", and reset the cells that require refinement
  * \f$ \geq 0 \f$ to existing cells (=-3) in the box array \ref node::ptr_box
- * "ptr_box". The flux can be seen in the figure (work in progress), and it is
- * explained below:
+ * "ptr_box".
+ *
+ * The flux of this function can be seen in the figure (work in progress), and
+ * it is explained below:
  *
  * - [0]  <b> THE initialization_node_boxes() FUNCTION STARTS....</b>
  *
@@ -1671,9 +1682,9 @@ static int updating_cell_struct(struct node *ptr_node)
  * - [2]  Using the function memcpy() the box array \ref node::ptr_box "ptr_box"
  * is copied to the old box array \ref node::ptr_box_old "ptr_box_old".
  *
- * - [3]  Run a "for" cycle over the child nodes.
+ * - [3]  Run a "for" loop over the child nodes.
  *
- * - [4]  Run a "for" cycle over the cells in every child node. The cycle runs
+ * - [4]  Run a "for" loop over the cells in every child node. The loop runs
  * each 8 cells which correspond to one cell in the parent node.
  *
  * - [5]  The parent box index associated to this package of 8 child cells is
@@ -1682,7 +1693,7 @@ static int updating_cell_struct(struct node *ptr_node)
  * - [6]  The box array \ref node::ptr_box "ptr_box" is reset to the Exist
  * status (=-3).
  *
- * - [7]  The "for" cycles ends.
+ * - [7]  The "for" loops ends.
  *
  * - [8]  <b> THE initialization_node_boxes() FUNCTION ENDS....</b>
  *
@@ -1785,20 +1796,20 @@ static void initialization_node_boxes(struct node *ptr_node)
  * situation, the neighboring cells of the refined cell should be also refined
  * according to the n_exp parameter.
  *
- * The flux can
- * be seen in the figure (work in progress), and it is explained below:
+ * The flux of this function can be seen in the figure (work in progress), and
+ * it is explained below:
  *
  * - [0]  <b> THE fill_cell_ref() FUNCTION STARTS....</b>
  *
  * - [1]  Defining some internal useful parameters.
  *
  * - [2]  Firstly the function asks about the first criteria *(a)* of
- * refinement if the cell contains a grandchild cell. To do that, a "for" cycle
+ * refinement if the cell contains a grandchild cell. To do that, a "for" loop
  * over the child nodes is performed
  *
- * - [3]  Run a "for" cycle over the grandchild nodes.
+ * - [3]  Run a "for" loop over the grandchild nodes.
  *
- * - [4]  Run a "for" cycle over the cells in every grandchild node. The cycle
+ * - [4]  Run a "for" loop over the cells in every grandchild node. The loop 
  * runs each 8 cells which correspond to one cell in the child node, and it
  * belongs to one cell in the corresponding parent node.
  *
@@ -1806,38 +1817,38 @@ static void initialization_node_boxes(struct node *ptr_node)
  * cells is computed.
  *
  * - [6]  If the cell status hasn't been modified yet, it changes from "Exist"
- * (-3) to "Require-Refinement" (-1) in the box index.
+ * (-3) to "Requires-Refinement" (-1) in the box index.
  *
- * - [7]  The neighboring cells at the distance of n_exp are also modified in 
+ * - [7]  The neighboring cells at the distance of n_exp are also modified in
  * their box indices if they haven't been modified yet.
  *
- * - [8]  At this point the three "for" cycles end, the "for" cycle of the child
- * nodes, grandchild nodes, and the grandchild cells. Now, the function 
+ * - [8]  At this point the three "for" loops end, the "for" loop of the child
+ * nodes, grandchild nodes, and the grandchild cells. Now, the function
  * continues with the second criterion, it will ask *(b)* if the cells satisfy
  * the refinement criteria given by the user.
  *
- * - [9]  To perform this later, a "for" cycle over the parent node cell is
+ * - [9]  To perform this later, a "for" loop over the parent node cell is
  * performed.
  *
- * - [10] If the cell satisfies the refinement criteria, and its status hasn't 
- * been modified yet, it changes from "Exist" (-3) to "Require-Refinement" (-1) 
+ * - [10] If the cell satisfies the refinement criteria, and its status hasn't
+ * been modified yet, it changes from "Exist" (-3) to "Requires-Refinement" (-1)
  * in the box index
  *
- * - [11] The neighboring cells at the distance of n_exp are also modified in 
+ * - [11] The neighboring cells at the distance of n_exp are also modified in
  * their box indices if they haven't been modified yet.
  *
- * - [12] At this point the "for" cycle ends, and every cell in the node which
+ * - [12] At this point the "for" loop ends, and every cell in the node which
  * will require refinement has been labeled to do that.
  *
  * - [13] The next step is to add those cells to the auxiliary array of
  * positional cell indices \ref node.ptr_cell_ref "ptr_cell_ref". To do that, a
- * "for" cycle running over the parent node cells is performed.
+ * "for" loop running over the parent node cells is performed.
  *
  * - [14] If the box index associated to the cell has the status of
- * "Require-Refinement" (-1), the positional index of the cell is added to the
+ * "Requires-Refinement" (-1), the positional index of the cell is added to the
  * array \ref node.ptr_cell_ref "ptr_cell_ref".
  *
- * - [15] The "for" cycle over the parent node cells ends
+ * - [15] The "for" loop over the parent node cells ends
  *
  * - [16] <b> THE fill_cell_ref() FUNCTION ENDS....</b>
  *
@@ -1845,10 +1856,13 @@ static void initialization_node_boxes(struct node *ptr_node)
  * - [a]  Trivial.
  *
  * **RATIONALES**:
- * - [a]  
+ * - [a]  The reason why to decide to add the elements to the array \ref
+ * node.ptr_cell_ref "ptr_cell_ref", is because we are avoiding to ask if there
+ * is enough Capacity (see Key Concepts \ref Key_Concepts_Capacity "Capacity") 
+ * in the array.
  *
  * **NOTES**:
- * - [a]  
+ * - [a]
  */
 
 static int fill_cell_ref(struct node *ptr_node)
@@ -1879,7 +1893,7 @@ static int fill_cell_ref(struct node *ptr_node)
   int box_real_dim_X_times_Y_node = ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
 
   //* >> Adding to refine (-1) to cells in the node wich contains grandchildren refinement cells
-  for (int ch = 0; ch < ptr_node->chn_size; ch++) // Cycle over children
+  for (int ch = 0; ch < ptr_node->chn_size; ch++) // Loop over children
   {
     ptr_ch = ptr_node->pptr_chn[ch];
 
@@ -2048,6 +2062,93 @@ static int fill_cell_ref(struct node *ptr_node)
   return _SUCCESS_;
 } // end function fill_cell_ref
 
+/**
+ * @brief Cells in the parent node labeled as refinement cells are separated
+ * into different refinement zones.
+ *
+ * **SHORT DESCRIPTION**: Cells in the parent node labeled as cells that require
+ * refinement are separated in the new refinement zones of the parent node.
+ *
+ * **PREREQUISITES**: Always used.
+ *
+ * @param[in,out] ptr_node Pointer to node structure
+ *
+ * **RETURN**: The error status.
+ *
+ * **LONG DESCRIPTION**:
+ *
+ * Cells in the parent node labeled in the box array \ref node.ptr_box "ptr_box"
+ * with the status of "Requires-Refinement" (-1) are organized in different
+ * groups which will be the new refinement zones of the parent node. This new
+ * zones are created and stored in the pointer to the arrays \ref
+ * node.pptr_zones "pptr_zones".
+ *
+ * Every refinement zone has the same properties as the previous one, i.e. it is
+ * built by joining only the 6 closest neighboring cells localized in left, 
+ * right, over, under, forward, and backward directions. This representation can 
+ * be seen in the figure (work in progress). So, two different zones can not
+ * have any of their face cells joined, but they can share edges or corners.
+ *
+ * Roughly speaking, the way to perform the creation of every zone consists of
+ * two steps, *(a)* pick one cell that requires refinement but that is not yet 
+ * in a refinement zone, and *(b)* create the zone using this initial cell. The
+ * second step is performed by adding every cell to the zone array which is in
+ * "face-contact" with another cell of this zone array.
+ *
+ * The flux of this  function can be seen in the figure (work in progress), and
+ * it is explained below:
+ *
+ * - [0]  <b> THE fill_zones_ref() FUNCTION STARTS....</b>
+ *
+ * - [1]  Reset parameters if periodic boundary conditions are activated (pbc).
+ *
+ * - [2]  A "while" loop runs over all cells which require refinement, i.e.
+ * cells belonging to the array \ref node.ptr_cell_ref "ptr_cell_ref", that
+ * have not been added to any refinement zone yet. A counter is used to
+ * perform this task.
+ *
+ * - [3]  In every step of the "while" loop over the cells, we ask if the cell
+ * belongs to a subzone of refinement (box value \f$ \geq 0 \f$). If it belongs,
+ * we continue asking to the next cell, if it does not belong (box value \f$ = 
+ * -1 \f$), we change its box status to "zone_idx" and pass to the next step.
+ *
+ * - [4]  Having found a cell with no subzone, we are going to create an 
+ * entirely new zone starting with this cell as the foundation stone. To perform 
+ * this, a new "while" loop is executed running until there are no more cells 
+ * without analysis in the zone, i.e. the final state of the block found is a 
+ * solid piece completely isolated from the other zones, labeled with the 
+ * "zone_idx" value in the parent node box.
+ *
+ * - [5]  At this point both "while" loops of the steps [2] and [3] end. Now,
+ * using the box with this new information the zones array \ref
+ * node.pptr_zones "pptr_zones" is filled with new zones of refinement. To do
+ * this, a "for" loop over the refined cells array \ref node.ptr_cell_ref
+ * "ptr_cell_ref" is performed.
+ *
+ * - [6]  Finally, the box status of the parent node is returned to its initial
+ * state, putting the value of \e zone_idx in the corresponding cell of the new
+ * box.
+ *
+ * - [7] <b> THE fill_zones_ref() FUNCTION ENDS....</b>
+ *
+ * **ILLUSTRATIVE EXAMPLES**:
+ * - [a]  Trivial.
+ *
+ * **RATIONALES**:
+ * - [a]  This design allows the contact of edges and corks between the 
+ * different refinement zones, it also allows particles inside of a child node 
+ * to jump to another child node of the same parent node in one time-step of the 
+ * simulation. This leads to a computational spend (see particle_updating.c 
+ * module) can be avoided  if we decided to change the design of the refinement 
+ * zone considering now to ask to more cells than the closest 6 neighboring. 
+ * However, this modification also implies the computational spend to ask to 
+ * these new neighboring and also can increase the size of the refinement zone 
+ * which in turn makes it difficult to load balance in multiple cores.
+ *
+ * **NOTES**:
+ * - [a]
+ */
+
 static int fill_zones_ref(struct node *ptr_node)
 {
 
@@ -2128,7 +2229,7 @@ static int fill_zones_ref(struct node *ptr_node)
 
       //* >> Building of the zone of ID = zone_idx *//
       cntr_insp = 0;                                                                     // Counter for the number of elements inspectioned in the current zone array
-      while (zone_size > cntr_insp && ptr_node->cell_ref_size > cntr_cell_add_all_zones) // The cycle ends when all the elements of the zone have been inspected or when the number of cells refined is equal to the total number of cells added.
+      while (zone_size > cntr_insp && ptr_node->cell_ref_size > cntr_cell_add_all_zones) // The loop ends when all the elements of the zone have been inspected or when the number of cells refined is equal to the total number of cells added.
       {
         // Note that the number of elements in the zone increases if the neighbors of the inspected cell must be added to the zone
 
@@ -2254,7 +2355,7 @@ static int fill_zones_ref(struct node *ptr_node)
         zone_size += cntr_cell_add;               // Increasing the number of cells in the zone
         cntr_cell_add_all_zones += cntr_cell_add; // Increasing the number of cells added to the zones
         cntr_insp++;                              // Increasing the number of inspections
-      }                                           // End while cycle, now the box contains the the information about all cells of the zone "zone_idx"
+      }                                           // End "while" loop, now the box contains the the information about all cells of the zone "zone_idx"
 
       //* >> Space checking of refinement zones arrays, refinement capacity array and refinement size array *//
       if (zone_idx_max < zone_idx + 1)
@@ -2301,6 +2402,138 @@ static int fill_zones_ref(struct node *ptr_node)
   }
   return _SUCCESS_;
 } // End function fill_zones_ref
+
+/**
+ * @brief Create the relation between old zones and new zones of refinement in
+ * the node.
+ *
+ * **SHORT DESCRIPTION**: Create the relation between old zones and new zones of
+ * refinement in the node. There are 4 integer arrays of size equal to the number
+ * of new zones of refinement. Every array contains the identifications of the
+ * refinement zones either old or new ones, and they are sorted in different 
+ * ways.
+ *
+ * **PREREQUISITES**: If there is at least a new refinement zone.
+ *
+ * @param[in,out] ptr_node Pointer to node structure
+ *
+ * **RETURN**: The error status.
+ *
+ * **LONG DESCRIPTION**:
+ *
+ * Create the relation between old zones and new zones of refinement in the 
+ * node. To do this, 4 integer arrays are created, all of them with a size equal 
+ * to the number of refinement zones. Each of these arrays is ordered in a 
+ * particular way such that its nth element is connected to the other nth 
+ * elements of the other arrays.
+ *
+ * The first array \ref node.ptr_links_old_ord_old "ptr_links_old_ord_old", is
+ * organized in increasing order, and it contains the old refinement zones which
+ * will be reused and if necessary the new nodes that are going to be created 
+ * because the number of new zones is bigger than the number of old zones of
+ * refinement.
+ *
+ * The second array \ref node.ptr_links_new_ord_new "ptr_links_new_ord_new", is
+ * organized in increasing order, and it contains the new refinement zones. So
+ * it always contains the consecutive integers from 0 to new_zone_max_id.
+ *
+ * The next 2 arrays are in charge of connecting the old zones with the new 
+ * zones and vice versa.
+ *
+ * The third array \ref node.ptr_links_new_ord_old "ptr_links_new_ord_old", is
+ * organized using the sort of the old sort array \ref 
+ * node.ptr_links_old_ord_old "ptr_links_old_ord_old", and it contains the new 
+ * refinement zones. This means that for example the nth element of the new zone 
+ * array \ref node.ptr_links_new_ord_old "ptr_links_new_ord_old" is connected 
+ * with the nth element of the old zone array \ref node.ptr_links_old_ord_old 
+ * "ptr_links_old_ord_old".
+ *
+ * The fourth array \ref node.ptr_links_old_ord_new "ptr_links_old_ord_new" is 
+ * the inverse of the third array, it is organized using the sort of the new 
+ * sort array \ref node.ptr_links_new_ord_new "ptr_links_new_ord_new", and it 
+ * contains the old refinement zones. This means that for example the nth 
+ * element of the old zone array  \ref node.ptr_links_old_ord_new 
+ * "ptr_links_old_ord_new" is connected with the nth element of the new zone 
+ * array  \ref node.ptr_links_new_ord_new "ptr_links_new_ord_new".
+ *
+ * How the function associates an old refinement zone with a new one is
+ * considering the maximum number of matching cells between the old zones and
+ * the new zones.
+ *
+ * The flux of this function can be seen in the figure (work in progress), and
+ * it is explained below:
+ *
+ * - [0]  <b> THE create_links() FUNCTION STARTS....</b>
+ *
+ * - [1]  Defining some internal useful parameters.
+ *
+ * - [2]  The first part of the function is in charge of associating the old 
+ * node zones with the new ones using considering the maximum number of matching 
+ * cells between the old zones and the new zones as a criterion of link.
+ *
+ * - [3]  Run a "for" loop over the child nodes, which corresponds to the 
+ * number of old zones of refinement.
+ *
+ * - [4]  Run a "for" loop over the cells in every child node. The loop runs
+ * each 8 cells which correspond to one cell in the parent node.
+ *
+ * - [5]  The parent box index associated with this package of 8 child cells is
+ * computed. Moreover, for each child node, the number of cells matching between 
+ * the old zone and the new zones is computed.
+ *
+ * - [6]  Both "for" loops over the cells and child nodes end.
+ *
+ * - [7]  For each child, the largest number of cells that match a single new 
+ * zone is computed. The match with the new zones can be repeated, so for 
+ * example, the old zone 0, and 1, could have their largest number equal to 50
+ * and 80 respectively, but both old zones could match with the single new zone 
+ * 3.
+ *
+ * - [8]  As the relation between the old zones and the new ones needs to be
+ * injective, it is necessary to choose what old zones should link with a single
+ * new zone without repetitions. To perform that, the old zone with the largest
+ * number of matches between all the old zones is linked first with the 
+ * corresponding new zone. If that this new zone corresponds to the largest 
+ * number of matches of other old zones, their largest number is recomputed but 
+ * discarding the new zone as an option. So, at the end of this process, every 
+ * old zone will have at most a unique new zone of refinement.
+ *
+ * - [9]  Using array with the highest number of repetitions, and the 
+ * corresponding new zones of matching, the link arrays with old order \ref 
+ * node.ptr_links_old_ord_old "ptr_links_old_ord_old", and \ref 
+ * node.ptr_links_new_ord_old "ptr_links_new_ord_old" are filled.
+ *
+ * - [10] If the number of new zones of refinement is bigger than the old number
+ * of zones, the arrays with old order \ref node.ptr_links_old_ord_old 
+ * "ptr_links_old_ord_old", and \ref node.ptr_links_new_ord_old 
+ * "ptr_links_new_ord_old" are filled with the remaining new zones and with the 
+ * new nodes identification to be created.
+ *
+ * - [11] Now, the old order arrays are completely filled but they still require 
+ * to be sorted by the old order scheme. Thus, they are reorganized in such a 
+ * way.
+ *
+ * - [12] Finally, using the old order arrays, the new order arrays are 
+ * completely filled.
+ *
+ * - [13]  <b> THE create_links() FUNCTION ENDS....</b>
+ *
+ * **ILLUSTRATIVE EXAMPLES**:
+ * - [a]  Trivial.
+ *
+ * **RATIONALES**:
+ * - [a]  The criteria used to decide what old zone should be linked with a new
+ * one, was initially simplified to only ask for the first cell which matched 
+ * with a new zone. However, this criterion, although with a faster linking 
+ * process, led to that on several occasions old zones were linked with new 
+ * zones only by a few amounts of cells existing other old zones with a much 
+ * higher number of matches for that new zones. So, in the end, the time 
+ * consuming in to adapt these old zones to fit with this wrong new zone 
+ * requires a lot of computation time.
+ *
+ * **NOTES**:
+ * - [a]  a
+ */
 
 static int create_links(struct node *ptr_node)
 {
@@ -2396,7 +2629,8 @@ static int create_links(struct node *ptr_node)
     ptr_higher_repetitions = (int *)calloc(ptr_node->chn_size, sizeof(int));
     ptr_zone_higher_repetitions = (int *)calloc(ptr_node->chn_size, sizeof(int));
 
-    // Finding the higher number of zone repetitions of each child
+    // Finding the largest number of cells that match a single new zone
+
     for (int ch = 0; ch < ptr_node->chn_size; ch++)
     {
       ptr_higher_repetitions[ch] = pptr_cntr_zones[ch][0];
@@ -2460,11 +2694,6 @@ static int create_links(struct node *ptr_node)
       {
         ch = ptr_node->chn_size;
       }
-
-      // if (ptr_node->zones_size < ch + 1)
-      // {
-
-      // }
     }
 
     // cntr_links = 0 initially
@@ -2511,7 +2740,6 @@ static int create_links(struct node *ptr_node)
   }
 
   //* >> Ordering links arrays *//
-  //* >> Old order *//
   cntr_links_plus = 0;
   for (int i = 0; i < ptr_node->zones_size - 1; i++)
   {
@@ -2561,6 +2789,72 @@ static int create_links(struct node *ptr_node)
   return _SUCCESS_;
 }
 
+/**
+ * @brief Removing cells belonging to child nodes that no longer require
+ * refinement in the parent node
+ *
+ * **SHORT DESCRIPTION**: Removing cells belonging to child nodes that no longer
+ * require refinement in the parent node, namely, cells that were previously in
+ * some old refinement zone but are no longer in any of the new refinement
+ * zones. To be more precise, only cells belonging to child nodes that are
+ * linked to the new refinement zones are removed.
+ *
+ * **PREREQUISITES**: If there is at least one new and one old refinement zone.
+ *
+ * @param[in,out] ptr_node Pointer to node structure
+ *
+ * **RETURN**: No parameter is returned.
+ *
+ * **LONG DESCRIPTION**:
+ *
+ * The following description is more precise than the *Short Description* above:
+ *
+ * This function is in charge of removing cells from linked child nodes. The 
+ * cells removed are cells whose parent cells do not belong to any new 
+ * refinement zone. Here, the meaning of "removing" a cell of the chile node 
+ * consists in remove the cell and particles from the respective arrays, 
+ * modifying its box status, and other local parameters of the child node.
+ *
+ * The flux of this function can be seen in the figure (work in progress), and
+ * it is explained below:
+ *
+ * - [0]  <b> THE remov_cells_nolonger_require_refinement() FUNCTION STARTS....</b>
+ *
+ * - [1]  Defining some internal useful parameters.
+ *
+ * - [2]  Run a "for" loop over the new zones of refinement, but only consider
+ * the new zones linked with existing child nodes.
+ *
+ * - [3]  Run a "for" loop over the cells of the child nodes. The loop runs
+ * each 8 cells which correspond to one cell in the parent node.
+ *
+ * - [4]  The parent box index associated with this package of 8 child cells is
+ * computed
+ *
+ * - [5]  If the box index of the parent node does not belong to any new 
+ * refinement zone (value < 0), then the mass and number of particles, 
+ * properties of the cell structure, and box status of the child nodes are 
+ * updated, and cell are removed from the cell arrays of the child nodes.
+ *
+ * - [6]  Finnally, the cell *size* (see Key Concepts \ref Key_Concepts_Size "Size") of the
+ * child nodes is also updated.
+ *
+ * - [7] <b> THE remov_cells_nolonger_require_refinement() FUNCTION ENDS....</b>
+ *
+ * **ILLUSTRATIVE EXAMPLES**:
+ * - [a]  Trivial.
+ *
+ * **RATIONALES**:
+ * - [a]  At the end the "for" loop over the new zones of refinement only asks
+ * about the old linked zones of refinement. So, it is possible for some old 
+ * child nodes to still exist with no null information about their cells but
+ * these nodes will always be sent to the memory pool by the function
+ * transferring_unused_child_node_to_memory_pool().
+ *
+ * **NOTES**:
+ * - [a]
+ */
+
 static void remov_cells_nolonger_require_refinement(struct node *ptr_node)
 {
 
@@ -2586,7 +2880,7 @@ static void remov_cells_nolonger_require_refinement(struct node *ptr_node)
   int box_real_dim_X_node = ptr_node->box_real_dim_x;
   int box_real_dim_X_times_Y_node = ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
 
-  // Cycle over new refinement zones
+  // Loop over new refinement zones
   for (int zone_idx = 0; zone_idx < ptr_node->zones_size; zone_idx++)
   {
     if (ptr_node->ptr_links_old_ord_old[zone_idx] < ptr_node->chn_size)
@@ -2655,6 +2949,103 @@ static void remov_cells_nolonger_require_refinement(struct node *ptr_node)
     }
   }
 }
+
+/**
+ * @brief Old child nodes are adapted to fit with their new refinement zones
+ * associated.
+ *
+ * **SHORT DESCRIPTION**: The already child nodes corresponding to the old
+ * refinement zones linked with new refinement zones are adapted in their
+ * parameter to fit with the new zone of refinement.
+ *
+ * **PREREQUISITES**: If there is at least one new and one old refinement zone.
+ *
+ * @param[in,out] ptr_node Pointer to node structure
+ *
+ * **RETURN**: The error status.
+ *
+ * **LONG DESCRIPTION**:
+ *
+ * The already child nodes corresponding to the old
+ * refinement zones linked with new refinement zones are adapted in their
+ * parameter to fit with the new zone of refinement. Some of those parameters
+ * are boundary flags, box dimensions and spacial location, translation 
+ * constants between cell and box arrays, the density array, and others.
+ *
+ * There is a very important flag in the node called \ref node.box_check_fit
+ * "box_check_fit". Essentially, this flag tells if the node has been modified
+ * in its box dimensions. Thus, when an old refinement zone can not fit the new
+ * refinement zone linked with it, its box requires to be adapted in its
+ * dimensions, and thus the connection between cells and the box of the child 
+ * node needs to be updated. To know, if the child node box "fits" the
+ * new refinement zone linked, is necessary to compute the dimensions of the new
+ * refinement zone and compare them with the current box dimensions.
+ *
+ * The flux of this function can be seen in the figure (work in progress), and
+ * it is explained below:
+ *
+ * - [0]  <b> THE adapt_child_nodes() FUNCTION STARTS....</b>
+ *
+ * - [1]  Defining some internal useful parameters.
+ *
+ * - [2]  Run a "for" loop over the new zones of refinement, but only consider
+ * the new zones linked with existing child nodes.
+ *
+ * - [3]  If periodic boundary conditions (pbc) is activated, and if any boundary
+ * flag anomalies \ref node.ptr_pbc_bool_bdry_anomalies_x 
+ * "ptr_pbc_bool_bdry_anomalies_x" (\ref node.ptr_pbc_bool_bdry_anomalies_y "y", 
+ * \ref node.ptr_pbc_bool_bdry_anomalies_z "z")  is activated, then the minimum 
+ * and maximum of the subzones is computed through the function 
+ * find_min_max_subzones_ref_PERIODIC_BOUNDARY().
+ *
+ * - [4]  For every dirección X, Y, and Z, the minimum and maximum, and the
+ * boundary flags are computed and stored in local parameters.
+ *
+ * - [5]  The minimum and maximum of the previous point were computed in the 
+ * parent node, so then, they are transformed to the next level of refinement to 
+ * be accord with the respective child node.
+ *
+ * - [6]  These new local parameters obtained above are compared with the old 
+ * minimum, maximum, and box dimensions of the child node to then decide if the 
+ * old box will fit the new one. For the periodic boundary conditions (pbc), are 
+ * necessary to use other local and node parameters to check this point. The 
+ * node parameter which will store this fit between the old and the new box is a 
+ * boolean one called \ref node.box_check_fit "box_check_fit".
+ *
+ * - [7]  If \ref node.box_check_fit "box_check_fit" is "true", and the periodic
+ * boundary conditions (pbc) are activated, it is necessary to check special 
+ * situations with require changes in the traslation constants between the cell 
+ * indices and the box indices (see \ref node.box_ts_x "box_ts_x" (\ref 
+ * node.box_ts_y "y", \ref node.box_ts_z "z") to know the meaning of the 
+ * translation constants.
+ *
+ * - [8]  In special situations when \ref node.box_check_fit "box_check_fit" is
+ * "true" it is necessary to reset the boundary cells box status from "out of 
+ * the simulation box" (-5 or -6) to the status of simply "No-Exist" (-4).
+ *
+ * - [9]  Finally, if the  \ref node.box_check_fit "box_check_fit" is false, it 
+ * is necessary to update the new box dimensions parameter of the child node and
+ * store a copy of the cell structure which also will require to be updated 
+ * through the future functions of the tree_adaptaion.c module.
+ *
+ * - [10] Finally, the some last parameters of the child node are updated 
+ * whatever the status of \ref node.box_check_fit "box_check_fit". These 
+ * parameters are size of the grid points \ref node.grid_intr_size 
+ * "grid_intr_size", \ref node.grid_bdry_size "grid_bdry_size", and \ref 
+ * node.grid_sim_bdry_size "grid_sim_bdry_size", the grid density \ref 
+ * node.ptr_d "ptr_d", and the boundary flags. 
+ *
+ * - [11] <b> THE adapt_child_nodes() FUNCTION ENDS....</b>
+ *
+ * **ILLUSTRATIVE EXAMPLES**:
+ * - [a]  Trivial.
+ *
+ * **RATIONALES**:
+ * - [a]  xxxx
+ *
+ * **NOTES**:
+ * - [a]
+ */
 
 static int adapt_child_nodes(struct node *ptr_node)
 {
@@ -2726,7 +3117,7 @@ static int adapt_child_nodes(struct node *ptr_node)
 
   int aux_box_ts;
 
-  // Cycle over new refinement zones
+  // Loop over new refinement zones
   for (int zone_idx = 0; zone_idx < ptr_node->zones_size; zone_idx++)
   {
     if (ptr_node->ptr_links_old_ord_old[zone_idx] < ptr_node->chn_size)
@@ -4151,6 +4542,79 @@ static int adapt_child_nodes(struct node *ptr_node)
   return _SUCCESS_;
 }
 
+/**
+ * @brief New child nodes are created to fit with their new refinement zones.
+ *
+ * **SHORT DESCRIPTION**: New child nodes are created to fit with refinement 
+ * zones that were not linked to the old child nodes
+ *
+ * **PREREQUISITES**: If the number of new refinement zones is bigger than the
+ * number of old child nodes.
+ *
+ * @param[in,out] ptr_node Pointer to node structure
+ *
+ * **RETURN**: The error status.
+ *
+ * **LONG DESCRIPTION**:
+ *
+ * In the case there are more new refinement zones than old child nodes, new
+ * child nodes need to be created and prepared to fit the cells of the 
+ * refinement zone. The parameters to be fitted are the same as the function 
+ * tree_adaptation(), so at the end, we will obtain new child nodes exactly in 
+ * the same position as the old adapted nodes.
+ *
+ * Unlike the function function tree_adaptation(), the fit box flag parameter
+ * \ref node.box_check_fit "box_check_fit" will always be equal to "true".
+ *
+ * The flux of this function can be seen in the figure (work in progress), and
+ * it is explained below:
+ *
+ * - [0]  <b> THE create_new_child_nodes() FUNCTION STARTS....</b>
+ *
+ * - [1]  Defining some internal useful parameters.
+ *
+ * - [2]  Run a "for" loop over the difference between new refinement zones and
+ * old child nodes.
+ *
+ * - [3]  The initial child node is obtained through the external function
+ * new_node(), which reuses already allocated nodes that have been reset.
+ *
+ * - [4]  If periodic boundary conditions (pbc) is activated, and if any 
+ * boundary flag anomalies \ref node.ptr_pbc_bool_bdry_anomalies_x 
+ * "ptr_pbc_bool_bdry_anomalies_x" (\ref node.ptr_pbc_bool_bdry_anomalies_y "y",
+ * \ref node.ptr_pbc_bool_bdry_anomalies_z "z")  is activated, then the minimum
+ * and maximum of the subzones is computed through the function
+ * find_min_max_subzones_ref_PERIODIC_BOUNDARY().
+ *
+ * - [5]  For every dirección X, Y, and Z, the minimum and maximum, and the
+ * boundary flags are computed and stored in local parameters.
+ *
+ * - [6]  The minimum and maximum of the previous point were computed in the
+ * parent node, so then, they are transformed to the next level of refinement to
+ * be accord with the respective child node.
+ *
+ * - [7]  The box dimensions parameters and traslation constants (see \ref 
+ * node.box_ts_x "box_ts_x" (\ref node.box_ts_y "y", \ref node.box_ts_z "z") are 
+ * computed.
+ *
+ * - [8]  The box array is initialized at "No-Exist" status (-4).
+ *
+ * - [9]  Finally, the child node is linked to the parent node through the
+ * struct node pointers parameters \ref node.pptr_chn "pptr_chn" and \ref 
+ * node.ptr_pt "ptr_pt".
+ *
+ * - [10] <b> THE create_new_child_nodes() FUNCTION ENDS....</b>
+ *
+ * **ILLUSTRATIVE EXAMPLES**:
+ * - [a]  Trivial.
+ *
+ * **RATIONALES**:
+ * - [a]  xxxx
+ *
+ * **NOTES**:
+ * - [a]
+ */
+
 static int create_new_child_nodes(struct node *ptr_node)
 {
 
@@ -4956,7 +5420,116 @@ static int create_new_child_nodes(struct node *ptr_node)
   return _SUCCESS_;
 }
 
-static int moving_old_child_to_new_child(struct node *ptr_node)
+/**
+ * @brief Transferring refined parent cells from the old to the new child nodes.
+ *
+ * **SHORT DESCRIPTION**: Transferring cells that require be refined from the 
+ * old child nodes to which they are to the new child nodes to which they will 
+ * belong.
+ *
+ * **PREREQUISITES**: If there is at least one new and one old refinement zone.
+ *
+ * @param[in,out] ptr_node Pointer to node structure
+ *
+ * **RETURN**: The error status.
+ *
+ * \anchor tree_acaptaion__create_new_child_nodes__LONG_DESCRIPTION **LONG DESCRIPTION**:
+ *
+ * Transferring cells that require be refined from the old child nodes to which 
+ * they are to the new child nodes to which they will belong. Furthermore, the 
+ * new child box status is also updated with the new information of child nodes, 
+ * thus also like the mass and number of particles of the child nodes and other 
+ * child node parameters.
+ *
+ * Moreover, when a child node has its fit box flag parameter \ref
+ * node.box_check_fit "box_check_fit" equal to "false", it is also necessary to
+ * move cells from its old cell structure \ref node.ptr_cell_struct_old 
+ * "ptr_cell_struct_old" to the new cell structure \ref node.ptr_cell_struct 
+ * "ptr_cell_struct" if the cell still belongs to that child node.
+ *
+ * This function is separated into 2 big parts. The first one consists in to 
+ * move cells between couples of child nodes which represent a new refinement 
+ * zone. The second part consists in to move cells between couples of child 
+ * nodes, but only the receiving cell represents a new refinement zone, the 
+ * sender child node finished this function will be removed from the parent node 
+ * and sent to the memory pool array to be used in the future by another parent 
+ * node in any level of refinement.
+ *
+ * The flux of this function can be seen in the figure (work in progress), and
+ * it is explained below:
+ *
+ * - [0]  <b> THE transferring_old_child_to_new_child() FUNCTION STARTS....</b>
+ *
+ * - [1]  Defining some internal useful parameters.
+ *
+ * - [2]  As explained above in the \ref 
+ * tree_acaptaion__create_new_child_nodes__LONG_DESCRIPTION "LONG DESCRIPTION", 
+ * the first part of the function consists in to move cells between future child 
+ * nodes. To do that, we run a "while" loop over every old child node with is 
+ * linked with a new refinement zone; a *zone_idx* counter is used to perform 
+ * that loop.
+ *
+ * - [3]  If the sender child node (A) has its box fit paramter \ref 
+ * node.box_check_fit "box_check_fit" equal to "true", then we proceed.
+ *
+ * - [4]  Run a "for" loop over the cells of the child node A. The loop runs
+ * each 8 cells which correspond to one new refined cell in the parent node.
+ * Remember that all cells that did not require refinement have already been 
+ * removed through the function remov_cells_nolonger_require_refinement().
+ *
+ * - [5]  The parent box index associated with this package of 8 child cells is
+ * computed.
+ *
+ * - [6]  In case the cell package will stay in the same child node no actions
+ * will be taken except in the exceptional case that periodic boundary 
+ * conditions (pbc) and the child node flag parameter \ref
+ * node.pbc_correction_due_pbc_flag "pbc_correction_due_pbc_flag" are activated.
+ * In this exceptional case could be necessary to update the cell box status 
+ * and, the cell structure.
+ *
+ * - [7]  In case the other situation occurs in step [6], where the cell package
+ * requires to be moved to another child node, then the cell box indices of the
+ * child node A and the receiving child node (B) are computed, the cells are
+ * transferred (from A to B), and the information of the child nodes is updated.
+ *
+ * - [8]  At this point, the "if statement" of step [3] is finalized. So, now
+ * the other option is addressed when the sender child node (A) has its box fit
+ * parameter \ref node.box_check_fit "box_check_fit" equal to "false".
+ *
+ * - [9]  In this case, we repeat almost the same idea as the "true" case, but 
+ * it is necessary to use the auxiliary old cell structure of the child node A 
+ * \ref node.ptr_cell_struct_old "ptr_cell_struct_old" instead of the new one 
+ * \ref node.ptr_cell_struct "ptr_cell_struct". Moreover, in the case where the 
+ * cell package will stay in the same child node always will require to be 
+ * updated from the old cell structure to the new cell structure of the child
+ * node A.
+ *
+ * - [10] At this point, the "while" loop of step [2] is finalized. So, now the
+ * second part of the function is initialized. Here cells are moved between
+ * couples of child nodes but the sender child node (A) will be removed from the
+ * parent node to later be transferred to the memory pool to be reused in the 
+ * future. The process is the same as the first step but easier. Here it is not
+ * necessary to be worried about updating the information of the sender child
+ * node because it will be removed from the parent node.
+ *
+ * - [11] <b> THE transferring_old_child_to_new_child() FUNCTION ENDS....</b>
+ *
+ * **ILLUSTRATIVE EXAMPLES**:
+ * - [a]  Trivial.
+ *
+ * **RATIONALES**:
+ * - [a]  The design of the updated is almost the same in the parts of this 
+ * function with a few different actions depending on a few flags parameters. 
+ * The reason why we decided to separate this process into several parts instead 
+ * of joining all together and putting the "if" statements very inside of the 
+ * loops is because we are speeding up the performance of the function in 
+ * exchange for having a longer script.
+ *
+ * **NOTES**:
+ * - [a]
+ */
+
+static int transferring_old_child_to_new_child(struct node *ptr_node)
 {
   struct node *ptr_ch_A;
   struct node *ptr_ch_B;
@@ -5009,7 +5582,7 @@ static int moving_old_child_to_new_child(struct node *ptr_node)
 
   int lv = ptr_node->lv;
 
-  // Cycle over new refinement zones,
+  // Loop over new refinement zones,
   // Case of old child nodes to be reused
 
   int zone_idx = 0;
@@ -5110,7 +5683,7 @@ static int moving_old_child_to_new_child(struct node *ptr_node)
                 aux_int_A = cell_idx + aux_int;
                 aux_int_B = no_cells_ch_B + aux_int;
                 aux_int_X = no_cells_ch_A - 8 + aux_int;
-                // Moving from child A to child B
+                // Transferring from child A to child B
                 ptr_ch_B->ptr_cell_idx_x[aux_int_B] = ptr_ch_A->ptr_cell_idx_x[aux_int_A];
                 ptr_ch_B->ptr_cell_idx_y[aux_int_B] = ptr_ch_A->ptr_cell_idx_y[aux_int_A];
                 ptr_ch_B->ptr_cell_idx_z[aux_int_B] = ptr_ch_A->ptr_cell_idx_z[aux_int_A];
@@ -5134,7 +5707,7 @@ static int moving_old_child_to_new_child(struct node *ptr_node)
                 ptr_ch_A->node_mass -= ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].cell_mass;
                 ptr_ch_A->no_ptcl_full_node -= ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptcl_size;
 
-                // Moving from end of child A to removed cells of child A
+                // Transferring from end of child A to removed cells of child A
                 ptr_ch_A->ptr_cell_idx_x[aux_int_A] = ptr_ch_A->ptr_cell_idx_x[aux_int_X];
                 ptr_ch_A->ptr_cell_idx_y[aux_int_A] = ptr_ch_A->ptr_cell_idx_y[aux_int_X];
                 ptr_ch_A->ptr_cell_idx_z[aux_int_A] = ptr_ch_A->ptr_cell_idx_z[aux_int_X];
@@ -5181,10 +5754,6 @@ static int moving_old_child_to_new_child(struct node *ptr_node)
           box_idx_ch_A = box_idx_x_ch_A + box_idx_y_ch_A * box_real_dim_X_ch_A + box_idx_z_ch_A * box_real_dim_X_times_Y_ch_A;
 
           //* changing the box index and transfer cells
-          if (ptr_ch_A->ptr_box[box_idx_ch_A] == -6)
-          {
-            printf("error, what!!!\n");
-          }
           if (ptr_ch_A->ptr_box[box_idx_ch_A] == -4)
           {
             // printf("correcting\n");
@@ -5357,7 +5926,7 @@ static int moving_old_child_to_new_child(struct node *ptr_node)
                 aux_int_B = no_cells_ch_B + aux_int;
                 aux_int_X = no_cells_ch_A - 8 + aux_int;
 
-                // Moving from child A to child B
+                // Transferring from child A to child B
                 ptr_ch_B->ptr_cell_idx_x[aux_int_B] = ptr_ch_A->ptr_cell_idx_x[aux_int_A];
                 ptr_ch_B->ptr_cell_idx_y[aux_int_B] = ptr_ch_A->ptr_cell_idx_y[aux_int_A];
                 ptr_ch_B->ptr_cell_idx_z[aux_int_B] = ptr_ch_A->ptr_cell_idx_z[aux_int_A];
@@ -5381,7 +5950,7 @@ static int moving_old_child_to_new_child(struct node *ptr_node)
                 ptr_ch_A->node_mass -= ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].cell_mass;
                 ptr_ch_A->no_ptcl_full_node -= ptr_ch_B->ptr_cell_struct[box_idxNbr_ch_B].ptcl_size;
 
-                // Moving from end of child A to removed cells of child A
+                // Transferring from end of child A to removed cells of child A
                 ptr_ch_A->ptr_cell_idx_x[aux_int_A] = ptr_ch_A->ptr_cell_idx_x[aux_int_X];
                 ptr_ch_A->ptr_cell_idx_y[aux_int_A] = ptr_ch_A->ptr_cell_idx_y[aux_int_X];
                 ptr_ch_A->ptr_cell_idx_z[aux_int_A] = ptr_ch_A->ptr_cell_idx_z[aux_int_X];
@@ -5503,7 +6072,7 @@ static int moving_old_child_to_new_child(struct node *ptr_node)
           {
             for (int ii = 0; ii < 2; ii++)
             {
-              // Moving from child A to child B
+              // Transferring from child A to child B
               aux_int = ii + jj * 2 + kk * 4;
               aux_int_A = cell_idx + aux_int;
               aux_int_B = no_cells_ch_B + aux_int;
@@ -5538,7 +6107,68 @@ static int moving_old_child_to_new_child(struct node *ptr_node)
   return _SUCCESS_;
 }
 
-static int moving_new_zones_to_new_child(struct node *ptr_node)
+/**
+ * @brief Transferring new refined parent cells from the new refinement zone to 
+ * the new child nodes
+ *
+ * **SHORT DESCRIPTION**: Transferring new parent cells that require be refined 
+ * from the parent node to the new child nodes to which they will belong.
+ *
+ * **PREREQUISITES**: If there is at least a new refinement zone.
+ *
+ * @param[in,out] ptr_node Pointer to node structure
+ *
+ * **RETURN**: The error status.
+ *
+ * **LONG DESCRIPTION**:
+ *
+ * Transferring new parent cells that require be refined from the parent node to 
+ * the new child nodes to which they will belong. Furthermore, the new box 
+ * status is also updated with the new information of child nodes, thus also 
+ * like the mass and number of particles of the child nodes and other child node 
+ * parameters.
+ *
+ * Unlike to the function transferring_old_child_to_new_child(), here there is
+ * no need to consider the box flag parameter \ref node.box_check_fit
+ * "box_check_fit" because there is no sending child node, instead it is the
+ * parent node that is in charge of sending the new information to the child 
+ * nodes.
+ *
+ * The flux of this function can be seen in the figure (work in progress), and
+ * it is explained below:
+ *
+ * - [0]  <b> THE transferring_new_zones_to_new_child() FUNCTION STARTS....</b>
+ *
+ * - [1]  Defining some internal useful parameters.
+ *
+ * - [2]  Run a "for" loop over every new refined zone.
+ *
+ * - [3]  Run a "while" loop over current the number of cells between the child 
+ * node and the size of the associated new refinement zone in the parent.
+ *
+ * - [4]  The child box index associated with the parent cell of the "while"
+ * loop above is computed.
+ *
+ * - [5]  For the child node, the box status is updated, and the box indices are
+ * computed for the package of 8 cells associated with the parent node cell.
+ *
+ * - [6]  Finally, the particles are transferred from the parent node cell to 
+ * the package of 8 cells of the child node. Moreover, other child node
+ * parameters, like the cell masses, are also updated.
+ *
+ * - [7]  <b> THE transferring_new_zones_to_new_child() FUNCTION ENDS....</b>
+ *
+ * **ILLUSTRATIVE EXAMPLES**:
+ * - [a]  Trivial.
+ *
+ * **RATIONALES**:
+ * - [a]  aaa
+ *
+ * **NOTES**:
+ * - [a]
+ */
+
+static int transferring_new_zones_to_new_child(struct node *ptr_node)
 {
   struct node *ptr_ch; // child node
 
@@ -5677,6 +6307,57 @@ static int moving_new_zones_to_new_child(struct node *ptr_node)
   return _SUCCESS_;
 }
 
+/**
+ * @brief Properly sort child nodes into the parent node array \ref
+ * node.pptr_chn "pptr_chn"
+ *
+ * **SHORT DESCRIPTION**: As the new child nodes can have different IDs of
+ * identification, this function properly sorts them into the parent node array
+ * \ref node.pptr_chn "pptr_chn"
+ *
+ * **PREREQUISITES**: If there is at least a new refinement zone.
+ *
+ * @param[in,out] ptr_node Pointer to node structure
+ *
+ * **RETURN**: No parameter is returned.
+ *
+ * **LONG DESCRIPTION**:
+ *
+ * At this point, the identification of all child nodes corresponds to the same
+ * new refinement zone identification of the parent node. However, how the 
+ * parent node has access to these child nodes can be different from this sort
+ * This function is in charge of properly sorting the child node into the parent 
+ * node array \ref node.pptr_chn "pptr_chn".
+ *
+ * The flux of this function can be seen in the figure (work in progress), and
+ * it is explained below:
+ *
+ * - [0]  <b> THE reorganization_child_node() FUNCTION STARTS....</b>
+ *
+ * - [1]  Defining some internal useful parameters.
+ *
+ * - [2]  An auxiliary struct node pointer to the pointer array is allocated and
+ * filled with the correct sort of child nodes. First, it is filled with the
+ * linked child nodes, and then, if there are, it is filled
+ * with the old child nodes which will be removed from the parent node.
+ *
+ * - [3]  Finally, the \ref node.pptr_chn "pptr_chn" is sorted using the 
+ * already properly sorted auxiliary array.
+ *
+ * - [4]  <b> THE reorganization_child_node() FUNCTION ENDS....</b>
+ *
+ * **ILLUSTRATIVE EXAMPLES**:
+ * - [a]  Trivial.
+ *
+ * **RATIONALES**:
+ * - [a]  aaa
+ *
+ * **NOTES**:
+ * - [a]  This function can be improved in the future by avoiding the use of the 
+ * auxiliary pointer to the pointer array, and simply using a pointer an array with no
+ * additional memory allocation or release of it. 
+ */
+
 static void reorganization_child_node(struct node *ptr_node)
 {
   // struct node *ptr_ch;
@@ -5719,6 +6400,92 @@ static void reorganization_child_node(struct node *ptr_node)
   free(pptr_aux);
 }
 
+/**
+ * @brief Properly sort every child node with the grandchild nodes
+ *
+ * **SHORT DESCRIPTION**: Equal to the function reorganization_child_node(), the
+ * grandchild nodes can also need to be sorted properly relative to the child
+ * nodes (their parent nodes).
+ *
+ * **PREREQUISITES**: If there is at least one new and one old refinement zone,
+ * and if the level of refinement is lower than the maximum level of refinement
+ * minus 1.
+ *
+ * @param[in,out] ptr_node Pointer to node structure
+ *
+ * **RETURN**: The error status.
+ *
+ * **LONG DESCRIPTION**:
+ *
+ * Equal than at the function reorganization_child_node(), the grandchild nodes
+ * can also need to be sorted properly to be identified with the child nodes
+ * (their parent nodes).
+ *
+ * The grandchild nodes do not change in their geometry, node properties, or
+ * amount. They are preserved completely except their only modification can be
+ * that they change their parents. How to proceed is very similar to the
+ * previous function reorganization_child_node(), using an auxiliary pointer to
+ * the struct node pointer array to store the correct sort of grandchild nodes.
+ *
+ * Here, it is important to see that since there is no direct parameter to know
+ * how many grandchildren the parent node has, it is necessary to count them.
+ *
+ * The flux of this function can be seen in the figure (work in progress), and
+ * it is explained below:
+ *
+ * - [0]  <b> THE reorganization_grandchild_node() FUNCTION STARTS....</b>
+ *
+ * - [1]  Defining some internal useful parameters.
+ *
+ * - [2]  Counting the total number of grandchild nodes of the parent node using
+ * both child nodes, the linked and those who will be removed.
+ *
+ * - [3]  An auxiliary struct node pointer to the pointer array is allocated and
+ * filled with all grandchild nodes in any order. Moreover, the number of child
+ * nodes of all child nodes is reset to 0.
+ *
+ * - [4]  Run a "for" loop over the number of grandchild nodes.
+ *
+ * - [5]  The parent box index associated with the first cell of the grandchild
+ * node is computed
+ *
+ * - [6]  Using this index in the parent box, the corresponding child node
+ * identification for that grandchild node is localized.
+ *
+ * - [7]  The grandchild node is linked to this child node and the
+ * identification parameter of the grandchild node is updated to correspond to
+ * the child node.
+ *
+ * - [8]  Finally, the number of child nodes of the child node is increasing in
+ * 1 and the "for" loop of step [4] begins again with another grandchild node.
+ *
+ * - [9]  <b> THE reorganization_grandchild_node() FUNCTION ENDS....</b>
+ *
+ * **ILLUSTRATIVE EXAMPLES**:
+ * - [a]  Imagine the situation where in the old time step there is only one
+ * child node A, with two children GC1 and GC2, which are the grandchild of the
+ * parent node. Then, in the next time step, the new map of refinement of the
+ * parent node breaks the child node A into two parts, now known as A1 and A2.
+ * In the function adapt_child_nodes(), the old child node A has been adapted to
+ * fit, for example, with the new zone A1. In the function
+ * create_new_child_nodes(), a new child node is created to fit the other new
+ * zone A2. At this point, it is not known if the grandchild nodes GC1 and GC2
+ * belong to A1 or A2 or a combination of them.
+ *
+ * **RATIONALES**:
+ * - [a]  aaa
+ *
+ * **NOTES**:
+ * - [a]  This function can be improved in the future by avoiding the use of the
+ * auxiliary pointer to the pointer array, and simply using a pointer to an
+ * array with no additional memory allocation or release of it.
+ *
+ * - [b]  Maybe there is more efficient to store the total number of 
+ * grandchildren of the parent node instead to compute it here. But, it is also 
+ * important to note, that in every time step, the number of the grandchild 
+ * nodes of the child nodes can change.
+ */
+
 static int reorganization_grandchild_node(struct node *ptr_node)
 {
 
@@ -5744,7 +6511,7 @@ static int reorganization_grandchild_node(struct node *ptr_node)
 
   int lv = ptr_node->lv;
 
-  int cntr_ch = 0; // Counter the number of grandchildren
+  int cntr_grandch = 0; // Counter the number of grandchildren
 
   for (int ch = 0; ch < ptr_node->zones_size; ch++)
   {
@@ -5770,9 +6537,9 @@ static int reorganization_grandchild_node(struct node *ptr_node)
     {
       for (int grandch = 0; grandch < ptr_node->pptr_chn[ch]->chn_size; grandch++)
       {
-        pptr_aux[cntr_ch] = ptr_node->pptr_chn[ch]->pptr_chn[grandch];
+        pptr_aux[cntr_grandch] = ptr_node->pptr_chn[ch]->pptr_chn[grandch];
         ptr_node->pptr_chn[ch]->pptr_chn[grandch] = NULL;
-        cntr_ch++;
+        cntr_grandch++;
       }
       ptr_node->pptr_chn[ch]->chn_size = 0; // Reseting the number of grandchildren to 0
     }
@@ -5780,9 +6547,9 @@ static int reorganization_grandchild_node(struct node *ptr_node)
     {
       for (int grandch = 0; grandch < ptr_node->pptr_chn[ch]->chn_size; grandch++)
       {
-        pptr_aux[cntr_ch] = ptr_node->pptr_chn[ch]->pptr_chn[grandch];
+        pptr_aux[cntr_grandch] = ptr_node->pptr_chn[ch]->pptr_chn[grandch];
         ptr_node->pptr_chn[ch]->pptr_chn[grandch] = NULL;
-        cntr_ch++;
+        cntr_grandch++;
       }
       ptr_node->pptr_chn[ch]->chn_size = 0; // Reseting the number of grandchildren to 0
     }
@@ -5843,7 +6610,64 @@ static int reorganization_grandchild_node(struct node *ptr_node)
   return _SUCCESS_;
 }
 
-static void updating_ref_zones_grandchildren(struct node *ptr_node)
+/**
+ * @brief Updating the refined zones identification of the child nodes.
+ *
+ * **SHORT DESCRIPTION**: Updating the child box status of the refined zones of the
+ * child nodes.
+ *
+ * **PREREQUISITES**: If there is at least one new and one old refinement zone,
+ * and if the level of refinement is lower than the maximum level of refinement
+ * minus 1.
+ *
+ * @param[in,out] ptr_node Pointer to node structure
+ *
+ * **RETURN**: No parameter is returned.
+ *
+ * **LONG DESCRIPTION**:
+ *
+ * In the previous function reorganization_grandchild_node(), the child nodes
+ * were filled with the proper grandchild nodes, and the identification of these
+ * last was updated to match with the sort of the array \ref node.pptr_chn "pptr_chn" of the child
+ * node. However, the box status of the child node has not been updated yet with
+ * the information on its refined zones. This function is in charge to perform
+ * that.
+ *
+ * The flux of this function can be seen in the figure (work in progress), and
+ * it is explained below:
+ *
+ * - [0]  <b> THE updating_ref_zones_children() FUNCTION STARTS....</b>
+ *
+ * - [1]  Defining some internal useful parameters.
+ *
+ * - [2]  Run a "for" loop over the number of refinement zones, that at this
+ * point of the module tree_adaptation.c is equal to the final number of child
+ * nodes.
+ *
+ * - [3]  Run a "for" loop over the number of grandchild nodes.
+ *
+ * - [4]  Run a "for" loop over the cells in every grandchild node. The loop
+ * runs each 8 cells which correspond to one cell in the corresponding child node.
+ *
+ * - [5]  The child box index associated with this package of 8 grandchild cells is
+ * computed.
+ *
+ * - [6]  Using this index the status of the child node box is updated to be
+ * equal to the grandchild identification.
+ *
+ * - [7]  <b> THE updating_ref_zones_children() FUNCTION ENDS....</b>
+ *
+ * **ILLUSTRATIVE EXAMPLES**:
+ * - [a]  a
+ *
+ * **RATIONALES**:
+ * - [a]  aaa
+ *
+ * **NOTES**:
+ * - [a]  a
+ */
+
+static void updating_ref_zones_children(struct node *ptr_node)
 {
   struct node *ptr_ch;
   struct node *ptr_grandch;
@@ -5912,6 +6736,62 @@ static void updating_ref_zones_grandchildren(struct node *ptr_node)
     }
   }
 }
+
+/**
+ * @brief Updating the child box status of the boundary simulation cells
+ *
+ * **SHORT DESCRIPTION**: Updating the child box status of the boundary 
+ * simulation cells
+ *
+ * **PREREQUISITES**: If there is at least a new refinement zone.
+ *
+ * @param[in,out] ptr_node Pointer to node structure
+ *
+ * **RETURN**: No parameter is returned.
+ *
+ * **LONG DESCRIPTION**:
+ *
+ * If any of the child nodes touch the boundary simulation in the non-periodic
+ * boundary condition (pbc), or crosses the whole simulation in the periodic 
+ * boundary condition, then its box requires to be updated in the outer boundary 
+ * cells. This function is in charge to perform this.
+ *
+ * The flux of this function can be seen in the figure (work in progress), and 
+ * it is explained below:
+ *
+ * - [0]  <b> THE adding_boundary_simulation_box_status_to_children_nodes() FUNCTION STARTS....</b>
+ *
+ * - [1]  Defining some internal useful parameters.
+ *
+ * - [2]  Run a "for" loop over the number of refinement zones, that at this
+ * point of the module tree_adaptation.c is equal to the final number of child
+ * nodes.
+ *
+ * - [3]  If the periodic boundary conditions (pbc) are used, and the child node 
+ * flag \ref node.pbc_crosses_whole_sim_box "pbc_crosses_whole_sim_box" is 
+ * "true", then the box cell status from the beginning of the box to the 
+ * boundary of the *Smallest Box* (see Key Concepts \ref 
+ * Key_Concepts_Smallest_Box "Smallest Box"), and between the end of the 
+ * "Smallest box" to the end of the box are updated to the value of -6. This is 
+ * done in every direction if it corresponds.
+ *
+ * - [4]  If non-periodic boundary conditions (non-pbc) are used, and the child 
+ * node flag \ref node.sim_bdry_contact "sim_bdry_contact" is "true", then the 
+ * child box status is updated with the value of -5 when the outer of the 
+ * *Smallest Box* (see Key Concepts \ref Key_Concepts_Smallest_Box 
+ * "Smallest Box").
+ *
+ * - [5]  <b> THE adding_boundary_simulation_box_status_to_children_nodes() FUNCTION ENDS....</b>
+ *
+ * **ILLUSTRATIVE EXAMPLES**:
+ * - [a]  a
+ *
+ * **RATIONALES**:
+ * - [a]  aaa
+ *
+ * **NOTES**:
+ * - [a]  a
+ */
 
 static void adding_boundary_simulation_box_status_to_children_nodes(struct node *ptr_node)
 {
@@ -6126,9 +7006,76 @@ static void adding_boundary_simulation_box_status_to_children_nodes(struct node 
   }
 }
 
-static int update_child_grid_points(struct node *ptr_node)
-{
+/**
+ * @brief Filling child node grid point arrays
+ *
+ * **SHORT DESCRIPTION**: Filling child node interior, boundary, and simulation
+ * boundary grid point arrays. For example, some of the filled arrays are \ref
+ * node.ptr_intr_grid_cell_idx_x "ptr_intr_grid_cell_idx_x", \ref
+ * node.ptr_bdry_box_grid_idx "ptr_bdry_box_grid_idx", or \ref
+ * node.ptr_sim_bdry_grid_cell_idx_z "ptr_sim_bdry_grid_cell_idx_z".
+ *
+ * **PREREQUISITES**: If there is at least a new refinement zone.
+ *
+ * @param[in,out] ptr_node Pointer to node structure
+ *
+ * **RETURN**: The error status.
+ *
+ * **LONG DESCRIPTION**:
+ *
+ * Filling child node interior, boundary, and simulation
+ * boundary grid point arrays. This function fills 4 arrays per type of grid 
+ * point. For example, for the interior grid points of the child nodes, the 
+ * function fills the arrays \ref node.ptr_intr_grid_cell_idx_x 
+ * "ptr_intr_grid_cell_idx_x" (\ref node.ptr_intr_grid_cell_idx_y 
+ * "ptr_intr_grid_cell_idx_y", \ref node.ptr_intr_grid_cell_idx_z 
+ * "ptr_intr_grid_cell_idx_z",), and \ref node.ptr_intr_box_grid_idx 
+ * "ptr_intr_box_grid_idx". Moreover, other grid parameters of the child nodes 
+ * are updated, the size (see Key Concepts \ref Key_Concepts_Size "Size") and
+ * the capacity (see Key Concepts \ref Key_Concepts_Capacity "Capacity") of
+ * every type of grid point.
+ *
+ * The flux of this function can be seen in the figure (work in progress), and
+ * it is explained below:
+ *
+ * - [0]  <b> THE filling_child_grid_point_arrays() FUNCTION STARTS....</b>
+ *
+ * - [1]  Defining some internal useful parameters.
+ *
+ * - [2]  Run a "for" loop over the number of refinement zones, that at this
+ * point of the module tree_adaptation.c is equal to the final number of child
+ * nodes.
+ *
+ * - [3]  Run a triple "for" loop over the box grid points of the child nodes,
+ * but only running over the *Smallest Box* (see Key Concepts \ref 
+ * Key_Concepts_Smallest_Box "Smallest Box").
+ *
+ * - [4]  In every grid point of the child node, depending on the box status of
+ * the neighboring cells of that grid point, the grid points are labeled 
+ * no-exist, interior, boundary, and simulation boundary grid points using local 
+ * parameters.
+ *
+ * - [5]  If the grid point is labeled no-exist, then the "for" loop continues 
+ * with the next grid point. If the grid point is labeled interior, boundary, or
+ * simulation boundary, the grid point is added to one of those categories 
+ * putting its properties in the corresponding arrays.
+ *
+ * - [6]  <b> THE filling_child_grid_point_arrays() FUNCTION ENDS....</b>
+ *
+ * **ILLUSTRATIVE EXAMPLES**:
+ * - [a]  a
+ *
+ * **RATIONALES**:
+ * - [a]  aaa
+ *
+ * **NOTES**:
+ * - [a]  It is possible to improve this function by looking for a better way to
+ * run between the grid points, and also looking for a better way to find the 
+ * type of grid point that it belongs to.
+ */
 
+static int filling_child_grid_point_arrays(struct node *ptr_node)
+{
   struct node *ptr_ch;
 
   int box_idxNbr_i0_j0_k0_ch;    // Box index of the child node at x=0,y=0,z=0
@@ -6176,7 +7123,7 @@ static int update_child_grid_points(struct node *ptr_node)
     grid_box_real_dim_X_times_Y_ch = (ptr_ch->box_real_dim_x + 1) * (ptr_ch->box_real_dim_y + 1);
 
     // 27 * N - 9 * (N-1) = 18N+9 >= Total of grid points; N = number of cubics with 8 cells and 27 grid points
-    // Maximum of border grid points = 9*(N*2+1) - (N*2-1) = 16N+10 (Imagine a row of cubics)
+    // Maximum of boundary grid points = 9*(N*2+1) - (N*2-1) = 16N+10 (Imagine a row of cubics)
     // Maximum of interior grid points = (2k-1)^3 < 8k^3, where k^3 = N
     size_bder_grid_points = ptr_ch->cell_size / 8 * 16 + 10;
     size_intr_grid_points = ptr_ch->cell_size;
@@ -6411,17 +7358,17 @@ static int update_child_grid_points(struct node *ptr_node)
               ptr_ch->ptr_sim_bdry_grid_cell_idx_y[ptr_ch->grid_sim_bdry_size] = aux_idx_y;
               ptr_ch->ptr_sim_bdry_grid_cell_idx_z[ptr_ch->grid_sim_bdry_size] = aux_idx_z;
               ptr_ch->ptr_sim_bdry_box_grid_idx[ptr_ch->grid_sim_bdry_size] = box_grid_idx_ch;
-              ptr_ch->grid_sim_bdry_size += 1; // Increasing the number of border grid points in the array
+              ptr_ch->grid_sim_bdry_size += 1; // Increasing the number of boundary grid points in the array
             }
-            //* >> Border grid point*//
+            //* >> Boundary grid point*//
             else if (is_bder_grid_point == true)
             {
-              //* >> Adding the grid point to the border array *//
+              //* >> Adding the grid point to the Boundary array *//
               ptr_ch->ptr_bdry_grid_cell_idx_x[ptr_ch->grid_bdry_size] = aux_idx_x;
               ptr_ch->ptr_bdry_grid_cell_idx_y[ptr_ch->grid_bdry_size] = aux_idx_y;
               ptr_ch->ptr_bdry_grid_cell_idx_z[ptr_ch->grid_bdry_size] = aux_idx_z;
               ptr_ch->ptr_bdry_box_grid_idx[ptr_ch->grid_bdry_size] = box_grid_idx_ch;
-              ptr_ch->grid_bdry_size += 1; // Increasing the number of border grid points in the array
+              ptr_ch->grid_bdry_size += 1; // Increasing the number of Boundary grid points in the array
             }
             //* Interior grid point *//
             else
@@ -6698,7 +7645,59 @@ static int update_child_grid_points(struct node *ptr_node)
   return _SUCCESS_;
 }
 
-static void filling_local_number_ptcl_outside_refinement_zones(struct node *ptr_node)
+/**
+ * @brief Computing the number of particles outside of the refinement zones of
+ * the node used.
+ *
+ * **SHORT DESCRIPTION**: Computing the number of particles outside of the
+ * refinement zones of the node used. This number is stored at the node 
+ * parameter \ref node.no_ptcl_outs_ref_zones "no_ptcl_outs_ref_zones".
+ *
+ * **PREREQUISITES**: If there is at least a new refinement zone, or if the node
+ * used is the Head node.
+ *
+ * @param[in,out] ptr_node Pointer to node structure
+ *
+ * **RETURN**: The error status.
+ *
+ * **LONG DESCRIPTION**:
+ *
+ * Computing the number of particles outside of the refinement zones of the node 
+ * used. This number is stored at the node parameter \ref 
+ * node.no_ptcl_outs_ref_zones "no_ptcl_outs_ref_zones".
+ *
+ * This function is initially called by the "for" loop over the level of 
+ * refinement at the function tree_adaptation() with the child nodes as input, 
+ * and also it is called one time at the end of the tree_adaptation() function 
+ * with the Head node as the input.
+ *
+ * The flux of this function can be seen in the figure (work in progress), and
+ * it is explained below:
+ *
+ * - [0]  <b> THE computing_no_ptcl_outside_refinement_zones() FUNCTION STARTS....</b>
+ *
+ * - [1]  Defining some internal useful parameters. The value of \ref
+ * node.no_ptcl_outs_ref_zones "no_ptcl_outs_ref_zones" is initialized.
+ *
+ * - [2]  Run a "for" loop over the child nodes.
+ *
+ * - [3]  Per every child node, the value of the \ref 
+ * node.no_ptcl_outs_ref_zones "no_ptcl_outs_ref_zones" is initialized is 
+ * updated.
+ *
+ * - [6]  <b> THE computing_no_ptcl_outside_refinement_zones() FUNCTION ENDS....</b>
+ *
+ * **ILLUSTRATIVE EXAMPLES**:
+ * - [a]  a
+ *
+ * **RATIONALES**:
+ * - [a]  aaa
+ *
+ * **NOTES**:
+ * - [a]  a
+ */
+
+static void computing_no_ptcl_outside_refinement_zones(struct node *ptr_node)
 {
   // The input can be a child node or the head node
 
@@ -6713,7 +7712,76 @@ static void filling_local_number_ptcl_outside_refinement_zones(struct node *ptr_
   }
 }
 
-static void moved_unused_child_node_to_memory_pool(struct node *ptr_node)
+/**
+ * @brief Transferring unused child nodes to the memory pool
+ *
+ * **SHORT DESCRIPTION**: Transferring unused child nodes to the stack of memory 
+ * pool to be reused in the future by any other parent node at any level of 
+ * refinement.
+ *
+ * **PREREQUISITES**: Always used.
+ *
+ * @param[in,out] ptr_node Pointer to node structure
+ *
+ * **RETURN**: No parameter is returned.
+ *
+ * **LONG DESCRIPTION**:
+ *
+ * Transferring unused child nodes to the stack of memory pool to be reused in 
+ * the future by any other parent node at any level of refinement.
+ *
+ * Moreover, a recent implementation lets remove refinement zones of the parent 
+ * node which contains fewer particles than the minimum particles required to 
+ * refine a cell. So, this zone is removed, and the corresponding child node is 
+ * also removed and transferred to the stack of the memory pool. The gap in the 
+ * parent node is filled by the last node in the list of child nodes, and also 
+ * this surrogate child node is updated in its parameters.
+ *
+ * The flux of this function can be seen in the figure (work in progress), and 
+ * it is explained below:
+ *
+ * - [0]  <b> THE transferring_unused_child_node_to_memory_pool() FUNCTION STARTS....</b>
+ *
+ * - [1]  Defining some internal useful parameters.
+ *
+ * - [2]  Run a "for" loop over the excess between the number of refinement 
+ * zones and the total number of child nodes including linked and unlinked nodes
+ *
+ * - [3]  The nodes are removed. Remember that at this point the child nodes are
+ * sorted in the parent parameter array \ref node.pptr_chn "pptr_chn" such that
+ * the first elements correspond exactly with the first refinement zones, so the
+ * excess of child nodes in that parent parameter array corresponds to the nodes
+ * that will not be used by the parent node.
+ *
+ * - [4]  The second part of the function consists in to remove zones and child
+ * which contains fewer particles than the minimum required to refine a cell. To
+ * do that, a "for" loop over the new refinement zones is performed.
+ *
+ * - [5]  For every new refinement zone, if the child node corresponding has 
+ * fewer particles than the refinement cell criteria, then it will be replaced 
+ * by the last node in the list.
+ *
+ * - [6]  The surrogating node is updated in its identification, and the box 
+ * cells of the parent node are updated with the information of the surrogating 
+ * node and the removed node.
+ *
+ * - [7]  The removed node is sent to the stack of the memory pool.
+ *
+ * - [8]  Finally, some other important parameters are updated.
+ *
+ * - [9]  <b> THE transferring_unused_child_node_to_memory_pool() FUNCTION ENDS....</b>
+ *
+ * **ILLUSTRATIVE EXAMPLES**:
+ * - [a]  a
+ *
+ * **RATIONALES**:
+ * - [a]  aaa
+ *
+ * **NOTES**:
+ * - [a]  a
+ */
+
+static void transferring_unused_child_node_to_memory_pool(struct node *ptr_node)
 {
   int box_idx_node;
 
@@ -6778,10 +7846,74 @@ static void moved_unused_child_node_to_memory_pool(struct node *ptr_node)
   }
 }
 
-static int tentacles_updating(struct node *ptr_node, int tentacle_lv)
+/**
+ * @brief Updating of the \ref tree_adaptation__REMINDER__Tentacles "Tentacles" 
+ * at the child nodes level of refinement
+ *
+ * **SHORT DESCRIPTION**: Updating of the \ref 
+ * tree_adaptation__REMINDER__Tentacles "Tentacles" at the child nodes level of 
+ * refinement. tree_adaptation() function reset the size of the \ref 
+ * tree_adaptation__REMINDER__Tentacles "Tentacles" at every level of 
+ * refinement, and call this function at every parent node of that level of 
+ * refinement but using the level of the child nodes as input. So, in the end, 
+ * the \ref tree_adaptation__REMINDER__Tentacles "Tentacles" update accordingly 
+ * the new configuration of child nodes.
+ *
+ * **PREREQUISITES**: If there is at least a new refinement zone.
+ *
+ * @param[in] ptr_node Pointer to node structure
+ * @param[in] tentacle_lv Level of refinement of the \ref 
+ * tree_adaptation__REMINDER__Tentacles "Tentacles"
+ *
+ * **RETURN**: The error status.
+ *
+ * **LONG DESCRIPTION**:
+ *
+ * Updating of the \ref tree_adaptation__REMINDER__Tentacles "Tentacles" at the 
+ * child nodes level of refinement. tree_adaptation() function reset the size of 
+ * the \ref tree_adaptation__REMINDER__Tentacles "Tentacles" at every level of 
+ * refinement, and call this function at every parent node of that level of 
+ * refinement but using the level of the child nodes as input. So, in the end, 
+ * the \ref tree_adaptation__REMINDER__Tentacles "Tentacles" update accordingly 
+ * the new configuration of child nodes.
+ *
+ * Here the only global parameters associated with the \ref 
+ * tree_adaptation__REMINDER__Tentacles "Tentacles" are going to be updated.
+ *
+ * The flux of this function can be seen in the figure (work in progress), and
+ * it is explained below:
+ *
+ * - [0]  <b> THE tentacles_updating() FUNCTION STARTS....</b>
+ *
+ * - [1]  Defining some internal useful parameters.
+ *
+ * - [2]  Run a "for" loop over the number of refinement zones, that at this
+ * point of the module tree_adaptation.c is equal to the final number of child
+ * nodes.
+ *
+ * - [3]  The child node is pointed by the tentacle at the corresponding 
+ * position and level of refinement.
+ *
+ * - [4]  Finally, the tentacles Size (see Key Concepts \ref Key_Concepts_Size 
+ * "Size") of the global parameter \link GL_tentacles_size \endlink is updated.
+ *
+ * - [5]  <b> THE tentacles_updating() FUNCTION ENDS....</b>
+ *
+ * **ILLUSTRATIVE EXAMPLES**:
+ * - [a]  a
+ *
+ * **RATIONALES**:
+ * - [a]  aaa
+ *
+ * **NOTES**:
+ * - [a]  a
+ */
+
+static int tentacles_updating(const struct node *ptr_node, int tentacle_lv)
 {
   int no_tentacles = GL_tentacles_size[tentacle_lv];
   int size = no_tentacles + ptr_node->zones_size;
+  int no_zones = ptr_node->zones_size;
 
   //* >> Space checking of the capacity of the refined cells *//
   if (space_check(&(GL_tentacles_cap[tentacle_lv]), size, 4.0f, "p1n2", &(GL_tentacles[tentacle_lv])) == _FAILURE_)
@@ -6790,7 +7922,7 @@ static int tentacles_updating(struct node *ptr_node, int tentacle_lv)
     return _FAILURE_;
   }
 
-  for (int i = 0; i < ptr_node->zones_size; i++)
+  for (int i = 0; i < no_zones; i++)
   {
     GL_tentacles[tentacle_lv][no_tentacles + i] = ptr_node->pptr_chn[i];
   }
@@ -6798,6 +7930,54 @@ static int tentacles_updating(struct node *ptr_node, int tentacle_lv)
   GL_tentacles_size[tentacle_lv] = size;
   return _SUCCESS_;
 }
+
+/**
+ * @brief Updating the maximum level parameter \link GL_tentacles_level_max 
+ * \endlink of the \ref tree_adaptation__REMINDER__Tentacles "Tentacles"
+ *
+ * **SHORT DESCRIPTION**: Updating the maximum level parameter \link 
+ * GL_tentacles_level_max \endlink of the \ref 
+ * tree_adaptation__REMINDER__Tentacles "Tentacles".
+ *
+ * **PREREQUISITES**: Always used.
+ *
+ * **RETURN**: No parameter is returned.
+ *
+ * **LONG DESCRIPTION**:
+ *
+ * Updating the maximum level parameter \link GL_tentacles_level_max \endlink of 
+ * the \ref tree_adaptation__REMINDER__Tentacles "Tentacles". this function is 
+ * used only once for each call of function tree_adaptation().
+ *
+ * The flux of this function can be seen in the figure (work in progress), and
+ * it is explained below:
+ *
+ * - [0]  <b> THE updating_tentacles_max_lv() FUNCTION STARTS....</b>
+ *
+ * - [1]  Defining some internal useful parameters.
+ *
+ * - [2]  Run a "for" loop over the refinement levels but avoiding the finest
+ * refinement level. The loop goes from a finer refinement level to a coarser
+ * one.
+ *
+ * - [3]  The child node is pointed by the tentacle at the corresponding
+ * position and level of refinement.
+ *
+ * - [4]  If the number of  \ref tree_adaptation__REMINDER__Tentacles 
+ * "Tentacles" at that level is bigger than cero, then the maimum level 
+ * parameter \link GL_tentacles_level_max \endlink is obtained
+ *
+ * - [5]  <b> THE updating_tentacles_max_lv() FUNCTION ENDS....</b>
+ *
+ * **ILLUSTRATIVE EXAMPLES**:
+ * - [a]  a
+ *
+ * **RATIONALES**:
+ * - [a]  aaa
+ *
+ * **NOTES**:
+ * - [a]  a
+ */
 
 static void updating_tentacles_max_lv(void)
 {
@@ -6813,9 +7993,29 @@ static void updating_tentacles_max_lv(void)
   }
 }
 
+/**
+ * @brief Make the calls of all the local functions of the tree_adaptation.c 
+ * module
+ *
+ * **SHORT DESCRIPTION**: Make the calls of all the local functions of the 
+ * tree_adaptation.c module
+ *
+ * **PREREQUISITES**: Always used.
+ *
+ * **RETURN**: The error status.
+ *
+ * **ILLUSTRATIVE EXAMPLES**:
+ * - [a]  a
+ *
+ * **RATIONALES**:
+ * - [a]  aaa
+ *
+ * **NOTES**:
+ * - [a]  a
+ */
+
 int tree_adaptation(void)
 {
-
   //* >> Working in the refinement zones *//
   if (lmin < lmax)
   {
@@ -6823,7 +8023,7 @@ int tree_adaptation(void)
     clock_t aux_clock;
 
     struct node *ptr_node;
-    int no_pts; // Number of parents in the cycle
+    int no_pts; // Number of parents in the loop
     int no_lvs; // Number of level of refinement to adapt
 
     no_lvs = GL_tentacles_level_max < (lmax - lmin) ? GL_tentacles_level_max : (GL_tentacles_level_max - 1);
@@ -6832,7 +8032,7 @@ int tree_adaptation(void)
     {
       GL_tentacles_size[lv + 1] = 0;
       no_pts = GL_tentacles_size[lv];
-      //* >> "for" cycle over parent nodes *//
+      //* >> "for" loop over parent nodes *//
       for (int i = 0; i < no_pts; i++)
       {
         ptr_node = GL_tentacles[lv][i];
@@ -6935,24 +8135,24 @@ int tree_adaptation(void)
           GL_times[38] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
           //* >> Adapting the information from old child nodes to new child nodes *//
-          // printf("\n\nMoving old child to new child\n\n");
+          // printf("\n\Transferring old child to new child\n\n");
           aux_clock = clock();
           if (ptr_node->chn_size > 0)
           {
-            if (moving_old_child_to_new_child(ptr_node) == _FAILURE_)
+            if (transferring_old_child_to_new_child(ptr_node) == _FAILURE_)
             {
-              printf("Error at function moving_old_child_to_new_child()\n");
+              printf("Error at function transferring_old_child_to_new_child()\n");
               return _FAILURE_;
             }
           }
           GL_times[39] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
-          //* >> Moving new zones of refienemnt information to all child nodes *//
-          // printf("\n\nMoving new zones to new child\n\n");
+          //* >> Transferring new zones of refienemnt information to all child nodes *//
+          // printf("\n\Transferring new zones to new child\n\n");
           aux_clock = clock();
-          if (moving_new_zones_to_new_child(ptr_node) == _FAILURE_)
+          if (transferring_new_zones_to_new_child(ptr_node) == _FAILURE_)
           {
-            printf("Error at function moving_new_zones_to_new_child()\n");
+            printf("Error at function transferring_new_zones_to_new_child()\n");
             return _FAILURE_;
           }
           GL_times[40] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
@@ -6981,7 +8181,7 @@ int tree_adaptation(void)
           aux_clock = clock();
           if (ptr_node->chn_size > 0 && lv < no_lvs)
           {
-            updating_ref_zones_grandchildren(ptr_node);
+            updating_ref_zones_children(ptr_node);
           }
           GL_times[44] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
@@ -6994,9 +8194,9 @@ int tree_adaptation(void)
           //* >> Updating children grid points *//
           // printf("\n\nUpdating children grid points\n\n");
           aux_clock = clock();
-          if (update_child_grid_points(ptr_node) == _FAILURE_)
+          if (filling_child_grid_point_arrays(ptr_node) == _FAILURE_)
           {
-            printf("Error at function update_child_grid_points()\n");
+            printf("Error at function filling_child_grid_point_arrays()\n");
             return _FAILURE_;
           }
           GL_times[45] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
@@ -7005,7 +8205,7 @@ int tree_adaptation(void)
           aux_clock = clock();
           for (int ch = 0; ch < ptr_node->zones_size; ch++)
           {
-            filling_local_number_ptcl_outside_refinement_zones(ptr_node->pptr_chn[ch]);
+            computing_no_ptcl_outside_refinement_zones(ptr_node->pptr_chn[ch]);
           }
           GL_times[46] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
         }
@@ -7013,7 +8213,7 @@ int tree_adaptation(void)
         //* >> Moved Unused child node to the stack of memory pool *//
         // printf("\n\nMoved Unused child node to the stack of memory pool\n\n");
         aux_clock = clock();
-        moved_unused_child_node_to_memory_pool(ptr_node);
+        transferring_unused_child_node_to_memory_pool(ptr_node);
         GL_times[47] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
         //* >> Tentacles updating *//
@@ -7041,7 +8241,7 @@ int tree_adaptation(void)
 
     // Filling number of particles to be updated outside of the refinement zones in the head node
     aux_clock = clock();
-    filling_local_number_ptcl_outside_refinement_zones(GL_tentacles[0][0]);
+    computing_no_ptcl_outside_refinement_zones(GL_tentacles[0][0]);
     GL_times[46] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
 
     //* >> Tentacles Updating lv max *//

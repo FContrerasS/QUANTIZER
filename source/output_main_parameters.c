@@ -136,8 +136,8 @@ void output_main_parameters(vtype final_time, int Number_timesteps, int Number_o
   //* >> TREE ADAPTATION TIME *//
   char Time_names_tree_adaptation[50][100] = {
       "updating_cell_struct",
+      "check_error",
       "initialization_node_boxes",
-      "initialization_ref_aux",
       "fill_cell_ref",
       "fill_zones_ref",
       "create_links",
@@ -146,15 +146,15 @@ void output_main_parameters(vtype final_time, int Number_timesteps, int Number_o
       "create_new_child_nodes",
       "moving_old_child_to_new_child",
       "moving_new_zones_to_new_child",
+      "adding_boundary_simulation_box_status_to_children_nodes",
       "reorganization_child_node",
       "reorganization_grandchild_node",
-      "updating_ref_zones_grandchildren",
-      "update_border_child_boxes",
-      "update_child_grid_points",
-      "tentacles_updating",
+      "updating_ref_zones_children",
+      "filling_child_grid_point_arrays",
+      "computing_no_ptcl_outside_refinement_zones",
       "moved_unused_child_node_to_memory_pool",
+      "tentacles_updating",
       "updating_tentacles_max_lv",
-      "adding_boundary_simulation_box_status_to_children_nodes",
       ""};
 
   fprintf(file, "\n\nTREE ADAPTATION TIME [s], Percentage over tree adaptation time\n\n");

@@ -98,3 +98,5 @@ INTERACTIVE_SVG        = YES
 
 
 EXTRACT_STATIC         = YES	#Including static functions and variables
+
+ALIASES = footnote{1}="\latexonly\footnote\{\1\}\endlatexonly\htmlonly<sup title=\"\1\">*</sup>\endhtmlonly" 	#Add footnotes altex function \footnote{This is my footnote}

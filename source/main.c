@@ -21,7 +21,7 @@
  *
  * **VERSION INFORMATION**: Felipe Contreras, 2022-10-01, version 1.0.
  *
- * - [a] **Node**: The most basic structure of the tree which represent an
+ * - [a] **Node**: The most basic structure of the tree which represents an
  *                isolated refinement zone at a given level of refinement.
  *
  * - [b] **Tentacles**:  Pointer structure which has access to every node in
@@ -41,9 +41,11 @@
  * **LONG DESCRIPTION**:
  *
  * The goal of the main.c script is to call every module in the code to perform
- * the whole N-body simulation. The flux can be seen in the figure (work in
- * progress), and it is explained below:
+ * the whole N-body simulation.
  *
+ * The flux of this function can be seen in the figure (work in progress), and
+ * it is explained below:
+ * 
  * - [0]  <b> THE N-BODY SIMULATION STARTS....</b>
  *
  * - [1]  Reading global variables and the input parameters with the module
@@ -66,37 +68,37 @@
  *
 
  * - [6]  Using the grid density as input in the Poisson equation, the module
- * potential.c computes the grid potential for every node. Currently the methods 
- * implemented to perform this task are the method of Multigrid with 
+ * potential.c computes the grid potential for every node. Currently the methods
+ * implemented to perform this task are the method of Multigrid with
  * Gauss-Saidel or Jacoby, and the Successive Over Relaxation method (SOR).
  *
  * - [7]  Using the density in every node the grid acceleration is computing
- * through the module grid_acceleration.c. There are 2 methods currently 
- * implemented, 3-stencil and 5-stencil points. However, the boundary grid 
+ * through the module grid_acceleration.c. There are 2 methods currently
+ * implemented, 3-stencil and 5-stencil points. However, the boundary grid
  * points only use the 3-stencil scheme.
  *
  * - [8]  In the module particle_acceleration.c, the acceleration of the
  * particles is computed with the Cloud In Cell (CIC) scheme.
  *
  * - [9]  The observables are computed using the module observables.c. It is
- * possible to compute the potential energy using the exact method of particle 
- * to particle interaction of order O(N^2) or with an approximation of order 
+ * possible to compute the potential energy using the exact method of particle
+ * to particle interaction of order O(N^2) or with an approximation of order
  * O(N) using the grid potential obtained through the Poisson equation.
  *
  * - [10] The particle properties and observables are exported using the module
  * output_snapshots.c. At this point, the code has computed the 0 time-step.
  *
- * - [11] Now, a "while" cycle is performed running until reaching the final 
- * time or the maximum number of time-steps, both given by the user. The steps 
+ * - [11] Now, a "while" cycle is performed running until reaching the final
+ * time or the maximum number of time-steps, both given by the user. The steps
  * of the "while" cycle below:
  *
  * - [12] Using the Courant-Friedrichs-Levy number given by the user, the next
- * time-step is computed through the module timestep.c. Currently there are two 
- * methods to perform this: using the velocity only or using the velocity and 
+ * time-step is computed through the module timestep.c. Currently there are two
+ * methods to perform this: using the velocity only or using the velocity and
  * the acceleration.
  *
  * - [13] In the scheme of Leapfrog, the particles are updated by a half-step of
- * of velocity (kick) and by a step of position (drift), also known as the 
+ * of velocity (kick) and by a step of position (drift), also known as the
  * \e "Predictor step", through the module particle_updating.c.
  *
  * - [14] The particle acceleration and the grid density of the coarsest level
@@ -119,8 +121,8 @@
  * recomputed using the module particle_acceleration.c
  *
  * - [20] Similar the step [13], the particle velocity is updated by the
- * remaining half-step of the Leapfrog scheme (kick). This update is also known 
- * as the \e "Corrector step", and it is executed in the module 
+ * remaining half-step of the Leapfrog scheme (kick). This update is also known
+ * as the \e "Corrector step", and it is executed in the module
  * particle_updating.c.
  *
  * - [21] Same as the step [9], the observables are recomputed using the module
@@ -133,7 +135,7 @@
  * performed through the function garbage_collector().
  *
  * - [24] At this point a time-step cycle has been performed. Steps [12] to
- * step [23] are repeated until reaching the final time or the maximum number of 
+ * step [23] are repeated until reaching the final time or the maximum number of
  * time-steps, both given by the user.
  *
  * - [25] Finished the previous "while" cycle, a .txt file with the main
@@ -162,7 +164,6 @@
 
 int main()
 {
-
   // printf(std::scientific);
   // printf(std::setprecision(digits_precision));
 
