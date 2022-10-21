@@ -16,7 +16,9 @@
  */
 
 /**
- * @file tree_adaptation.h ******************** Documented \e "tree_adaptation.h" header ******************** \n
+ * @file tree_adaptation.h
+ *
+ * \f[{\color{magenta} \mathbf{ DOCUMENTED\ ``tree\_adaptation.h"\ HEADER}}\f]
  *
  * @brief This is the header file of the main.c script.
  *

@@ -16,13 +16,15 @@
  */
 
 /**
- * @file common.h ******************** Documented \e "common.h" header ******************** \n
+ * @file common.h
+ *
+ * \f[{\color{magenta} \mathbf{ DOCUMENTED\ ``common.h"\ HEADER}}\f]
  *
  * @brief Header file with multiple commen paramter and global variables
  *
  * **VERSION INFORMATION**: Felipe Contreras, 2022-10-01, version 1.0.
  *
- * **DESCRIPTION**: This is the header file with multiple commen paramter and 
+ * **DESCRIPTION**: This is the header file with multiple commen paramter and
  * global variables.
  *
  * **PREREQUISITES**: Always used.
@@ -89,10 +91,10 @@ extern vtype _User_BoxSize_; /**< Global Variable Constants: User boxsize in kpc
 extern vtype _PI_;           /**< Global Variable Constants: Pi value. */
 extern vtype _Onesixth_;     /**< Global Variable Constants: The value of \f$1\over 6\f$. */
 extern vtype _kpc_to_m_;     /**< Global Variable Constants: The dimensionless \f$x\f$ value in the relation \f$1\textrm{ kpc} = x \cdot 1\textrm{ m}\f$. */
-extern vtype _Msolar_to_kg_; /**< \public Global Variable Constants: The dimensionless \f$x\f$ value in the relation \f$1 \textup{ M}_\odot = x \cdot 1\textrm{ kg}\f$. */
-extern vtype tt;             /**< \public Global Variable Constants: The unit of time in code units, such that #_G_ = 1 in these code units. */
-extern vtype _Mgyear_;       /**< \public Global Variable Constants: The value of one Mega year in seconds */
-extern vtype _G_;            /**< \public Global Variable Constants: The gravitational constant *G* in units of \f${\textrm{m}^3\over \textrm{kg s}^2} \f$ */
+extern vtype _Msolar_to_kg_; /**< Global Variable Constants: The dimensionless \f$x\f$ value in the relation \f$1 \textup{ M}_\odot = x \cdot 1\textrm{ kg}\f$. */
+extern vtype tt;             /**< Global Variable Constants: The unit of time in code units, such that #_G_ = 1 in these code units. */
+extern vtype _Mgyear_;       /**< Global Variable Constants: The value of one Mega year in seconds */
+extern vtype _G_;            /**< Global Variable Constants: The gravitational constant *G* in units of \f${\textrm{m}^3\over \textrm{kg s}^2} \f$ */
 
 // Initial Parameters
 extern vtype BoxSize;
@@ -117,7 +119,8 @@ extern int no_grid_pow3;
 //* >> Refinement criteria parameters *//
 extern vtype ref_criterion_mass;
 extern int ref_criterion_ptcl;
-extern int n_exp;
+extern int n_exp; /**< Global Variable Refinement Criteria: The n_exp parameter tells us how many neighboring cells should be marked for refinement regardless of whether or not they satisfy the refinement criterion (same as in the *RAMSES* code). */
+
 extern vtype _CFL_; // CFL criteria 0.5
 extern vtype _MAX_dt_;
 

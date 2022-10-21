@@ -16,13 +16,17 @@
  */
 
 /**
- * @file initialize_cell_struct.h ******************** Documented \e "initialize_cell_struct.h" header ******************** \n
+ * @file initialize_cell_struct.h 
+ *
+ * \f[{\color{magenta} \mathbf{ DOCUMENTED\ ``initialize\_cell\_struct.h"\
+ * HEADER}}\f]
  *
  * @brief This is the header file of the initialize_cell_struct.c script.
  *
  * **VERSION INFORMATION**: Felipe Contreras, 2022-10-01, version 1.0.
  *
- * **DESCRIPTION**: This is the header file of the initialize_cell_struct.c script.
+ * **DESCRIPTION**: This is the header file of the initialize_cell_struct.c
+ * script.
  *
  * **PREREQUISITES**: Always used.
  */
@@ -49,15 +53,15 @@
  * - [a]  a
  *
  * **NOTES**:
- * - [a]  This structure can be modified in the future to include other useful 
- * parameters, such as the density or the velocity of the cell.
+ * - [a]  This structure can be modified in the future to include other useful
+ *   parameters, such as the density or the velocity of the cell.
  */
 
 struct cell_struct
 {
-    int *ptr_ptcl;      /**< Global Particle Index of the particles in the cell */ 
-    int ptcl_cap; /**< *Capacity* (\ref node "see key Concepts [a]") of the particles in the cell array ::ptr_ptcl */
-    int ptcl_size; /**< *Size* (\ref node "see key Concepts [b]") of the particles in the cell array ::ptr_ptcl */ 
+    int *ptr_ptcl;      /**< Global Particle Index of the particles in the cell */
+    int ptcl_cap;       /**< *Capacity* (see Key Concepts \ref Key_Concepts_Capacity "Capacity") of the particles in the cell array ::ptr_ptcl */
+    int ptcl_size;      /**< *Size* (see Key Concepts \ref Key_Concepts_Size "Size") of the particles in the cell array ::ptr_ptcl */
     vtype cell_mass;    /**< Total mass of the particles inside of the cell */
 };
 

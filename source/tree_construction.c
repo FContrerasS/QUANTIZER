@@ -1,13 +1,4 @@
 /*
- * tree_construction.c
- *
- * Create the initial tree
- *
- * Felipe Contreras
- * felipe.contrerass@postgrado.uv.cl
- */
-
-/*
  * Copyright(c) 2022 Felipe Contreras
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -24,15 +15,495 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @file tree_construction.c
+ *
+ * \f[{\color{magenta} \mathbf{ DOCUMENTED\ ``tree\_construction.c"\ MODULE}}\f]
+ *
+ * @brief Construction of the tree to the initial particle configuration.
+ *
+ * **VERSION INFORMATION**: Felipe Contreras, 2022-10-01, version 1.0.
+ *
+ * **SHORT DESCRIPTION**: Construction of the tree of refinement zones to the
+ * initial particle configuration. The nodes are created according to the
+ * refinement zones. The structure of \ref tree_adaptation__REMINDER__Tentacles
+ * "Tentacles" is modified to pointer to the initial configuration of nodes of
+ * the tree.
+ *
+ * **PREREQUISITES**: Always called, but only used if the user uses more than
+ * one level of refinement, i.e. \f$ l_{min} < l_{max} \f$.
+ *
+ * **RETURN**: The error status.
+ *
+ * **LONG DESCRIPTION**:
+ *
+ * The goal of the tree_construction.c module is to perform the construction of
+ * the tree of refinements creating the nodes. In this module, the tentacles
+ * structure is also modified to the initial node configuration. The
+ * modifications go from the coarsest level of refinement to one level before
+ * the finest level, running over every node of those levels. How this process
+ * should be understood is by considering the parent node which is the current
+ * node of the loop, and its child nodes. In every loop over a node, the parent
+ * node localize the refinement zones and creates the new child nodes. At the
+ * end of every loop the function modified the \ref
+ * tree_adaptation__REMINDER__Tentacles "Tentacles" structure to be according to
+ * the new child nodes.
+ *
+ * The flux of this function can be seen in the figure (work in progress), and
+ * it is explained below:
+ *
+ * - [0]  <b> THE tree_construction.c MODULE STARTS....</b>
+ *
+ * - [1]  The tree_construction() begins to work.
+ *
+ * - [2]  Some useful parameters are defined.
+ *
+ * - [3]  Run a \c "while" loop over the refinement levels but avoiding the
+ *   finest refinement level. The loop goes from a coarser refinement level to a
+ *   finer one, starting from the coarsest level.
+ *
+ * - [4]  Run a \c "for" loop over all the nodes in the level of refinement
+ *   begins. From now on we will call these nodes \f${\color{red} \mathbf{
+ *   parent\
+ *   nodes}}\f$.
+ *
+ * - [5]  With the initial configuration of the particles given by the user,
+ *   cells in the parent node are labeled as refinement cells (-1 in the code
+ *   language) in the box array \ref node.ptr_box "ptr_box" through the function
+ *   fill_cell_ref().
+ *
+ * - [6]  Using the map of refinement cells obtained in the previous step, the
+ *   different refinement zones (blocks in code language) in the parent node are
+ *   built through the function fill_zones_ref(). Every one of these zones is
+ *   independent of the other.
+ *
+ * - [7] Using the function create_child_nodes(), new child nodes are created to
+ *   fit with the refinement zones of the parent node.
+ *
+ * - [8] Using the function transfer_tiny_child_nodes_to_memory_pool() the child
+ *   nodes with fewer particles than the minimum particles required to refine a
+ *   cell are removed from the parent node and put in the stack of the memory
+ *   pool to be used in the future for any other parent node as its child node.
+ *
+ * - [9] Using the function fill_tentacles() the \ref
+ *   tree_adaptation__REMINDER__Tentacles "Tentacles" structure is updated with
+ *   the new child node distribution.
+ *
+ * - [10] <b> THE tree_construction.c MODULE ENDS....</b>
+ *
+ * **ILLUSTRATIVE EXAMPLES**:
+ * - [a]  Trivial.
+ *
+ * **RATIONALES**:
+ * - [a]  It is possible to join several functions in only one function, for
+ *   example, the functions fill_cell_ref() and fill_zones_ref(), which are in
+ *   charge of labeling the new box of the parent node with the cells to be
+ *   refined, and create the refinement zones using this new map of refinement
+ *   respectively. However, we decide to separate the functions as much as
+ *   possible to increase the modularity and the cleanness of the code.
+ *
+ * **NOTES**:
+ * - [a]  ll
+ *
+ */
+
 #include "tree_construction.h"
 
 //* >> Local Functions
+static int find_min_max_subzones_ref_PERIODIC_BOUNDARY(struct node *ptr_node, int zone_idx);
 static int fill_cell_ref(struct node *ptr_node);
 static int fill_zones_ref(struct node *ptr_node);
-static int find_min_max_subzones_ref_PERIODIC_BOUNDARY(struct node *ptr_node, int zone_idx);
-static int fill_child_nodes(struct node *ptr_node);
-static void moved_unused_child_node_to_memory_pool(struct node *ptr_node);
+static int create_child_nodes(struct node *ptr_node);
+static void transfer_tiny_child_nodes_to_memory_pool(struct node *ptr_node);
 static int fill_tentacles(const struct node *ptr_node);
+
+/**
+ * @brief Find the minimum and maximum cell indices of the subzone \e zone_idx.
+ *
+ * **SHORT DESCRIPTION**: Find the minimum and maximum cell indices in the *Code
+ * Space* (see Key Concepts \ref Key_Concepts_Code_Space "Code Space") that
+ * defines the *Smallest Box* (see Key Concepts \ref Key_Concepts_Smallest_Box
+ * "Smallest Box") associated with the corresponding subzone \e zone_idx.
+ *
+ * **PREREQUISITES**: Only used if periodic boundary conditions (pbc) are used.
+ * Only called if the new refinement map of the parent node crosses the boundary
+ * of the simulation.
+ *
+ * @param[in,out] ptr_node Pointer to node structure
+ *
+ * @param[in] zone_idx Idientification of some refinement zone
+ *
+ * **RETURN**: The error status.
+ *
+ * **LONG DESCRIPTION**:
+ *
+ * Find the minimum and maximum cell indices in the *Code Space* (see Key
+ * Concepts \ref Key_Concepts_Code_Space "Code Space") that defines the
+ * *Smallest Box* (see Key Concepts \ref Key_Concepts_Smallest_Box "Smallest
+ * Box") ssociated with the corresponding subzone \e zone_idx., storing them in
+ * the parent node structure parameters \ref node::ptr_pbc_min_subzones_x
+ * "ptr_pbc_min_subzones_x" (\ref node::ptr_pbc_min_subzones_y "y", \ref
+ * node::ptr_pbc_min_subzones_z "z"), and \ref node::ptr_pbc_max_subzones_x
+ * "ptr_pbc_max_subzones_x" (\ref node::ptr_pbc_max_subzones_y "y", \ref
+ * node::ptr_pbc_max_subzones_z "z").
+ *
+ * The flux of this function can be seen in the figure (work in progress), and
+ * it is explained below:
+ *
+ * - [0]  <b> THE find_min_max_subzones_ref_PERIODIC_BOUNDARY() FUNCTION
+ *   STARTS....</b>
+ *
+ * - [1]  Defining some internal useful parameters.
+ *
+ * - [2]  The current status of the new box contains the new map of refinement,
+ *   which will correspond to the final one. In this step, to find the subzones,
+ *   the cells of the zone of refinement with ID \e zone_idx are returned to the
+ *   previous status to \e refinement_required (-1) in the new box.
+ *
+ * - [3]  How we are going to create the subzones is very similar to the
+ *   creation of zones of refinement. However, there are some differences, for
+ *   example, there is a difference in the criterion of the definition of zone
+ *   and subzone of refinement. The first one accepts that a refinement zone
+ *   crosses the box of the simulation, while the second one does not.
+ *
+ * - [4]  A \c "while" loop runs over all cells in the zone of refinement of ID
+ *   \e zone_idx that have not been tagged to any subzone. A counter is used to
+ *   perform this task.
+ *
+ * - [5]  In every step of the \c "while" loop over the cells, we ask if the
+ *   cell belongs to a subzone of refinement (box value \f$ \geq 0 \f$). If it
+ *   belongs, we continue asking to the next cell, if it does not belong (box
+ *   value \f$ = -1 \f$), we change its box satus to "zone_idx" and pass to the
+ *   next step.
+ *
+ * - [6]  Having found a cell with no subzone, we are going to create an entire
+ *   new subzone starting with this cell as the foundation stone. To perform
+ *   this, a new \c "while" loop is executed running until there are no more
+ *   cells without analysis in the subzone, i.e. the final state of the block
+ *   found is a solid piece completely isolated from the other subzones, labeled
+ *   with the "subzone_idx" value in the parent node box.
+ *
+ * - [7]  At this point both \c "while" loops of the steps [4] and [6] end. Now,
+ *   using the box with this new information the minimum and maximum of every
+ *   subzone of the zone \e zone_idx are found.
+ *
+ * - [8]  Finally, the box status of the parent node is returned to its initial
+ *   state, putting the value of \e zone_idx in the corresponding cell of the
+ *   new box.
+ *
+ * - [9]  <b> THE find_min_max_subzones_ref_PERIODIC_BOUNDARY() FUNCTION
+ *   ENDS....</b>
+ *
+ * **ILLUSTRATIVE EXAMPLES**:
+ * - [a]  Trivial.
+ *
+ * **RATIONALES**:
+ * - [a]  In step [2], we decide to use the same box to store the information
+ *   about the new refinement zones. It requires overwriting the current
+ *   information and then returning the old one. We choose this option instead
+ *   of creating a copy of the box because we are avoiding to use malloc,
+ *   memcpy, and free functions.
+ *
+ * **NOTES**:
+ * - [a]  If the number of subzones found is equal to 1, then it is not
+ *   necessary to find the minimum and maximum cell indices, because they  are
+ *   equal to the minimum and maximum of the refinement level. It is  also valid
+ *   when more than one dimension crosses the box of the simulation.
+ */
+
+int static find_min_max_subzones_ref_PERIODIC_BOUNDARY(struct node *ptr_node, int zone_idx)
+{
+  //* >> Filling the auxiliary diferent refinement subzones *//
+  int cntr_cell_add_all_subzones = 0; // Counter Number of cells added to any refinement subzone
+  int cntr_cell_add;                  // Counter number of cells added per inspection
+  int cntr_insp;                      // Numer of inspected cells in the subzone
+
+  int subzone_size;    // Number of cells in the subzone
+  int subzone_idx = 0; // Index of the subzone. Initialized at subzone 0
+
+  int box_idx_node; // Box index
+
+  int box_idxNbr_x_plus;  // Box index in the neigborhood on the right
+  int box_idxNbr_x_minus; // Box index in the neigborhood on the left
+  int box_idxNbr_y_plus;  // Box index in the neigborhood behind
+  int box_idxNbr_y_minus; // Box index in the neigborhood in front
+  int box_idxNbr_z_plus;  // Box index in the neigborhood up
+  int box_idxNbr_z_minus; // Box index in the neigborhood down
+
+  int cell_idx;         // The cell index is simply i of the for loop
+  int cell_ref_idx = 0; // The index in the cell refined array pptr_zones[zone_idx]
+
+  int box_real_dim_X_node = ptr_node->box_real_dim_x;
+  int box_real_dim_X_times_Y_node = ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
+
+  // The auxiliary array ptr_aux_idx will be used to store the box indices of the subzone
+
+  // Initializing the box in every zone_idx cell at value of REFINEMENT REQUIRED (-1)
+  for (int i = 0; i < ptr_node->ptr_zone_size[zone_idx]; i++)
+  {
+    cell_idx = ptr_node->pptr_zones[zone_idx][i];
+    box_idx_node = ptr_node->ptr_box_idx[cell_idx];
+    ptr_node->ptr_box[box_idx_node] = -1;
+  }
+
+  //* >>  Changing the box status from REFINEMENT REQUIRED (-1) to the refinement subzone ID (>= 0) *//
+  while (ptr_node->ptr_zone_size[zone_idx] > cntr_cell_add_all_subzones) // The loop while works as long as the number of cell addeed is less than the total refined cells
+  {
+    // printf("Inside of the \c "while" loop\n");
+    //  Notes that the initiality we inspect the elements in the refined cell array until an element has been found that is not found in any of the current refinement subzones
+    cell_idx = ptr_node->pptr_zones[zone_idx][cell_ref_idx]; // Index of the cells array in the node
+    box_idx_node = ptr_node->ptr_box_idx[cell_idx];
+
+    if (ptr_node->ptr_box[box_idx_node] == -1) // A cell without subzone has been founded
+    {
+      // printf("inside of the if ptr_box [] == -1\n");
+      subzone_size = 0; // Initial number of element in the subzone
+
+      //* >> Including the first element of the box to the auxiliary array ptr_aux_idx *//
+      ptr_node->ptr_aux_idx[0] = box_idx_node;
+
+      //* >>  Changing the box status from zone ID (>= 0) to the REFINEMENT REQUIRED (-1) in order not to repeat elements *//
+      ptr_node->ptr_box[box_idx_node] = subzone_idx;
+
+      subzone_size++;               // +1 to the number of cells in the zone
+      cntr_cell_add_all_subzones++; // +1 to the number of cells added in total
+
+      //* >> Building of the subzone of ID = subzone_idx *//
+      cntr_insp = 0;                                                                           // Counter for the number of elements inspectioned in the current subzone array
+      while (subzone_size > cntr_insp && ptr_node->cell_ref_size > cntr_cell_add_all_subzones) // The loop ends when all the elements of the subzone have been inspected or when the number of cells in the zone is equal to the total number of cells added in all the subzones.
+      {
+        // Note that the number of elements in the subzone increases if the neighbors of the inspected cell must be added to the subzone
+
+        cntr_cell_add = 0; // Counter number of cells added per cell inspected
+        box_idx_node = ptr_node->ptr_aux_idx[cntr_insp];
+
+        box_idxNbr_x_plus = box_idx_node + 1;
+        box_idxNbr_x_minus = box_idx_node - 1;
+        box_idxNbr_y_plus = box_idx_node + box_real_dim_X_node;
+        box_idxNbr_y_minus = box_idx_node - box_real_dim_X_node;
+        box_idxNbr_z_plus = box_idx_node + box_real_dim_X_times_Y_node;
+        box_idxNbr_z_minus = box_idx_node - box_real_dim_X_times_Y_node;
+
+        //* Checking the nearest 6 neighbors of face
+        // First neighbor
+        if (ptr_node->ptr_box[box_idxNbr_x_plus] == -1)
+        {
+          ptr_node->ptr_aux_idx[subzone_size + cntr_cell_add] = box_idxNbr_x_plus; // Including the neighboring element of the box to the auxiliary array
+          ptr_node->ptr_box[box_idxNbr_x_plus] = subzone_idx;                      // Changing the box status from refinement zone ID (>= 0) to the REFINEMENT REQUIRED (-1)
+          cntr_cell_add++;                                                         // +1 to the number of cells added in the current inspection
+        }
+        // Second neighbor
+        if (ptr_node->ptr_box[box_idxNbr_x_minus] == -1)
+        {
+          ptr_node->ptr_aux_idx[subzone_size + cntr_cell_add] = box_idxNbr_x_minus; // Including the neighboring element of the box to the auxiliary array
+          ptr_node->ptr_box[box_idxNbr_x_minus] = subzone_idx;                      // Changing the box status from refinement zone ID (>= 0) to the REFINEMENT REQUIRED (-1)
+          cntr_cell_add++;                                                          // +1 to the number of cells added in the current inspection
+        }
+        // Third neighbor
+        if (ptr_node->ptr_box[box_idxNbr_y_plus] == -1)
+        {
+          ptr_node->ptr_aux_idx[subzone_size + cntr_cell_add] = box_idxNbr_y_plus; // Including the neighboring element of the box to the auxiliary array
+          ptr_node->ptr_box[box_idxNbr_y_plus] = subzone_idx;                      // Changing the box status from refinement zone ID (>= 0) to the REFINEMENT REQUIRED (-1)
+          cntr_cell_add++;                                                         // +1 to the number of cells added in the current inspection
+        }
+        // Fourth neighbor
+        if (ptr_node->ptr_box[box_idxNbr_y_minus] == -1)
+        {
+          ptr_node->ptr_aux_idx[subzone_size + cntr_cell_add] = box_idxNbr_y_minus; // Including the neighboring element of the box to the auxiliary array
+          ptr_node->ptr_box[box_idxNbr_y_minus] = subzone_idx;                      // Changing the box status from refinement zone ID (>= 0) to the REFINEMENT REQUIRED (-1)
+          cntr_cell_add++;                                                          // +1 to the number of cells added in the current inspection
+        }
+        // Fifth neighbor
+        if (ptr_node->ptr_box[box_idxNbr_z_plus] == -1)
+        {
+          ptr_node->ptr_aux_idx[subzone_size + cntr_cell_add] = box_idxNbr_z_plus; // Including the neighboring element of the box to the auxiliary array
+          ptr_node->ptr_box[box_idxNbr_z_plus] = subzone_idx;                      // Changing the box status from refinement zone ID (>= 0) to the REFINEMENT REQUIRED (-1)
+          cntr_cell_add++;                                                         // +1 to the number of cells added in the current inspection
+        }
+        // Sixth neighbor
+        if (ptr_node->ptr_box[box_idxNbr_z_minus] == -1)
+        {
+          ptr_node->ptr_aux_idx[subzone_size + cntr_cell_add] = box_idxNbr_z_minus; // Including the neighboring element of the box to the auxiliary array
+          ptr_node->ptr_box[box_idxNbr_z_minus] = subzone_idx;                      // Changing the box status from refinement zone ID (>= 0) to the REFINEMENT REQUIRED (-1)
+          cntr_cell_add++;                                                          // +1 to the number of cells added in the current inspection
+        }
+        subzone_size += cntr_cell_add;               // Increasing the number of cells in the subzone
+        cntr_cell_add_all_subzones += cntr_cell_add; // Increasing the number of cells added to the subzones
+        cntr_insp++;                                 // Increasing the number of inspections
+      }                                              // End \c "while" loop, now the box contains the the information about all cells of the subzone "subzone_idx"
+      subzone_idx++;                                 // Increasing the subzone number
+    }                                                // subZone defined in the box
+    cell_ref_idx++;
+  } // At this point the box contains the information of all refinement subzones
+
+  if (subzone_idx > 1)
+  {
+    //* >> Space checking of refinement subzones min and max arrays  *//
+    if (space_check(&(ptr_node->pbc_subzones_cap), subzone_idx, 2.0f, "p6i1i1i1i1i1i1", &(ptr_node->ptr_pbc_min_subzones_x), &(ptr_node->ptr_pbc_max_subzones_x), &(ptr_node->ptr_pbc_min_subzones_y), &(ptr_node->ptr_pbc_max_subzones_y), &(ptr_node->ptr_pbc_min_subzones_z), &(ptr_node->ptr_pbc_max_subzones_z)) == _FAILURE_)
+    {
+      printf("Error, in space_check function\n");
+      return _FAILURE_;
+    }
+
+    //* >> Initializing suzbones min and max
+    if (ptr_node->ptr_pbc_bool_bdry_anomalies_x[zone_idx] == true)
+    {
+      for (int i = 0; i < subzone_idx; i++)
+      {
+        ptr_node->ptr_pbc_min_subzones_x[i] = INT_MAX;
+        ptr_node->ptr_pbc_max_subzones_x[i] = INT_MIN;
+      }
+    }
+
+    if (ptr_node->ptr_pbc_bool_bdry_anomalies_y[zone_idx] == true)
+    {
+      for (int i = 0; i < subzone_idx; i++)
+      {
+        ptr_node->ptr_pbc_min_subzones_y[i] = INT_MAX;
+        ptr_node->ptr_pbc_max_subzones_y[i] = INT_MIN;
+      }
+    }
+
+    if (ptr_node->ptr_pbc_bool_bdry_anomalies_z[zone_idx] == true)
+    {
+      for (int i = 0; i < subzone_idx; i++)
+      {
+        ptr_node->ptr_pbc_min_subzones_z[i] = INT_MAX;
+        ptr_node->ptr_pbc_max_subzones_z[i] = INT_MIN;
+      }
+    }
+
+    //* >> Adding the cells to the zone array pptr_zones *//
+    for (int i = 0; i < ptr_node->ptr_zone_size[zone_idx]; i++)
+    {
+      cell_idx = ptr_node->pptr_zones[zone_idx][i];
+      box_idx_node = ptr_node->ptr_box_idx[cell_idx];
+      subzone_idx = ptr_node->ptr_box[box_idx_node];
+
+      // Min and Max
+      if (ptr_node->ptr_pbc_bool_bdry_anomalies_x[zone_idx] == true)
+      {
+        if (ptr_node->ptr_pbc_min_subzones_x[subzone_idx] > ptr_node->ptr_cell_idx_x[cell_idx])
+        {
+          ptr_node->ptr_pbc_min_subzones_x[subzone_idx] = ptr_node->ptr_cell_idx_x[cell_idx];
+        }
+        if (ptr_node->ptr_pbc_max_subzones_x[subzone_idx] < ptr_node->ptr_cell_idx_x[cell_idx])
+        {
+          ptr_node->ptr_pbc_max_subzones_x[subzone_idx] = ptr_node->ptr_cell_idx_x[cell_idx];
+        }
+      }
+
+      if (ptr_node->ptr_pbc_bool_bdry_anomalies_y[zone_idx] == true)
+      {
+        if (ptr_node->ptr_pbc_min_subzones_y[subzone_idx] > ptr_node->ptr_cell_idx_y[cell_idx])
+        {
+          ptr_node->ptr_pbc_min_subzones_y[subzone_idx] = ptr_node->ptr_cell_idx_y[cell_idx];
+        }
+        if (ptr_node->ptr_pbc_max_subzones_y[subzone_idx] < ptr_node->ptr_cell_idx_y[cell_idx])
+        {
+          ptr_node->ptr_pbc_max_subzones_y[subzone_idx] = ptr_node->ptr_cell_idx_y[cell_idx];
+        }
+      }
+
+      if (ptr_node->ptr_pbc_bool_bdry_anomalies_z[zone_idx] == true)
+      {
+        if (ptr_node->ptr_pbc_min_subzones_z[subzone_idx] > ptr_node->ptr_cell_idx_z[cell_idx])
+        {
+          ptr_node->ptr_pbc_min_subzones_z[subzone_idx] = ptr_node->ptr_cell_idx_z[cell_idx];
+        }
+        if (ptr_node->ptr_pbc_max_subzones_z[subzone_idx] < ptr_node->ptr_cell_idx_z[cell_idx])
+        {
+          ptr_node->ptr_pbc_max_subzones_z[subzone_idx] = ptr_node->ptr_cell_idx_z[cell_idx];
+        }
+      }
+      ptr_node->ptr_box[box_idx_node] = zone_idx; // Returning the value zone_idx at the box in the zone partitioned
+    }
+  }
+  else
+  {
+    // Returning the value zone_idx at the box in the zone partitioned
+    for (int i = 0; i < ptr_node->ptr_zone_size[zone_idx]; i++)
+    {
+      cell_idx = ptr_node->pptr_zones[zone_idx][i];
+      box_idx_node = ptr_node->ptr_box_idx[cell_idx];
+      ptr_node->ptr_box[box_idx_node] = zone_idx;
+    }
+  }
+
+  // ptr_node->pbc_subzones_cap = subzone_idx_max; // Maximum amount of subzones
+  ptr_node->pbc_subzones_size = subzone_idx; // Total amount of subzones
+
+  return _SUCCESS_;
+}
+
+/**
+ * @brief Cells in the parent node are labeled as refinement cells in the \ref
+ * node.ptr_box "ptr_box", and added to the auxiliary array \ref
+ * node.ptr_cell_ref "ptr_cell_ref"
+ *
+ * **SHORT DESCRIPTION**: Cells in the parent node are labeled as refinement
+ * cells in the \ref node.ptr_box "ptr_box" (-1) and added to the array \ref
+ * node.ptr_cell_ref "ptr_cell_ref" as positional indices of the cell arrays.
+ *
+ * **PREREQUISITES**: Always used.
+ *
+ * @param[in,out] ptr_node Pointer to node structure
+ *
+ * **RETURN**: The error status.
+ *
+ * **LONG DESCRIPTION**:
+ *
+ * Cells in the parent node are labeled as refinement cells in the \ref
+ * node.ptr_box "ptr_box", i.e. with status of -1 in the box, and added to the
+ * array \ref node.ptr_cell_ref "ptr_cell_ref" as positional indices of the cell
+ * arrays (for example \ref node.ptr_cell_idx_x "ptr_cell_idx_x"). The criterion
+ * to decide if a cell requires refinement is given by the user. If that
+ * happens, the neighboring cells of the refined cell should be also refined
+ * according to the \link n_exp \endlink parameter.
+ *
+ * The flux of this function can be seen in the figure (work in progress), and
+ * it is explained below:
+ *
+ * - [0]  <b> THE fill_cell_ref() FUNCTION STARTS....</b>
+ *
+ * - [1]  Defining some internal useful parameters.
+ *
+ * - [2]  A \c "for" loop over the parent node cell is performed.
+ *
+ * - [3]  If the cell satisfies the refinement criteria, and its status hasn't
+ *   been modified yet, it changes from "Exist" (-3) to "Requires-Refinement"
+ *   (-1) in the box index
+ *
+ * - [4]  The neighboring cells at the distance of \link n_exp \endlink are also
+ *   modified in their box indices if they haven't been modified yet.
+ *
+ * - [5]  At this point the \c "for" loop ends, and every cell in the node which
+ *   will require refinement has been labeled to do that.
+ *
+ * - [6]  The next step is to add those cells to the auxiliary array of
+ *   positional cell indices \ref node.ptr_cell_ref "ptr_cell_ref". To do that,
+ *   a \c "for" loop running over the parent node cells is performed.
+ *
+ * - [7]  If the box index associated with the cell has the status of
+ *   "Requires-Refinement" (-1), the positional index of the cell is added to
+ *   the array \ref node.ptr_cell_ref "ptr_cell_ref".
+ *
+ * - [8]  The \c "for" loop over the parent node cells ends
+ *
+ * - [9]  <b> THE fill_cell_ref() FUNCTION ENDS....</b>
+ *
+ * **ILLUSTRATIVE EXAMPLES**:
+ * - [a]  Trivial.
+ *
+ * **RATIONALES**:
+ * - [a]  The reason we decided to add the elements to the \ref
+ *   node.ptr_cell_ref "ptr_cell_ref" array, is because we want to avoid asking
+ *   if there is enough capacity (see Key Concepts \ref Key_Concepts_Capacity
+ *   "Capacity") in the array. in the array.
+ *
+ * **NOTES**:
+ * - [a]
+ */
 
 static int fill_cell_ref(struct node *ptr_node)
 {
@@ -125,6 +596,91 @@ static int fill_cell_ref(struct node *ptr_node)
   return _SUCCESS_;
 } // end function fill_cell_ref
 
+/**
+ * @brief Cells in the parent node labeled as refinement cells are separated
+ * into different refinement zones.
+ *
+ * **SHORT DESCRIPTION**: Cells in the parent node labeled as cells that require
+ * refinement are separated in the refinement zones of the parent node.
+ *
+ * **PREREQUISITES**: Always used.
+ *
+ * @param[in,out] ptr_node Pointer to node structure
+ *
+ * **RETURN**: The error status.
+ *
+ * **LONG DESCRIPTION**:
+ *
+ * Cells in the parent node labeled in the box array \ref node.ptr_box "ptr_box"
+ * with the status of "Requires-Refinement" (-1) are organized in different
+ * groups which will be the refinement zones of the parent node. This zones are
+ * created and stored in the pointer to the arrays \ref node.pptr_zones
+ * "pptr_zones".
+ *
+ * Every refinement zone has the same properties as the previous one, i.e. it is
+ * built by joining only the 6 closest neighboring cells localized in left,
+ * right, over, under, forward, and backward directions. This representation can
+ * be seen in the figure (work in progress). So, two different zones can not
+ * have any of their face cells joined, but they can share edges or corners.
+ *
+ * Roughly speaking, the way to perform the creation of every zone consists of
+ * two steps, *(a)* pick one cell that requires refinement but that is not yet
+ * in a refinement zone, and *(b)* create the zone using this initial cell. The
+ * second step is performed by adding every cell to the zone array which is in
+ * "face-contact" with another cell of this zone array.
+ *
+ * The flux of this  function can be seen in the figure (work in progress), and
+ * it is explained below:
+ *
+ * - [0]  <b> THE fill_zones_ref() FUNCTION STARTS....</b>
+ *
+ * - [1]  Reset parameters if periodic boundary conditions are activated (pbc).
+ *
+ * - [2]  A \c "while" loop runs over all cells which require refinement, i.e.
+ *   cells belonging to the array \ref node.ptr_cell_ref "ptr_cell_ref", that
+ *   have not been added to any refinement zone yet. A counter is used to
+ *   perform this task.
+ *
+ * - [3]  In every step of the \c "while" loop over the cells, we ask if the
+ *   cell belongs to a subzone of refinement (box value \f$ \geq 0 \f$). If it
+ *   belongs, we continue asking to the next cell, if it does not belong (box
+ *   value \f$ = -1 \f$), we change its box status to "zone_idx" and pass to the
+ *   next step.
+ *
+ * - [4]  Having found a cell with no subzone, we are going to create an
+ *   entirely new zone starting with this cell as the foundation stone. To
+ *   perform this, a new \c "while" loop is executed running until there are no
+ *   more cells without analysis in the zone, i.e. the final state of the block
+ *   found is a solid piece completely isolated from the other zones, labeled
+ *   with the "zone_idx" value in the parent node box.
+ *
+ * - [5]  At this point both \c "while" loops of the steps [2] and [3] end. Now,
+ *   using the box with this information the zones array \ref node.pptr_zones
+ *   "pptr_zones" is filled with the zones of refinement. To do this, a \c "for"
+ *   loop over the refined cells array \ref node.ptr_cell_ref "ptr_cell_ref" is
+ *   performed.
+ *
+ * - [6] <b> THE fill_zones_ref() FUNCTION ENDS....</b>
+ *
+ * **ILLUSTRATIVE EXAMPLES**:
+ * - [a]  Trivial.
+ *
+ * **RATIONALES**:
+ * - [a]  This design allows the contact of edges and corks between the
+ *   different refinement zones, it also allows particles inside of a child node
+ *   to jump to another child node of the same parent node in one time-step of
+ *   the simulation. This leads to a computational spend (see
+ *   particle_updating.c module) can be avoided  if we decided to change the
+ *   design of the refinement zone considering now to ask to more cells than the
+ *   closest 6 neighboring. However, this modification also implies the
+ *   computational spend to ask to these new neighboring and also can increase
+ *   the size of the refinement zone which in turn makes it difficult to load
+ *   balance in multiple cores.
+ *
+ * **NOTES**:
+ * - [a]
+ */
+
 static int fill_zones_ref(struct node *ptr_node)
 {
   //* >> Filling the auxiliary diferent refinement zones *//
@@ -202,11 +758,11 @@ static int fill_zones_ref(struct node *ptr_node)
         cntr_cell_add = 0; // Counter number of cells added per cell inspected
         box_idx_node = ptr_node->ptr_aux_idx[cntr_insp];
 
-        box_idxNbr_x_plus = box_idx_node + 1;
+        box_idxNbr_x_plus  = box_idx_node + 1;
         box_idxNbr_x_minus = box_idx_node - 1;
-        box_idxNbr_y_plus = box_idx_node + box_real_dim_X_node;
+        box_idxNbr_y_plus  = box_idx_node + box_real_dim_X_node;
         box_idxNbr_y_minus = box_idx_node - box_real_dim_X_node;
-        box_idxNbr_z_plus = box_idx_node + box_real_dim_X_times_Y_node;
+        box_idxNbr_z_plus  = box_idx_node + box_real_dim_X_times_Y_node;
         box_idxNbr_z_minus = box_idx_node - box_real_dim_X_times_Y_node;
 
         if (bdry_cond_type == 0 && ptr_node->pbc_crosses_whole_sim_box == true)
@@ -317,7 +873,7 @@ static int fill_zones_ref(struct node *ptr_node)
         zone_size += cntr_cell_add;               // Increasing the number of cells in the zone
         cntr_cell_add_all_zones += cntr_cell_add; // Increasing the number of cells added to the zones
         cntr_insp++;                              // Increasing the number of inspections
-      }                                           // End while cycle, now the box contains the the information about all cells of the zone "zone_idx"
+      }                                           // End \c "while" cycle, now the box contains the the information about all cells of the zone "zone_idx"
 
       //* >> Space checking of refinement zones arrays, refinement capacity array and refinement size array *//
       if (zone_idx_max < zone_idx + 1)
@@ -368,230 +924,111 @@ static int fill_zones_ref(struct node *ptr_node)
   return _SUCCESS_;
 } // End function fill_zones_ref
 
-static int find_min_max_subzones_ref_PERIODIC_BOUNDARY(struct node *ptr_node, int zone_idx)
-{
-  //* >> Filling the auxiliary diferent refinement subzones *//
-  int cntr_cell_add_all_subzones = 0; // Counter Number of cells added to any refinement subzone
-  int cntr_cell_add;                  // Counter number of cells added per inspection
-  int cntr_insp;                      // Numer of inspected cells in the subzone
+/**
+ * @brief The child nodes are created to fit with their refinement zones.
+ *
+ * **SHORT DESCRIPTION**: The child nodes are created to fit with their
+ * corresponding refinement zones.
+ *
+ * **PREREQUISITES**: If there is at least one refinement zone.
+ *
+ * @param[in,out] ptr_node Pointer to node structure
+ *
+ * **RETURN**: The error status.
+ *
+ * **LONG DESCRIPTION**:
+ *
+ * The child nodes are created to fit with their corresponding refinement zones.
+ *
+ * The flux of this function can be seen in the figure (work in progress), and
+ * it is explained below:
+ *
+ * - [0]  <b> THE create_new_child_nodes() FUNCTION STARTS....</b>
+ *
+ * - [1]  Defining some internal useful parameters, and some parent node
+ *   parameters are allocated.
+ *
+ * - [2]  A \c "for" loop over the refinement zones is performed.
+ *
+ * - [3]  The child node is obtained and initialized through the external
+ *   function new_node(), and its level \ref node.lv "lv" and its identification
+ *   \ref node.ID "ID" are assigned.
+ *
+ * - [4]  If periodic boundary conditions (pbc) is activated, and if any
+ *   boundary flag anomalies \ref node.ptr_pbc_bool_bdry_anomalies_x
+ *   "ptr_pbc_bool_bdry_anomalies_x" (\ref node.ptr_pbc_bool_bdry_anomalies_y
+ *   "y", \ref node.ptr_pbc_bool_bdry_anomalies_z "z")  is activated, then the
+ *   minimum and maximum of the subzones is computed through the function
+ *   find_min_max_subzones_ref_PERIODIC_BOUNDARY().
+ *
+ * - [5]  For every dirección X, Y, and Z, the minimum and maximum, and the
+ *   boundary flags are computed and stored in local parameters.
+ *
+ * - [6]  The minimum and maximum of the previous point were computed in the
+ *   parent node, so then, they are transformed to the next level of refinement
+ *   to be accord with the respective child node.
+ *
+ * - [7]  The box dimensions parameters and traslation constants (see \ref
+ *   node.box_ts_x "box_ts_x" (\ref node.box_ts_y "y", \ref node.box_ts_z "z")
+ *   are computed.
+ *
+ * - [8]  The cells in the refinement zone of the parent node are refined at
+ *   packages of 8 cells, and added to the child node arrays \ref
+ *   node.ptr_cell_idx_x "ptr_cell_idx_x" (\ref node.ptr_cell_idx_y
+ *   "ptr_cell_idx_y", \ref node.ptr_cell_idx_z "ptr_cell_idx_z"), and \ref
+ *   node.ptr_box_idx "ptr_box_idx".
+ *
+ * - [9]  The child box array is initialized at "No-Exist" status (-4), and
+ *   "Exist" status (-3) for all child cells as appropriate.
+ *
+ * - [10] If the child node touches the boundary simulation in the non-periodic
+ *   boundary condition (non-pbc), or crosses the whole simulation in the
+ *   periodic boundary condition (pbc), then its box is updated in the outer
+ *   boundary cells with the values of (-5) for non-pbc, and (-6) for pbc.
+ *
+ * - [11] The child cell structure is allocated, and filled with the particles
+ *   and the corresponding parameters using the parent node cells information,
+ *   and the external function ptcl_idx_to_box_idx() to know in which child cell
+ *   the particle is located.
+ *
+ * - [12] Filling child node interior, boundary, and simulation boundary grid
+ *   point arrays. Here are filled 4 arrays per type of grid point. For example,
+ *   for the interior grid points of the child nodes, the function fills the
+ *   arrays \ref node.ptr_intr_grid_cell_idx_x "ptr_intr_grid_cell_idx_x" (\ref
+ *   node.ptr_intr_grid_cell_idx_y "ptr_intr_grid_cell_idx_y", \ref
+ *   node.ptr_intr_grid_cell_idx_z "ptr_intr_grid_cell_idx_z",), and \ref
+ *   node.ptr_intr_box_grid_idx "ptr_intr_box_grid_idx". Moreover, other grid
+ *   parameters of the child node are updated, the size (see Key Concepts \ref
+ *   Key_Concepts_Size "Size") and the capacity (see Key Concepts \ref
+ *   Key_Concepts_Capacity "Capacity") of every type of grid point.
+ *
+ * - [13] The grid potentials \ref node.ptr_pot "ptr_pot", \ref node.ptr_pot_old
+ *   "ptr_pot_old", accelerations \ref node.ptr_ax "ptr_ax", \ref node.ptr_ay
+ *   "ptr_ay", \ref node.ptr_az "ptr_az", density \ref node.ptr_d "ptr_d", and
+ *   the grid Capacity (see Key Concepts \ref Key_Concepts_Capacity "Capacity")
+ *   parameter \ref node.grid_properties_cap "grid_properties_cap" are defined.
+ *
+ * - [14]  The child node is linked to the parent node through the struct node
+ *   pointers parameters \ref node.pptr_chn "pptr_chn" and \ref node.ptr_pt
+ *   "ptr_pt".
+ *
+ * - [15] Finally, the number of particles outside of the refinement zones is
+ *   \ref node.no_ptcl_outs_ref_zones "no_ptcl_outs_ref_zones" is defined in the
+ *   child node and updated in the parent node.
+ *
+ * - [10] <b> THE create_new_child_nodes() FUNCTION ENDS....</b>
+ *
+ * **ILLUSTRATIVE EXAMPLES**:
+ * - [a]  Trivial.
+ *
+ * **RATIONALES**:
+ * - [a]  xxxx
+ *
+ * **NOTES**:
+ * - [a]
+ */
 
-  int subzone_size;    // Number of cells in the subzone
-  int subzone_idx = 0; // Index of the subzone. Initialized at subzone 0
-
-  int box_idx_node; // Box index
-
-  int box_idxNbr_x_plus;  // Box index in the neigborhood on the right
-  int box_idxNbr_x_minus; // Box index in the neigborhood on the left
-  int box_idxNbr_y_plus;  // Box index in the neigborhood behind
-  int box_idxNbr_y_minus; // Box index in the neigborhood in front
-  int box_idxNbr_z_plus;  // Box index in the neigborhood up
-  int box_idxNbr_z_minus; // Box index in the neigborhood down
-
-  int cell_idx;         // The cell index is simply i of the for loop
-  int cell_ref_idx = 0; // The index in the cell refined array pptr_zones[zone_idx]
-
-  int box_real_dim_X_node = ptr_node->box_real_dim_x;
-  int box_real_dim_X_times_Y_node = ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
-
-  // The auxiliary array ptr_aux_idx will be used to store the box indices of the subzone
-
-  // Initializing the box in every zone_idx cell at value of REFINEMENT REQUIRED (-1)
-  for (int i = 0; i < ptr_node->ptr_zone_size[zone_idx]; i++)
-  {
-    cell_idx = ptr_node->pptr_zones[zone_idx][i];
-    box_idx_node = ptr_node->ptr_box_idx[cell_idx];
-    ptr_node->ptr_box[box_idx_node] = -1;
-  }
-
-  //* >>  Changing the box status from REFINEMENT REQUIRED (-1) to the refinement subzone ID (>= 0) *//
-  while (ptr_node->ptr_zone_size[zone_idx] > cntr_cell_add_all_subzones) // The loop while works as long as the number of cell addeed is less than the total refined cells
-  {
-    // Notes that the initiality we inspect the elements in the refined cell array until an element has been found that is not found in any of the current refinement subzones
-    cell_idx = ptr_node->pptr_zones[zone_idx][cell_ref_idx]; // Index of the cells array in the node
-    box_idx_node = ptr_node->ptr_box_idx[cell_idx];
-
-    if (ptr_node->ptr_box[box_idx_node] == -1) // A cell without subzone has been founded
-    {
-      subzone_size = 0; // Initial number of element in the subzone
-
-      //* >> Including the first element of the box to the auxiliary array ptr_aux_idx *//
-      ptr_node->ptr_aux_idx[0] = box_idx_node;
-
-      //* >>  Changing the box status from zone ID (>= 0) to the REFINEMENT REQUIRED (-1) in order not to repeat elements *//
-      ptr_node->ptr_box[box_idx_node] = subzone_idx;
-
-      subzone_size++;               // +1 to the number of cells in the zone
-      cntr_cell_add_all_subzones++; // +1 to the number of cells added in total
-
-      //* >> Building of the subzone of ID = subzone_idx *//
-      cntr_insp = 0;                                                                           // Counter for the number of elements inspectioned in the current subzone array
-      while (subzone_size > cntr_insp && ptr_node->cell_ref_size > cntr_cell_add_all_subzones) // The cycle ends when all the elements of the subzone have been inspected or when the number of cells in the zone is equal to the total number of cells added in all the subzones.
-      {
-        // Note that the number of elements in the subzone increases if the neighbors of the inspected cell must be added to the subzone
-
-        cntr_cell_add = 0; // Counter number of cells added per cell inspected
-        box_idx_node = ptr_node->ptr_aux_idx[cntr_insp];
-
-        box_idxNbr_x_plus = box_idx_node + 1;
-        box_idxNbr_x_minus = box_idx_node - 1;
-        box_idxNbr_y_plus = box_idx_node + box_real_dim_X_node;
-        box_idxNbr_y_minus = box_idx_node - box_real_dim_X_node;
-        box_idxNbr_z_plus = box_idx_node + box_real_dim_X_times_Y_node;
-        box_idxNbr_z_minus = box_idx_node - box_real_dim_X_times_Y_node;
-
-        //* Checking the nearest 6 neighbors of face
-        // First neighbor
-        if (ptr_node->ptr_box[box_idxNbr_x_plus] == -1)
-        {
-          ptr_node->ptr_aux_idx[subzone_size + cntr_cell_add] = box_idxNbr_x_plus; // Including the neighboring element of the box to the auxiliary array
-          ptr_node->ptr_box[box_idxNbr_x_plus] = subzone_idx;                      // Changing the box status from refinement zone ID (>= 0) to the REFINEMENT REQUIRED (-1)
-          cntr_cell_add++;                                                         // +1 to the number of cells added in the current inspection
-        }
-        // Second neighbor
-        if (ptr_node->ptr_box[box_idxNbr_x_minus] == -1)
-        {
-          ptr_node->ptr_aux_idx[subzone_size + cntr_cell_add] = box_idxNbr_x_minus; // Including the neighboring element of the box to the auxiliary array
-          ptr_node->ptr_box[box_idxNbr_x_minus] = subzone_idx;                      // Changing the box status from refinement zone ID (>= 0) to the REFINEMENT REQUIRED (-1)
-          cntr_cell_add++;                                                          // +1 to the number of cells added in the current inspection
-        }
-        // Third neighbor
-        if (ptr_node->ptr_box[box_idxNbr_y_plus] == -1)
-        {
-          ptr_node->ptr_aux_idx[subzone_size + cntr_cell_add] = box_idxNbr_y_plus; // Including the neighboring element of the box to the auxiliary array
-          ptr_node->ptr_box[box_idxNbr_y_plus] = subzone_idx;                      // Changing the box status from refinement zone ID (>= 0) to the REFINEMENT REQUIRED (-1)
-          cntr_cell_add++;                                                         // +1 to the number of cells added in the current inspection
-        }
-        // Fourth neighbor
-        if (ptr_node->ptr_box[box_idxNbr_y_minus] == -1)
-        {
-          ptr_node->ptr_aux_idx[subzone_size + cntr_cell_add] = box_idxNbr_y_minus; // Including the neighboring element of the box to the auxiliary array
-          ptr_node->ptr_box[box_idxNbr_y_minus] = subzone_idx;                      // Changing the box status from refinement zone ID (>= 0) to the REFINEMENT REQUIRED (-1)
-          cntr_cell_add++;                                                          // +1 to the number of cells added in the current inspection
-        }
-        // Fifth neighbor
-        if (ptr_node->ptr_box[box_idxNbr_z_plus] == -1)
-        {
-          ptr_node->ptr_aux_idx[subzone_size + cntr_cell_add] = box_idxNbr_z_plus; // Including the neighboring element of the box to the auxiliary array
-          ptr_node->ptr_box[box_idxNbr_z_plus] = subzone_idx;                      // Changing the box status from refinement zone ID (>= 0) to the REFINEMENT REQUIRED (-1)
-          cntr_cell_add++;                                                         // +1 to the number of cells added in the current inspection
-        }
-        // Sixth neighbor
-        if (ptr_node->ptr_box[box_idxNbr_z_minus] == -1)
-        {
-          ptr_node->ptr_aux_idx[subzone_size + cntr_cell_add] = box_idxNbr_z_minus; // Including the neighboring element of the box to the auxiliary array
-          ptr_node->ptr_box[box_idxNbr_z_minus] = subzone_idx;                      // Changing the box status from refinement zone ID (>= 0) to the REFINEMENT REQUIRED (-1)
-          cntr_cell_add++;                                                          // +1 to the number of cells added in the current inspection
-        }
-        subzone_size += cntr_cell_add;               // Increasing the number of cells in the subzone
-        cntr_cell_add_all_subzones += cntr_cell_add; // Increasing the number of cells added to the subzones
-        cntr_insp++;                                 // Increasing the number of inspections
-      }                                              // End while cycle, now the box contains the the information about all cells of the subzone "subzone_idx"
-      subzone_idx++;                                 // Increasing the subzone number
-    }                                                // subZone defined in the box
-    cell_ref_idx++;
-  } // At this point the box contains the information of all refinement subzones
-
-  if (subzone_idx > 1)
-  {
-    //* >> Space checking of refinement subzones min and max arrays  *//
-    if (space_check(&(ptr_node->pbc_subzones_cap), subzone_idx, 2.0f, "p6i1i1i1i1i1i1", &(ptr_node->ptr_pbc_min_subzones_x), &(ptr_node->ptr_pbc_max_subzones_x), &(ptr_node->ptr_pbc_min_subzones_y), &(ptr_node->ptr_pbc_max_subzones_y), &(ptr_node->ptr_pbc_min_subzones_z), &(ptr_node->ptr_pbc_max_subzones_z)) == _FAILURE_)
-    {
-      printf("Error, in space_check function\n");
-      return _FAILURE_;
-    }
-
-    //* >> Initializing suzbones min and max
-    if (ptr_node->ptr_pbc_bool_bdry_anomalies_x[zone_idx] == true)
-    {
-      for (int i = 0; i < subzone_idx; i++)
-      {
-        ptr_node->ptr_pbc_min_subzones_x[i] = INT_MAX;
-        ptr_node->ptr_pbc_max_subzones_x[i] = INT_MIN;
-      }
-    }
-
-    if (ptr_node->ptr_pbc_bool_bdry_anomalies_y[zone_idx] == true)
-    {
-      for (int i = 0; i < subzone_idx; i++)
-      {
-        ptr_node->ptr_pbc_min_subzones_y[i] = INT_MAX;
-        ptr_node->ptr_pbc_max_subzones_y[i] = INT_MIN;
-      }
-    }
-
-    if (ptr_node->ptr_pbc_bool_bdry_anomalies_z[zone_idx] == true)
-    {
-      for (int i = 0; i < subzone_idx; i++)
-      {
-        ptr_node->ptr_pbc_min_subzones_z[i] = INT_MAX;
-        ptr_node->ptr_pbc_max_subzones_z[i] = INT_MIN;
-      }
-    }
-
-    //* >> Adding the cells to the zone array pptr_zones *//
-    for (int i = 0; i < ptr_node->ptr_zone_size[zone_idx]; i++)
-    {
-      cell_idx = ptr_node->pptr_zones[zone_idx][i];
-      box_idx_node = ptr_node->ptr_box_idx[cell_idx];
-      subzone_idx = ptr_node->ptr_box[box_idx_node];
-
-      // Min and Max
-      if (ptr_node->ptr_pbc_bool_bdry_anomalies_x[zone_idx] == true)
-      {
-        if (ptr_node->ptr_pbc_min_subzones_x[subzone_idx] > ptr_node->ptr_cell_idx_x[cell_idx])
-        {
-          ptr_node->ptr_pbc_min_subzones_x[subzone_idx] = ptr_node->ptr_cell_idx_x[cell_idx];
-        }
-        if (ptr_node->ptr_pbc_max_subzones_x[subzone_idx] < ptr_node->ptr_cell_idx_x[cell_idx])
-        {
-          ptr_node->ptr_pbc_max_subzones_x[subzone_idx] = ptr_node->ptr_cell_idx_x[cell_idx];
-        }
-      }
-
-      if (ptr_node->ptr_pbc_bool_bdry_anomalies_y[zone_idx] == true)
-      {
-        if (ptr_node->ptr_pbc_min_subzones_y[subzone_idx] > ptr_node->ptr_cell_idx_y[cell_idx])
-        {
-          ptr_node->ptr_pbc_min_subzones_y[subzone_idx] = ptr_node->ptr_cell_idx_y[cell_idx];
-        }
-        if (ptr_node->ptr_pbc_max_subzones_y[subzone_idx] < ptr_node->ptr_cell_idx_y[cell_idx])
-        {
-          ptr_node->ptr_pbc_max_subzones_y[subzone_idx] = ptr_node->ptr_cell_idx_y[cell_idx];
-        }
-      }
-
-      if (ptr_node->ptr_pbc_bool_bdry_anomalies_z[zone_idx] == true)
-      {
-        if (ptr_node->ptr_pbc_min_subzones_z[subzone_idx] > ptr_node->ptr_cell_idx_z[cell_idx])
-        {
-          ptr_node->ptr_pbc_min_subzones_z[subzone_idx] = ptr_node->ptr_cell_idx_z[cell_idx];
-        }
-        if (ptr_node->ptr_pbc_max_subzones_z[subzone_idx] < ptr_node->ptr_cell_idx_z[cell_idx])
-        {
-          ptr_node->ptr_pbc_max_subzones_z[subzone_idx] = ptr_node->ptr_cell_idx_z[cell_idx];
-        }
-      }
-      ptr_node->ptr_box[box_idx_node] = zone_idx; // Returning the value zone_idx at the box in the zone partitioned
-    }
-  }
-  else
-  {
-    // Returning the value zone_idx at the box in the zone partitioned
-    for (int i = 0; i < ptr_node->ptr_zone_size[zone_idx]; i++)
-    {
-      cell_idx = ptr_node->pptr_zones[zone_idx][i];
-      box_idx_node = ptr_node->ptr_box_idx[cell_idx];
-      ptr_node->ptr_box[box_idx_node] = zone_idx;
-    }
-  }
-
-  // ptr_node->pbc_subzones_cap = subzone_idx_max; // Maximum amount of subzones
-  ptr_node->pbc_subzones_size = subzone_idx; // Total amount of subzones
-
-  return _SUCCESS_;
-}
-
-static int fill_child_nodes(struct node *ptr_node)
+static int create_child_nodes(struct node *ptr_node)
 {
   struct node *ptr_ch; // Pointer to the child node
 
@@ -654,11 +1091,11 @@ static int fill_child_nodes(struct node *ptr_node)
   ptr_node->chn_cap = ptr_node->zones_cap; // Same amount than refinement zones
   ptr_node->chn_size = ptr_node->zones_size;
 
-  if (ptr_node->chn_cap > 0)
-  {
-    ptr_node->pptr_chn = (struct node **)malloc(ptr_node->chn_cap * sizeof(struct node *)); // Allocating children pointers
-  }
-
+  // if (ptr_node->chn_cap > 0)
+  // {
+  //   ptr_node->pptr_chn = (struct node **)malloc(ptr_node->chn_cap * sizeof(struct node *)); // Allocating children pointers
+  // }
+  ptr_node->pptr_chn = (struct node **)malloc(ptr_node->chn_cap * sizeof(struct node *)); // Allocating children pointers
   for (int i = 0; i < ptr_node->chn_cap; i++)
   {
     ptr_node->pptr_chn[i] = NULL;
@@ -726,8 +1163,9 @@ static int fill_child_nodes(struct node *ptr_node)
           {
             for (int j = i + 1; j < aux_subzones_analized; j++)
             {
-              if ((ptr_node->ptr_pbc_min_subzones_x[j] <= ptr_node->ptr_pbc_min_subzones_x[i] && ptr_node->ptr_pbc_max_subzones_x[j] >= ptr_node->ptr_pbc_min_subzones_x[i]) ||
-                  (ptr_node->ptr_pbc_max_subzones_x[j] >= ptr_node->ptr_pbc_max_subzones_x[i] && ptr_node->ptr_pbc_min_subzones_x[j] <= ptr_node->ptr_pbc_max_subzones_x[i]))
+              // if ((ptr_node->ptr_pbc_min_subzones_x[j] <= ptr_node->ptr_pbc_min_subzones_x[i] && ptr_node->ptr_pbc_max_subzones_x[j] >= ptr_node->ptr_pbc_min_subzones_x[i]) ||
+              //     (ptr_node->ptr_pbc_max_subzones_x[j] >= ptr_node->ptr_pbc_max_subzones_x[i] && ptr_node->ptr_pbc_min_subzones_x[j] <= ptr_node->ptr_pbc_max_subzones_x[i]))
+              if ((ptr_node->ptr_pbc_max_subzones_x[j] + 1 >= ptr_node->ptr_pbc_min_subzones_x[i] && ptr_node->ptr_pbc_min_subzones_x[j] <= 1 + ptr_node->ptr_pbc_max_subzones_x[i]))
               {
                 ptr_node->ptr_pbc_min_subzones_x[i] = ptr_node->ptr_pbc_min_subzones_x[i] < ptr_node->ptr_pbc_min_subzones_x[j] ? ptr_node->ptr_pbc_min_subzones_x[i] : ptr_node->ptr_pbc_min_subzones_x[j];
                 ptr_node->ptr_pbc_max_subzones_x[i] = ptr_node->ptr_pbc_max_subzones_x[i] > ptr_node->ptr_pbc_max_subzones_x[j] ? ptr_node->ptr_pbc_max_subzones_x[i] : ptr_node->ptr_pbc_max_subzones_x[j];
@@ -832,7 +1270,7 @@ static int fill_child_nodes(struct node *ptr_node)
         ptr_ch->box_min_x += (1 << lv);
         ptr_ch->box_max_x += (1 << lv);
       }
-    } // End else if(ptr_node->pbc_crosses_the_boundary_simulation_box = true)
+    } // End else if(ptr_node->pbc_crosses_sim_box_bdry_x = true)
     // Case Parent x axis do not cross the simulation box
     else
     {
@@ -892,8 +1330,9 @@ static int fill_child_nodes(struct node *ptr_node)
           {
             for (int j = i + 1; j < aux_subzones_analized; j++)
             {
-              if ((ptr_node->ptr_pbc_min_subzones_y[j] <= ptr_node->ptr_pbc_min_subzones_y[i] && ptr_node->ptr_pbc_max_subzones_y[j] >= ptr_node->ptr_pbc_min_subzones_y[i]) ||
-                  (ptr_node->ptr_pbc_max_subzones_y[j] >= ptr_node->ptr_pbc_max_subzones_y[i] && ptr_node->ptr_pbc_min_subzones_y[j] <= ptr_node->ptr_pbc_max_subzones_y[i]))
+              // if ((ptr_node->ptr_pbc_min_subzones_y[j] <= ptr_node->ptr_pbc_min_subzones_y[i] && ptr_node->ptr_pbc_max_subzones_y[j] >= ptr_node->ptr_pbc_min_subzones_y[i]) ||
+              //     (ptr_node->ptr_pbc_max_subzones_y[j] >= ptr_node->ptr_pbc_max_subzones_y[i] && ptr_node->ptr_pbc_min_subzones_y[j] <= ptr_node->ptr_pbc_max_subzones_y[i]))
+              if ((ptr_node->ptr_pbc_max_subzones_y[j] + 1 >= ptr_node->ptr_pbc_min_subzones_y[i] && ptr_node->ptr_pbc_min_subzones_y[j] <= 1 + ptr_node->ptr_pbc_max_subzones_y[i]))
               {
                 ptr_node->ptr_pbc_min_subzones_y[i] = ptr_node->ptr_pbc_min_subzones_y[i] < ptr_node->ptr_pbc_min_subzones_y[j] ? ptr_node->ptr_pbc_min_subzones_y[i] : ptr_node->ptr_pbc_min_subzones_y[j];
                 ptr_node->ptr_pbc_max_subzones_y[i] = ptr_node->ptr_pbc_max_subzones_y[i] > ptr_node->ptr_pbc_max_subzones_y[j] ? ptr_node->ptr_pbc_max_subzones_y[i] : ptr_node->ptr_pbc_max_subzones_y[j];
@@ -996,7 +1435,7 @@ static int fill_child_nodes(struct node *ptr_node)
         ptr_ch->box_min_y += (1 << lv);
         ptr_ch->box_max_y += (1 << lv);
       }
-    } // End else if(ptr_node->pbc_crosses_the_boundary_simulation_box = true)
+    } // End else if(ptr_node->pbc_crosses_sim_box_bdry_y = true)
     // Case Parent x axis do not cross the simulation box
     else
     {
@@ -1056,8 +1495,9 @@ static int fill_child_nodes(struct node *ptr_node)
           {
             for (int j = i + 1; j < aux_subzones_analized; j++)
             {
-              if ((ptr_node->ptr_pbc_min_subzones_z[j] <= ptr_node->ptr_pbc_min_subzones_z[i] && ptr_node->ptr_pbc_max_subzones_z[j] >= ptr_node->ptr_pbc_min_subzones_z[i]) ||
-                  (ptr_node->ptr_pbc_max_subzones_z[j] >= ptr_node->ptr_pbc_max_subzones_z[i] && ptr_node->ptr_pbc_min_subzones_z[j] <= ptr_node->ptr_pbc_max_subzones_z[i]))
+              // if ((ptr_node->ptr_pbc_min_subzones_z[j] <= ptr_node->ptr_pbc_min_subzones_z[i] && ptr_node->ptr_pbc_max_subzones_z[j] >= ptr_node->ptr_pbc_min_subzones_z[i]) ||
+              //     (ptr_node->ptr_pbc_max_subzones_z[j] >= ptr_node->ptr_pbc_max_subzones_z[i] && ptr_node->ptr_pbc_min_subzones_z[j] <= ptr_node->ptr_pbc_max_subzones_z[i]))
+              if ((ptr_node->ptr_pbc_max_subzones_z[j] + 1 >= ptr_node->ptr_pbc_min_subzones_z[i] && ptr_node->ptr_pbc_min_subzones_z[j] <= 1 + ptr_node->ptr_pbc_max_subzones_z[i]))
               {
                 ptr_node->ptr_pbc_min_subzones_z[i] = ptr_node->ptr_pbc_min_subzones_z[i] < ptr_node->ptr_pbc_min_subzones_z[j] ? ptr_node->ptr_pbc_min_subzones_z[i] : ptr_node->ptr_pbc_min_subzones_z[j];
                 ptr_node->ptr_pbc_max_subzones_z[i] = ptr_node->ptr_pbc_max_subzones_z[i] > ptr_node->ptr_pbc_max_subzones_z[j] ? ptr_node->ptr_pbc_max_subzones_z[i] : ptr_node->ptr_pbc_max_subzones_z[j];
@@ -1160,7 +1600,7 @@ static int fill_child_nodes(struct node *ptr_node)
         ptr_ch->box_min_z += (1 << lv);
         ptr_ch->box_max_z += (1 << lv);
       }
-    } // End else if(ptr_node->pbc_crosses_the_boundary_simulation_box = true)
+    } // End else if(ptr_node->pbc_crosses_sim_box_bdry_z = true)
     // Case Parent x axis do not cross the simulation box
     else
     {
@@ -1193,7 +1633,7 @@ static int fill_child_nodes(struct node *ptr_node)
     ptr_ch->box_max_y = 2 * ptr_ch->box_max_y + 1;
     ptr_ch->box_max_z = 2 * ptr_ch->box_max_z + 1;
 
-    // Size of the ""Smallest Box""
+    // Size of the "Smallest Box"
     ptr_ch->box_dim_x = ptr_ch->box_max_x - ptr_ch->box_min_x + 1;
     ptr_ch->box_dim_y = ptr_ch->box_max_y - ptr_ch->box_min_y + 1;
     ptr_ch->box_dim_z = ptr_ch->box_max_z - ptr_ch->box_min_z + 1;
@@ -1843,9 +2283,66 @@ static int fill_child_nodes(struct node *ptr_node)
   } // End filling child nodes
 
   return _SUCCESS_;
-} // end function fill_child_nodes
+} // end function create_child_nodes
 
-static void moved_unused_child_node_to_memory_pool(struct node *ptr_node)
+/**
+ * @brief Transferring child nodes with a lower number of particles to the stack
+ * of the memory pool
+ *
+ * **SHORT DESCRIPTION**: Transferring child nodes with fewer particles than the
+ * minimum particles required to refine a cell to the stack of the memory pool
+ * to be used in the future for any other parent node as its child node.
+ *
+ * **PREREQUISITES**: If there is at least one refinement zone.
+ *
+ * @param[in,out] ptr_node Pointer to node structure
+ *
+ * **RETURN**: No parameter is returned.
+ *
+ * **LONG DESCRIPTION**:
+ *
+ * Remove refinement zones of the parent node which contain fewer particles than
+ * the minimum particles required to refine a cell. So, this zone is removed,
+ * and the corresponding child node is also removed and transferred to the stack
+ * of the memory pool. The gap in the parent node is filled by the last node in
+ * the list of child nodes, and also this surrogate child node is updated in its
+ * parameters.
+ *
+ * The flux of this function can be seen in the figure (work in progress), and
+ * it is explained below:
+ *
+ * - [0]  <b> THE transfer_tiny_child_nodes_to_memory_pool() FUNCTION
+ *   STARTS....</b>
+ *
+ * - [1]  Defining some internal useful parameters.
+ *
+ * - [4]  A \c "for" loop over the child nodes is performed.
+ *
+ * - [5]  For every child node, it has fewer particles than the refinement cell
+ *   criteria, it is replaced by the last node in the list.
+ *
+ * - [6]  The surrogating node is updated in its identification, and the box
+ *   cells of the parent node are updated with the information of the
+ *   surrogating node and the removed node.
+ *
+ * - [7]  The removed node is sent to the stack of the memory pool.
+ *
+ * - [8]  Finally, some other important parameters are updated.
+ *
+ * - [9]  <b> THE transfer_tiny_child_nodes_to_memory_pool() FUNCTION
+ *   ENDS....</b>
+ *
+ * **ILLUSTRATIVE EXAMPLES**:
+ * - [a]  a
+ *
+ * **RATIONALES**:
+ * - [a]  aaa
+ *
+ * **NOTES**:
+ * - [a]  a
+ */
+
+static void transfer_tiny_child_nodes_to_memory_pool(struct node *ptr_node)
 {
   int box_idx_node;
 
@@ -1876,6 +2373,7 @@ static void moved_unused_child_node_to_memory_pool(struct node *ptr_node)
 
       //* >> Removing the zone ch without particles from the children of the node ptr_node
       add_node_to_stack(ptr_node->pptr_chn[ch]);
+      
       //* >> Replacing the ch zone for the last children
       ptr_node->pptr_chn[ch] = ptr_node->pptr_chn[ptr_node->chn_size - 1];
       ptr_node->pptr_chn[ptr_node->zones_size - 1] = NULL;
@@ -1885,52 +2383,135 @@ static void moved_unused_child_node_to_memory_pool(struct node *ptr_node)
       aux_int = ptr_node->ptr_zone_size[ch];
       ptr_node->ptr_zone_size[ch] = ptr_node->ptr_zone_size[ptr_node->zones_size - 1];
       ptr_node->ptr_zone_size[ptr_node->zones_size - 1] = aux_int;
+
       // Cap of the zones
       aux_int = ptr_node->ptr_zone_cap[ch];
       ptr_node->ptr_zone_cap[ch] = ptr_node->ptr_zone_cap[ptr_node->zones_size - 1];
       ptr_node->ptr_zone_cap[ptr_node->zones_size - 1] = aux_int;
+
       // Zone array
       aux_ptr_int = ptr_node->pptr_zones[ch];
       ptr_node->pptr_zones[ch] = ptr_node->pptr_zones[ptr_node->zones_size - 1];
       ptr_node->pptr_zones[ptr_node->zones_size - 1] = aux_ptr_int;
 
+      // Total number of active zones
       ptr_node->chn_size -= 1; //-1 the the total number of children in the node
-      // ptr_node->zones_size -= 1;	//-1 the the total number of zones in the node
+                                // ptr_node->zones_size -= 1;	//-1 the the total number of zones in the node
 
       ch--;
     }
   }
 }
 
+/**
+ * @brief Filling of the \ref tree_adaptation__REMINDER__Tentacles "Tentacles"
+ * at the child nodes level of refinement
+ *
+ * **SHORT DESCRIPTION**: Filling of the \ref
+ * tree_adaptation__REMINDER__Tentacles "Tentacles" at the child nodes level of
+ * refinement
+ *
+ * **PREREQUISITES**: If there is at least one refinement zone.
+ *
+ * @param[in] ptr_node Pointer to node structure
+ *
+ * **RETURN**: The error status.
+ *
+ * **LONG DESCRIPTION**:
+ *
+ * Filling of the \ref tree_adaptation__REMINDER__Tentacles "Tentacles" at the
+ * child nodes level of refinement. Moreover, the maximum level parameter \link
+ * GL_tentacles_level_max \endlink of the \ref
+ * tree_adaptation__REMINDER__Tentacles "Tentacles" is updated in every call.
+ *
+ * Here the only global parameters associated with the \ref
+ * tree_adaptation__REMINDER__Tentacles "Tentacles" are going to be updated.
+ *
+ * The flux of this function can be seen in the figure (work in progress), and
+ * it is explained below:
+ *
+ * - [0]  <b> THE fill_tentacles() FUNCTION STARTS....</b>
+ *
+ * - [1]  Defining some internal useful parameters.
+ *
+ * - [2]  Run a \c "for" loop over the number of refinement zones, that at this
+ *   point of the module tree_adaptation.c is equal to the final number of child
+ *   nodes.
+ *
+ * - [3]  The child node is pointed by the tentacle at the corresponding
+ *   position and level of refinement.
+ *
+ * - [4]  Finally, the tentacles Size (see Key Concepts \ref Key_Concepts_Size
+ *   "Size") of the global parameter \link GL_tentacles_size \endlink, and the
+ *   \link GL_tentacles_level_max \endlink are updated.
+ *
+ * - [5]  <b> THE fill_tentacles() FUNCTION ENDS....</b>
+ *
+ * **ILLUSTRATIVE EXAMPLES**:
+ * - [a]  a
+ *
+ * **RATIONALES**:
+ * - [a]  aaa
+ *
+ * **NOTES**:
+ * - [a]  a
+ */
+
 static int fill_tentacles(const struct node *ptr_node)
 {
-  int lv = ptr_node->lv - lmin + 1; // Children level
+  int tentacle_lv = ptr_node->lv - lmin + 1; // Children level
+  int no_tentacles = GL_tentacles_size[tentacle_lv];
+  int no_chn = ptr_node->chn_size;
+  int size = no_tentacles + no_chn;
+  
 
-  int size = GL_tentacles_size[lv] + ptr_node->chn_size;
-
-  if (space_check(&(GL_tentacles_cap[lv]), size, 4.0f, "p1n2", &(GL_tentacles[lv])) == _FAILURE_)
+  if (space_check(&(GL_tentacles_cap[tentacle_lv]), size, 4.0f, "p1n2", &(GL_tentacles[tentacle_lv])) == _FAILURE_)
   {
     printf("Error, in space_check function\n");
     return _FAILURE_;
   }
 
-  for (int i = 0; i < ptr_node->chn_size; i++)
+  for (int i = 0; i < no_chn; i++)
   {
     //* >> Putting elements in the new tentacles *//
-    GL_tentacles[lv][GL_tentacles_size[lv] + i] = ptr_node->pptr_chn[i];
+    GL_tentacles[tentacle_lv][no_tentacles + i] = ptr_node->pptr_chn[i];
   }
 
   //* Increasing the number of structs in the level lv *//
-  GL_tentacles_size[lv] = size;
+  GL_tentacles_size[tentacle_lv] = size;
 
   //* >> Increasing the deepth of levels of the tentacles *//
-  if (GL_tentacles_level_max < lv)
+  if (GL_tentacles_level_max < tentacle_lv)
   {
     GL_tentacles_level_max++;
   }
 
   return _SUCCESS_;
 } // end function fill_tentacles
+
+/**
+ * @brief Make the calls of all the local functions of the tree_construction.c
+ * module
+ *
+ * **SHORT DESCRIPTION**: Make the calls of all the local functions of the
+ * tree_construction.c module
+ *
+ * **PREREQUISITES**: Always used.
+ *
+ * **RETURN**: The error status.
+ *
+ * **ILLUSTRATIVE EXAMPLES**:
+ * - [a]  a
+ *
+ * **RATIONALES**:
+ * - [a]  aaa
+ *
+ * **NOTES**:
+ * - [a]  Example of a Image:
+ *
+ * 
+ *
+ */
 
 int tree_construction(void)
 {
@@ -1965,14 +2546,14 @@ int tree_construction(void)
       if (ptr_node->zones_size > 0)
       {
         //* >> Creating child nodes *//
-        if (fill_child_nodes(ptr_node) == _FAILURE_)
+        if (create_child_nodes(ptr_node) == _FAILURE_)
         {
           printf("Error at function create_child_nodes()\n");
           return _FAILURE_;
         }
 
         //* >> Removing child nodes with 0 particles
-        moved_unused_child_node_to_memory_pool(ptr_node);
+        transfer_tiny_child_nodes_to_memory_pool(ptr_node);
 
         //* >> Filling Tentacles for the next cycle at level of refinement
         if (fill_tentacles(ptr_node) == _FAILURE_)

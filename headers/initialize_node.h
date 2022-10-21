@@ -16,7 +16,9 @@
  */
 
 /**
- * @file initialize_node.h ******************** Documented \e "initialize_node.h" header ******************** \n
+ * @file initialize_node.h
+ *
+ * \f[{\color{magenta} \mathbf{ DOCUMENTED\ ``initialize\_node.h"\ HEADER}}\f]
  *
  * @brief This is the header file of the initialize_node.c script.
  *
@@ -37,42 +39,6 @@
  *
  * **SHORT DESCRIPTION**: Stand-alone unit to other nodes in the same
  * level of refinement. Nodes represent a refinement zone of their parent node.
- *
- * **Key Concepts**:
- * - \anchor Key_Concepts_Capacity [a] **Capacity**:  Maximum amount of elements 
- * that can be held in an array.
- *
- * - \anchor Key_Concepts_Size [b] **Size**: Current number of elements in an 
- * array.
- *
- * - \anchor Key_Concepts_Smallest_Box [c] **Smallest Box**:  Logical array with 
- * box geometry containing all the existing cells of the node, that is, cells 
- * with status \f$ > -4 \f$, using the smallest possible space.
- *
- * - \anchor Key_Concepts_Code_Space [d] **Code Space**: In a typical 
- * simulation, the user chooses the coarsest level of refinement \f$ l_{min}\f$, 
- * the maximum level \f$ l_{max}\f$, and the simulation box with any length 
- * unit, and any coordinate system. But, the code always transforms the user box 
- * in the coarsest level of refinement \f$ l_{min}\f$ to fit in a cube of side 
- * equal to \f$ 2^{l_{min}} \f$ localized at the position (0,0,0) in a 
- * coordinate system, so the cube can be described as the set of points which 
- * belong to \f$ [0,2^{l_{min}})\times [0,2^{l_{min}})\times [0,2^{l_{min}})\f$. 
- * The 3-Dimensional space which goes from \f$ (-\infty,\infty)\times (-\infty,
- * \infty)\times (-\infty,\infty)\f$ contains this cube of side \f$ 2^{l_{min}} 
- * \f$ localized at (0,0,0) is called the \f${\color{red} \mathbf{ Code\ Space\ 
- * of\ refinement\ l_{min} }}\f$. For any level of refinement *l*, the box is 
- * localized in the same coordinate (0,0,0) but using a space equal to \f$ 
- * [0,2^l)^3\f$.
- *
- * - [e] \anchor Key_Concepts_Logical_Space **Logical Space**: Because of the 
- * enormous memory space required to store a full level of refinement *l* of 
- * size \f$ (2^{l})^3 \f$, the concept of boxes is implemented in every node. 
- * Boxes are logical entities that represent only a small piece of space of the 
- * *Code Space of refinement level l*, where *l* is the level of refinement of 
- * the node. This representation of the space is called the \f${\color{red} 
- * \mathbf{ Logical\ Space}}\f$. For every node at every level of refinement, 
- * this *Logical Space* has dimensions of \f$ [0,A)\times[0,B)\times[0,C) \f$, 
- * where *A, B, C* are the dimensions of the box of the node.
  *
  * **LONG DESCRIPTION**:
  *
@@ -179,7 +145,7 @@ struct node
   vtype *ptr_ay;           /**< Same as ::ptr_ax but in the Y direction */
   vtype *ptr_az;           /**< Same as ::ptr_ax but in the Z direction */
   vtype *ptr_d;            /**< Array containing the density of the box grid points in the node */
-  int grid_properties_cap; /**< *Capacity* (see Key Concepts \ref Key_Concepts_Capacity "Capacity") of the grid potentials ::ptr_pot, ::ptr_pot_old, accelerations ::ptr_ax, ::ptr_ay, ::ptr_az, and density ptr_d */
+  int grid_properties_cap; /**< *Capacity* (see Key Concepts \ref Key_Concepts_Capacity "Capacity") of the grid potentials ::ptr_pot, ::ptr_pot_old, accelerations ::ptr_ax, ::ptr_ay, ::ptr_az, and density ::ptr_d */
 
   //* >> Tree structure *//
   struct node **pptr_chn; /**< Pointer to child nodes pointer array */

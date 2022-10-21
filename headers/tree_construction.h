@@ -1,13 +1,4 @@
 /*
- * tree_construction.h
- *
- * Header file of the tree_construction.c source file
- *
- * Felipe Contreras
- * felipe.contrerass@postgrado.uv.cl
- */
-
-/*
  * Copyright(c) 2022 Felipe Contreras
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -22,6 +13,20 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ * @file tree_construction.h
+ *
+ * \f[{\color{magenta} \mathbf{ DOCUMENTED\ ``tree\_construction.h"\ HEADER}}\f]
+ *
+ * @brief This is the header file of the main.c script.
+ *
+ * \b VERSION \b INFORMATION: Felipe Contreras, 2022-10-01, version 1.0.
+ *
+ * \b DESCRIPTION: This is the header file of the tree_construction.c script.
+ *
+ * \b PREREQUISITES: Always used.
  */
 
 #ifndef __TREECONSTRUCTION__

@@ -14,13 +14,14 @@ HTML_COLORSTYLE    = LIGHT
 HTML_OUTPUT      = html
 LATEX_OUTPUT     = latex
 INPUT            = 	source \ 
-										headers \
+			headers \
+			MANUAL/Handwritten_Chapters/Chap1.md
 			
 			
 			
 			
 FILE_PATTERNS            = *.c \
-			   										*.h
+			   *.h
 
 FILE_PATTERNS            = 
 RECURSIVE              = YES
@@ -100,3 +101,7 @@ INTERACTIVE_SVG        = YES
 EXTRACT_STATIC         = YES	#Including static functions and variables
 
 ALIASES = footnote{1}="\latexonly\footnote\{\1\}\endlatexonly\htmlonly<sup title=\"\1\">*</sup>\endhtmlonly" 	#Add footnotes altex function \footnote{This is my footnote}
+
+GENERATE_HTML          = NO
+
+IMAGE_PATH = MANUAL/Images
