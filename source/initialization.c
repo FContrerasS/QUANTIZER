@@ -35,12 +35,12 @@ static void initializing_tentacles(void);
 static void initializing_global_parameters(void)
 {
 
-  GL_total_mass_initial = 0;
+  // GL_total_mass_initial = 0;
 
-  for (int i = 0; i < GL_no_ptcl_initial; i++)
-  {
-    GL_total_mass_initial += GL_ptcl_mass[i];
-  }
+  // for (int i = 0; i < GL_no_ptcl_initial; i++)
+  // {
+  //   GL_total_mass_initial += GL_ptcl_mass[i];
+  // }
 
   GL_total_mass_final = GL_total_mass_initial;
 
@@ -207,6 +207,9 @@ static int initializing_head_node(void)
   ptr_head->ptr_sim_bdry_grid_cell_idx_z = (int *)malloc(ptr_head->grid_sim_bdry_cap * sizeof(int));
   ptr_head->ptr_sim_bdry_box_grid_idx = (int *)malloc(ptr_head->grid_sim_bdry_cap * sizeof(int));
 
+
+  //printf("grid intr cap = %d, grid boudnary cap = %d, sum = %d\n", ptr_head->grid_intr_cap,ptr_head->grid_sim_bdry_cap,ptr_head->grid_intr_cap+ptr_head->grid_sim_bdry_cap);
+
   //* Filling grid points indices *//
 
   for (int k = bder_os_sim; k < box_side_lmin + 1 - bder_os_sim; k++)
@@ -238,7 +241,10 @@ static int initializing_head_node(void)
     }
   }
 
+  //printf("interior points = %d, boundary points = %d\n",ptr_head->grid_intr_size,ptr_head->grid_sim_bdry_size);
+
   //* >> Potential, Acceleration and density of the grid *//
+  
   int cap = (ptr_head->box_real_dim_x + 1) * (ptr_head->box_real_dim_y + 1) * (ptr_head->box_real_dim_z + 1);
   ptr_head->grid_properties_cap = cap;
   ptr_head->ptr_pot = (vtype *)calloc(cap, sizeof(vtype));     // Potential
@@ -247,7 +253,7 @@ static int initializing_head_node(void)
   ptr_head->ptr_ay = (vtype *)calloc(cap, sizeof(vtype));
   ptr_head->ptr_az = (vtype *)calloc(cap, sizeof(vtype));
   ptr_head->ptr_d = (vtype *)calloc(cap, sizeof(vtype)); // Density
-
+  //printf("total cap = %d\n",cap);
   //* >> Initial values for the potential and acceleration *//
   initial_potential_and_acceleration_head(ptr_head);
 

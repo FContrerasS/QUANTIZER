@@ -28,41 +28,69 @@
 #include "space_check.h"
 
 //* >> Local Functions
-static void kinetic_energy();
-static void potential_energy_exact();
+static void kinetic_energy(void);
+static void potential_energy_exact(void);
 static void computing_particle_potential_head_only(const struct node *ptr_head);
 static void computing_particle_potential_head_plus_branches(const struct node *ptr_node);
-static void potential_energy_approximation();
+static void computing_momentum(void);
+static void potential_energy_approximation(void);
 
-static void kinetic_energy()
+static void kinetic_energy(void)
 {
-  vtype _one_over_User_BoxSize = 1.0L / _User_BoxSize_;
+  //vtype _one_over_User_sqrt_BoxSize_ = 1.0L / mysqrt(_User_BoxSize_);
+  //vtype _one_over_User_BoxSize = 1.0L / _User_BoxSize_;
 
   vtype particle_v_pow_2; // Particle velocity to the power of 2
+  vtype GL_ptcl_vx_correction;
+  vtype GL_ptcl_vy_correction;
+  vtype GL_ptcl_vz_correction;
+  vtype kinetic_energy = 0.0;
 
+#pragma omp parallel for private(GL_ptcl_vx_correction,GL_ptcl_vy_correction,GL_ptcl_vz_correction,particle_v_pow_2) reduction(+:kinetic_energy)
   for (int i = 0; i < GL_no_ptcl_final; i++)
   {
     // Kinetic Energy
-    particle_v_pow_2 = GL_ptcl_vx[i] * GL_ptcl_vx[i] + GL_ptcl_vy[i] * GL_ptcl_vy[i] + GL_ptcl_vz[i] * GL_ptcl_vz[i];
+    // GL_ptcl_vx_correction = GL_ptcl_vx[i] * _one_over_User_sqrt_BoxSize_ + GL_cm_vx;
+    // GL_ptcl_vy_correction = GL_ptcl_vz[i] * _one_over_User_sqrt_BoxSize_ + GL_cm_vy;
+    // GL_ptcl_vz_correction = GL_ptcl_vx[i] * _one_over_User_sqrt_BoxSize_ + GL_cm_vz;
+    GL_ptcl_vx_correction = GL_ptcl_vx[i] / _conversion_velocity_ + GL_cm_vx;
+    GL_ptcl_vy_correction = GL_ptcl_vy[i] / _conversion_velocity_ + GL_cm_vy;
+    GL_ptcl_vz_correction = GL_ptcl_vz[i] / _conversion_velocity_ + GL_cm_vz;
+    particle_v_pow_2 = GL_ptcl_vx_correction * GL_ptcl_vx_correction 
+                      + GL_ptcl_vy_correction * GL_ptcl_vy_correction 
+                      + GL_ptcl_vz_correction * GL_ptcl_vz_correction;
+    
+    // printf("antes part %d, vel x = %1.12e, y = %1.12e, z = %1.12e\n ",i,(double) GL_ptcl_vx[i] , (double) GL_ptcl_vy[i], (double) GL_ptcl_vz[i] );
+    // printf("despues part %d, vel x = %1.12e, y = %1.12e, z = %1.12e\n ",i,(double) GL_ptcl_vx_correction , (double) GL_ptcl_vy_correction, (double) GL_ptcl_vz_correction );
     // Adding Kinetic energy of the particle
-    GL_energies[0] += GL_ptcl_mass[i] * particle_v_pow_2;
+    
+    kinetic_energy += GL_ptcl_mass[i] * particle_v_pow_2;
+    //printf("Kinetic energy particle %d = %1.12e\n",i,(double) (0.5 * GL_ptcl_mass[i] * particle_v_pow_2) );
   }
 
-  GL_energies[0] = GL_energies[0] * 0.5 * _one_over_User_BoxSize;
+  ///GL_energies[0] = GL_energies[0] * 0.5 * _one_over_User_BoxSize;
+  GL_energies[0] = kinetic_energy * 0.5;
+
+
 }
 
-static void potential_energy_exact()
+static void potential_energy_exact(void)
 {
 
   vtype distance_x, distance_y, distance_z; // Axial distance between 2 particles
   vtype distance;                           // Distance between 2 particles
+  vtype sum_aux;
 
-  vtype _one_over_User_BoxSize = 1.0L / _User_BoxSize_;
+  vtype potential_energy = 0.0;
 
+  //vtype _one_over_User_BoxSize = 1.0L / _User_BoxSize_;
+
+  #pragma omp parallel for private(distance_x,distance_y,distance_z,distance,sum_aux) reduction(+:potential_energy) schedule(dynamic,10)
+  //for (int i = GL_no_ptcl_final-1; i > -1; i--)
   for (int i = 0; i < GL_no_ptcl_final; i++)
   {
     // Adding Kinetic energy of the particle
-
+    sum_aux = 0.0;
     for (int j = 0; j < i; j++)
     {
       // Potential energy
@@ -70,14 +98,17 @@ static void potential_energy_exact()
       distance_y = GL_ptcl_y[i] - GL_ptcl_y[j];
       distance_z = GL_ptcl_z[i] - GL_ptcl_z[j];
       distance = distance_x * distance_x + distance_y * distance_y + distance_z * distance_z;
-      distance = sqrt(distance);
+      distance = mysqrt(distance);
 
       // Adding Potential energy of the particle
-      GL_energies[1] += GL_ptcl_mass[i] * GL_ptcl_mass[j] / (distance);
+      sum_aux += GL_ptcl_mass[i] * GL_ptcl_mass[j] / (distance);
     }
+    potential_energy += sum_aux;
   }
 
-  GL_energies[1] = -GL_energies[1] * _G_ * _one_over_User_BoxSize;
+  //GL_energies[1] = -GL_energies[1] * _G_ * _one_over_User_BoxSize;
+  GL_energies[1] = -potential_energy * _G_ * (_conversion_time_*_conversion_time_)/(_conversion_dist_*_conversion_dist_) ;
+  //printf("GL_energies[1]  = %f\n",GL_energies[1] );
 }
 
 static void computing_particle_potential_head_only(const struct node *ptr_head)
@@ -114,6 +145,8 @@ static void computing_particle_potential_head_only(const struct node *ptr_head)
   int grid_box_real_dim_X = (ptr_head->box_real_dim_x + 1);
   int grid_box_real_dim_X_times_Y = (ptr_head->box_real_dim_x + 1) * (ptr_head->box_real_dim_y + 1);
 
+
+  
   for (int i = 0; i < GL_no_ptcl_final; i++)
   {
     //* >> Position of the particles in the grid level *//
@@ -134,9 +167,9 @@ static void computing_particle_potential_head_only(const struct node *ptr_head)
     w_x_1 = pos_x - pos_x_floor;
     w_y_1 = pos_y - pos_y_floor;
     w_z_1 = pos_z - pos_z_floor;
-    w_x_2 = 1 - w_x_1;
-    w_y_2 = 1 - w_y_1;
-    w_z_2 = 1 - w_z_1;
+    w_x_2 = 1.0 - w_x_1;
+    w_y_2 = 1.0 - w_y_1;
+    w_z_2 = 1.0 - w_z_1;
     w[0] = w_x_2 * w_y_2 * w_z_2;
     w[1] = w_x_1 * w_y_2 * w_z_2;
     w[2] = w_x_2 * w_y_1 * w_z_2;
@@ -151,7 +184,7 @@ static void computing_particle_potential_head_only(const struct node *ptr_head)
     box_grid_idx_z = pos_z_floor - ptr_head->box_ts_z;
     box_grid_idx = box_grid_idx_x + box_grid_idx_y * grid_box_real_dim_X + box_grid_idx_z * grid_box_real_dim_X_times_Y;
     //* >> Particle density contributes to 8 enclosure grid points *//
-    aux_pot = 0;
+    aux_pot = 0.0;
     for (int kk = 0; kk < 2; kk++)
     {
       for (int jj = 0; jj < 2; jj++)
@@ -161,6 +194,7 @@ static void computing_particle_potential_head_only(const struct node *ptr_head)
           aux_idx = ii + 2 * jj + 4 * kk;
           box_grid_idxNbr = box_grid_idx + ii + jj * grid_box_real_dim_X + kk * grid_box_real_dim_X_times_Y;
           aux_pot += ptr_head->ptr_pot[box_grid_idxNbr] * w[aux_idx];
+          //printf("xxxxx ptr_node->ptr_pot[box_grid_idxNbr] = %.12f\n",(double) ptr_head->ptr_pot[box_grid_idxNbr]);
         }
       }
     }
@@ -242,9 +276,9 @@ static void computing_particle_potential_head_plus_branches(const struct node *p
         w_x_1 = pos_x - pos_x_floor;
         w_y_1 = pos_y - pos_y_floor;
         w_z_1 = pos_z - pos_z_floor;
-        w_x_2 = 1 - w_x_1;
-        w_y_2 = 1 - w_y_1;
-        w_z_2 = 1 - w_z_1;
+        w_x_2 = 1.0 - w_x_1;
+        w_y_2 = 1.0 - w_y_1;
+        w_z_2 = 1.0 - w_z_1;
         w[0] = w_x_2 * w_y_2 * w_z_2;
         w[1] = w_x_1 * w_y_2 * w_z_2;
         w[2] = w_x_2 * w_y_1 * w_z_2;
@@ -278,7 +312,7 @@ static void computing_particle_potential_head_plus_branches(const struct node *p
         box_grid_idx = box_grid_idx_x + box_grid_idx_y * grid_box_real_dim_X + box_grid_idx_z * grid_box_real_dim_X_times_Y;
 
         //* >> Particle density contributes to 8 enclosure grid points *//
-        aux_pot = 0;
+        aux_pot = 0.0;
         for (int kk = 0; kk < 2; kk++)
         {
           for (int jj = 0; jj < 2; jj++)
@@ -330,9 +364,9 @@ static void computing_particle_potential_head_plus_branches(const struct node *p
           w_x_1 = pos_x - pos_x_floor;
           w_y_1 = pos_y - pos_y_floor;
           w_z_1 = pos_z - pos_z_floor;
-          w_x_2 = 1 - w_x_1;
-          w_y_2 = 1 - w_y_1;
-          w_z_2 = 1 - w_z_1;
+          w_x_2 = 1.0 - w_x_1;
+          w_y_2 = 1.0 - w_y_1;
+          w_z_2 = 1.0 - w_z_1;
           w[0] = w_x_2 * w_y_2 * w_z_2;
           w[1] = w_x_1 * w_y_2 * w_z_2;
           w[2] = w_x_2 * w_y_1 * w_z_2;
@@ -366,7 +400,7 @@ static void computing_particle_potential_head_plus_branches(const struct node *p
 
           box_grid_idx = box_grid_idx_x + box_grid_idx_y * grid_box_real_dim_X + box_grid_idx_z * grid_box_real_dim_X_times_Y;
           //* >> Particle density contributes to 8 enclosure grid points *//
-          aux_pot = 0;
+          aux_pot = 0.0;
           for (int kk = 0; kk < 2; kk++)
           {
             for (int jj = 0; jj < 2; jj++)
@@ -557,9 +591,9 @@ static void computing_particle_potential_head_plus_branches(const struct node *p
   // }
 }
 
-static void potential_energy_approximation()
+static void potential_energy_approximation(void)
 {
-  vtype _one_over_User_BoxSize = 1.0L / _User_BoxSize_;
+  //vtype _one_over_User_BoxSize = 1.0L / _User_BoxSize_;
 
   if (lmin < lmax)
   {
@@ -579,14 +613,56 @@ static void potential_energy_approximation()
     computing_particle_potential_head_only(GL_tentacles[0][0]);
   }
 
-  GL_energies[1] = GL_energies[1] * 0.5 * _G_ * _one_over_User_BoxSize;
+  
+  //GL_energies[1] = GL_energies[1] * 0.5 * _G_ * _one_over_User_BoxSize;
+  GL_energies[1] = GL_energies[1] * 0.5 * _G_ * (_conversion_time_*_conversion_time_)/(_conversion_dist_*_conversion_dist_) ;
+}
+
+
+static void computing_momentum(void)
+{
+  //vtype _one_over_User_sqrt_BoxSize_ = 1.0L / mysqrt(_User_BoxSize_);
+  vtype GL_ptcl_vx_correction;
+  vtype GL_ptcl_vy_correction;
+  vtype GL_ptcl_vz_correction;
+
+  vtype momentum_x = 0.0;
+  vtype momentum_y = 0.0;
+  vtype momentum_z = 0.0;
+
+  #pragma omp parallel for private(GL_ptcl_vx_correction,GL_ptcl_vy_correction,GL_ptcl_vz_correction) reduction(+:momentum_x,momentum_y,momentum_z)
+  for (int i = 0; i < GL_no_ptcl_final; i++)
+  {
+    // Kinetic Energy
+    // GL_ptcl_vx_correction = GL_ptcl_vx[i] * _one_over_User_sqrt_BoxSize_ + GL_cm_vx;
+    // GL_ptcl_vy_correction = GL_ptcl_vy[i] * _one_over_User_sqrt_BoxSize_ + GL_cm_vy;
+    // GL_ptcl_vz_correction = GL_ptcl_vz[i] * _one_over_User_sqrt_BoxSize_ + GL_cm_vz;
+    GL_ptcl_vx_correction = GL_ptcl_vx[i] / _conversion_velocity_ + GL_cm_vx;
+    GL_ptcl_vy_correction = GL_ptcl_vy[i] / _conversion_velocity_ + GL_cm_vy;
+    GL_ptcl_vz_correction = GL_ptcl_vz[i] / _conversion_velocity_ + GL_cm_vz;
+    // Adding Kinetic energy of the particle
+    // GL_momentum[0] += GL_ptcl_mass[i] * GL_ptcl_vx_correction;
+    // GL_momentum[1] += GL_ptcl_mass[i] * GL_ptcl_vy_correction;
+    // GL_momentum[2] += GL_ptcl_mass[i] * GL_ptcl_vz_correction;
+    momentum_x += GL_ptcl_mass[i] * GL_ptcl_vx_correction;
+    momentum_y += GL_ptcl_mass[i] * GL_ptcl_vy_correction;
+    momentum_z += GL_ptcl_mass[i] * GL_ptcl_vz_correction;
+  }
+
+
+
+
+  GL_momentum[0] += momentum_x;
+  GL_momentum[1] += momentum_y;
+  GL_momentum[2] += momentum_z;
+
 }
 
 int observables()
 {
-  GL_energies[0] = 0; // Kinetic
-  GL_energies[1] = 0; // Potential
-  GL_energies[2] = 0; // Total
+  GL_energies[0] = 0.0; // Kinetic
+  GL_energies[1] = 0.0; // Potential
+  GL_energies[2] = 0.0; // Total
 
   kinetic_energy();
 
@@ -604,7 +680,18 @@ int observables()
     return _FAILURE_;
   }
 
-  GL_energies[2] = GL_energies[0] + GL_energies[1];
+  GL_energies[2] = GL_energies[0] + GL_energies[1]; //Total Energy
+
+  //Momentum
+  
+  GL_momentum[0] = 0.0; // Momentum x 
+  GL_momentum[1] = 0.0; // Momentum y 
+  GL_momentum[2] = 0.0; // Momentum z
+
+
+  computing_momentum();
+
+
 
   return _SUCCESS_;
 }

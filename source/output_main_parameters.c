@@ -70,12 +70,14 @@ void output_main_parameters(vtype final_time, int Number_timesteps, int Number_o
   fprintf(file, "Number_timesteps	%d\n", (int)Number_timesteps);
   fprintf(file, "Number_outputs %d\n", (int)Number_outputs);
   fprintf(file, "fr_output %d\n", (int)fr_output);
+  fprintf(file, "MaxIterations %d\n", (int)MaxIterations);
   fprintf(file, "BoxSize %1.5e\n", (double)_User_BoxSize_);
   fprintf(file, "vtype %d\n", _VTYPE_);
-  fprintf(file, "Maxdt %1.5e\n", (double)(final_time / _Mgyear_)); // In Mega years
+  fprintf(file, "Maxdt %1.5e years\n", (double)(final_time / _conversion_time_)); // In Mega years
+  
   // fprintf(file, "Length_unit kpc\n");
   // fprintf(file, "Mass_unit Solar_mass\n");
-  fprintf(file, "Time_unit %1.5e\n", (double)tt);
+  //fprintf(file, "Time_unit %1.5e\n", (double)tt);
   fprintf(file, "G %1.5e\n", (double)_G_);
   fprintf(file, "boundary_type %d\n", (int)bdry_cond_type);
   fprintf(file, "GL_total_mass_initial %f\n", (double)GL_total_mass_initial);
@@ -104,11 +106,11 @@ void output_main_parameters(vtype final_time, int Number_timesteps, int Number_o
 
   char Time_names_potential[50][100] = {
       "Head Potential",
-      "Error Check in the Head",
+      "Error Check of Poisson equation in the Head",
       "Potential transfer in branches",
       "Filling Red and Black in branches",
       "Potential in branches",
-      "Error Check in branches",
+      "Error Check of Poisson equation in branches",
       ""};
 
   double TOTAL_TIME = 0;
@@ -123,14 +125,14 @@ void output_main_parameters(vtype final_time, int Number_timesteps, int Number_o
 
   for (int i = 0; i < 15; i++)
   {
-    fprintf(file, "%s = %1.2e ~ %.1f %%\n", Time_names[i], GL_times[i], GL_times[i] * 100 / TOTAL_TIME);
+    fprintf(file, "%s = %1.2e ~ %.1f %%\n", Time_names[i], GL_times[i], GL_times[i] * 100.0 / TOTAL_TIME);
   }
-  fprintf(file, "Output Snapshots = %.2e ~ %.1f %%\n", GL_times[19], GL_times[19] * 100 / TOTAL_TIME);
+  fprintf(file, "Output Snapshots = %.2e ~ %.1f %%\n", GL_times[19], GL_times[19] * 100.0 / TOTAL_TIME);
 
   fprintf(file, "\n\nPOTENTIAL TIME [s], Percentage over total potential time\n\n");
   for (int i = 20; i < 26; i++)
   {
-    fprintf(file, "%s = %1.2e ~ %.1f %%\n", Time_names_potential[i - 20], GL_times[i], GL_times[i] * 100 / GL_times[5]);
+    fprintf(file, "%s = %1.2e ~ %.1f %%\n", Time_names_potential[i - 20], GL_times[i], GL_times[i] * 100.0 / GL_times[5]);
   }
 
   //* >> TREE ADAPTATION TIME *//
@@ -160,7 +162,7 @@ void output_main_parameters(vtype final_time, int Number_timesteps, int Number_o
   fprintf(file, "\n\nTREE ADAPTATION TIME [s], Percentage over tree adaptation time\n\n");
   for (int i = 30; i < 50; i++)
   {
-    fprintf(file, "%d: %s = %1.2e ~ %.1f %%\n", i - 30, Time_names_tree_adaptation[i - 30], GL_times[i], GL_times[i] * 100 / GL_times[10]);
+    fprintf(file, "%d: %s = %1.2e ~ %.1f %%\n", i - 30, Time_names_tree_adaptation[i - 30], GL_times[i], GL_times[i] * 100.0 / GL_times[10]);
   }
 
   fclose(file);

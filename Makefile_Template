@@ -7,7 +7,7 @@ CC = gcc
 # compiler flags:
 #  -g    adds debugging information to the executable file
 #  -Wall turns on most, but not all, compiler warnings
-CFLAGS  = -g -Wall
+CFLAGS  = -g -Wall -fopenmp
 
 #Optimization Flags
 OPTIMIZATION  =  -O3
@@ -40,7 +40,7 @@ compile:
 	$(CC) $(CFLAGS) -I$(HEADERS) $(OPTIMIZATION) -c $(SOURCE) 
 
 link:
-	$(CC)  $(OBJ) -o $(EXECUTABLE) -lm
+	$(CC)  $(OBJ) -o $(EXECUTABLE) -lm  $(CFLAGS)
 	
 gprof: *.cpp
 	$(CC) $(CFLAGS) -I $(HEADERS) $(INICOND) $(OPTIMIZATION) $(GPROF) -o $(EXECUTABLE).gprof $(SOURCE) -lm

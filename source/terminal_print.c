@@ -45,7 +45,7 @@ static int computing_memory(void)
   }
 
   //* >> Global particles *//
-  TOTAL_MEMORY_PARTICLES += GL_no_ptcl_initial * (sizeof(bool) + sizeof(int) + 10 * sizeof(vtype)); // Global particles
+  TOTAL_MEMORY_PARTICLES += GL_no_ptcl_initial * (sizeof(bool) + sizeof(int) + 10.0 * sizeof(vtype)); // Global particles
 
   //* >> Node properties *//
   for (int lv = 0; lv < GL_tentacles_level_max + 1; lv++)
@@ -55,7 +55,7 @@ static int computing_memory(void)
     for (int i = 0; i < no_pts; i++)
     {
       ptr_node = GL_tentacles[lv][i];
-      TOTAL_MEMORY_CELDAS += 4 * ptr_node->cell_cap * sizeof(int);
+      TOTAL_MEMORY_CELDAS += 4.0 * ptr_node->cell_cap * sizeof(int);
 
       if (lmin < lmax)
       {
@@ -77,23 +77,23 @@ static int computing_memory(void)
           }
         }
       }
-      TOTAL_MEMORY_CAJAS += 2 * ptr_node->box_cap * (sizeof(int) + sizeof(vtype)); // Boxes and mass boxes
+      TOTAL_MEMORY_CAJAS += 2.0 * ptr_node->box_cap * (sizeof(int) + sizeof(vtype)); // Boxes and mass boxes
 
-      TOTAL_MEMORY_GRID_POINTS += 4 * (ptr_node->grid_bdry_cap + ptr_node->grid_intr_cap + ptr_node->grid_sim_bdry_cap) * sizeof(int); // Grid interior and border points
+      TOTAL_MEMORY_GRID_POINTS += 4.0 * (ptr_node->grid_bdry_cap + ptr_node->grid_intr_cap + ptr_node->grid_sim_bdry_cap) * sizeof(int); // Grid interior and border points
 
-      TOTAL_MEMORY_GRID_PROPERTIES += 6 * ptr_node->grid_properties_cap * sizeof(vtype); // Grid properties, accelerations, potential and density
+      TOTAL_MEMORY_GRID_PROPERTIES += 6.0 * ptr_node->grid_properties_cap * sizeof(vtype); // Grid properties, accelerations, potential and density
       TOTAL_MEMORY_AUX += ptr_node->zones_cap * sizeof(int *);
       for (int j = 0; j < ptr_node->zones_cap; j++)
       {
         TOTAL_MEMORY_AUX += ptr_node->ptr_zone_cap[j] * sizeof(int);
       }
       TOTAL_MEMORY_AUX += ptr_node->aux_idx_cap * sizeof(int);
-      TOTAL_MEMORY_AUX += ptr_node->pbc_bool_bdry_anomalies_cap * 3 * sizeof(bool);
+      TOTAL_MEMORY_AUX += ptr_node->pbc_bool_bdry_anomalies_cap * 3.0 * sizeof(bool);
 
-      TOTAL_MEMORY_AUX += 4 * ptr_node->links_cap * sizeof(int);
+      TOTAL_MEMORY_AUX += 4.0 * ptr_node->links_cap * sizeof(int);
 
       //* Subzones
-      TOTAL_MEMORY_AUX += 6 * ptr_node->pbc_subzones_cap * sizeof(int);
+      TOTAL_MEMORY_AUX += 6.0 * ptr_node->pbc_subzones_cap * sizeof(int);
       // TOTAL_MEMORY_AUX += ptr_node->pbc_subzones_cap * sizeof(int *);
       // for(int j=0; j < ptr_node->pbc_subzones_cap; j++)
       // {
@@ -109,7 +109,7 @@ static int computing_memory(void)
   while (ptr_node != NULL)
   {
     cntr_nodes_memory_pool++;
-    TOTAL_MEMORY_STACK += 4 * ptr_node->cell_cap * sizeof(int);
+    TOTAL_MEMORY_STACK += 4.0 * ptr_node->cell_cap * sizeof(int);
     TOTAL_MEMORY_STACK += ptr_node->box_cap * sizeof(struct cell_struct);
 
     TOTAL_MEMORY_STACK += ptr_node->box_cap * sizeof(struct cell_struct);
@@ -139,13 +139,13 @@ static int computing_memory(void)
       TOTAL_MEMORY_STACK += ptr_node->ptr_zone_cap[j] * sizeof(int);
     }
     TOTAL_MEMORY_STACK += ptr_node->aux_idx_cap * sizeof(int);
-    TOTAL_MEMORY_STACK += ptr_node->pbc_bool_bdry_anomalies_cap * 3 * sizeof(bool);
+    TOTAL_MEMORY_STACK += ptr_node->pbc_bool_bdry_anomalies_cap * 3.0 * sizeof(bool);
     TOTAL_MEMORY_STACK += sizeof(struct node);
 
-    TOTAL_MEMORY_STACK += 4 * ptr_node->links_cap * sizeof(int);
+    TOTAL_MEMORY_STACK += 4.0 * ptr_node->links_cap * sizeof(int);
 
     //* Subzones
-    TOTAL_MEMORY_STACK += 6 * ptr_node->pbc_subzones_cap * sizeof(int);
+    TOTAL_MEMORY_STACK += 6.0 * ptr_node->pbc_subzones_cap * sizeof(int);
     // TOTAL_MEMORY_STACK += ptr_node->pbc_subzones_cap * sizeof(int *);
     // for(int j=0; j < ptr_node->pbc_subzones_cap; j++)
     // {
@@ -169,16 +169,16 @@ void terminal_print(void)
 {
   int cntr_nodes_memory_pool;
 
-  TOTAL_MEMORY_NODES = 0;
-  TOTAL_MEMORY_CELDAS = 0;
-  TOTAL_MEMORY_PARTICLES = 0;
-  TOTAL_MEMORY_CELL_STRUCT = 0;
-  TOTAL_MEMORY_CAJAS = 0;
-  TOTAL_MEMORY_GRID_POINTS = 0;
-  TOTAL_MEMORY_GRID_PROPERTIES = 0;
-  TOTAL_MEMORY_AUX = 0;
-  TOTAL_MEMORY_TENTACLES = 0;
-  TOTAL_MEMORY_STACK = 0;
+  TOTAL_MEMORY_NODES = 0.0;
+  TOTAL_MEMORY_CELDAS = 0.0;
+  TOTAL_MEMORY_PARTICLES = 0.0;
+  TOTAL_MEMORY_CELL_STRUCT = 0.0;
+  TOTAL_MEMORY_CAJAS = 0.0;
+  TOTAL_MEMORY_GRID_POINTS = 0.0;
+  TOTAL_MEMORY_GRID_PROPERTIES = 0.0;
+  TOTAL_MEMORY_AUX = 0.0;
+  TOTAL_MEMORY_TENTACLES = 0.0;
+  TOTAL_MEMORY_STACK = 0.0;
 
   cntr_nodes_memory_pool = computing_memory();
 
@@ -220,16 +220,16 @@ void terminal_print(void)
   {
     if (i == max_memory_secction)
     {
-      printf("%s%s = %f ~ %.1f %% %s\n", KCYN, Memory_names[i], Total_memory[i] / 1000000, Total_memory[i] * 100 / sum, KNRM);
+      printf("%s%s = %f ~ %.1f %% %s\n", KCYN, Memory_names[i], Total_memory[i] / 1000000.0, Total_memory[i] * 100.0 / sum, KNRM);
     }
     else
     {
-      printf("%s = %f ~ %.1f %%\n", Memory_names[i], Total_memory[i] / 1000000, Total_memory[i] * 100 / sum);
+      printf("%s = %f ~ %.1f %%\n", Memory_names[i], Total_memory[i] / 1000000.0, Total_memory[i] * 100.0 / sum);
     }
   }
   printf("Nodes in memory pool = %d\n", cntr_nodes_memory_pool);
 
-  printf("\n%sTOTAL = %f MB%s\n\n", KMAG, sum / 1000000, KNRM);
+  printf("\n%sTOTAL = %f MB%s\n\n", KMAG, sum / 1000000.0, KNRM);
 
   printf("\n\n%sTIEMPOS [s]:%s\n\n", KRED, KNRM);
 
@@ -262,7 +262,7 @@ void terminal_print(void)
       "Error Check in branches",
       ""};
 
-  double TOTAL_TIME = 0;
+  double TOTAL_TIME = 0.0;
   int MAX_TIME_SECCTION = 0;
   for (int i = 0; i < 20; i++)
   {
@@ -285,11 +285,11 @@ void terminal_print(void)
   {
     if (i == MAX_TIME_SECCTION)
     {
-      printf("%s%s = %1.2e ~ %.1f %% %s\n", KCYN, Time_names[i], GL_times[i], GL_times[i] * 100 / TOTAL_TIME, KNRM);
+      printf("%s%s = %1.2e ~ %.1f %% %s\n", KCYN, Time_names[i], GL_times[i], GL_times[i] * 100.0 / TOTAL_TIME, KNRM);
     }
     else
     {
-      printf("%s = %1.2e ~ %.1f %%\n", Time_names[i], GL_times[i], GL_times[i] * 100 / TOTAL_TIME);
+      printf("%s = %1.2e ~ %.1f %%\n", Time_names[i], GL_times[i], GL_times[i] * 100.0 / TOTAL_TIME);
     }
   }
   //* Potential times *//
@@ -300,11 +300,11 @@ void terminal_print(void)
     {
       if (MAX_TIME_SECCTION_POTENTIAL == i)
       {
-        printf("%s%s = %1.2e ~ %.1f %% %s\n", KYEL, Time_names_potential[i - 20], GL_times[i], GL_times[i] * 100 / TOTAL_TIME, KNRM);
+        printf("%s%s = %1.2e ~ %.1f %% %s\n", KYEL, Time_names_potential[i - 20], GL_times[i], GL_times[i] * 100.0 / TOTAL_TIME, KNRM);
       }
       else
       {
-        printf("%s = %1.2e ~ %.1f %%\n", Time_names_potential[i - 20], GL_times[i], GL_times[i] * 100 / TOTAL_TIME);
+        printf("%s = %1.2e ~ %.1f %%\n", Time_names_potential[i - 20], GL_times[i], GL_times[i] * 100.0 / TOTAL_TIME);
       }
     }
   }
@@ -312,7 +312,7 @@ void terminal_print(void)
   {
     for (int i = 20; i < 26; i++)
     {
-      printf("%s = %1.2e ~ %.1f %%\n", Time_names_potential[i - 20], GL_times[i], GL_times[i] * 100 / TOTAL_TIME);
+      printf("%s = %1.2e ~ %.1f %%\n", Time_names_potential[i - 20], GL_times[i], GL_times[i] * 100.0 / TOTAL_TIME);
     }
   }
 
@@ -325,32 +325,32 @@ void terminal_print(void)
   {
     if (i == MAX_TIME_SECCTION)
     {
-      printf("%s%s = %1.2e ~ %.1f %% %s\n", KCYN, Time_names[i], GL_times[i], GL_times[i] * 100 / TOTAL_TIME, KNRM);
+      printf("%s%s = %1.2e ~ %.1f %% %s\n", KCYN, Time_names[i], GL_times[i], GL_times[i] * 100.0 / TOTAL_TIME, KNRM);
     }
     else
     {
-      printf("%s = %1.2e ~ %.1f %%\n", Time_names[i], GL_times[i], GL_times[i] * 100 / TOTAL_TIME);
+      printf("%s = %1.2e ~ %.1f %%\n", Time_names[i], GL_times[i], GL_times[i] * 100.0 / TOTAL_TIME);
     }
   }
 
   //* >> Output Time *//
   if (18 == MAX_TIME_SECCTION)
   {
-    printf("%sOutput Main Parameters  = %1.2e ~ %.1f %% %s\n", KCYN, GL_times[18], GL_times[18] * 100 / TOTAL_TIME, KNRM);
+    printf("%sOutput Main Parameters  = %1.2e ~ %.1f %% %s\n", KCYN, GL_times[18], GL_times[18] * 100.0 / TOTAL_TIME, KNRM);
   }
   else
   {
-    printf("Output Main Parameters = %.2e ~ %.1f %%\n", GL_times[18], GL_times[18] * 100 / TOTAL_TIME);
+    printf("Output Main Parameters = %.2e ~ %.1f %%\n", GL_times[18], GL_times[18] * 100.0 / TOTAL_TIME);
   }
 
   //* >> Output Time *//
   if (19 == MAX_TIME_SECCTION)
   {
-    printf("%sOutput Snapshots = %.2e ~ %.1f %% %s\n", KCYN, GL_times[19], GL_times[19] * 100 / TOTAL_TIME, KNRM);
+    printf("%sOutput Snapshots = %.2e ~ %.1f %% %s\n", KCYN, GL_times[19], GL_times[19] * 100.0 / TOTAL_TIME, KNRM);
   }
   else
   {
-    printf("Output Snapshots = %.2e ~ %.1f %%\n", GL_times[19], GL_times[19] * 100 / TOTAL_TIME);
+    printf("Output Snapshots = %.2e ~ %.1f %%\n", GL_times[19], GL_times[19] * 100.0 / TOTAL_TIME);
   }
 
   //* >> Total time *//
@@ -377,15 +377,21 @@ void terminal_print(void)
       "moved_unused_child_node_to_memory_pool",
       "tentacles_updating",
       "updating_tentacles_max_lv",
+      "error",
 
       ""};
 
   printf("\n\n");
   //* >> TREE ADAPTATION TIME *//
   printf("\n\nTREE ADAPTATION TIME [s], Percentage over tree adaptation time\n\n");
-  for (int i = 30; i < 50; i++)
+  for (int i = 30; i < 51; i++)
   {
-    printf("%d: %s = %1.2e ~ %.1f %%\n", i - 30, Time_names_tree_adaptation[i - 30], GL_times[i], GL_times[i] * 100 / GL_times[10]);
+    printf("%d: %s = %1.2e ~ %.1f %%\n", i - 30, Time_names_tree_adaptation[i - 30], GL_times[i], GL_times[i] * 100.0 / GL_times[10]);
   }
   printf("\n\n");
+
+
+  printf("total - observabables = %1.3f\n",TOTAL_TIME-GL_times[13]);
+
+
 }

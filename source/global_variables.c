@@ -49,12 +49,18 @@ vtype _User_BoxSize_; //* >> User box size *//
 vtype _PI_;
 vtype _Onesixth_;
 vtype _kpc_to_m_;
+vtype _conversion_dist_;
 vtype _Msolar_to_kg_;
-vtype tt;
-vtype _Mgyear_;
+vtype _year_to_s_;
+vtype _conversion_time_;
+vtype _conversion_velocity_;
+//vtype tt;
+vtype _Myear_;
+vtype _Gyear_;
 vtype _G_;
 
 // Initial Parameters
+int NUMBER_OF_THEADS;
 vtype BoxSize;
 int lmin;         // Coarset level of refinement
 int lmax;         // Finest level of refinement
@@ -81,7 +87,13 @@ vtype _CFL_;
 vtype _MAX_dt_;
 
 //* >> Initial Center of Mass *//
-vtype GL_cm[3]; // Center of mass
+//vtype GL_cm[3]; // Center of mass
+vtype GL_cm_x; // Center of momentum pos x
+vtype GL_cm_y; // Center of momentum pos y
+vtype GL_cm_z; // Center of momentum pos z
+vtype GL_cm_vx; // Center of momentum vel x
+vtype GL_cm_vy; // Center of momentum vel y
+vtype GL_cm_vz; // Center of momentum vel z
 
 //* >> Poisson parameters *//
 // Relaxation solver at coarsest level
@@ -122,9 +134,10 @@ int time_step_method;
 int force_stencil;
 
 //* >> Initializing energy parameters *//
-bool compute_energies_FLAG;
+bool compute_observables_FLAG;
 int potential_energy_type;
 vtype *GL_energies;
+vtype *GL_momentum;
 
 //* >> Defining Particles Parameters *//
 vtype *GL_ptcl_mass; // Mass
@@ -164,7 +177,8 @@ int box_side_lmin_pow3;
 bool folder_created;
 
 //* >> Timer *//
-clock_t GL_clock_begin;
+//clock_t GL_clock_begin;
+struct timespec GL_start, GL_finish;
 double *GL_times;
 
 //* >> MEMORY *//
@@ -196,53 +210,74 @@ static void
 init_global_constants(void)
 {
   // Constants
-  _User_BoxSize_ = 0.6; // kpc
-  //_User_BoxSize_ = 0.1L; //kpc
-  _PI_ = 3.14159265358979323846L;
-  _Onesixth_ = 1.0L / 6.0L;
-  _kpc_to_m_ = 3.08568e19L;
-  _Msolar_to_kg_ = 1.98847e30L;
-  tt = sqrt(_kpc_to_m_ * _kpc_to_m_ * _kpc_to_m_ * _User_BoxSize_ * _User_BoxSize_ * _User_BoxSize_ / (6.67430e-11L * _Msolar_to_kg_));
-  _Mgyear_ = 3.1556952e13L / tt;
-  _G_ = 1.0L;
-  _G_ = 6.67430e-11 / (_kpc_to_m_ * _kpc_to_m_ * _kpc_to_m_ * _User_BoxSize_ * _User_BoxSize_ * _User_BoxSize_) * _Msolar_to_kg_ * tt * tt;
+  _User_BoxSize_ = 10.0 * 4.8476302883992e-9; // kpc;;;;     1 au = 4.8476302883992e-9 kpc
+  //_User_BoxSize_ = 110000.0; //40 Mpc for galaxy merger
+  //_User_BoxSize_ = 4000.0; //4 Mpc Plummer model
+  _PI_ = 3.14159265358979323846;
+  _Onesixth_ = 1.0 / 6.0;
+  _kpc_to_m_ = 3.08567758128e19; 
+  _conversion_dist_ = 1.0/_User_BoxSize_; // x [kpc] = x * _conversion_dist_ [\hat{kpc}], where, [\hat{kpc}] are the code distance units
+  _Msolar_to_kg_ = 1.98847e30;
+  _year_to_s_ = 31558149.756; // Year (how long it takes for the Earth to fully orbit the Sun) to second
+  _conversion_time_ = mysqrt(6.67430e-11 / (_kpc_to_m_ * _kpc_to_m_ * _kpc_to_m_) * (_conversion_dist_*_conversion_dist_*_conversion_dist_)
+       * _Msolar_to_kg_ * _year_to_s_ * _year_to_s_); //x [year] = x * _conversion_time_ [\hat{year}], where, [\hat{year}]  are the code time units
+  //tt = mysqrt(_kpc_to_m_ * _kpc_to_m_ * _kpc_to_m_ * _User_BoxSize_ * _User_BoxSize_ * _User_BoxSize_ / (6.67430e-11L * _Msolar_to_kg_));
+  _conversion_velocity_ = _conversion_dist_/_conversion_time_; // x [kpc/year] = x * _conversion_velocity_ [\hat{kpc}/[\hat{year}]] code units                                              
+  //_Myear_ = 3.1556952e13L / tt;
+  _Myear_ = 1.0e6 * _conversion_time_;  //1 mega year in code units
+  _Gyear_ = 1.0e9 * _conversion_time_;  //1 Giga year in code units
+  //_G_ = 1.0L;
+  //_G_ = 6.67430e-11 / (_kpc_to_m_ * _kpc_to_m_ * _kpc_to_m_) * (_conversion_dist_*_conversion_dist_*_conversion_dist_)
+  //     * _Msolar_to_kg_ * _year_to_s_ * _year_to_s_ * tt * tt;
+
+  _G_ = 6.67430e-11 / (_kpc_to_m_ * _kpc_to_m_ * _kpc_to_m_) * (_conversion_dist_*_conversion_dist_*_conversion_dist_)
+       * _Msolar_to_kg_ * _year_to_s_ * _year_to_s_ / (_conversion_time_ * _conversion_time_);      
   printf("_User_BoxSize_ = %f\n", (double)_User_BoxSize_);
-  printf("G = %.16f\n", (double)_G_);
-  printf("_Mgyear_ = %1.6e\n", (double)_Mgyear_);
-  printf("tt = %1.6e\n", (double)tt);
+  printf("G = %1.16e\n", (double)_G_);
+  printf("kpc to code distance unit = %1.6e\n",(double)_conversion_dist_);
+  printf("year to code time unit = %1.6e\n",(double)_conversion_time_); 
+  printf("velocity kpc/year to code velocity unit = %1.6e\n",(double)_conversion_velocity_);
+  printf("1 _Myear_ to code time units = %1.6e\n", (double)_Myear_);
+  //printf("tt = %1.6e\n", (double)tt);
 }
 
 static void init_global_user_params(void)
 {
-  BoxSize = 1.0L;
-  lmin = 4;                 // Coarset level of refinement
-  lmax = lmin + 10;          // Finest level of refinement
+  NUMBER_OF_THEADS = 8;
+  BoxSize = 1.0;
+  lmin = 8;                 // Coarset level of refinement
+  lmax = lmin + 0;          // Finest level of refinement
   no_lmin_cell = 1 << lmin; // Number of cells in the lmin level of refinement
   no_lmin_cell_pow2 = no_lmin_cell * no_lmin_cell;
   no_lmin_cell_pow3 = no_lmin_cell * no_lmin_cell * no_lmin_cell;
   no_grid = no_lmin_cell + 1;
-  GL_no_ptcl_initial = 10000;
+  GL_no_ptcl_initial = 2;
   GL_no_ptcl_final = GL_no_ptcl_initial;
   // GL_no_ptcl = 7550; // 2995865; // 299586; // 231299 // 298159
   //  GL_no_ptcl = 10000;
-  Maxdt = 10 * _Mgyear_;
-  // meanmass = 100; //Currently only used on input.c
+  Maxdt = 0.1 *  _conversion_time_; // 1 year = 1.0e-6 Myear
+  //Maxdt = 5 * _Gyear_; // 1 year = 1.0e-6 Myear
+  printf("Code Max time to reach = %1.12e in code units of time\n",(double) Maxdt);
+  //meanmass = 100; //Currently only used on input.c
   //  GL_total_mass_initial = GL_no_ptcl * meanmass;
   //  GL_total_mass_initial = 0;
-  fr_output = 1000000;
-  MaxIterations = 1000000;
+  fr_output = 100000000;
+  MaxIterations = 1000000; // 1000000;
   no_grid_pow2 = no_grid * no_grid;
-  no_grid_pow3 = no_grid * no_grid * no_grid;
-  bdry_cond_type = 0; // 0 = Periodic; 1 = Reflexive; 2 = Outflow
+  no_grid_pow3 = no_grid * no_grid * no_grid; 
+  bdry_cond_type = 1; // 0 = Periodic; 1 = Reflexive; 2 = Outflow   ##Note for Periodic conditions: Initial potential and acceleration are wrong, 
+                                                                    // In fact, we shouldn need initial conditions because the periodicity 
+
+  omp_set_num_threads(NUMBER_OF_THEADS);
 }
 
 static void init_global_ref_crit(void)
 {
-  ref_criterion_mass = 1.0e100; // meanmass * 7;
-  ref_criterion_ptcl = 3;
+  ref_criterion_mass = 1.0e100; //1.0e100; // meanmass * 7;
+  ref_criterion_ptcl = 7;
   n_exp = 1;   // n_exp = 0 is corrupted because particles can move between more than 1 level of refinement
   _CFL_ = 0.9; // CFL criteria 0.5
-  _MAX_dt_ = _Mgyear_ * 1.0;
+  _MAX_dt_ = 0.1 * Maxdt ;//0.00333333333 * Maxdt ;// _Myear_ * 1;
 }
 
 static void init_global_poisson_params(void)
@@ -260,10 +295,10 @@ static void init_global_poisson_params(void)
                        branches of the tree using Successive over-relaxation
   vtype _w_SOR_: The overrelaxation parameter
 */
-  _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_ = 1000;
-  _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ = (1.0e-8);
-  _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_2 = (1.0e-8);
-  check_poisson_error_method = 1; // Only used Gauss-Said or Jacobi in multigrid
+  _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_ = 5000;
+  _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ = (1.0e-10);
+  _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_2 = (1.0e-10);
+  check_poisson_error_method = 0; // Only used Gauss-Said or Jacobi in multigrid
   multigrid_cycle = 0;
   solverPreS = 0;
   solverPostS = 0;
@@ -271,16 +306,16 @@ static void init_global_poisson_params(void)
   _NiterPreS_ = 2;
   _NiterPostS_ = 2;
   _Niterfinddphic_ = 2;
-  _Iter_branches_solver_ = 25; // 25;
-  _w_SOR_ = 1.9;
+  _Iter_branches_solver_ = 10; // 25;
+  _w_SOR_ = 1.0;
   _w_SOR_HEAD_ = 1.0;
 
-  iter_between_check_potential_solution = 1;
+  iter_between_check_potential_solution = 5;
 
-  branches_maximal_node_number_to_activate_conjugate_gradient = 513; // 513, 216 = node with minimum size of 1 (+1 n_exp) size, (1 + 2*n_exp)^3 * 8
+  branches_maximal_node_number_to_activate_conjugate_gradient = 0; //INT_MAX; // 513, 216 = node with minimum size of 1 (+1 n_exp) size, (1 + 2*n_exp)^3 * 8
 
   head_pot_method = 0;   // 0 = Multygrid, 1 = Conjugate gradient
-  branch_pot_method = 0; // 0 = SOR, 1 = Conjugate gradient
+  branch_pot_method = 1; // 0 = SOR, 1 = Conjugate gradient
 }
 
 static void init_global_time_step_params(void)
@@ -295,16 +330,19 @@ static void init_global_force_params(void)
 
 static void init_global_energies_params(void)
 {
-  compute_energies_FLAG = true;
+  compute_observables_FLAG = true;
   potential_energy_type = 1; // 0 = Exact, 1 = approximation using potential grid
   // OBSERVABLES:
   //   Energies[0] = Kinetic
   //   Energies[1] = Potential
   //   Energies[2] = Total = K + P
-  if (compute_energies_FLAG)
+  if (compute_observables_FLAG)
   {
     GL_energies = (vtype *)malloc(3 * sizeof(vtype));
+    GL_momentum = (vtype *)malloc(3 * sizeof(vtype));
   }
+
+  
 }
 
 static void init_global_ptcl(void)
@@ -358,16 +396,16 @@ static void init_global_timer(void)
 
 static void init_global_memory(void)
 {
-  TOTAL_MEMORY_NODES = 0;
-  TOTAL_MEMORY_CELDAS = 0;
-  TOTAL_MEMORY_PARTICLES = 0;
-  TOTAL_MEMORY_CELL_STRUCT = 0;
-  TOTAL_MEMORY_CAJAS = 0;
-  TOTAL_MEMORY_GRID_POINTS = 0;
-  TOTAL_MEMORY_GRID_PROPERTIES = 0;
-  TOTAL_MEMORY_AUX = 0;
-  TOTAL_MEMORY_TENTACLES = 0;
-  TOTAL_MEMORY_STACK = 0;
+  TOTAL_MEMORY_NODES = 0.0;
+  TOTAL_MEMORY_CELDAS = 0.0;
+  TOTAL_MEMORY_PARTICLES = 0.0;
+  TOTAL_MEMORY_CELL_STRUCT = 0.0;
+  TOTAL_MEMORY_CAJAS = 0.0;
+  TOTAL_MEMORY_GRID_POINTS = 0.0;
+  TOTAL_MEMORY_GRID_PROPERTIES = 0.0;
+  TOTAL_MEMORY_AUX = 0.0;
+  TOTAL_MEMORY_TENTACLES = 0.0;
+  TOTAL_MEMORY_STACK = 0.0;
 }
 
 static void init_global_garbage_collector_parameters(void)

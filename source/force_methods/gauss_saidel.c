@@ -28,7 +28,7 @@
 
 void gauss_saidel(vtype *phi, const vtype *rho, int gridsize, int iter_max)
 {
-  vtype H_pow2 = (1.0L / (gridsize - 1)) * (1.0L / (gridsize - 1));
+  vtype H_pow2 = (1.0 / (gridsize - 1)) * (1.0 / (gridsize - 1));
   vtype aux_pot;
   int grid_idx;
 

@@ -35,9 +35,9 @@ int reset(void)
   //* >> Global particle accelerations *//
   for (int i = 0; i < GL_no_ptcl_final; i++)
   {
-    GL_ptcl_ax[i] = 0;
-    GL_ptcl_ay[i] = 0;
-    GL_ptcl_az[i] = 0;
+    GL_ptcl_ax[i] = 0.0;
+    GL_ptcl_ay[i] = 0.0;
+    GL_ptcl_az[i] = 0.0;
   }
 
   //* >> Head node *//
@@ -48,7 +48,7 @@ int reset(void)
 
   for (int i = 0; i < cap; i++)
   {
-    ptr_head->ptr_d[i] = 0;
+    ptr_head->ptr_d[i] = 0.0;
   }
 
   // for (int i = 0; i < cap; i++)

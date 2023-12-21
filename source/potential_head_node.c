@@ -99,12 +99,13 @@ static int compute_potential_head_node(struct node *ptr_node_pt)
 int potential_head_node(void)
 {
 
-  clock_t aux_clock;
+  //clock_t aux_clock;
+  struct timespec start, finish;
 
   struct node *ptr_node = GL_ptr_tree;
 
   vtype *dummy_pvtype = NULL;
-  vtype dummy_vtype = 0;
+  vtype dummy_vtype = 0.0;
 
   memcpy(ptr_node->ptr_pot_old, ptr_node->ptr_pot, ptr_node->grid_properties_cap * sizeof(vtype));
 
@@ -125,19 +126,25 @@ int potential_head_node(void)
     {
       iter = iter + 1;
       //* >> INITIAL POTENTIAL COMPUTATION *//
-      aux_clock = clock();
+      //aux_clock = clock();
+      clock_gettime( CLOCK_REALTIME, &start);
       if (compute_potential_head_node(ptr_node) == _FAILURE_)
       {
         printf("\n\n Error running potential_head_node() function \n\n ");
         return _FAILURE_;
       }
-      GL_times[20] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+      //GL_times[20] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+      clock_gettime( CLOCK_REALTIME, &finish);
+      GL_times[20] += ( finish.tv_sec - start.tv_sec ) + ( finish.tv_nsec - start.tv_nsec )/ 1000000000.;
       if (iter % iter_between_check_potential_solution == 0)
       {
         //* >> CHEKING ERROR SOLUTION CONDITION *//
-        aux_clock = clock();
+        //aux_clock = clock();
+        clock_gettime( CLOCK_REALTIME, &start);
         check = poisson_error(ptr_node, dummy_pvtype, dummy_vtype, 0);
-        GL_times[21] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+        //GL_times[21] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+        clock_gettime( CLOCK_REALTIME, &finish);
+        GL_times[21] += ( finish.tv_sec - start.tv_sec ) + ( finish.tv_nsec - start.tv_nsec )/ 1000000000.;
       }
     }
 
@@ -149,14 +156,18 @@ int potential_head_node(void)
   }
   else if (head_pot_method == 1)
   {
-    aux_clock = clock();
+    //printf("hola\n");
+    //aux_clock = clock();
+    clock_gettime( CLOCK_REALTIME, &start);
     //* >> SOLVING POISSON EQUATION *//
     if (conjugate_gradient(ptr_node) == _FAILURE_)
     {
       printf("\n\n Error running conjugate_gradient() function \n\n ");
       return _FAILURE_;
     }
-    GL_times[20] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+    //GL_times[20] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+    clock_gettime( CLOCK_REALTIME, &finish);
+    GL_times[20] += ( finish.tv_sec - start.tv_sec ) + ( finish.tv_nsec - start.tv_nsec )/ 1000000000.;
   }
   else
   {

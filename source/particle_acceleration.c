@@ -32,83 +32,99 @@ static void computing_particle_acceleration_head_plus_branches(const struct node
 
 static void computing_particle_acceleration_head_only(const struct node *ptr_head)
 {
-  int aux_idx;
 
-  vtype pos_x; // Particle position in the grid level
-  vtype pos_y;
-  vtype pos_z;
-
-  int pos_x_floor; // floor of the particle position in the grid level
-  int pos_y_floor;
-  int pos_z_floor;
-
-  vtype w_x_1; // Weight component of the CIC method. It corresponds to the distance between the particle and the grid point
-  vtype w_y_1;
-  vtype w_z_1;
-  vtype w_x_2;
-  vtype w_y_2;
-  vtype w_z_2;
-
-  int box_grid_idx_x; // grid_idx component in the grid box
-  int box_grid_idx_y;
-  int box_grid_idx_z;
-  int box_grid_idx;    // Grid box grid_idx
-  int box_grid_idxNbr; // Box index in the neigborhood
-
-  vtype w[8]; // Weight of the CIC method
-
-  int lv = ptr_head->lv; // Level of refinement
-
-  int grid_box_real_dim_X = (ptr_head->box_real_dim_x + 1);
-  int grid_box_real_dim_X_times_Y = (ptr_head->box_real_dim_x + 1) * (ptr_head->box_real_dim_y + 1);
-
-  for (int i = 0; i < GL_no_ptcl_final; i++)
+  #pragma omp parallel
   {
-    //* >> Position of the particles in the grid level *//
-    pos_x = GL_ptcl_x[i] * (1 << lv);
-    pos_y = GL_ptcl_y[i] * (1 << lv);
-    pos_z = GL_ptcl_z[i] * (1 << lv);
+    int aux_idx;
 
-    //* >> Floor of the particles positions in the grid level *//
-    // pos_x_floor = myfloor(pos_x);
-    // pos_y_floor = myfloor(pos_y);
-    // pos_z_floor = myfloor(pos_z);
-    pos_x_floor = (int)pos_x;
-    pos_y_floor = (int)pos_y;
-    pos_z_floor = (int)pos_z;
+    vtype pos_x; // Particle position in the grid level
+    vtype pos_y;
+    vtype pos_z;
 
-    //* >> Computing the weights of the nearest grid points of the particle *//
-    w_x_1 = pos_x - pos_x_floor;
-    w_y_1 = pos_y - pos_y_floor;
-    w_z_1 = pos_z - pos_z_floor;
-    w_x_2 = 1 - w_x_1;
-    w_y_2 = 1 - w_y_1;
-    w_z_2 = 1 - w_z_1;
-    w[0] = w_x_2 * w_y_2 * w_z_2;
-    w[1] = w_x_1 * w_y_2 * w_z_2;
-    w[2] = w_x_2 * w_y_1 * w_z_2;
-    w[3] = w_x_1 * w_y_1 * w_z_2;
-    w[4] = w_x_2 * w_y_2 * w_z_1;
-    w[5] = w_x_1 * w_y_2 * w_z_1;
-    w[6] = w_x_2 * w_y_1 * w_z_1;
-    w[7] = w_x_1 * w_y_1 * w_z_1;
+    int pos_x_floor; // floor of the particle position in the grid level
+    int pos_y_floor;
+    int pos_z_floor;
 
-    box_grid_idx_x = pos_x_floor - ptr_head->box_ts_x;
-    box_grid_idx_y = pos_y_floor - ptr_head->box_ts_y;
-    box_grid_idx_z = pos_z_floor - ptr_head->box_ts_z;
-    box_grid_idx = box_grid_idx_x + box_grid_idx_y * grid_box_real_dim_X + box_grid_idx_z * grid_box_real_dim_X_times_Y;
-    //* >> Particle density contributes to 8 enclosure grid points *//
-    for (int kk = 0; kk < 2; kk++)
+    vtype w_x_1; // Weight component of the CIC method. It corresponds to the distance between the particle and the grid point
+    vtype w_y_1;
+    vtype w_z_1;
+    vtype w_x_2;
+    vtype w_y_2;
+    vtype w_z_2;
+
+    int box_grid_idx_x; // grid_idx component in the grid box
+    int box_grid_idx_y;
+    int box_grid_idx_z;
+    int box_grid_idx;    // Grid box grid_idx
+    int box_grid_idxNbr; // Box index in the neigborhood
+
+    vtype w[8]; // Weight of the CIC method
+
+    int lv = ptr_head->lv; // Level of refinement
+
+    int grid_box_real_dim_X = (ptr_head->box_real_dim_x + 1);
+    int grid_box_real_dim_X_times_Y = (ptr_head->box_real_dim_x + 1) * (ptr_head->box_real_dim_y + 1);
+
+
+    #pragma omp for
+    for (int i = 0; i < GL_no_ptcl_final; i++)
     {
-      for (int jj = 0; jj < 2; jj++)
+      //* >> Position of the particles in the grid level *//
+      pos_x = GL_ptcl_x[i] * (1 << lv);
+      pos_y = GL_ptcl_y[i] * (1 << lv);
+      pos_z = GL_ptcl_z[i] * (1 << lv);
+
+      //* >> Floor of the particles positions in the grid level *//
+      // pos_x_floor = myfloor(pos_x);
+      // pos_y_floor = myfloor(pos_y);
+      // pos_z_floor = myfloor(pos_z);
+      pos_x_floor = (int)pos_x;
+      pos_y_floor = (int)pos_y;
+      pos_z_floor = (int)pos_z;
+
+      //* >> Computing the weights of the nearest grid points of the particle *//
+      w_x_1 = pos_x - pos_x_floor;
+      w_y_1 = pos_y - pos_y_floor;
+      w_z_1 = pos_z - pos_z_floor;
+      w_x_2 = 1.0 - w_x_1;
+      w_y_2 = 1.0 - w_y_1;
+      w_z_2 = 1.0 - w_z_1;
+      w[0] = w_x_2 * w_y_2 * w_z_2;
+      w[1] = w_x_1 * w_y_2 * w_z_2;
+      w[2] = w_x_2 * w_y_1 * w_z_2;
+      w[3] = w_x_1 * w_y_1 * w_z_2;
+      w[4] = w_x_2 * w_y_2 * w_z_1;
+      w[5] = w_x_1 * w_y_2 * w_z_1;
+      w[6] = w_x_2 * w_y_1 * w_z_1;
+      w[7] = w_x_1 * w_y_1 * w_z_1;
+
+
+      // printf("Transfer acceleration:\n");
+      // for(int hh = 0; hh < 8; hh++)
+      // {
+      //   printf("%.12f\n ",(double)w[hh]);
+      // }
+
+      box_grid_idx_x = pos_x_floor - ptr_head->box_ts_x;
+      box_grid_idx_y = pos_y_floor - ptr_head->box_ts_y;
+      box_grid_idx_z = pos_z_floor - ptr_head->box_ts_z;
+      box_grid_idx = box_grid_idx_x + box_grid_idx_y * grid_box_real_dim_X + box_grid_idx_z * grid_box_real_dim_X_times_Y;
+
+      //* >> Particle density contributes to 8 enclosure grid points *//
+      //printf("grid idx ; accelerations ax ay az, and pot  in the grid points\n");
+      for (int kk = 0; kk < 2; kk++)
       {
-        for (int ii = 0; ii < 2; ii++)
+        for (int jj = 0; jj < 2; jj++)
         {
-          aux_idx = ii + 2 * jj + 4 * kk;
-          box_grid_idxNbr = box_grid_idx + ii + jj * grid_box_real_dim_X + kk * grid_box_real_dim_X_times_Y;
-          GL_ptcl_ax[i] += ptr_head->ptr_ax[box_grid_idxNbr] * w[aux_idx];
-          GL_ptcl_ay[i] += ptr_head->ptr_ay[box_grid_idxNbr] * w[aux_idx];
-          GL_ptcl_az[i] += ptr_head->ptr_az[box_grid_idxNbr] * w[aux_idx];
+          for (int ii = 0; ii < 2; ii++)
+          {
+            aux_idx = ii + 2 * jj + 4 * kk;
+            box_grid_idxNbr = box_grid_idx + ii + jj * grid_box_real_dim_X + kk * grid_box_real_dim_X_times_Y;
+            GL_ptcl_ax[i] += ptr_head->ptr_ax[box_grid_idxNbr] * w[aux_idx];
+            GL_ptcl_ay[i] += ptr_head->ptr_ay[box_grid_idxNbr] * w[aux_idx];
+            GL_ptcl_az[i] += ptr_head->ptr_az[box_grid_idxNbr] * w[aux_idx];
+            //printf("\n%d; %.12f %.12f %.12f, pot = %.12f\n",box_grid_idxNbr,(double)ptr_head->ptr_ax[box_grid_idxNbr],(double)ptr_head->ptr_ay[box_grid_idxNbr],(double)ptr_head->ptr_az[box_grid_idxNbr],(double)ptr_head->ptr_pot[box_grid_idxNbr]);
+          }
         }
       }
     }
@@ -186,9 +202,9 @@ static void computing_particle_acceleration_head_plus_branches(const struct node
         w_x_1 = pos_x - pos_x_floor;
         w_y_1 = pos_y - pos_y_floor;
         w_z_1 = pos_z - pos_z_floor;
-        w_x_2 = 1 - w_x_1;
-        w_y_2 = 1 - w_y_1;
-        w_z_2 = 1 - w_z_1;
+        w_x_2 = 1.0 - w_x_1;
+        w_y_2 = 1.0 - w_y_1;
+        w_z_2 = 1.0 - w_z_1;
         w[0] = w_x_2 * w_y_2 * w_z_2;
         w[1] = w_x_1 * w_y_2 * w_z_2;
         w[2] = w_x_2 * w_y_1 * w_z_2;
@@ -198,12 +214,21 @@ static void computing_particle_acceleration_head_plus_branches(const struct node
         w[6] = w_x_2 * w_y_1 * w_z_1;
         w[7] = w_x_1 * w_y_1 * w_z_1;
 
+        // for(int hh = 0; hh < 8; hh++)
+        // {
+        //   printf("%f ",w[hh]);
+        // }
+        // printf("\n");
+
+
         box_grid_idx_x = pos_x_floor - ptr_node->box_ts_x;
         box_grid_idx_y = pos_y_floor - ptr_node->box_ts_y;
         box_grid_idx_z = pos_z_floor - ptr_node->box_ts_z;
 
+
         if (ptr_node->pbc_crosses_sim_box_bdry == true)
         {
+
           if (pos_x_floor > ptr_node->box_max_x)
           {
             box_grid_idx_x -= (1 << lv);
@@ -233,6 +258,7 @@ static void computing_particle_acceleration_head_plus_branches(const struct node
               GL_ptcl_ax[ptcl_idx] += ptr_node->ptr_ax[box_grid_idxNbr] * w[aux_idx];
               GL_ptcl_ay[ptcl_idx] += ptr_node->ptr_ay[box_grid_idxNbr] * w[aux_idx];
               GL_ptcl_az[ptcl_idx] += ptr_node->ptr_az[box_grid_idxNbr] * w[aux_idx];
+              //printf("%f %f %f\n",ptr_node->ptr_ax[box_grid_idxNbr],ptr_node->ptr_ay[box_grid_idxNbr],ptr_node->ptr_az[box_grid_idxNbr]);
             }
           }
         }
@@ -272,9 +298,9 @@ static void computing_particle_acceleration_head_plus_branches(const struct node
           w_x_1 = pos_x - pos_x_floor;
           w_y_1 = pos_y - pos_y_floor;
           w_z_1 = pos_z - pos_z_floor;
-          w_x_2 = 1 - w_x_1;
-          w_y_2 = 1 - w_y_1;
-          w_z_2 = 1 - w_z_1;
+          w_x_2 = 1.0 - w_x_1;
+          w_y_2 = 1.0 - w_y_1;
+          w_z_2 = 1.0 - w_z_1;
           w[0] = w_x_2 * w_y_2 * w_z_2;
           w[1] = w_x_1 * w_y_2 * w_z_2;
           w[2] = w_x_2 * w_y_1 * w_z_2;
@@ -502,15 +528,40 @@ int particle_acceleration(void)
 
   if (lmin < lmax)
   {
+
+    // for (int lv = GL_tentacles_level_max; lv > -1; lv--)
+    // {
+    //   //* >> For cycle over parent nodes *//
+    //   for (int i = 0; i < GL_tentacles_size[lv]; i++)
+    //   {
+    //     // ptr_node = GL_tentacles[lv][i];
+
+    //     computing_particle_acceleration_head_plus_branches(GL_tentacles[lv][i]);
+    //   }
+    // }
+
+
+    int total_iter = 0;
     for (int lv = GL_tentacles_level_max; lv > -1; lv--)
     {
-      //* >> For cycle over parent nodes *//
+      total_iter += GL_tentacles_size[lv];
+    }
+
+    int lv_idx[total_iter], node_idx[total_iter];  
+    int idx = 0;
+    for (int lv = GL_tentacles_level_max; lv > -1; lv--)
+    {
       for (int i = 0; i < GL_tentacles_size[lv]; i++)
       {
-        // ptr_node = GL_tentacles[lv][i];
-
-        computing_particle_acceleration_head_plus_branches(GL_tentacles[lv][i]);
+        lv_idx[idx] = lv;
+        node_idx[idx] = i;
+        idx += 1;
       }
+    }
+    #pragma omp parallel for
+    for(int hh = 0; hh < total_iter; hh++ )
+    {
+      computing_particle_acceleration_head_plus_branches(GL_tentacles[lv_idx[hh]][node_idx[hh]]);
     }
   }
   else

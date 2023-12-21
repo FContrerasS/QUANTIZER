@@ -1,13 +1,15 @@
 # Build a executable called vaca
 
+#export OMP_THREAD_LIMIT := 8
 
 # the compiler: gcc for C program, define as g++ for C++
 CC := gcc
 
+
 # compiler flags:
 #  -g    adds debugging information to the executable file
 #  -Wall turns on most, but not all, compiler warnings
-CFLAGS := -g -Wall
+CFLAGS := -g -Wall -fopenmp
 
 #Optimization Flags
 OPTIMIZATION := -O3
@@ -71,7 +73,7 @@ compile:
 	$(CC) $(CFLAGS) -I$(HEADERS) $(OPTIMIZATION) -c $(SOURCES)
 
 link:
-	$(CC)  $(OBJ) -o $(EXECUTABLE) -lm
+	$(CC)  $(OBJ) -o $(EXECUTABLE) -lm  $(CFLAGS)
 	
 gprof: *.cpp
 	$(CC) $(CFLAGS) -I $(HEADERS) $(INICOND) $(OPTIMIZATION) $(GPROF) -o $(EXECUTABLE).gprof $(SOURCES) -lm

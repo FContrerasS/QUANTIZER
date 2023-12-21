@@ -143,7 +143,7 @@ int space_check(int *ptr_cap, int size, float increase, const char *format, ...)
         }
         for (int j = cap; j < *ptr_cap; j++)
         {
-          (*pptr_vtype)[j] = 0;
+          (*pptr_vtype)[j] = 0.0;
         }
       }
       else if (format_aux == 'v' && *format == '2')

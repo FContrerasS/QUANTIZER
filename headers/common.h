@@ -43,25 +43,40 @@
 #include <sys/stat.h>
 #include <stdbool.h>
 #include <stdarg.h>
+#include <omp.h>
 
 #define _VTYPE_ 2 /**< Defining type of data: 1 = float; 2 = double; 3 = long double. other number = double */
+
 #if _VTYPE_ == 1
 typedef float vtype; /**< Type of date \f${\color{red} \mathbf{float}}\f$ assigned by the user in the macros \ref _VTYPE_ */
 #define myabs fabsf 
 #define myfloor floorf
+#define mysqrt sqrtf
+#define mycbrt cbrtf
 #elif _VTYPE_ == 2
 typedef double vtype; /**< Type of date \f${\color{red} \mathbf{double}}\f$ assigned by the user in the macros \ref _VTYPE_ */
 #define myabs fabs
 #define myfloor floor
+#define mysqrt sqrt
+#define mycbrt cbrt
 #elif _VTYPE_ == 3
 typedef long double vtype; /**< Type of date \f${\color{red} \mathbf{long double}}\f$ assigned by the user in the macros \ref _VTYPE_ */
 #define myabs fabsl
 #define myfloor floorl
+#define mysqrt sqrtl
+#define mycbrt cbrtl
 #else
 typedef double vtype; /**< Type of date \f${\color{red} \mathbf{double}}\f$ assigned by the user in the macros \ref _VTYPE_ */
 #define myabs fabs
 #define myfloor floor
+#define mysqrt sqrt
+#define mycbrt cbrt
 #endif
+
+
+
+
+
 
 #define _SUCCESS_ 0 /* integer returned after successful call of a function */
 #define _FAILURE_ 1 /* integer returnd after failure in a function */
@@ -91,12 +106,18 @@ extern vtype _User_BoxSize_; /**< Global Variable Constants: User boxsize in kpc
 extern vtype _PI_;           /**< Global Variable Constants: Pi value. */
 extern vtype _Onesixth_;     /**< Global Variable Constants: The value of \f$1\over 6\f$. */
 extern vtype _kpc_to_m_;     /**< Global Variable Constants: The dimensionless \f$x\f$ value in the relation \f$1\textrm{ kpc} = x \cdot 1\textrm{ m}\f$. */
+extern vtype _conversion_dist_;
 extern vtype _Msolar_to_kg_; /**< Global Variable Constants: The dimensionless \f$x\f$ value in the relation \f$1 \textup{ M}_\odot = x \cdot 1\textrm{ kg}\f$. */
-extern vtype tt;             /**< Global Variable Constants: The unit of time in code units, such that #_G_ = 1 in these code units. */
-extern vtype _Mgyear_;       /**< Global Variable Constants: The value of one Mega year in seconds */
+extern vtype _year_to_s_;
+extern vtype _conversion_time_;
+extern vtype _conversion_velocity_;
+//extern vtype tt;             /**< Global Variable Constants: The unit of time in code units, such that #_G_ = 1 in these code units. */
+extern vtype _Myear_;       /**< Global Variable Constants: The value of one Mega year in seconds */
+extern vtype _Gyear_;       /**< Global Variable Constants: The value of one Giga year in seconds */
 extern vtype _G_;            /**< Global Variable Constants: The gravitational constant *G* in units of \f${\textrm{m}^3\over \textrm{kg s}^2} \f$ */
 
 // Initial Parameters
+extern int NUMBER_OF_THEADS;
 extern vtype BoxSize;
 extern int lmin;     //Coarset level of refinement
 extern int lmax;  //Finest level of refinement
@@ -125,7 +146,13 @@ extern vtype _CFL_; // CFL criteria 0.5
 extern vtype _MAX_dt_;
 
 //* >> Initial Center of Mass *//
-extern vtype GL_cm[3]; // Center of mass
+//extern vtype GL_cm[3]; // Center of mass
+extern vtype GL_cm_x; // Center of momentum pos x
+extern vtype GL_cm_y; // Center of momentum pos y
+extern vtype GL_cm_z; // Center of momentum pos z
+extern vtype GL_cm_vx; // Center of momentum vel x
+extern vtype GL_cm_vy; // Center of momentum vel y
+extern vtype GL_cm_vz; // Center of momentum vel z
 
 //* >> Poisson parameters *//
 // Relaxation solver at coarsest level
@@ -155,9 +182,10 @@ extern int time_step_method;
 extern int force_stencil;
 
 //* >> Initializing energy parameters *//
-extern bool compute_energies_FLAG;
+extern bool compute_observables_FLAG;
 extern int potential_energy_type;
 extern vtype *GL_energies;
+extern vtype *GL_momentum;
 
 //* >> Particles *//
 extern vtype *GL_ptcl_mass;
@@ -194,7 +222,8 @@ extern bool folder_created;
 
 
 //* >> Timer *//
-extern clock_t GL_clock_begin;
+//extern clock_t GL_clock_begin;
+extern struct timespec GL_start, GL_finish;
 extern double *GL_times;
 
 //* >> Border of the simulation box *//

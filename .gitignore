@@ -1,17 +1,7 @@
 #Folders
 
-Animations/
-MANUAL/Template/
-MANUAL/latex/
-MANUAL/html/
-MANUAL/doxygen
-MANUAL/AMR_initial_guide.pdf
-Images/
-output/
-tests/
-Galaxy_merger_data/
+MANUAL/
 .vscode/
-doxygen
 
 # Text Files
 
@@ -26,7 +16,3 @@ Future_implementations.txt
 *.exe
 *.log
 *.linux
-
-galaxies_IC_high_ptcl.txt
-galaxies_IC_low_ptcl.txt
-

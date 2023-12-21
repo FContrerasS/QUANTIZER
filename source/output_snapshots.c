@@ -68,7 +68,7 @@ static int output_folder_names(void)
   {
     // Default value (total time, Ng, Np, )
     char aux_char[100];
-    sprintf(aux_char, "Simulation_Maxdt[My](%1.1f)_lv(%d+%d)_Np(%d)", (double)(Maxdt / _Mgyear_), lmin, lmax - lmin, GL_no_ptcl_initial);
+    sprintf(aux_char, "Simulation_Maxdt[My](%1.1f)_lv(%d+%d)_Np(%d)", (double)(Maxdt / _Myear_), lmin, lmax - lmin, GL_no_ptcl_initial);
     strcpy(folder_Simulation_output_name, aux_char);
   }
   else
@@ -144,7 +144,8 @@ int output_snapshots(vtype actualtime, int snapshot)
   int size = GL_no_ptcl_final * sizeof(vtype);
   char snapshot_name[1500];
 
-  vtype time_Megayear = actualtime / _Mgyear_; // Actual time in mega years
+  //vtype time_Megayear = actualtime / _Myear_; // Actual time in mega years
+  vtype real_time = actualtime / _conversion_time_;
 
   if (folder_created == false)
   { // The folder are created only one time
@@ -161,7 +162,7 @@ int output_snapshots(vtype actualtime, int snapshot)
     }
   }
 
-  vtype _one_over_User_sqrt_BoxSize_ = 1.0L / sqrt(_User_BoxSize_);
+  //vtype _one_over_User_sqrt_BoxSize_ = 1.0L / mysqrt(_User_BoxSize_);
 
   vtype *GL_ptcl_x_conversion;
   vtype *GL_ptcl_y_conversion;
@@ -180,13 +181,17 @@ int output_snapshots(vtype actualtime, int snapshot)
   // Returning to user units
   for (int i = 0; i < GL_no_ptcl_final; i++)
   {
-    GL_ptcl_x_conversion[i] = (GL_ptcl_x[i] - 0.5) * _User_BoxSize_;
-    GL_ptcl_y_conversion[i] = (GL_ptcl_y[i] - 0.5) * _User_BoxSize_;
-    GL_ptcl_z_conversion[i] = (GL_ptcl_z[i] - 0.5) * _User_BoxSize_;
+    // GL_ptcl_x_conversion[i] = (GL_ptcl_x[i] - 0.5) / _conversion_dist_ + GL_cm_x;
+    // GL_ptcl_y_conversion[i] = (GL_ptcl_y[i] - 0.5) / _conversion_dist_ + GL_cm_y;
+    // GL_ptcl_z_conversion[i] = (GL_ptcl_z[i] - 0.5) / _conversion_dist_ + GL_cm_z;
 
-    GL_ptcl_vx_conversion[i] = GL_ptcl_vx[i] * _one_over_User_sqrt_BoxSize_;
-    GL_ptcl_vy_conversion[i] = GL_ptcl_vy[i] * _one_over_User_sqrt_BoxSize_;
-    GL_ptcl_vz_conversion[i] = GL_ptcl_vz[i] * _one_over_User_sqrt_BoxSize_;
+    GL_ptcl_x_conversion[i] = (GL_ptcl_x[i] - 0.5) / _conversion_dist_ + GL_cm_x + GL_cm_vx * real_time;
+    GL_ptcl_y_conversion[i] = (GL_ptcl_y[i] - 0.5) / _conversion_dist_ + GL_cm_y + GL_cm_vy * real_time;
+    GL_ptcl_z_conversion[i] = (GL_ptcl_z[i] - 0.5) / _conversion_dist_ + GL_cm_z + GL_cm_vz * real_time;
+
+    GL_ptcl_vx_conversion[i] = GL_ptcl_vx[i] / _conversion_velocity_ + GL_cm_vx;
+    GL_ptcl_vy_conversion[i] = GL_ptcl_vy[i] / _conversion_velocity_ + GL_cm_vy;
+    GL_ptcl_vz_conversion[i] = GL_ptcl_vz[i] / _conversion_velocity_ + GL_cm_vz;
   }
 
   sprintf(snapshot_name, "%s%d.bin", file_data_name, snapshot);
@@ -207,11 +212,19 @@ int output_snapshots(vtype actualtime, int snapshot)
   fwrite(GL_ptcl_vx_conversion, size, 1, file);
   fwrite(GL_ptcl_vy_conversion, size, 1, file);
   fwrite(GL_ptcl_vz_conversion, size, 1, file);
-  if (compute_energies_FLAG)
+  if (compute_observables_FLAG)
   {
     fwrite(GL_energies, 3 * sizeof(vtype), 1, file);
   }
-  fwrite(&time_Megayear, sizeof(vtype), 1, file);
+
+  if (compute_observables_FLAG)
+  {
+    fwrite(GL_momentum, 3 * sizeof(vtype), 1, file);
+  }
+
+  //fwrite(&time_Megayear, sizeof(vtype), 1, file);
+  fwrite(&real_time, sizeof(vtype), 1, file); //Output  time in years
+  
   fclose(file);
 
   // Free memory

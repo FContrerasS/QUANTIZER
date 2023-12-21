@@ -527,6 +527,7 @@ static int fill_cell_ref(struct node *ptr_node)
 
     // Refinement criterion in the box_mass in no border box points
     if (ptr_node->ptr_cell_struct[box_idx_node].cell_mass >= ref_criterion_mass || ptr_node->ptr_cell_struct[box_idx_node].ptcl_size >= ref_criterion_ptcl)
+    //if (ptr_node->ptr_cell_struct[box_idx_node].cell_mass >= ref_criterion_mass && ptr_node->ptr_cell_struct[box_idx_node].ptcl_size >= ref_criterion_ptcl)
     {
       if (ptr_node->ptr_box[box_idx_node] == -3) // Cell has not been added yet
       {
@@ -1719,7 +1720,7 @@ static int create_child_nodes(struct node *ptr_node)
     }
 
     // Filling the box status
-    cap = ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y * ptr_ch->box_real_dim_z; // In general, the size of each side must be 3 times bigger than the same side of the ""Smallest Box""
+    cap = ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y * ptr_ch->box_real_dim_z; // In general, the size of each side must be 5 times bigger than the same side of the ""Smallest Box""
     ptr_ch->box_cap = cap;
     ptr_ch->ptr_box = (int *)malloc(cap * sizeof(int));
     ptr_ch->ptr_box_old = (int *)malloc(cap * sizeof(int));

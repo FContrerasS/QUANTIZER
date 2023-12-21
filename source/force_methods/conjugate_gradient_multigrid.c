@@ -28,8 +28,8 @@
 
 void conjugate_gradient_multigrid(vtype *phi, const vtype *rho, int gridsize, int conj_grad_iter)
 {
-  vtype H = 1.0L / (gridsize - 1);
-  vtype one_over_H_pow_2 = 1.0L / (H * H);
+  vtype H = 1.0 / (gridsize - 1);
+  vtype one_over_H_pow_2 = 1.0 / (H * H);
   int gridsize_pow2 = gridsize * gridsize;
   int gridsize_pow3 = gridsize * gridsize * gridsize;
 
@@ -62,7 +62,7 @@ void conjugate_gradient_multigrid(vtype *phi, const vtype *rho, int gridsize, in
   memcpy(p, r, gridsize_pow3 * sizeof(vtype));
 
   // Computing rsold
-  rsold = 0;
+  rsold = 0.0;
   for (int lz = gridsize_pow2; lz < C3; lz += gridsize_pow2)
   {
     for (int ly = gridsize; ly < C2; ly += gridsize)
@@ -94,7 +94,7 @@ void conjugate_gradient_multigrid(vtype *phi, const vtype *rho, int gridsize, in
     }
 
     // Computing alpha
-    alpha = 0;
+    alpha = 0.0;
     for (int lz = gridsize_pow2; lz < C3; lz += gridsize_pow2)
     {
       for (int ly = gridsize; ly < C2; ly += gridsize)
@@ -135,7 +135,7 @@ void conjugate_gradient_multigrid(vtype *phi, const vtype *rho, int gridsize, in
     }
 
     // Computing rsnew
-    rsnew = 0;
+    rsnew = 0.0;
     for (int lz = gridsize_pow2; lz < C3; lz += gridsize_pow2)
     {
       for (int ly = gridsize; ly < C2; ly += gridsize)

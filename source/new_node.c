@@ -46,7 +46,7 @@ static void re_initialize_node(struct node *ptr_node)
   for (int i = 0; i < ptr_node->cell_size; i++)
   {
     box_idx_node = ptr_node->ptr_box_idx[i];
-    ptr_node->ptr_cell_struct[box_idx_node].cell_mass = 0;
+    ptr_node->ptr_cell_struct[box_idx_node].cell_mass = 0.0;
     ptr_node->ptr_cell_struct[box_idx_node].ptcl_size = 0;
   }
 
@@ -54,7 +54,7 @@ static void re_initialize_node(struct node *ptr_node)
   ptr_node->cell_size = 0; // Number of existing cells in the node
 
   //* >> Total mass in the node *//
-  ptr_node->node_mass = 0;
+  ptr_node->node_mass = 0.0;
   //* >> Total number of particles in the node
   ptr_node->no_ptcl_full_node = 0;
   ptr_node->no_ptcl_outs_ref_zones = 0;
@@ -68,7 +68,7 @@ static void re_initialize_node(struct node *ptr_node)
 
   for (int i = 0; i < ptr_node->grid_properties_cap; i++)
   {
-    ptr_node->ptr_d[i] = 0;
+    ptr_node->ptr_d[i] = 0.0;
   }
 
   //* >> Tree structure *//

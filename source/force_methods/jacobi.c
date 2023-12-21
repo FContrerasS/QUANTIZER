@@ -32,7 +32,7 @@ static void compute_jacobi(vtype *phi_old, vtype *phi_new, const vtype *rho,
 
   vtype *pointer_auxiliary;
   vtype aux_pot;
-  vtype C = -(1.0L / (gridsize - 1)) * (1.0L / (gridsize - 1));
+  vtype C = -(1.0 / (gridsize - 1)) * (1.0 / (gridsize - 1));
   int gridsize_pow_2 = gridsize * gridsize;
   int C1 = (gridsize - 1);
   int C2 = gridsize * (gridsize - 1);

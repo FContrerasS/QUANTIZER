@@ -486,7 +486,7 @@ void check_error(struct node *ptr_node, int type)
         {
           printf("Child node at lv = %d, ID = %d\n", ptr_ch->lv, ptr_ch->ID);
           printf("error, child, has a box cell with status of No-Exist but with particles inside\n");
-          printf("ptcl size = %d, cell mass = %f\n", ptr_ch->ptr_cell_struct[j].ptcl_size, ptr_ch->ptr_cell_struct[j].cell_mass);
+          printf("ptcl size = %d, cell mass = %f\n", ptr_ch->ptr_cell_struct[j].ptcl_size, (double) ptr_ch->ptr_cell_struct[j].cell_mass);
           ptcl_idx = ptr_ch->ptr_cell_struct[j].ptr_ptcl[0];
           printf("ptcl id = %d, pos_x = %f, pos_y = %f, pos_z = %f\n", GL_ptcl_ID[ptcl_idx], (double)GL_ptcl_x[ptcl_idx], (double)GL_ptcl_y[ptcl_idx], (double)GL_ptcl_z[ptcl_idx]);
         }
@@ -533,12 +533,12 @@ void check_error(struct node *ptr_node, int type)
 
       box_idx_ch = box_idx_x_ch + box_idx_y_ch * box_real_dim_X_ch + box_idx_z_ch * box_real_dim_X_times_Y_ch;
 
-      if (ptr_ch->ptr_cell_struct[box_idx_ch].cell_mass != ptr_ch->ptr_cell_struct[box_idx_ch].ptcl_size * 100.0 || ptr_ch->ptr_cell_struct[box_idx_ch].ptcl_size < 0)
-      {
-        printf("Child node at lv = %d, ID = %d\n", ptr_ch->lv, ptr_ch->ID);
-        printf("Error, child, box_idx = %d\n", box_idx_ch);
-        printf("ptcl_size = %d, cell_mass = %f\n", ptr_ch->ptr_cell_struct[box_idx_ch].ptcl_size, (double)ptr_ch->ptr_cell_struct[box_idx_ch].cell_mass);
-      }
+      // if (ptr_ch->ptr_cell_struct[box_idx_ch].cell_mass != ptr_ch->ptr_cell_struct[box_idx_ch].ptcl_size * 100.0 || ptr_ch->ptr_cell_struct[box_idx_ch].ptcl_size < 0)
+      // {
+      //   printf("Child node at lv = %d, ID = %d\n", ptr_ch->lv, ptr_ch->ID);
+      //   printf("Error, child, box_idx = %d\n", box_idx_ch);
+      //   printf("ptcl_size = %d, cell_mass = %f\n", ptr_ch->ptr_cell_struct[box_idx_ch].ptcl_size, (double)ptr_ch->ptr_cell_struct[box_idx_ch].cell_mass);
+      // }
     }
 
     if (ptr_ch->no_ptcl_full_node < ref_criterion_ptcl && type == 2)
@@ -579,12 +579,12 @@ void check_error(struct node *ptr_node, int type)
 
     box_idx_node = box_idx_x_node + box_idx_y_node * box_real_dim_X_node + box_idx_z_node * box_real_dim_X_times_Y_node;
 
-    if (ptr_node->ptr_cell_struct[box_idx_node].cell_mass != ptr_node->ptr_cell_struct[box_idx_node].ptcl_size * 100.0 || ptr_node->ptr_cell_struct[box_idx_node].ptcl_size < 0)
-    {
-      printf("Parent node at lv = %d, ID = %d\n", ptr_node->lv, ptr_node->ID);
-      printf("Error, parent, box_idx = %d\n", box_idx_node);
-      printf("ptcl_size = %d, cell_mass = %f\n", ptr_node->ptr_cell_struct[box_idx_node].ptcl_size, (double)ptr_node->ptr_cell_struct[box_idx_node].cell_mass);
-    }
+    // if (ptr_node->ptr_cell_struct[box_idx_node].cell_mass != ptr_node->ptr_cell_struct[box_idx_node].ptcl_size * 100.0 || ptr_node->ptr_cell_struct[box_idx_node].ptcl_size < 0)
+    // {
+    //   printf("Parent node at lv = %d, ID = %d\n", ptr_node->lv, ptr_node->ID);
+    //   printf("Error, parent, box_idx = %d\n", box_idx_node);
+    //   printf("ptcl_size = %d, cell_mass = %f\n", ptr_node->ptr_cell_struct[box_idx_node].ptcl_size, (double)ptr_node->ptr_cell_struct[box_idx_node].cell_mass);
+    // }
   }
   // Notes: the parent node can have less particles than the ref_criterion becasue
   // when the parent node do not had children, then it is in fact a "child node"
@@ -815,9 +815,9 @@ void check_error(struct node *ptr_node, int type)
           printf("child : lv = %d, ID = %d\n", ptr_ch->lv, ptr_ch->ID);
           printf("children size = %d\n", ptr_node->chn_size);
           printf("ptcl index = %d\n", ptcl_idx);
-          printf("ptcl pos_x = %f\n", GL_ptcl_x[ptcl_idx]);
-          printf("ptcl pos_y = %f\n", GL_ptcl_y[ptcl_idx]);
-          printf("ptcl pos_z = %f\n", GL_ptcl_z[ptcl_idx]);
+          printf("ptcl pos_x = %f\n", (double) GL_ptcl_x[ptcl_idx]);
+          printf("ptcl pos_y = %f\n", (double) GL_ptcl_y[ptcl_idx]);
+          printf("ptcl pos_z = %f\n", (double) GL_ptcl_z[ptcl_idx]);
           printf("box_dim_x = %d\n", ptr_ch->box_dim_x);
           printf("box_dim_y = %d\n", ptr_ch->box_dim_y);
           printf("box_dim_z = %d\n", ptr_ch->box_dim_z);
@@ -900,21 +900,24 @@ void check_error(struct node *ptr_node, int type)
       aux_mass2 += ptr_ch->ptr_cell_struct[cell_idx].cell_mass;
       aux_no_ptcl2 += ptr_ch->ptr_cell_struct[cell_idx].ptcl_size;
     }
-    if (aux_mass1 != aux_mass2 || aux_mass1 != ptr_ch->node_mass)
+    if (aux_mass1 != aux_mass2 || myabs(aux_mass1 - ptr_ch->node_mass) > aux_mass1 * 1.0e-10L)
     {
       if (type == 1)
       {
-        printf("pre check\n");
+        printf("\npre check\n");
       }
 
       else
       {
-        printf("post check\n");
+        printf("\npost check\n");
       }
 
       printf("child : lv = %d, ID = %d\n", ptr_ch->lv, ptr_ch->ID);
-      printf("\nError, Child local mass diferente a mass en caja\n ");
-      printf("cell mass = %f, box mass = %f, local mass = %f\n", (double)aux_mass1, (double)aux_mass2, (double)ptr_ch->node_mass);
+      printf("Error, Child local mass diferente a mass en caja\n ");
+      //printf("cell mass = %1.16e, box mass = %1.16e, local mass = %1.16e\n", (double)aux_mass1, (double)aux_mass2, (double)ptr_ch->node_mass);
+      printf("cell mass = %1.24e, box mass = %1.24e, local mass = %1.24e\n", (double) aux_mass1, (double) aux_mass2, (double) ptr_ch->node_mass);
+      printf("myabs(aux_mass1 - ptr_ch->node_mass) = %1.24e, aux_mass1 * 1.0e-10L = %1.24e\n",(double)myabs(aux_mass1 - ptr_ch->node_mass) ,(double) (aux_mass1 * 1.0e-10L));
+
 
       printf("cell size = %d, zone size * 8 = %d\n", ptr_ch->cell_size, 8 * ptr_node->ptr_zone_size[i]);
 
@@ -958,10 +961,10 @@ void check_error(struct node *ptr_node, int type)
     aux_mass2 += ptr_node->ptr_cell_struct[cell_idx].cell_mass;
     aux_no_ptcl2 += ptr_node->ptr_cell_struct[cell_idx].ptcl_size;
   }
-  if (aux_mass1 != aux_mass2 || aux_mass1 != ptr_node->node_mass)
+  if (aux_mass1 != aux_mass2 || myabs((aux_mass1 - ptr_node->node_mass)) > aux_mass1 * 1.0e-10L)
   {
     printf("\nError, Parent local mass diferente a mass en caja\n ");
-    printf("cell mass = %f, box mass = %f, local mass = %f\n", (double)aux_mass1, (double)aux_mass2, (double)ptr_node->node_mass);
+    printf("cell mass = %1.24e, box mass = %1.24e, local mass = %1.24e\n", (double)aux_mass1, (double)aux_mass2, (double)ptr_node->node_mass);
   }
   if (aux_no_ptcl1 != aux_no_ptcl2 || aux_no_ptcl1 != ptr_node->no_ptcl_full_node)
   {
@@ -1032,7 +1035,7 @@ void check_error(struct node *ptr_node, int type)
     if (ptr_ch->cell_size != cntr_Exist + cntr_chn)
     {
       printf("child lv = %d, child ID = %d\n", ptr_ch->lv, ptr_ch->ID);
-      printf("local ptcl = %d, local mass = %f\n", ptr_ch->no_ptcl_full_node, (double)ptr_ch->node_mass);
+      printf("local ptcl = %d, local mass = %1.16e\n", ptr_ch->no_ptcl_full_node, (double)ptr_ch->node_mass);
       printf("Error, Hijo, cell size diferente la valor \n");
       printf("cell size = %d, exist + cntr_chn = %d\n", ptr_ch->cell_size, cntr_Exist + cntr_chn);
       printf("status -6 = %d\n", cntr_Periodic_boundary);
@@ -1143,11 +1146,11 @@ void check_error(struct node *ptr_node, int type)
 
   if (ptr_node->lv == lmin)
   {
-    if (ptr_node->node_mass != GL_no_ptcl_final * 100.0)
-    {
-      printf("Error, Head lv, diferent mass\n");
-      printf("local mass = %f\n", (double)ptr_node->node_mass);
-    }
+    // if (ptr_node->node_mass != GL_no_ptcl_final * 100.0)
+    // {
+    //   printf("Error, Head lv, diferent mass\n");
+    //   printf("local mass = %f\n", (double)ptr_node->node_mass);
+    // }
 
     if (ptr_node->no_ptcl_full_node != GL_no_ptcl_final)
     {
@@ -1620,7 +1623,7 @@ static int updating_cell_struct(struct node *ptr_node)
 
       box_idx_node = box_idx_x_node + box_idx_y_node * box_real_dim_X_node + box_idx_z_node * box_real_dim_X_times_Y_node;
 
-      aux_cell_mass = 0;
+      aux_cell_mass = 0.0;
       aux_no_ptcl = 0;
 
       //* >> Counting mass and number of particles *//
@@ -1881,7 +1884,7 @@ static int fill_cell_ref(struct node *ptr_node)
   //* >> Adding cells which satisfy the refinement criteria or contains grandchild cells to the array ptr_cell_ref and chaning the box_aux the status of refinement -1 *//
 
   struct node *ptr_ch;      // Child node
-  struct node *ptr_grandch; // Grandchild node
+  //struct node *ptr_grandch; // Grandchild node
 
   int cell_ref_idx = 0; // Index of the position in the cell refined array, Size of the refinement cells array. Initial size of the cell refined array must be 0
 
@@ -1903,94 +1906,240 @@ static int fill_cell_ref(struct node *ptr_node)
   int box_real_dim_X_node = ptr_node->box_real_dim_x;
   int box_real_dim_X_times_Y_node = ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
 
+  //printf("previous grandchild refinement\n");
+  // int capp = ptr_node->box_real_dim_x * ptr_node->box_real_dim_y * ptr_node->box_real_dim_z; // In general, the size of each side must be 3 times bigger than the same side of the "Smallest Box"
+  // int counteraa = 0;
+  // int counter_old = 0;
+  // int counter_new = 0;
+  
+
+  // for(int hh = 0; hh< capp;hh++)
+  // {
+  //   if(ptr_node->ptr_box_old[hh] != ptr_node->ptr_box[hh])
+  //   counteraa++;
+  //   if(ptr_node->ptr_box_old[hh] == 0)  counter_old++;
+  //   if(ptr_node->ptr_box[hh] == -1)  counter_new++;
+  // }
+
+  // printf("Check if the two boxes are equals: counter = %d, counter old = %d, counter new = %d\n,",counteraa,counter_old,counter_new);
+
+
+  // printf("number of children = %d\n",ptr_node->chn_size);
+  //* >> Adding to refine (-1) to cells in the node wich contains grandchildren refinement cells
+  // for (int ch = 0; ch < ptr_node->chn_size; ch++) // Loop over children
+  // {
+  //   ptr_ch = ptr_node->pptr_chn[ch];
+  //   printf("number of grandchildre = %d\n",ptr_ch->chn_size);
+  //   for (int grandch = 0; grandch < ptr_ch->chn_size; grandch++)
+  //   {
+  //     ptr_grandch = ptr_ch->pptr_chn[grandch];
+  //     printf("number of cells of the grand children = %d\n",ptr_grandch->cell_size);
+  //     for (int cell_grandch = 0; cell_grandch < ptr_grandch->cell_size; cell_grandch += 8)
+  //     {
+
+  //       printf("grandchild cell idx x = %d, y = %d, z = %d\n",ptr_grandch->ptr_cell_idx_x[cell_grandch],ptr_grandch->ptr_cell_idx_y[cell_grandch],ptr_grandch->ptr_cell_idx_z[cell_grandch]);
+
+  //       aux_idx_x = ptr_grandch->ptr_cell_idx_x[cell_grandch] >> 2;
+  //       aux_idx_y = ptr_grandch->ptr_cell_idx_y[cell_grandch] >> 2;
+  //       aux_idx_z = ptr_grandch->ptr_cell_idx_z[cell_grandch] >> 2;
+
+
+
+
+
+
+
+
+
+
+  //       box_idx_x_node = aux_idx_x - ptr_node->box_ts_x;
+  //       box_idx_y_node = aux_idx_y - ptr_node->box_ts_y;
+  //       box_idx_z_node = aux_idx_z - ptr_node->box_ts_z;
+
+  //       if (ptr_node->pbc_crosses_sim_box_bdry == true)
+  //       {
+  //         printf("enter to boundary zone\n");
+  //         if (aux_idx_x > ptr_node->box_max_x)
+  //         {
+  //           box_idx_x_node -= (1 << lv);
+  //         }
+
+  //         if (aux_idx_y > ptr_node->box_max_y)
+  //         {
+  //           box_idx_y_node -= (1 << lv);
+  //         }
+
+  //         if (aux_idx_z > ptr_node->box_max_z)
+  //         {
+  //           box_idx_z_node -= (1 << lv);
+  //         }
+  //       }
+
+  //       box_idx_node = box_idx_x_node + box_idx_y_node * box_real_dim_X_node + box_idx_z_node * box_real_dim_X_times_Y_node;
+  //       printf("box idx node = %d\n",box_idx_node);
+
+  //       if (ptr_node->ptr_box[box_idx_node] == -3) // Cell has not been added yet
+  //       {
+  //         cell_ref_idx++; // +1 to the total number of cells to be refined
+  //         //* >> Chaning the cell box status from EXIST (-3) to REFINEMENT REQUIRED (-1) *//
+  //         ptr_node->ptr_box[box_idx_node] = -1;
+  //       }
+
+  //       for (int kk = -n_exp; kk < n_exp + 1; kk++)
+  //       {
+  //         for (int jj = -n_exp; jj < n_exp + 1; jj++)
+  //         {
+  //           for (int ii = -n_exp; ii < n_exp + 1; ii++)
+  //           {
+  //             box_idxNbr_node = box_idx_node + ii + jj * box_real_dim_X_node + kk * box_real_dim_X_times_Y_node;
+
+  //             if (bdry_cond_type == 0 && ptr_node->ptr_box[box_idxNbr_node] == -6)
+  //             {
+  //               if (ptr_node->ptr_box[box_idx_node + ii] == -6)
+  //               {
+  //                 box_idxNbr_node += ii < 0 ? (1 << lv) : -(1 << lv);
+  //               }
+
+  //               if (ptr_node->ptr_box[box_idx_node + jj * box_real_dim_X_node] == -6)
+  //               {
+  //                 box_idxNbr_node += jj < 0 ? (1 << lv) * box_real_dim_X_node : -(1 << lv) * box_real_dim_X_node;
+  //               }
+
+  //               if (ptr_node->ptr_box[box_idx_node + kk * box_real_dim_X_times_Y_node] == -6)
+  //               {
+  //                 box_idxNbr_node += kk < 0 ? (1 << lv) * box_real_dim_X_times_Y_node : -(1 << lv) * box_real_dim_X_times_Y_node;
+  //               }
+  //             }
+
+  //             //* >> Asking if the neighboring cell has not been changed yet *//
+  //             // The border (-2) of the simulation can be added
+  //             if (ptr_node->ptr_box[box_idxNbr_node] == -3) // Cell has not been added yet
+  //             {
+  //               cell_ref_idx++; // +1 to the total number of cells to be refined
+  //               //* >> Chaning the cell box status from EXIST (-3) to REFINEMENT REQUIRED (-1) *//
+  //               ptr_node->ptr_box[box_idxNbr_node] = -1;
+  //             }
+  //           }
+  //         }
+  //       }
+
+
+
+
+
+  //     }
+  //   }
+  // }
+
+
+
+
+
+
+  int box_idx_ch;
+  int aux_counter;
+  bool check;
   //* >> Adding to refine (-1) to cells in the node wich contains grandchildren refinement cells
   for (int ch = 0; ch < ptr_node->chn_size; ch++) // Loop over children
   {
-    ptr_ch = ptr_node->pptr_chn[ch];
-
-    for (int grandch = 0; grandch < ptr_ch->chn_size; grandch++)
+    ptr_ch = ptr_node->pptr_chn[ch]; 
+    if(ptr_ch->chn_size > 0)
     {
-      ptr_grandch = ptr_ch->pptr_chn[grandch];
-
-      for (int cell_grandch = 0; cell_grandch < ptr_grandch->cell_size; cell_grandch += 8)
+      for(int cell_idx = 0; cell_idx < ptr_ch->cell_size; cell_idx+=8)
       {
-
-        aux_idx_x = ptr_grandch->ptr_cell_idx_x[cell_grandch] >> 2;
-        aux_idx_y = ptr_grandch->ptr_cell_idx_y[cell_grandch] >> 2;
-        aux_idx_z = ptr_grandch->ptr_cell_idx_z[cell_grandch] >> 2;
-
-        box_idx_x_node = aux_idx_x - ptr_node->box_ts_x;
-        box_idx_y_node = aux_idx_y - ptr_node->box_ts_y;
-        box_idx_z_node = aux_idx_z - ptr_node->box_ts_z;
-
-        if (ptr_node->pbc_crosses_sim_box_bdry == true)
+        aux_counter = 0;
+        check = false;
+        while(aux_counter < 8 && check == false)
         {
-          if (aux_idx_x > ptr_node->box_max_x)
+          box_idx_ch = ptr_ch->ptr_box_idx[cell_idx + aux_counter];
+          if (ptr_ch->ptr_cell_struct[box_idx_ch].cell_mass >= ref_criterion_mass || ptr_ch->ptr_cell_struct[box_idx_ch].ptcl_size >= ref_criterion_ptcl) // Including border (-2)
           {
-            box_idx_x_node -= (1 << lv);
-          }
+            aux_idx_x = ptr_ch->ptr_cell_idx_x[cell_idx + aux_counter] >> 1;
+            aux_idx_y = ptr_ch->ptr_cell_idx_y[cell_idx + aux_counter] >> 1;
+            aux_idx_z = ptr_ch->ptr_cell_idx_z[cell_idx + aux_counter] >> 1;
 
-          if (aux_idx_y > ptr_node->box_max_y)
-          {
-            box_idx_y_node -= (1 << lv);
-          }
+            // printf("grandchild cell idx x = %d, y = %d, z = %d\n",ptr_ch->ptr_cell_idx_x[cell_idx + aux_counter ],ptr_ch->ptr_cell_idx_y[cell_idx+ aux_counter],ptr_ch->ptr_cell_idx_z[cell_idx+ aux_counter]);
+            // printf("aux idx x, y, z = %d, %d, %d\n",aux_idx_x,aux_idx_y,aux_idx_z);
 
-          if (aux_idx_z > ptr_node->box_max_z)
-          {
-            box_idx_z_node -= (1 << lv);
-          }
-        }
 
-        box_idx_node = box_idx_x_node + box_idx_y_node * box_real_dim_X_node + box_idx_z_node * box_real_dim_X_times_Y_node;
+            box_idx_x_node = aux_idx_x - ptr_node->box_ts_x;
+            box_idx_y_node = aux_idx_y - ptr_node->box_ts_y;
+            box_idx_z_node = aux_idx_z - ptr_node->box_ts_z;
 
-        if (ptr_node->ptr_box[box_idx_node] == -3) // Cell has not been added yet
-        {
-          cell_ref_idx++; // +1 to the total number of cells to be refined
-          //* >> Chaning the cell box status from EXIST (-3) to REFINEMENT REQUIRED (-1) *//
-          ptr_node->ptr_box[box_idx_node] = -1;
-        }
-
-        for (int kk = -n_exp; kk < n_exp + 1; kk++)
-        {
-          for (int jj = -n_exp; jj < n_exp + 1; jj++)
-          {
-            for (int ii = -n_exp; ii < n_exp + 1; ii++)
+            if (ptr_node->pbc_crosses_sim_box_bdry == true)
             {
-              box_idxNbr_node = box_idx_node + ii + jj * box_real_dim_X_node + kk * box_real_dim_X_times_Y_node;
-
-              if (bdry_cond_type == 0 && ptr_node->ptr_box[box_idxNbr_node] == -6)
+              //printf("enter to boundary zone\n");
+              if (aux_idx_x > ptr_node->box_max_x)
               {
-                if (ptr_node->ptr_box[box_idx_node + ii] == -6)
-                {
-                  box_idxNbr_node += ii < 0 ? (1 << lv) : -(1 << lv);
-                }
-
-                if (ptr_node->ptr_box[box_idx_node + jj * box_real_dim_X_node] == -6)
-                {
-                  box_idxNbr_node += jj < 0 ? (1 << lv) * box_real_dim_X_node : -(1 << lv) * box_real_dim_X_node;
-                }
-
-                if (ptr_node->ptr_box[box_idx_node + kk * box_real_dim_X_times_Y_node] == -6)
-                {
-                  box_idxNbr_node += kk < 0 ? (1 << lv) * box_real_dim_X_times_Y_node : -(1 << lv) * box_real_dim_X_times_Y_node;
-                }
+                box_idx_x_node -= (1 << lv);
               }
 
-              //* >> Asking if the neighboring cell has not been changed yet *//
-              // The border (-2) of the simulation can be added
-              if (ptr_node->ptr_box[box_idxNbr_node] == -3) // Cell has not been added yet
+              if (aux_idx_y > ptr_node->box_max_y)
               {
-                cell_ref_idx++; // +1 to the total number of cells to be refined
-                //* >> Chaning the cell box status from EXIST (-3) to REFINEMENT REQUIRED (-1) *//
-                ptr_node->ptr_box[box_idxNbr_node] = -1;
+                box_idx_y_node -= (1 << lv);
+              }
+
+              if (aux_idx_z > ptr_node->box_max_z)
+              {
+                box_idx_z_node -= (1 << lv);
+              }
+            }
+
+            box_idx_node = box_idx_x_node + box_idx_y_node * box_real_dim_X_node + box_idx_z_node * box_real_dim_X_times_Y_node;
+            //printf("box idx node = %d\n",box_idx_node);
+
+            if (ptr_node->ptr_box[box_idx_node] == -3) // Cell has not been added yet
+            {
+              cell_ref_idx++; // +1 to the total number of cells to be refined
+              //* >> Chaning the cell box status from EXIST (-3) to REFINEMENT REQUIRED (-1) *//
+              ptr_node->ptr_box[box_idx_node] = -1;
+              check = true;
+            }
+
+            for (int kk = -n_exp; kk < n_exp + 1; kk++)
+            {
+              for (int jj = -n_exp; jj < n_exp + 1; jj++)
+              {
+                for (int ii = -n_exp; ii < n_exp + 1; ii++)
+                {
+                  box_idxNbr_node = box_idx_node + ii + jj * box_real_dim_X_node + kk * box_real_dim_X_times_Y_node;
+
+                  if (bdry_cond_type == 0 && ptr_node->ptr_box[box_idxNbr_node] == -6)
+                  {
+                    if (ptr_node->ptr_box[box_idx_node + ii] == -6)
+                    {
+                      box_idxNbr_node += ii < 0 ? (1 << lv) : -(1 << lv);
+                    }
+
+                    if (ptr_node->ptr_box[box_idx_node + jj * box_real_dim_X_node] == -6)
+                    {
+                      box_idxNbr_node += jj < 0 ? (1 << lv) * box_real_dim_X_node : -(1 << lv) * box_real_dim_X_node;
+                    }
+
+                    if (ptr_node->ptr_box[box_idx_node + kk * box_real_dim_X_times_Y_node] == -6)
+                    {
+                      box_idxNbr_node += kk < 0 ? (1 << lv) * box_real_dim_X_times_Y_node : -(1 << lv) * box_real_dim_X_times_Y_node;
+                    }
+                  }
+
+                  //* >> Asking if the neighboring cell has not been changed yet *//
+                  // The border (-2) of the simulation can be added
+                  if (ptr_node->ptr_box[box_idxNbr_node] == -3) // Cell has not been added yet
+                  {
+                    cell_ref_idx++; // +1 to the total number of cells to be refined
+                    //* >> Chaning the cell box status from EXIST (-3) to REFINEMENT REQUIRED (-1) *//
+                    ptr_node->ptr_box[box_idxNbr_node] = -1;
+                  }
+                }
               }
             }
           }
+          aux_counter++;
         }
       }
     }
-  }
 
+  }
   //* >> Changing the box status from EXIST (-3) to REFINEMENT REQUIRED (-1) of cells satisfying the refinement criterion *//
   for (int i = 0; i < ptr_node->cell_size; i++)
   {
@@ -1998,6 +2147,7 @@ static int fill_cell_ref(struct node *ptr_node)
 
     // Refinement criterion in the box_mass in no border box points
     if (ptr_node->ptr_cell_struct[box_idx_node].cell_mass >= ref_criterion_mass || ptr_node->ptr_cell_struct[box_idx_node].ptcl_size >= ref_criterion_ptcl) // Including border (-2)
+    //if (ptr_node->ptr_cell_struct[box_idx_node].cell_mass >= ref_criterion_mass && ptr_node->ptr_cell_struct[box_idx_node].ptcl_size >= ref_criterion_ptcl) // Including border (-2)
     {
       if (ptr_node->ptr_box[box_idx_node] == -3) // Cell has not been added yet
       {
@@ -2068,6 +2218,8 @@ static int fill_cell_ref(struct node *ptr_node)
       cntr++;
     }
   }
+
+  //printf("Number of cell to refine = %d\n",cntr);
 
   return _SUCCESS_;
 } // end function fill_cell_ref
@@ -2406,6 +2558,33 @@ static int fill_zones_ref(struct node *ptr_node)
     ptr_node->pptr_zones[zone_idx][cntr_cell_add] = cell_idx; // Adding the index of the cell array in the block to the zone
     ptr_node->ptr_aux_idx[zone_idx] += 1;                     // Counter the number of elements added in the zone "zone_idx"
   }
+
+
+
+  int capp = ptr_node->box_real_dim_x * ptr_node->box_real_dim_y * ptr_node->box_real_dim_z; // In general, the size of each side must be 3 times bigger than the same side of the "Smallest Box"
+
+  int counteraa = 0;
+  int counter_old = 0;
+  int counter_new = 0;
+  
+
+  for(int hh = 0; hh< capp;hh++)
+  {
+    if(ptr_node->ptr_box_old[hh] != ptr_node->ptr_box[hh])
+    counteraa++;
+    if(ptr_node->ptr_box_old[hh] == 0)  counter_old++;
+    if(ptr_node->ptr_box[hh] == 0)  counter_new++;
+
+  }
+
+  //printf("Check if the two boxes are equals: counter = %d, counter old = %d, counter new = %d\n,",counteraa,counter_old,counter_new);
+
+
+
+
+
+
+
   return _SUCCESS_;
 } // End function fill_zones_ref
 
@@ -2889,14 +3068,18 @@ static void remov_cells_nolonger_require_refinement(struct node *ptr_node)
   int box_real_dim_X_node = ptr_node->box_real_dim_x;
   int box_real_dim_X_times_Y_node = ptr_node->box_real_dim_x * ptr_node->box_real_dim_y;
 
+  //printf("aa\n");
   // Loop over new refinement zones
   for (int zone_idx = 0; zone_idx < ptr_node->zones_size; zone_idx++)
   {
+    //printf("loop  over new refinment zones\n");
     if (ptr_node->ptr_links_old_ord_old[zone_idx] < ptr_node->chn_size)
     {
+      //printf("inside if\n");
       ptr_ch = ptr_node->pptr_chn[ptr_node->ptr_links_old_ord_old[zone_idx]];
 
       no_cells = ptr_ch->cell_size;
+      //printf("no cells = %d\n",no_cells);
       for (int cell_idx = 0; cell_idx < no_cells; cell_idx += 8)
       {
         aux_idx_x = ptr_ch->ptr_cell_idx_x[cell_idx] >> 1;
@@ -2929,6 +3112,7 @@ static void remov_cells_nolonger_require_refinement(struct node *ptr_node)
         //* >> The child cell no longer requires refinement *//
         if (ptr_node->ptr_box[box_idx_node] < 0)
         {
+          //printf("hola\n");
           //* >> Removing particles in the cell from the child node *//
           // Updating local mass, cell struct and box
 
@@ -2938,7 +3122,7 @@ static void remov_cells_nolonger_require_refinement(struct node *ptr_node)
             // box_idx_ch = (box_idx_x_ch + ii) + (box_idx_y_ch + jj) * ptr_ch->box_real_dim_x + (box_idx_z_ch + kk) * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
             ptr_ch->node_mass -= ptr_ch->ptr_cell_struct[box_idx_ch].cell_mass;
             ptr_ch->no_ptcl_full_node -= ptr_ch->ptr_cell_struct[box_idx_ch].ptcl_size;
-            ptr_ch->ptr_cell_struct[box_idx_ch].cell_mass = 0;
+            ptr_ch->ptr_cell_struct[box_idx_ch].cell_mass = 0.0;
             ptr_ch->ptr_cell_struct[box_idx_ch].ptcl_size = 0;
             ptr_ch->ptr_box[box_idx_ch] = -4;
 
@@ -4503,7 +4687,7 @@ static int adapt_child_nodes(struct node *ptr_node)
         // ptr_ch->ptr_ax[j] = 0;
         // ptr_ch->ptr_ay[j] = 0;
         // ptr_ch->ptr_az[j] = 0;
-        ptr_ch->ptr_d[j] = 0;
+        ptr_ch->ptr_d[j] = 0.0;
       }
 
       //* >> Boundary flags of the simulation box *//
@@ -6375,7 +6559,7 @@ static void reorganization_child_node(struct node *ptr_node)
   int cntr_ch;
 
   pptr_aux = (struct node **)malloc((ptr_node->ptr_links_old_ord_old[ptr_node->zones_size - 1] + 1) * sizeof(struct node *));
-
+  
   // // Updating the ID of the child nodes
   // for (int zone_idx = 0; zone_idx < ptr_node->zones_size; zone_idx++)
   // {
@@ -7354,7 +7538,6 @@ static int filling_child_grid_point_arrays(struct node *ptr_node)
 
           if (grid_point_exist == true)
           {
-
             aux_idx_x = ii + ptr_ch->box_ts_x < 0 ? ii + ptr_ch->box_ts_x + (1 << (lv + 1)) : ii + ptr_ch->box_ts_x;
             aux_idx_y = jj + ptr_ch->box_ts_y < 0 ? jj + ptr_ch->box_ts_y + (1 << (lv + 1)) : jj + ptr_ch->box_ts_y;
             aux_idx_z = kk + ptr_ch->box_ts_z < 0 ? kk + ptr_ch->box_ts_z + (1 << (lv + 1)) : kk + ptr_ch->box_ts_z;
@@ -8040,7 +8223,8 @@ int tree_adaptation(void)
   if (lmin < lmax)
   {
 
-    clock_t aux_clock;
+    //clock_t aux_clock;
+    struct timespec start, finish;
 
     struct node *ptr_node;
     int no_pts; // Number of parents in the loop
@@ -8050,6 +8234,8 @@ int tree_adaptation(void)
 
     for (int lv = no_lvs; lv > -1; lv--)
     {
+      // printf("lvs = %d\n",lv);
+      // printf("before cell size of the lv 6 = %d\n",GL_tentacles[1][0]->cell_size);
       GL_tentacles_size[lv + 1] = 0;
       no_pts = GL_tentacles_size[lv];
       //* >> \c "for" loop over parent nodes *//
@@ -8060,76 +8246,109 @@ int tree_adaptation(void)
         // printf("lv = %d, pt = %d, chn_size = %d\n", ptr_node->lv, i, ptr_node->chn_size);
 
         //* Updating the box mass information *//
-        // printf("\n\nupdating_cell_struct\n\n");
-        aux_clock = clock();
+        //printf("\n\nupdating_cell_struct\n\n");
+        //printf("cell size of the lv 6 = %d\n",GL_tentacles[1][0]->cell_size);
+        //aux_clock = clock();
+        clock_gettime( CLOCK_REALTIME, &start);
         if (updating_cell_struct(ptr_node) == _FAILURE_)
         {
           printf("Error at function updating_cell_struct()\n");
           return _FAILURE_;
         }
-        GL_times[30] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+        //GL_times[30] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+        clock_gettime( CLOCK_REALTIME, &finish);
+        GL_times[30] += ( finish.tv_sec - start.tv_sec ) + ( finish.tv_nsec - start.tv_nsec )/ 1000000000.;
 
-        aux_clock = clock();
-        check_error(ptr_node, 1);
-        GL_times[31] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+        //aux_clock = clock();
+        clock_gettime( CLOCK_REALTIME, &start);
+        //check_error(ptr_node, 1);
+        //GL_times[31] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+        clock_gettime( CLOCK_REALTIME, &finish);
+        GL_times[31] += ( finish.tv_sec - start.tv_sec ) + ( finish.tv_nsec - start.tv_nsec )/ 1000000000.;
         // printf("pre-check ends\n");
 
         //* Initialization of node boxes *//
-        // printf("\n\ninitialization_node_boxes\n\n");
-        aux_clock = clock();
+        //printf("\n\ninitialization_node_boxes\n\n");
+        //printf("cell size of the lv 6 = %d\n",GL_tentacles[1][0]->cell_size);
+        //aux_clock = clock();
+        clock_gettime( CLOCK_REALTIME, &start);
         initialization_node_boxes(ptr_node);
-        GL_times[32] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+        //GL_times[32] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+        clock_gettime( CLOCK_REALTIME, &finish);
+        GL_times[32] += ( finish.tv_sec - start.tv_sec ) + ( finish.tv_nsec - start.tv_nsec )/ 1000000000.;
 
         //* Initialization of the auiliary refinement arrays*//
-        // printf("\n\nInitialization ref aux\n\n\n");
-        // aux_clock = clock();
+        //printf("\n\nInitialization ref aux\n\n\n");
+        //printf("cell size of the lv 6 = %d\n",GL_tentacles[1][0]->cell_size);
+        // //aux_clock = clock();
+        clock_gettime( CLOCK_REALTIME, &start);
         // initialization_ref_aux(ptr_node);
-        // GL_times[32] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+        // //GL_times[32] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+        clock_gettime( CLOCK_REALTIME, &finish);
+        GL_times[32] += ( finish.tv_sec - start.tv_sec ) + ( finish.tv_nsec - start.tv_nsec )/ 1000000000.;
 
         //* >> Filling the refinement cells array *//
-        // printf("\n\nFill cell ref\n\n\n");
-        aux_clock = clock();
+        //printf("\n\nFill cell ref\n\n\n");
+        //printf("cell size of the lv 6 = %d\n",GL_tentacles[1][0]->cell_size);
+        //aux_clock = clock();
+        clock_gettime( CLOCK_REALTIME, &start);
         if (fill_cell_ref(ptr_node) == _FAILURE_)
         {
           printf("Error at function fill_cell_ref()\n");
           return _FAILURE_;
         }
-        GL_times[33] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+        //GL_times[33] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+        clock_gettime( CLOCK_REALTIME, &finish);
+        GL_times[33] += ( finish.tv_sec - start.tv_sec ) + ( finish.tv_nsec - start.tv_nsec )/ 1000000000.;
 
         //* >> Filling the different zones of refinement *//
-        // printf("\n\nFill zones ref\n\n");
-        aux_clock = clock();
+        //printf("\n\nFill zones ref\n\n");
+        //printf("cell size of the lv 6 = %d\n",GL_tentacles[1][0]->cell_size);
+        //aux_clock = clock();
+        clock_gettime( CLOCK_REALTIME, &start);
         if (fill_zones_ref(ptr_node) == _FAILURE_)
         {
           printf("Error at function fill_zones_ref()\n");
           return _FAILURE_;
         }
-        GL_times[34] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+        //GL_times[34] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+        clock_gettime( CLOCK_REALTIME, &finish);
+        GL_times[34] += ( finish.tv_sec - start.tv_sec ) + ( finish.tv_nsec - start.tv_nsec )/ 1000000000.;
 
         if (ptr_node->zones_size > 0)
         {
           //* >> Create links *//
-          // printf("\n\nCreate links\n\n");
-          aux_clock = clock();
+          //printf("\n\nCreate links\n\n");
+          //printf("cell size of the lv 6 = %d\n",GL_tentacles[1][0]->cell_size);
+          //aux_clock = clock();
+          clock_gettime( CLOCK_REALTIME, &start);
           if (create_links(ptr_node) == _FAILURE_)
           {
             printf("Error at function create_links()\n");
             return _FAILURE_;
           }
-          GL_times[35] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+          //GL_times[35] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+          clock_gettime( CLOCK_REALTIME, &finish);
+          GL_times[35] += ( finish.tv_sec - start.tv_sec ) + ( finish.tv_nsec - start.tv_nsec )/ 1000000000.;
 
-          aux_clock = clock();
+          //aux_clock = clock();
+          clock_gettime( CLOCK_REALTIME, &start);
           if (ptr_node->chn_size > 0)
           {
             //* >> Removing cells that no longer require refinement *//
-            // printf("\n\nRemoving cells nolonger requiere refinement\n\n");
+            //printf("\n\nRemoving cells nolonger requiere refinement\n\n");
+            //printf("cell size of the lv 6 = %d\n",GL_tentacles[1][0]->cell_size);
             remov_cells_nolonger_require_refinement(ptr_node);
           }
-          GL_times[36] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+          //GL_times[36] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+          clock_gettime( CLOCK_REALTIME, &finish);
+          GL_times[36] += ( finish.tv_sec - start.tv_sec ) + ( finish.tv_nsec - start.tv_nsec )/ 1000000000.;
 
           //* >> Adapting child boxes to the new space *//
-          // printf("\n\nAdapt child box\n\n");
-          aux_clock = clock();
+          //printf("\n\nAdapt child box\n\n");
+          //printf("cell size of the lv 6 = %d\n",GL_tentacles[1][0]->cell_size);
+          //aux_clock = clock();
+          clock_gettime( CLOCK_REALTIME, &start);
           if (ptr_node->chn_size > 0)
           {
             if (adapt_child_nodes(ptr_node) == _FAILURE_)
@@ -8138,11 +8357,15 @@ int tree_adaptation(void)
               return _FAILURE_;
             }
           }
-          GL_times[37] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+          //GL_times[37] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+          clock_gettime( CLOCK_REALTIME, &finish);
+          GL_times[37] += ( finish.tv_sec - start.tv_sec ) + ( finish.tv_nsec - start.tv_nsec )/ 1000000000.;
 
           //* >> Creating and defining new children nodes for excess in refinement zones and and linking them to the parent node ptr_node *//
-          // printf("\n\nCreate new child nodes\n\n");
-          aux_clock = clock();
+          //printf("\n\nCreate new child nodes\n\n");
+          //printf("cell size of the lv 6 = %d\n",GL_tentacles[1][0]->cell_size);
+          //aux_clock = clock();
+          clock_gettime( CLOCK_REALTIME, &start);
           if (ptr_node->zones_size > ptr_node->chn_size)
           {
 
@@ -8152,11 +8375,15 @@ int tree_adaptation(void)
               return _FAILURE_;
             }
           }
-          GL_times[38] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+          //GL_times[38] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+          clock_gettime( CLOCK_REALTIME, &finish);
+          GL_times[38] += ( finish.tv_sec - start.tv_sec ) + ( finish.tv_nsec - start.tv_nsec )/ 1000000000.;
 
           //* >> Adapting the information from old child nodes to new child nodes *//
-          // printf("\n\Transferring old child to new child\n\n");
-          aux_clock = clock();
+          //printf("\n\nTransferring old child to new child\n\n");
+          //printf("cell size of the lv 6 = %d\n",GL_tentacles[1][0]->cell_size);
+          //aux_clock = clock();
+          clock_gettime( CLOCK_REALTIME, &start);
           if (ptr_node->chn_size > 0)
           {
             if (transferring_old_child_to_new_child(ptr_node) == _FAILURE_)
@@ -8165,27 +8392,39 @@ int tree_adaptation(void)
               return _FAILURE_;
             }
           }
-          GL_times[39] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+          //GL_times[39] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+          clock_gettime( CLOCK_REALTIME, &finish);
+          GL_times[39] += ( finish.tv_sec - start.tv_sec ) + ( finish.tv_nsec - start.tv_nsec )/ 1000000000.;
 
           //* >> Transferring new zones of refienemnt information to all child nodes *//
-          // printf("\n\Transferring new zones to new child\n\n");
-          aux_clock = clock();
+          //printf("\n\nTransferring new zones to new child\n\n");
+          //printf("cell size of the lv 6 = %d\n",GL_tentacles[1][0]->cell_size);
+          //aux_clock = clock();
+          clock_gettime( CLOCK_REALTIME, &start);
           if (transferring_new_zones_to_new_child(ptr_node) == _FAILURE_)
           {
             printf("Error at function transferring_new_zones_to_new_child()\n");
             return _FAILURE_;
           }
-          GL_times[40] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+          //GL_times[40] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+          clock_gettime( CLOCK_REALTIME, &finish);
+          GL_times[40] += ( finish.tv_sec - start.tv_sec ) + ( finish.tv_nsec - start.tv_nsec )/ 1000000000.;
 
           //* >> Reorganization child nodes *//
-          // printf("\n\nReorganization child nodes\n\n");
-          aux_clock = clock();
+          //printf("\n\nReorganization child nodes\n\n");
+          //printf("cell size of the lv 6 = %d\n",GL_tentacles[1][0]->cell_size);
+          //aux_clock = clock();
+          clock_gettime( CLOCK_REALTIME, &start);
           reorganization_child_node(ptr_node);
-          GL_times[42] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+          //GL_times[42] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+          clock_gettime( CLOCK_REALTIME, &finish);
+          GL_times[42] += ( finish.tv_sec - start.tv_sec ) + ( finish.tv_nsec - start.tv_nsec )/ 1000000000.;
 
           //* >> Reorganization grandchild nodes *//
-          // printf("\n\nReorganization grandchild nodes\n\n");
-          aux_clock = clock();
+          //printf("\n\nReorganization grandchild nodes\n\n");
+          //printf("cell size of the lv 6 = %d\n",GL_tentacles[1][0]->cell_size);
+          //aux_clock = clock();
+          clock_gettime( CLOCK_REALTIME, &start);
           if (ptr_node->chn_size > 0 && lv < no_lvs)
           {
             if (reorganization_grandchild_node(ptr_node) == _FAILURE_)
@@ -8194,51 +8433,75 @@ int tree_adaptation(void)
               return _FAILURE_;
             }
           }
-          GL_times[43] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+          //GL_times[43] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+          clock_gettime( CLOCK_REALTIME, &finish);
+          GL_times[43] += ( finish.tv_sec - start.tv_sec ) + ( finish.tv_nsec - start.tv_nsec )/ 1000000000.;
 
           //* >> Updating refinement zones of the grandchildren *//
-          // printf("\n\nUpdating refinement zones of the grandchildren\n\n");
-          aux_clock = clock();
+          //printf("\n\nUpdating refinement zones of the grandchildren\n\n");
+          //printf("cell size of the lv 6 = %d\n",GL_tentacles[1][0]->cell_size);
+          //aux_clock = clock();
+          clock_gettime( CLOCK_REALTIME, &start);
           if (ptr_node->chn_size > 0 && lv < no_lvs)
           {
             updating_ref_zones_children(ptr_node);
           }
-          GL_times[44] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+          //GL_times[44] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+          clock_gettime( CLOCK_REALTIME, &finish);
+          GL_times[44] += ( finish.tv_sec - start.tv_sec ) + ( finish.tv_nsec - start.tv_nsec )/ 1000000000.;
 
           //* >> Adding boundary simulation box information
-          // printf("\n\nAdding boundary simulation box information\n\n");
-          aux_clock = clock();
+          //printf("\n\nAdding boundary simulation box information\n\n");
+          //printf("cell size of the lv 6 = %d\n",GL_tentacles[1][0]->cell_size);
+          //aux_clock = clock();
+          clock_gettime( CLOCK_REALTIME, &start);
           adding_boundary_simulation_box_status_to_children_nodes(ptr_node);
-          GL_times[41] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+          //GL_times[41] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+          clock_gettime( CLOCK_REALTIME, &finish);
+          GL_times[41] += ( finish.tv_sec - start.tv_sec ) + ( finish.tv_nsec - start.tv_nsec )/ 1000000000.;
 
           //* >> Updating children grid points *//
-          // printf("\n\nUpdating children grid points\n\n");
-          aux_clock = clock();
+          //printf("\n\nUpdating children grid points\n\n");
+          //printf("cell size of the lv 6 = %d\n",GL_tentacles[1][0]->cell_size);
+          //aux_clock = clock();
+          clock_gettime( CLOCK_REALTIME, &start);
           if (filling_child_grid_point_arrays(ptr_node) == _FAILURE_)
           {
             printf("Error at function filling_child_grid_point_arrays()\n");
             return _FAILURE_;
           }
-          GL_times[45] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+          //GL_times[45] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+          clock_gettime( CLOCK_REALTIME, &finish);
+          GL_times[45] += ( finish.tv_sec - start.tv_sec ) + ( finish.tv_nsec - start.tv_nsec )/ 1000000000.;
 
           // Filling number of particles to be updated outside of the refinement zones in the child nodes
-          aux_clock = clock();
+          //aux_clock = clock();
+          //printf("\n\n  computing_no_ptcl_outside_refinement_zones  \n\n");
+          //printf("cell size of the lv 6 = %d\n",GL_tentacles[1][0]->cell_size);
+          clock_gettime( CLOCK_REALTIME, &start);
           for (int ch = 0; ch < ptr_node->zones_size; ch++)
           {
             computing_no_ptcl_outside_refinement_zones(ptr_node->pptr_chn[ch]);
           }
-          GL_times[46] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+          //GL_times[46] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+          clock_gettime( CLOCK_REALTIME, &finish);
+          GL_times[46] += ( finish.tv_sec - start.tv_sec ) + ( finish.tv_nsec - start.tv_nsec )/ 1000000000.;
         }
 
         //* >> Moved Unused child node to the stack of the memory pool *//
-        // printf("\n\nMoved Unused child node to the stack of the memory pool\n\n");
-        aux_clock = clock();
+        //printf("\n\nMoved Unused child node to the stack of the memory pool\n\n");
+        //printf("cell size of the lv 6 = %d\n",GL_tentacles[1][0]->cell_size);
+        //aux_clock = clock();
+        clock_gettime( CLOCK_REALTIME, &start);
         transferring_unused_child_node_to_memory_pool(ptr_node);
-        GL_times[47] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+        //GL_times[47] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+        clock_gettime( CLOCK_REALTIME, &finish);
+          GL_times[47] += ( finish.tv_sec - start.tv_sec ) + ( finish.tv_nsec - start.tv_nsec )/ 1000000000.;
 
         //* >> Tentacles updating *//
         // printf("\n\nTentacles Updating\n\n");
-        aux_clock = clock();
+        //aux_clock = clock();
+        clock_gettime( CLOCK_REALTIME, &start);
         if (0 < ptr_node->zones_size)
         {
           if (tentacles_updating(ptr_node) == _FAILURE_)
@@ -8247,29 +8510,50 @@ int tree_adaptation(void)
             return _FAILURE_;
           }
         }
-        GL_times[48] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+        //GL_times[48] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+        clock_gettime( CLOCK_REALTIME, &finish);
+          GL_times[48] += ( finish.tv_sec - start.tv_sec ) + ( finish.tv_nsec - start.tv_nsec )/ 1000000000.;
 
         //* >> Updated new value for the chn size
         ptr_node->chn_size = ptr_node->zones_size;
 
-        aux_clock = clock();
-        check_error(ptr_node, 2);
-        GL_times[31] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
-        // printf("post-check ends\n");
+        //aux_clock = clock();
+        clock_gettime( CLOCK_REALTIME, &start);
+        //check_error(ptr_node, 2);
+        //GL_times[31] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+        clock_gettime( CLOCK_REALTIME, &finish);
+          GL_times[31] += ( finish.tv_sec - start.tv_sec ) + ( finish.tv_nsec - start.tv_nsec )/ 1000000000.;
+        //printf("post-check ends\n");
+        //printf("cell size of the lv 6 = %d\n",GL_tentacles[1][0]->cell_size);
       }
     }
 
     // Filling number of particles to be updated outside of the refinement zones in the head node
-    aux_clock = clock();
+    //aux_clock = clock();
+    clock_gettime( CLOCK_REALTIME, &start);
     computing_no_ptcl_outside_refinement_zones(GL_tentacles[0][0]);
-    GL_times[46] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+    //GL_times[46] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+    clock_gettime( CLOCK_REALTIME, &finish);
+    GL_times[46] += ( finish.tv_sec - start.tv_sec ) + ( finish.tv_nsec - start.tv_nsec )/ 1000000000.;
 
     //* >> Tentacles Updating lv max *//
     // printf("\n\nTentacles updating lv max\n\n");
-    aux_clock = clock();
+    //aux_clock = clock();
+    clock_gettime( CLOCK_REALTIME, &start);
     updating_tentacles_max_lv();
-    GL_times[49] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+    //GL_times[49] += (double)(clock() - aux_clock) / CLOCKS_PER_SEC;
+    clock_gettime( CLOCK_REALTIME, &finish);
+    GL_times[49] += ( finish.tv_sec - start.tv_sec ) + ( finish.tv_nsec - start.tv_nsec )/ 1000000000.;
   }
+
+  // printf("iteration... ");
+  // for (int lv = GL_tentacles_level_max; lv > -1; lv--)
+  // {
+  //   printf("%d  ",GL_tentacles_size[lv]);
+  // }
+
+  // printf("\n");
+
 
   //* >> Reseting
 

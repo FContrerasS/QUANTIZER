@@ -73,7 +73,7 @@ void initialize_node(struct node *ptr_node)
   ptr_node->cell_struct_old_cap = 0;
 
   //* >> Total mass in the node *//
-  ptr_node->node_mass = 0;
+  ptr_node->node_mass = 0.0;
   //* >> Total number of particles in the node
   ptr_node->no_ptcl_full_node = 0;                       // Total number of particles in the node
   ptr_node->no_ptcl_outs_ref_zones = 0; // Total number of particles to use or update in the part of the node outisde of the refinement zones
