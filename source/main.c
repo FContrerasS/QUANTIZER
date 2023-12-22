@@ -175,7 +175,7 @@ int main()
   // printf(std::scientific);
   // printf(std::setprecision(digits_precision));
 
-  printf("\n ********** RUNNING N-BODY CODE ********** \n\n");
+  printf("\n ********** RUNNING QUANTIZER ********** \n\n");
 
   //* DEFINING OTHER VARIABLES
   //* >> Defining timestep **/
@@ -580,7 +580,7 @@ int main()
 
   printf("Total number of time-steps = %d\n", Number_timesteps);
 
-  printf("\n\n ******** FINALIZED N-BODY CODE ********** \n\n");
+  printf("\n\n ******** FINALIZED QUANTIZER ********** \n\n");
 
 
   

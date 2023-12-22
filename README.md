@@ -1,4 +1,4 @@
-# New_Code
+# QUANTIZER
 QUANTIZER is a collisionless N-body code for simulations in astrophysics
 
 #############################################################################################
@@ -21,7 +21,7 @@ The future updating will include the paralelization in both, CPU and GPU. Moreov
 
 #############################################################################################
 
-The code is written in c, and compiled and linked with gcc. 
+QUANTIZER is written in c, and compiled and linked with gcc. 
 
 The make file is inside of the bin folder. 
 
