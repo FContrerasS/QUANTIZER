@@ -1,9 +1,9 @@
 # New_Code
-A new code for N-body/Hydrodynamics simulations in astrophysics
+QUANTIZER is a collisionless N-body code for simulations in astrophysics
 
 #############################################################################################
 
-Author: Felipe Contreras (felipe.contrerass@postgrado.uv.cl).
+Author: Felipe Contreras (contreras.sep.felipe@gmail.com).
 
 Date: 2022-05-26.
 
@@ -29,6 +29,29 @@ Console Input: Does not required
 
 Static Input: The code use constant parameters which are defined in the "global_variables.c" source file and in "commen.h" header file. 
 
-Runtime Input: Currently there are 2 options. First a random imput given in the "input.c" source file in the function called "input_particle_initialization". The another input type is using a .txt file given the position, x,y,z and the velocities vx,vy and vz per each particle. This model is in the "input.c" source file in the function called "input_plummer_model".  
+Runtime Input: In the input file put your .txt file containing the position in x,y,z, and velocity x,y,z and mass of every paticle per row. In the source folder you will find the file  "input.c". There you can add the name of your file to run it. Moreover, it is necessary to fill some variables as the number of particles, the boxsize, between others. They appears in the file "global_variables.c"
                
-Output: The code relases binary files with the information about the mass, position, velocity, energies, and time of the simulation of the whole bunch of particles. the source file which contain that is called "output_snapshots.c". Moreover, the code generates a .dat file called "Parameters.dat" which contains the main parameter values used in the simulation. Finally, there is another information by console as an approximation of the memory used and the time-clock of each part of the simulation code.               
+Output: The code relases binary files with the information about the mass, position, velocity, energies, and time of the simulation of the whole bunch of particles. the source file which contain that is called "output_snapshots.c". Moreover, the code generates a .dat file called "Parameters.dat" which contains the main parameter values used in the simulation. The output of QUANTIZER, is localized in the "output" folder.  Finally, there is another information by console as an approximation of the memory used and the time-clock of each part of the simulation code.
+
+An example appears in the folder "examples". To visualize it use the python file "example_plot.py"
+
+#############################################################################################
+
+To run the code use the makefile localized in the "bin" folder. 
+
+Compilation:
+
+> make
+
+run the code
+
+> make run
+
+
+
+
+
+
+
+
+               

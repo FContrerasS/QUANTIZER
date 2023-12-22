@@ -210,9 +210,9 @@ static void
 init_global_constants(void)
 {
   // Constants
-  _User_BoxSize_ = 10.0 * 4.8476302883992e-9; // kpc;;;;     1 au = 4.8476302883992e-9 kpc
+  //_User_BoxSize_ = 10.0 * 4.8476302883992e-9; // kpc;;;;     1 au = 4.8476302883992e-9 kpc
   //_User_BoxSize_ = 110000.0; //40 Mpc for galaxy merger
-  //_User_BoxSize_ = 4000.0; //4 Mpc Plummer model
+  _User_BoxSize_ = 4000.0; //4 Mpc Plummer model
   _PI_ = 3.14159265358979323846;
   _Onesixth_ = 1.0 / 6.0;
   _kpc_to_m_ = 3.08567758128e19; 
@@ -245,23 +245,23 @@ static void init_global_user_params(void)
 {
   NUMBER_OF_THEADS = 8;
   BoxSize = 1.0;
-  lmin = 8;                 // Coarset level of refinement
-  lmax = lmin + 0;          // Finest level of refinement
+  lmin = 5;                 // Coarset level of refinement
+  lmax = lmin + 12;          // Finest level of refinement
   no_lmin_cell = 1 << lmin; // Number of cells in the lmin level of refinement
   no_lmin_cell_pow2 = no_lmin_cell * no_lmin_cell;
   no_lmin_cell_pow3 = no_lmin_cell * no_lmin_cell * no_lmin_cell;
   no_grid = no_lmin_cell + 1;
-  GL_no_ptcl_initial = 2;
+  GL_no_ptcl_initial = 1000;
   GL_no_ptcl_final = GL_no_ptcl_initial;
   // GL_no_ptcl = 7550; // 2995865; // 299586; // 231299 // 298159
   //  GL_no_ptcl = 10000;
-  Maxdt = 0.1 *  _conversion_time_; // 1 year = 1.0e-6 Myear
-  //Maxdt = 5 * _Gyear_; // 1 year = 1.0e-6 Myear
+  //Maxdt = 0.1 *  _conversion_time_; // 1 year = 1.0e-6 Myear
+  Maxdt = 1.0 * _Gyear_; // 1 year = 1.0e-6 Myear
   printf("Code Max time to reach = %1.12e in code units of time\n",(double) Maxdt);
   //meanmass = 100; //Currently only used on input.c
   //  GL_total_mass_initial = GL_no_ptcl * meanmass;
   //  GL_total_mass_initial = 0;
-  fr_output = 100000000;
+  fr_output = 3;
   MaxIterations = 1000000; // 1000000;
   no_grid_pow2 = no_grid * no_grid;
   no_grid_pow3 = no_grid * no_grid * no_grid; 
@@ -274,10 +274,10 @@ static void init_global_user_params(void)
 static void init_global_ref_crit(void)
 {
   ref_criterion_mass = 1.0e100; //1.0e100; // meanmass * 7;
-  ref_criterion_ptcl = 7;
+  ref_criterion_ptcl = 4;
   n_exp = 1;   // n_exp = 0 is corrupted because particles can move between more than 1 level of refinement
   _CFL_ = 0.9; // CFL criteria 0.5
-  _MAX_dt_ = 0.1 * Maxdt ;//0.00333333333 * Maxdt ;// _Myear_ * 1;
+  _MAX_dt_ = 0.01 * Maxdt ;//0.00333333333 * Maxdt ;// _Myear_ * 1;
 }
 
 static void init_global_poisson_params(void)
@@ -331,7 +331,7 @@ static void init_global_force_params(void)
 static void init_global_energies_params(void)
 {
   compute_observables_FLAG = true;
-  potential_energy_type = 1; // 0 = Exact, 1 = approximation using potential grid
+  potential_energy_type = 0; // 0 = Exact, 1 = approximation using potential grid
   // OBSERVABLES:
   //   Energies[0] = Kinetic
   //   Energies[1] = Potential

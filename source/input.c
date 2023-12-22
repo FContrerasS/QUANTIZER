@@ -120,14 +120,14 @@ int input_plummer_model(void)
   printf("Input by plummer\n");
 
   // Plummer model using a scale parameter a = 1 kpc
-  // char input_name[100] = "../input/"
-  //                        "Plumer_Model/Plummer_Model_np_(1000)_a_(1000.0 pc)_M_(1.0e+08 Msun).csv";
+  char input_name[100] = "../examples/"
+                         "Plummer_example/Plummer_Model_np_(1000)_a_(1000.0 pc)_M_(1.0e+08 Msun).csv";
 
     // char input_name[100] = "../input/"
     //                      "Plumer_Model/Plummer_Model_np_(10000)_a_(1000.0 pc)_M_(1.0e+08 Msun).csv";
 
-    char input_name[100] = "../input/"
-                         "Plumer_Model/Plummer_Model_np_(100000)_a_(1000.0 pc)_M_(1.0e+08 Msun).csv";                         
+    // char input_name[100] = "../input/"
+    //                      "Plumer_Model/Plummer_Model_np_(100000)_a_(1000.0 pc)_M_(1.0e+08 Msun).csv";                         
 
 
 
@@ -305,11 +305,11 @@ static int input_code_units(void)
 
 int input(void)
 {
-  // if (input_plummer_model() == _FAILURE_)
-  // {
-  //   printf("\n\n Error running input_plummer_model function\n\n");
-  //   return _FAILURE_;
-  // }
+  if (input_plummer_model() == _FAILURE_)
+  {
+    printf("\n\n Error running input_plummer_model function\n\n");
+    return _FAILURE_;
+  }
 
   // if (input_galaxies_merger() == _FAILURE_)
   // {
@@ -317,11 +317,11 @@ int input(void)
   //     return _FAILURE_;
   // }
 
- if (input_particle_initialization() == _FAILURE_)
-  {
-    printf("\n\n Error running input_particle_initialization function\n\n");
-    return _FAILURE_;
-  } 
+//  if (input_particle_initialization() == _FAILURE_)
+//   {
+//     printf("\n\n Error running input_particle_initialization function\n\n");
+//     return _FAILURE_;
+//   } 
 
   if (input_code_units() == _FAILURE_)
   {
