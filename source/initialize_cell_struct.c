@@ -28,8 +28,8 @@
 
 void initialize_cell_struct(struct cell_struct *ptr_cell_struct)
 {
-	ptr_cell_struct->ptr_ptcl = NULL;	 // Indexes of the Particles in the cell
-	ptr_cell_struct->ptcl_cap = 0;	 // Maximum capacity in the number of particles in the cell
-	ptr_cell_struct->ptcl_size = 0;	 // Number of particles in the cell
-	ptr_cell_struct->cell_mass = 0;	 // Cell mass
+  ptr_cell_struct->ptr_ptcl = NULL; // Indexes of the Particles in the cell
+  ptr_cell_struct->ptcl_cap = 0;    // Maximum capacity in the number of particles in the cell
+  ptr_cell_struct->ptcl_size = 0;   // Number of particles in the cell
+  ptr_cell_struct->cell_mass = 0.0;   // Cell mass
 }

@@ -1,21 +1,14 @@
 #Folders
 
-Animations/
-Images/
-output/
-tests/
+MANUAL/
 .vscode/
 
 # Text Files
 
-Future_implementations.txt
-
 # Others
 
 *.o
-plummer_testing.py
 *.c~
 *.exe
 *.log
 *.linux
-

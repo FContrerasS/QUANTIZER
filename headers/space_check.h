@@ -29,7 +29,6 @@
 
 #include "common.h"
 
-    int
-    space_check(int *ptr_cap, int size, float increase, const char *format, ...);
+int space_check(int *ptr_cap, int size, float increase, const char *format, ...);
 
 #endif

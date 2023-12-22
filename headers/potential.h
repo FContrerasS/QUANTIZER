@@ -29,10 +29,10 @@
 
 #include "common.h"
 #include "potential_head_node.h"
-#include "poisson_error.h"
-#include "space_check.h"
+#include "potential_branches.h"
 
-    int
-    potential();
+
+
+int potential(void);
 
 #endif

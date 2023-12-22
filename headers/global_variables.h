@@ -24,13 +24,12 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __GV__
-#define __GV__
+#ifndef __GLOBALVARIABLES__
+#define __GLOBALVARIABLES__
 
 #include "common.h"
 
-    void
-    global_variables();
+void global_variables(void);
 
 
 

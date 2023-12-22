@@ -1,13 +1,4 @@
 /*
- * main.h
- *
- * Header file of the main.c source file
- *
- * Felipe Contreras
- * felipe.contrerass@postgrado.uv.cl
- */
-
-/*
  * Copyright(c) 2022 Felipe Contreras
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -24,12 +15,25 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @file main.h ******************** Documented \e "main.h" header ******************** \n
+ *
+ * @brief This is the header file of the main.c script.
+ *
+ * **VERSION INFORMATION**: Felipe Contreras, 2022-10-01, version 1.0.
+ *
+ * **DESCRIPTION**: This is the header file of the main.c script.
+ *
+ * **PREREQUISITES**: Always used.
+ */
+
 #ifndef __MAIN__
 #define __MAIN__
 
 //** >> Code Modules **/
 #include "common.h"
 #include "global_variables.h"
+#include "garbage_collector.h"
 #include "input.h"
 #include "initialization.h"
 #include "tree_construction.h"
@@ -39,13 +43,12 @@
 #include "poisson_error.h"
 #include "grid_acceleration.h"
 #include "particle_acceleration.h"
-#include "timestep_1.h"
-#include "timestep_2.h"
-#include "particle_updating_A.h"
-#include "particle_updating_B.h"
+#include "timestep.h"
+#include "particle_updating.h"
 #include "observables.h"
 #include "reset.h"
 #include "tree_adaptation.h"
+
 
 #include "output_main_parameters.h"
 #include "output_snapshots.h"
@@ -53,6 +56,11 @@
 
 
 #include "terminal_print.h"
+
+
+
+
+
 
 
 

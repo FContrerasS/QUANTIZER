@@ -29,6 +29,6 @@
 
 #include "common.h"
 
-struct node* new_node();
+struct node* new_node(void);
 
 #endif

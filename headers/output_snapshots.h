@@ -29,7 +29,6 @@
 
 #include "common.h"
 
-    int
-    output_snapshots(const vtype *energies, vtype actualtime, int snapshot);
+int output_snapshots(vtype actualtime, int snapshot);
 
 #endif
