@@ -11,7 +11,7 @@ Code version: beta-v1.0.0
 
 #############################################################################################
 
-This new code use a novel design for the adaptative mesh refinement method. 
+This new code uses a novel design for the adaptative mesh refinement method. 
 
 The code is focused to small scale devices as desk computers or laptos. 
 
