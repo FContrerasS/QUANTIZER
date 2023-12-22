@@ -1,17 +1,13 @@
 #Folders
 
-MANUAL/
+MANUAL/*
 .vscode/
 
 # Text Files
 
-Future_implementations.txt
-
 # Others
 
 *.o
-*.py
-*.txt
 *.c~
 *.exe
 *.log
