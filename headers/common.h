@@ -135,7 +135,8 @@ extern int fr_output;
 extern int MaxIterations;
 extern int no_grid_pow2;
 extern int no_grid_pow3;
-
+extern int min_box_extra_size_per_side_user;
+extern int min_box_extra_size_per_side_real;
 
 //* >> Refinement criteria parameters *//
 extern vtype ref_criterion_mass;

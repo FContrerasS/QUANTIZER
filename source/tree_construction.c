@@ -1640,9 +1640,13 @@ static int create_child_nodes(struct node *ptr_node)
     ptr_ch->box_dim_z = ptr_ch->box_max_z - ptr_ch->box_min_z + 1;
 
     // Real dimensions of the boxcap = ptr_ch->box_cap;
-    ptr_ch->box_real_dim_x = 5 > (n_exp - 1) ? (ptr_ch->box_dim_x + 10) : (ptr_ch->box_dim_x + 2 * n_exp - 2);
-    ptr_ch->box_real_dim_y = 5 > (n_exp - 1) ? (ptr_ch->box_dim_y + 10) : (ptr_ch->box_dim_y + 2 * n_exp - 2);
-    ptr_ch->box_real_dim_z = 5 > (n_exp - 1) ? (ptr_ch->box_dim_z + 10) : (ptr_ch->box_dim_z + 2 * n_exp - 2);
+    // ptr_ch->box_real_dim_x = 5 > (n_exp - 1) ? (ptr_ch->box_dim_x + 10) : (ptr_ch->box_dim_x + 2 * n_exp - 2);
+    // ptr_ch->box_real_dim_y = 5 > (n_exp - 1) ? (ptr_ch->box_dim_y + 10) : (ptr_ch->box_dim_y + 2 * n_exp - 2);
+    // ptr_ch->box_real_dim_z = 5 > (n_exp - 1) ? (ptr_ch->box_dim_z + 10) : (ptr_ch->box_dim_z + 2 * n_exp - 2);
+
+    ptr_ch->box_real_dim_x = ptr_ch->box_dim_x + min_box_extra_size_per_side_real;
+    ptr_ch->box_real_dim_y = ptr_ch->box_dim_y + min_box_extra_size_per_side_real;
+    ptr_ch->box_real_dim_z = ptr_ch->box_dim_z + min_box_extra_size_per_side_real;
 
     // ptr_ch->box_real_dim_x_old = ptr_ch->box_real_dim_x;
     // ptr_ch->box_real_dim_y_old = ptr_ch->box_real_dim_y;

@@ -26,6 +26,144 @@
 
 #include "output_main_parameters.h"
 
+static int computing_memory(void);
+
+static int computing_memory(void)
+{
+
+  int no_pts;
+
+  struct node *ptr_node;
+
+  //* >> Tentacles *//
+  TOTAL_MEMORY_TENTACLES += (lmax - lmin + 1) * sizeof(struct node **);
+
+  for (int lv = 0; lv < lmax - lmin + 1; lv++)
+  {
+    TOTAL_MEMORY_TENTACLES += GL_tentacles_cap[lv] * sizeof(struct node *);
+  }
+
+  //* >> Global particles *//
+  TOTAL_MEMORY_PARTICLES += GL_no_ptcl_initial * (sizeof(bool) + sizeof(int) + 10.0 * sizeof(vtype)); // Global particles
+
+  //* >> Node properties *//
+  for (int lv = 0; lv < GL_tentacles_level_max + 1; lv++)
+  {
+    no_pts = GL_tentacles_size[lv];
+
+    for (int i = 0; i < no_pts; i++)
+    {
+      ptr_node = GL_tentacles[lv][i];
+      TOTAL_MEMORY_CELDAS += 4.0 * ptr_node->cell_cap * sizeof(int);
+
+      if (lmin < lmax)
+      {
+        TOTAL_MEMORY_CELL_STRUCT += ptr_node->box_cap * sizeof(struct cell_struct);
+        TOTAL_MEMORY_CELL_STRUCT += ptr_node->cell_struct_old_cap * sizeof(struct cell_struct);
+        if (ptr_node->ptr_cell_struct != NULL)
+        {
+          for (int j = 0; j < ptr_node->box_cap; j++)
+          {
+            TOTAL_MEMORY_CELL_STRUCT += ptr_node->ptr_cell_struct[j].ptcl_cap * sizeof(int);
+          }
+        }
+
+        if (ptr_node->ptr_cell_struct_old != NULL)
+        {
+          for (int j = 0; j < ptr_node->cell_struct_old_cap; j++)
+          {
+            TOTAL_MEMORY_CELL_STRUCT += ptr_node->ptr_cell_struct_old[j].ptcl_cap * sizeof(int);
+          }
+        }
+      }
+      TOTAL_MEMORY_CAJAS += 2.0 * ptr_node->box_cap * (sizeof(int) + sizeof(vtype)); // Boxes and mass boxes
+
+      TOTAL_MEMORY_GRID_POINTS += 4.0 * (ptr_node->grid_bdry_cap + ptr_node->grid_intr_cap + ptr_node->grid_sim_bdry_cap) * sizeof(int); // Grid interior and border points
+
+      TOTAL_MEMORY_GRID_PROPERTIES += 6.0 * ptr_node->grid_properties_cap * sizeof(vtype); // Grid properties, accelerations, potential and density
+      TOTAL_MEMORY_AUX += ptr_node->zones_cap * sizeof(int *);
+      for (int j = 0; j < ptr_node->zones_cap; j++)
+      {
+        TOTAL_MEMORY_AUX += ptr_node->ptr_zone_cap[j] * sizeof(int);
+      }
+      TOTAL_MEMORY_AUX += ptr_node->aux_idx_cap * sizeof(int);
+      TOTAL_MEMORY_AUX += ptr_node->pbc_bool_bdry_anomalies_cap * 3.0 * sizeof(bool);
+
+      TOTAL_MEMORY_AUX += 4.0 * ptr_node->links_cap * sizeof(int);
+
+      //* Subzones
+      TOTAL_MEMORY_AUX += 6.0 * ptr_node->pbc_subzones_cap * sizeof(int);
+      // TOTAL_MEMORY_AUX += ptr_node->pbc_subzones_cap * sizeof(int *);
+      // for(int j=0; j < ptr_node->pbc_subzones_cap; j++)
+      // {
+      //     TOTAL_MEMORY_AUX += ptr_node->ptr_subzone_cap[j] * sizeof(int);
+      // }
+    }
+    TOTAL_MEMORY_NODES += no_pts * sizeof(struct node);
+  }
+
+  // Stack of memory pool
+  int cntr_nodes_memory_pool = 0;
+  ptr_node = GL_pool_node_start;
+  while (ptr_node != NULL)
+  {
+    cntr_nodes_memory_pool++;
+    TOTAL_MEMORY_STACK += 4.0 * ptr_node->cell_cap * sizeof(int);
+    TOTAL_MEMORY_STACK += ptr_node->box_cap * sizeof(struct cell_struct);
+
+    TOTAL_MEMORY_STACK += ptr_node->box_cap * sizeof(struct cell_struct);
+    TOTAL_MEMORY_STACK += ptr_node->cell_struct_old_cap * sizeof(struct cell_struct);
+    if (ptr_node->ptr_cell_struct != NULL)
+    {
+      for (int j = 0; j < ptr_node->box_cap; j++)
+      {
+        TOTAL_MEMORY_STACK += ptr_node->ptr_cell_struct[j].ptcl_cap * sizeof(int);
+      }
+    }
+
+    if (ptr_node->ptr_cell_struct_old != NULL)
+    {
+      for (int j = 0; j < ptr_node->cell_struct_old_cap; j++)
+      {
+        TOTAL_MEMORY_STACK += ptr_node->ptr_cell_struct_old[j].ptcl_cap * sizeof(int);
+      }
+    }
+
+    TOTAL_MEMORY_STACK += 2 * ptr_node->box_cap * (sizeof(int) + sizeof(vtype));                                                          // Boxes and mass boxes
+    TOTAL_MEMORY_STACK += 4 * (ptr_node->grid_bdry_cap + ptr_node->grid_intr_cap + ptr_node->grid_sim_bdry_cap) * sizeof(int);     // Grid interior, border and simulation boundary grid points
+    TOTAL_MEMORY_STACK += 6 * ptr_node->grid_properties_cap * sizeof(vtype);                                                              // Grid properties, accelerations, potential and density
+    TOTAL_MEMORY_STACK += ptr_node->zones_cap * sizeof(int *);
+    for (int j = 0; j < ptr_node->zones_cap; j++)
+    {
+      TOTAL_MEMORY_STACK += ptr_node->ptr_zone_cap[j] * sizeof(int);
+    }
+    TOTAL_MEMORY_STACK += ptr_node->aux_idx_cap * sizeof(int);
+    TOTAL_MEMORY_STACK += ptr_node->pbc_bool_bdry_anomalies_cap * 3.0 * sizeof(bool);
+    TOTAL_MEMORY_STACK += sizeof(struct node);
+
+    TOTAL_MEMORY_STACK += 4.0 * ptr_node->links_cap * sizeof(int);
+
+    //* Subzones
+    TOTAL_MEMORY_STACK += 6.0 * ptr_node->pbc_subzones_cap * sizeof(int);
+    // TOTAL_MEMORY_STACK += ptr_node->pbc_subzones_cap * sizeof(int *);
+    // for(int j=0; j < ptr_node->pbc_subzones_cap; j++)
+    // {
+    //     TOTAL_MEMORY_STACK += ptr_node->ptr_subzone_cap[j] * sizeof(int);
+    // }
+
+    if (ptr_node == GL_pool_node_end)
+    {
+      ptr_node = NULL;
+    }
+    else
+    {
+      ptr_node = ptr_node->ptr_pt;
+    }
+  }
+
+  return cntr_nodes_memory_pool;
+}
+
 void output_main_parameters(vtype final_time, int Number_timesteps, int Number_outputs)
 {
   char parameters_name[1100];
@@ -164,6 +302,81 @@ void output_main_parameters(vtype final_time, int Number_timesteps, int Number_o
   {
     fprintf(file, "%d: %s = %1.2e ~ %.1f %%\n", i - 30, Time_names_tree_adaptation[i - 30], GL_times[i], GL_times[i] * 100.0 / GL_times[10]);
   }
+
+
+
+
+
+  //* >> MEMORY *//
+  int cntr_nodes_memory_pool;
+
+  TOTAL_MEMORY_NODES = 0.0;
+  TOTAL_MEMORY_CELDAS = 0.0;
+  TOTAL_MEMORY_PARTICLES = 0.0;
+  TOTAL_MEMORY_CELL_STRUCT = 0.0;
+  TOTAL_MEMORY_CAJAS = 0.0;
+  TOTAL_MEMORY_GRID_POINTS = 0.0;
+  TOTAL_MEMORY_GRID_PROPERTIES = 0.0;
+  TOTAL_MEMORY_AUX = 0.0;
+  TOTAL_MEMORY_TENTACLES = 0.0;
+  TOTAL_MEMORY_STACK = 0.0;
+
+  cntr_nodes_memory_pool = computing_memory();
+
+  double sum = TOTAL_MEMORY_NODES + TOTAL_MEMORY_CELDAS + TOTAL_MEMORY_PARTICLES + TOTAL_MEMORY_CELL_STRUCT + TOTAL_MEMORY_CAJAS + TOTAL_MEMORY_GRID_POINTS + TOTAL_MEMORY_GRID_PROPERTIES + TOTAL_MEMORY_AUX + TOTAL_MEMORY_TENTACLES + TOTAL_MEMORY_STACK;
+  int max_memory_secction = 0;
+
+  double Total_memory[10] = {TOTAL_MEMORY_NODES,
+                             TOTAL_MEMORY_CELDAS,
+                             TOTAL_MEMORY_PARTICLES,
+                             TOTAL_MEMORY_CELL_STRUCT,
+                             TOTAL_MEMORY_CAJAS,
+                             TOTAL_MEMORY_GRID_POINTS,
+                             TOTAL_MEMORY_GRID_PROPERTIES,
+                             TOTAL_MEMORY_AUX,
+                             TOTAL_MEMORY_TENTACLES,
+                             TOTAL_MEMORY_STACK};
+
+  for (int i = 0; i < 10; i++)
+  {
+    max_memory_secction = Total_memory[max_memory_secction] > Total_memory[i] ? max_memory_secction : i;
+  }
+
+  fprintf(file,"\n\nMEMORY [MB]:\n\n");
+
+  char Memory_names[50][100] = {
+      "Nodes",
+      "Celdas",
+      "Particulas",
+      "Cell struct",
+      "Cajas",
+      "Grid Points",
+      "Grid Properties",
+      "Auxiliary",
+      "Tentacles",
+      "Memory Pool",
+  };
+
+
+
+  for (int i = 0; i < 10; i++)
+  {
+    fprintf(file,"%s = %f ~ %.1f %%\n", Memory_names[i], Total_memory[i] / 1000000.0, Total_memory[i] * 100.0 / sum);
+  }
+  fprintf(file,"Nodes in memory pool = %d\n", cntr_nodes_memory_pool);
+
+  fprintf(file,"\nTOTAL = %f MB\n\n", sum / 1000000.0);
+
+
+
+
+
+
+
+
+
+
+
 
   fclose(file);
 }

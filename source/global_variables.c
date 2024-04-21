@@ -79,6 +79,10 @@ int MaxIterations;
 int no_grid_pow2;
 int no_grid_pow3;
 
+int min_box_extra_size_per_side_user;
+int min_box_extra_size_per_side_real;
+
+
 //* >> Refinement criteria parameters *//
 vtype ref_criterion_mass;
 int ref_criterion_ptcl;
@@ -243,26 +247,31 @@ init_global_constants(void)
 
 static void init_global_user_params(void)
 {
-  NUMBER_OF_THEADS = 8;
+  NUMBER_OF_THEADS = 1;
   BoxSize = 1.0;
   lmin = 5;                 // Coarset level of refinement
-  lmax = lmin + 12;          // Finest level of refinement
+  lmax = lmin + 14;          // Finest level of refinement
   no_lmin_cell = 1 << lmin; // Number of cells in the lmin level of refinement
   no_lmin_cell_pow2 = no_lmin_cell * no_lmin_cell;
   no_lmin_cell_pow3 = no_lmin_cell * no_lmin_cell * no_lmin_cell;
   no_grid = no_lmin_cell + 1;
-  GL_no_ptcl_initial = 1000;
+  //GL_no_ptcl_initial = 450000;
+  GL_no_ptcl_initial = 100000;
+  //GL_no_ptcl_initial = 10000;
+  //GL_no_ptcl_initial = 1000;
+  //GL_no_ptcl_initial = 2;
   GL_no_ptcl_final = GL_no_ptcl_initial;
   // GL_no_ptcl = 7550; // 2995865; // 299586; // 231299 // 298159
   //  GL_no_ptcl = 10000;
-  //Maxdt = 0.1 *  _conversion_time_; // 1 year = 1.0e-6 Myear
+  //Maxdt = 100.0 *  _conversion_time_; // 1 year = 1.0e-6 Myear
+  //Maxdt = 10.0 * _Gyear_; // 1 year = 1.0e-6 Myear
   Maxdt = 1.0 * _Gyear_; // 1 year = 1.0e-6 Myear
   printf("Code Max time to reach = %1.12e in code units of time\n",(double) Maxdt);
   //meanmass = 100; //Currently only used on input.c
   //  GL_total_mass_initial = GL_no_ptcl * meanmass;
   //  GL_total_mass_initial = 0;
-  fr_output = 3;
-  MaxIterations = 1000000; // 1000000;
+  fr_output = 33; //114;
+  MaxIterations = 100000000; // 100000000;
   no_grid_pow2 = no_grid * no_grid;
   no_grid_pow3 = no_grid * no_grid * no_grid; 
   bdry_cond_type = 1; // 0 = Periodic; 1 = Reflexive; 2 = Outflow   ##Note for Periodic conditions: Initial potential and acceleration are wrong, 
@@ -274,10 +283,16 @@ static void init_global_user_params(void)
 static void init_global_ref_crit(void)
 {
   ref_criterion_mass = 1.0e100; //1.0e100; // meanmass * 7;
+  //ref_criterion_ptcl = 7;
   ref_criterion_ptcl = 4;
+  //ref_criterion_ptcl = 1;
   n_exp = 1;   // n_exp = 0 is corrupted because particles can move between more than 1 level of refinement
-  _CFL_ = 0.9; // CFL criteria 0.5
-  _MAX_dt_ = 0.01 * Maxdt ;//0.00333333333 * Maxdt ;// _Myear_ * 1;
+  //_CFL_ = 0.9; // CFL criteria 0.5
+  _CFL_ = 0.5; // CFL criteria 0.5
+  _MAX_dt_ = 0.005 * Maxdt  ;//0.00333333333 * Maxdt ;// _Myear_ * 1;    Galaxy merger = 0.001 * Maxdt 
+  //_MAX_dt_ = 1.0 * Maxdt  ;//0.00333333333 * Maxdt ;// _Myear_ * 1;    Galaxy merger = 0.001 * Maxdt 
+  min_box_extra_size_per_side_user = 5;  // Minimum value in the extra cell per direcction (-x,+x,-y,+y,-z,+z) side of the boxes
+  min_box_extra_size_per_side_real = min_box_extra_size_per_side_user > (n_exp - 1) ? 2 * min_box_extra_size_per_side_user : 2 * n_exp - 2;
 }
 
 static void init_global_poisson_params(void)
@@ -296,6 +311,10 @@ static void init_global_poisson_params(void)
   vtype _w_SOR_: The overrelaxation parameter
 */
   _MAX_NUMBER_OF_ITERATIONS_IN_POISSON_EQUATION_ = 5000;
+  // _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ = (1.0e-10);
+  // _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_2 = (1.0e-10);
+
+
   _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_ = (1.0e-10);
   _ERROR_THRESHOLD_IN_THE_POISSON_EQUATION_2 = (1.0e-10);
   check_poisson_error_method = 0; // Only used Gauss-Said or Jacobi in multigrid
@@ -315,7 +334,7 @@ static void init_global_poisson_params(void)
   branches_maximal_node_number_to_activate_conjugate_gradient = 0; //INT_MAX; // 513, 216 = node with minimum size of 1 (+1 n_exp) size, (1 + 2*n_exp)^3 * 8
 
   head_pot_method = 0;   // 0 = Multygrid, 1 = Conjugate gradient
-  branch_pot_method = 1; // 0 = SOR, 1 = Conjugate gradient
+  //branch_pot_method = 1; // 0 = SOR, 1 = Conjugate gradient
 }
 
 static void init_global_time_step_params(void)
