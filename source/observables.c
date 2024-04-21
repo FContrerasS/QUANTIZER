@@ -660,6 +660,7 @@ static void computing_momentum(void)
 
 int observables()
 {
+
   GL_energies[0] = 0.0; // Kinetic
   GL_energies[1] = 0.0; // Potential
   GL_energies[2] = 0.0; // Total
@@ -690,8 +691,6 @@ int observables()
 
 
   computing_momentum();
-
-
 
   return _SUCCESS_;
 }

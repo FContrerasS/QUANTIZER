@@ -503,7 +503,7 @@ int main()
       //GL_times[13] += (double)(clock() - GL_clock_begin) / CLOCKS_PER_SEC;
       clock_gettime( CLOCK_REALTIME, &GL_finish);
       GL_times[13] += ( GL_finish.tv_sec - GL_start.tv_sec ) + ( GL_finish.tv_nsec - GL_start.tv_nsec )/ 1000000000.;
-
+      
       //* >> OUPUT SNAPSHOTS **/
       // printf("Output snapshots\n");
       //GL_clock_begin = clock();

@@ -4464,9 +4464,13 @@ static int adapt_child_nodes(struct node *ptr_node)
         // ptr_ch->box_ts_z_old = ptr_ch->box_ts_z;
 
         // Real dimensions of the new box
-        ptr_ch->box_real_dim_x = 5 > (n_exp - 1) ? (ptr_ch->box_dim_x + 10) : (ptr_ch->box_dim_x + 2 * n_exp - 2);
-        ptr_ch->box_real_dim_y = 5 > (n_exp - 1) ? (ptr_ch->box_dim_y + 10) : (ptr_ch->box_dim_y + 2 * n_exp - 2);
-        ptr_ch->box_real_dim_z = 5 > (n_exp - 1) ? (ptr_ch->box_dim_z + 10) : (ptr_ch->box_dim_z + 2 * n_exp - 2);
+        // ptr_ch->box_real_dim_x = 5 > (n_exp - 1) ? (ptr_ch->box_dim_x + 10) : (ptr_ch->box_dim_x + 2 * n_exp - 2);
+        // ptr_ch->box_real_dim_y = 5 > (n_exp - 1) ? (ptr_ch->box_dim_y + 10) : (ptr_ch->box_dim_y + 2 * n_exp - 2);
+        // ptr_ch->box_real_dim_z = 5 > (n_exp - 1) ? (ptr_ch->box_dim_z + 10) : (ptr_ch->box_dim_z + 2 * n_exp - 2);
+
+        ptr_ch->box_real_dim_x = ptr_ch->box_dim_x + min_box_extra_size_per_side_real;
+        ptr_ch->box_real_dim_y = ptr_ch->box_dim_y + min_box_extra_size_per_side_real;
+        ptr_ch->box_real_dim_z = ptr_ch->box_dim_z + min_box_extra_size_per_side_real;
 
         // Translations between cell array and new box
         pos_x = (ptr_ch->box_real_dim_x - ptr_ch->box_dim_x) / 2; // Half of the distance of the box side less the "Smallest Box" side
@@ -5397,9 +5401,13 @@ static int create_new_child_nodes(struct node *ptr_node)
     ptr_ch->box_dim_z = ptr_ch->box_max_z - ptr_ch->box_min_z + 1;
 
     // Real dimensions of the boxcap = ptr_ch->box_cap;
-    ptr_ch->box_real_dim_x = 5 > (n_exp - 1) ? (ptr_ch->box_dim_x + 10) : (ptr_ch->box_dim_x + 2 * n_exp - 2);
-    ptr_ch->box_real_dim_y = 5 > (n_exp - 1) ? (ptr_ch->box_dim_y + 10) : (ptr_ch->box_dim_y + 2 * n_exp - 2);
-    ptr_ch->box_real_dim_z = 5 > (n_exp - 1) ? (ptr_ch->box_dim_z + 10) : (ptr_ch->box_dim_z + 2 * n_exp - 2);
+    // ptr_ch->box_real_dim_x = 5 > (n_exp - 1) ? (ptr_ch->box_dim_x + 10) : (ptr_ch->box_dim_x + 2 * n_exp - 2);
+    // ptr_ch->box_real_dim_y = 5 > (n_exp - 1) ? (ptr_ch->box_dim_y + 10) : (ptr_ch->box_dim_y + 2 * n_exp - 2);
+    // ptr_ch->box_real_dim_z = 5 > (n_exp - 1) ? (ptr_ch->box_dim_z + 10) : (ptr_ch->box_dim_z + 2 * n_exp - 2);
+    
+    ptr_ch->box_real_dim_x = ptr_ch->box_dim_x + min_box_extra_size_per_side_real;
+    ptr_ch->box_real_dim_y = ptr_ch->box_dim_y + min_box_extra_size_per_side_real;
+    ptr_ch->box_real_dim_z = ptr_ch->box_dim_z + min_box_extra_size_per_side_real;
 
     // ptr_ch->box_real_dim_x_old = ptr_ch->box_real_dim_x;
     // ptr_ch->box_real_dim_y_old = ptr_ch->box_real_dim_y;
@@ -7272,6 +7280,7 @@ static void adding_boundary_simulation_box_status_to_children_nodes(struct node 
 
 static int filling_child_grid_point_arrays(struct node *ptr_node)
 {
+  //printf("A1\n");
   struct node *ptr_ch;
 
   int box_idxNbr_i0_j0_k0_ch;    // Box index of the child node at x=0,y=0,z=0
@@ -7308,8 +7317,10 @@ static int filling_child_grid_point_arrays(struct node *ptr_node)
 
   int lv = ptr_node->lv;
 
+  //printf("A2\n");
   for (int ch = 0; ch < ptr_node->zones_size; ch++)
   {
+    //printf("B1\n");
     ptr_ch = ptr_node->pptr_chn[ch];
 
     box_real_dim_X_ch = ptr_ch->box_real_dim_x;
@@ -7325,6 +7336,8 @@ static int filling_child_grid_point_arrays(struct node *ptr_node)
     size_intr_grid_points = ptr_ch->cell_size;
     size_SIMULATION_BOUNDARY_grid_points = size_bder_grid_points;
 
+
+    //printf("B2\n");
     //* >> Space checking of border grid points array*//
     if (space_check(&(ptr_ch->grid_bdry_cap), size_bder_grid_points, 1.0f, "p4i1i1i1i1", &(ptr_ch->ptr_bdry_grid_cell_idx_x), &(ptr_ch->ptr_bdry_grid_cell_idx_y), &(ptr_ch->ptr_bdry_grid_cell_idx_z), &(ptr_ch->ptr_bdry_box_grid_idx)) == _FAILURE_)
     {
@@ -7339,6 +7352,7 @@ static int filling_child_grid_point_arrays(struct node *ptr_node)
       return _FAILURE_;
     }
 
+    //printf("B3\n");
     if (ptr_ch->sim_bdry_contact == true)
     {
       //* >> Space checking of simulation boundary grid points array*//
@@ -7349,6 +7363,15 @@ static int filling_child_grid_point_arrays(struct node *ptr_node)
       }
     }
 
+
+    // printf("B4\n");
+    // printf("ptr_ch->box_real_dim_x = %d\n",ptr_ch->box_real_dim_x);
+    // printf("ptr_ch->box_real_dim_y = %d\n",ptr_ch->box_real_dim_y);
+    // printf("ptr_ch->box_real_dim_z = %d\n",ptr_ch->box_real_dim_z);
+    // printf("  ptr_node->box_cap = %d\n",  ptr_ch->box_cap);
+    // if (ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y * ptr_ch->box_real_dim_z != ptr_ch->box_cap ){
+    //   printf("ERROR BOX CAP\n");
+    // }
     //* >> Grid points *//
     for (int kk = ptr_ch->box_min_z - ptr_ch->box_ts_z; kk < ptr_ch->box_max_z - ptr_ch->box_ts_z + 2; kk++)
     {
@@ -7356,6 +7379,10 @@ static int filling_child_grid_point_arrays(struct node *ptr_node)
       {
         for (int ii = ptr_ch->box_min_x - ptr_ch->box_ts_x; ii < ptr_ch->box_max_x - ptr_ch->box_ts_x + 2; ii++)
         {
+          // if(kk == 36 && jj ==3){
+          //   printf("%d %d %d\n",ii,jj,kk);
+          // }
+          
           box_idx_ch = ii + jj * ptr_ch->box_real_dim_x + kk * ptr_ch->box_real_dim_x * ptr_ch->box_real_dim_y;
 
           grid_point_exist = false;
@@ -7580,6 +7607,7 @@ static int filling_child_grid_point_arrays(struct node *ptr_node)
         }
       }
     }
+    //printf("B5\n");
     // for (int kk = ptr_ch->box_min_z - ptr_ch->box_ts_z; kk < ptr_ch->box_max_z - ptr_ch->box_ts_z + 2; kk++)
     // {
     //     for (int jj = ptr_ch->box_min_y - ptr_ch->box_ts_y; jj < ptr_ch->box_max_y - ptr_ch->box_ts_y + 2; jj++)
@@ -7837,6 +7865,8 @@ static int filling_child_grid_point_arrays(struct node *ptr_node)
     //     }
     // }
   }
+  //printf("A3\n");
+
   return _SUCCESS_;
 }
 
@@ -8243,7 +8273,7 @@ int tree_adaptation(void)
       {
         ptr_node = GL_tentacles[lv][i];
 
-        // printf("lv = %d, pt = %d, chn_size = %d\n", ptr_node->lv, i, ptr_node->chn_size);
+        //printf("lv = %d, pt = %d, chn_size = %d\n", ptr_node->lv, i, ptr_node->chn_size);
 
         //* Updating the box mass information *//
         //printf("\n\nupdating_cell_struct\n\n");

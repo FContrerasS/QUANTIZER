@@ -322,6 +322,13 @@ void initial_potential_and_acceleration_head(struct node *ptr_head)
           ptr_head->ptr_ax[box_grid_idx] = aux_coeff * aux_i;
           ptr_head->ptr_ay[box_grid_idx] = aux_coeff * aux_j;
           ptr_head->ptr_az[box_grid_idx] = aux_coeff * aux_k;
+
+          // ptr_head->ptr_pot[box_grid_idx] = 0;
+          // ptr_head->ptr_ax[box_grid_idx] =  0;
+          // ptr_head->ptr_ay[box_grid_idx] =  0;
+          // ptr_head->ptr_az[box_grid_idx] =  0;
+
+
           //printf("box_grid_idx = %d, i j k, ax ay az, pot = %d, %d, %d, %.12f, %.12f, %.12f, %.12f\n",box_grid_idx,i,j,k,(double)ptr_head->ptr_ax[box_grid_idx],(double)ptr_head->ptr_ay[box_grid_idx],(double)ptr_head->ptr_az[box_grid_idx],(double)ptr_head->ptr_pot[box_grid_idx] );
         }
       }

@@ -120,14 +120,14 @@ int input_plummer_model(void)
   printf("Input by plummer\n");
 
   // Plummer model using a scale parameter a = 1 kpc
-  char input_name[100] = "../examples/"
-                         "Plummer_example/Plummer_Model_np_(1000)_a_(1000.0 pc)_M_(1.0e+08 Msun).csv";
+  // char input_name[100] = "../examples/"
+  //                        "Plummer_example/Plummer_Model_np_(1000)_a_(1000.0 pc)_M_(1.0e+08 Msun).csv";
 
     // char input_name[100] = "../input/"
     //                      "Plumer_Model/Plummer_Model_np_(10000)_a_(1000.0 pc)_M_(1.0e+08 Msun).csv";
 
-    // char input_name[100] = "../input/"
-    //                      "Plumer_Model/Plummer_Model_np_(100000)_a_(1000.0 pc)_M_(1.0e+08 Msun).csv";                         
+    char input_name[100] = "../input/"
+                         "Plumer_Model/Plummer_Model_np_(100000)_a_(1000.0 pc)_M_(1.0e+08 Msun).csv";                         
 
 
 
